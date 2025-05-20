@@ -56,7 +56,7 @@
  *--------------------------------------------------------------------------*/
 
 /** Record an NVTX range for NSYS if accelerator present. */
-#include "nvToolsExt.h"
+#include "nvtx3/nvToolsExt.h"
 #define PUSH_NVTX_cuda(name, cid)                                                                   \
         {                                                                                           \
           const uint32_t colors_nvtx[] =                                                            \
