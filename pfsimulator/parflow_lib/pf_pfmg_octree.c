@@ -327,9 +327,16 @@ PFModule  *PFMGOctreeInitInstanceXtra(
   Submatrix          *pfB_sub, *pfC_sub;
   double             *cp_c, *top_dat;
 
+#ifdef PARFLOW_HAVE_CUDA
+    double* coeffs;
+    cudaMallocManaged(&coeffs, 7 * sizeof(double));
+    double * coeffs_symm;
+    cudaMallocManaged(&coeffs_symm, 4 * sizeof(double));
+#else
   double coeffs[7] = { 0, 0, 0, 0, 0, 0, 0 };
   double coeffs_symm[4] = { 0, 0, 0, 0 };
-
+#endif
+  
   int i, j, k;
   int num_i, num_j, num_k;
   int ix, iy, iz;
@@ -1043,6 +1050,12 @@ PFModule  *PFMGOctreeInitInstanceXtra(
   }
 
   PFModuleInstanceXtra(this_module) = instance_xtra;
+
+#ifdef PARFLOW_HAVE_CUDA
+  cudaFree(coeffs);
+  cudaFree(coeffs_symm);
+#endif
+
   return this_module;
 }
 
