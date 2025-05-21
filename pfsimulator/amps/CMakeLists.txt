@@ -57,11 +57,7 @@ if (${PARFLOW_HAVE_MPI})
 endif (${PARFLOW_HAVE_MPI})
 
 if(${PARFLOW_HAVE_OAS3})
-  target_link_libraries(amps PUBLIC ${OASIS_Fortran_LIBRARY} ${MCT_Fortran_LIBRARY} ${MPEU_Fortran_LIBRARY} ${SCRIP_Fortran_LIBRARY})
-  target_include_directories(amps PUBLIC "${OASIS_Fortran_INCLUDES}")
-  
-  target_link_libraries(amps PUBLIC ${NETCDF_Fortran_LIBRARY})
-  target_include_directories(amps PUBLIC "${NETCDF_Fortran_INCLUDES}")
+  target_link_libraries(amps PUBLIC OASIS3MCT::OASIS3MCT)
 endif(${PARFLOW_HAVE_OAS3})
 
 

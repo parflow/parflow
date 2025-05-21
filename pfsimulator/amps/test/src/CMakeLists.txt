@@ -71,11 +71,6 @@ foreach(test ${ALL_TESTS})
     target_link_libraries(${test} ${MPI_LINK_FLAGS})
     target_link_libraries (${test} ${MPI_LIBRARIES})
   endif (${PARFLOW_HAVE_MPI})
-
-  if(${PARFLOW_HAVE_OAS3})
-    target_link_libraries(${test} ${OASIS_Fortran_LIBRARY} ${MCT_Fortran_LIBRARY} ${MPEU_Fortran_LIBRARY} ${SCRIP_Fortran_LIBRARY})
-    target_link_libraries(${test} ${NETCDF_Fortran_LIBRARY})
-  endif(${PARFLOW_HAVE_OAS3})
 endforeach()
 
 foreach(test ${SEQUENTIAL_TESTS})
