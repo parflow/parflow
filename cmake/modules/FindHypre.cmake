@@ -95,17 +95,20 @@ set(HYPRE_INCLUDE_DIRS ${HYPRE_INCLUDE_DIR})
 #
 set(HYPRE_CONFIG_H "${HYPRE_INCLUDE_DIRS}/HYPRE_config.h")
 if (EXISTS "${HYPRE_CONFIG_H}")
+  # CUDA
   file(STRINGS ${HYPRE_CONFIG_H} HYPRE_USING_CUDA REGEX "HYPRE_USING_CUDA")
   string(REGEX MATCH "[0-9]+" HYPRE_USING_CUDA "${HYPRE_USING_CUDA}")
+
+  # OpenMP
+  file(STRINGS ${HYPRE_CONFIG_H} HYPRE_USING_OPENMP REGEX "HYPRE_USING_OPENMP")
+  string(REGEX MATCH "[0-9]+" HYPRE_USING_OPENMP "${HYPRE_USING_OPENMP}")
 endif()
 if (NOT DEFINED HYPRE_USING_CUDA OR HYPRE_USING_CUDA STREQUAL "")
   set(HYPRE_USING_CUDA 0)
 endif()
-
-# TODO: Remove debugging statements
-message(STATUS "PARFLOW_HAVE_CUDA=${PARFLOW_HAVE_CUDA}")
-message(STATUS "HYPRE_USING_CUDA=${HYPRE_USING_CUDA}")
-message(STATUS "HYPRE_CONFIG_H=${HYPRE_CONFIG_H}")
+if (NOT DEFINED HYPRE_USING_OPENMP OR HYPRE_USING_OPENMP STREQUAL "")
+  set(HYPRE_USING_OPENMP 0)
+endif()
 
 find_package_handle_standard_args(Hypre DEFAULT_MSG HYPRE_LIBRARIES HYPRE_INCLUDE_DIRS)
 mark_as_advanced(HYPRE_INCLUDE_DIRS HYPRE_LIBRARIES)
@@ -146,11 +149,22 @@ if (Hypre_FOUND AND NOT TARGET Hypre::Hypre)
       endif()
 
       string(JOIN ", " _hypre_cuda_targets ${_cuda_targets})
-      message(STATUS "Found Hypre built with CUDA. ParFlow will be linked to: ${_hypre_cuda_targets}")
       target_link_libraries(Hypre::Hypre INTERFACE ${_cuda_targets})
+      message(STATUS "Found Hypre with CUDA backend. The ff. CUDA targets will be added to the linker options: ${_hypre_cuda_targets}")
 
       unset(_cuda_targets)
       unset(_hypre_cuda_targets)
     endif()
   endif()
+
+  if(${HYPRE_USING_OPENMP})
+    find_package(OpenMP)
+    if(OpenMP_FOUND)
+      target_link_libraries(Hypre::Hypre INTERFACE OpenMP::OpenMP_C)
+      message(STATUS "Found Hypre with OpenMP backend. OpenMP::OpenMP_C will be added to the linker options.")
+    endif()
+  endif()
 endif()
+
+unset(HYPRE_USING_CUDA)
+unset(HYPRE_USING_OPENMP)
