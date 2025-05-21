@@ -112,7 +112,7 @@ mark_as_advanced(HYPRE_INCLUDE_DIRS HYPRE_LIBRARIES)
 #
 # Create target Hypre::Hypre
 #
-if (Hypre_FOUND NOT TARGET Hypre::Hypre)
+if (Hypre_FOUND AND NOT TARGET Hypre::Hypre)
   add_library(Hypre::Hypre INTERFACE IMPORTED)
   target_include_directories(Hypre::Hypre INTERFACE ${HYPRE_INCLUDE_DIRS})
   target_link_libraries(Hypre::Hypre INTERFACE ${HYPRE_LIBRARIES})
@@ -151,5 +151,5 @@ if (Hypre_FOUND NOT TARGET Hypre::Hypre)
       unset(_cuda_targets)
       unset(_hypre_cuda_targets)
     endif()
-  endif(${PARFLOW_HAVE_CUDA})
+  endif()
 endif()
