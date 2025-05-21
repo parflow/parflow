@@ -15,9 +15,9 @@ if( ${PARFLOW_HAVE_ETRACE} )
 endif( ${PARFLOW_HAVE_ETRACE} )
 
 if(${PARFLOW_HAVE_CUDA})
-  if(DEFINED PARFLOW_CUDA_TARGET)
+  if(DEFINED PARFLOW_CUDA_TARGETS)
     target_link_libraries(parflow ${PARFLOW_CUDA_TARGETS})
-    message(STATUS "!!! linking ParFlow with ${PARFLOW_CUDA_TARGETS}")
+    message(STATUS "Linking ParFlow with ${PARFLOW_CUDA_TARGETS}")
   endif()
 endif(${PARFLOW_HAVE_CUDA})
 
