@@ -10,10 +10,10 @@
 #
 # ::
 #
-#   HYPRE_FOUND - set to true if a HYPRE library is found
-#   HYPRE_INCLUDE_DIR - the HYPRE include directory
-#   HYPRE_LIBRARIES - the HYPRE libraries
-#
+#   Hypre_FOUND        - set to true if a HYPRE library is found
+#   HYPRE_INCLUDE_DIRS - the HYPRE include directory
+#   HYPRE_LIBRARIES    - the HYPRE libraries
+#   Hypre::Hypre       - Hypre CMake target
 
 include(FindPackageHandleStandardArgs)
 
@@ -21,7 +21,9 @@ if(NOT HYPRE_ROOT)
   set(HYPRE_ROOT $ENV{HYPRE_ROOT})
 endif()
 
+#
 # If Hypre root is set then search only in that directory for Hypre
+#
 if (DEFINED HYPRE_ROOT)
 
   find_path(HYPRE_INCLUDE_DIR NAMES HYPRE.h
@@ -88,38 +90,66 @@ endif (DEFINED HYPRE_ROOT)
 
 set(HYPRE_INCLUDE_DIRS ${HYPRE_INCLUDE_DIR})
 
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(Hypre DEFAULT_MSG HYPRE_LIBRARIES HYPRE_INCLUDE_DIRS)
+#
+# Check Hypre features from HYPRE_config.h
+#
+set(HYPRE_CONFIG_H "${HYPRE_INCLUDE_DIRS}/HYPRE_config.h")
+if (EXISTS "${HYPRE_CONFIG_H}")
+  file(STRINGS ${HYPRE_CONFIG_H} HYPRE_USING_CUDA REGEX "HYPRE_USING_CUDA")
+  string(REGEX MATCH "[0-9]+" HYPRE_USING_CUDA "${HYPRE_USING_CUDA}")
+else()
+  set(HYPRE_USING_CUDA 0)
+endif()
 
-MARK_AS_ADVANCED(HYPRE_INCLUDE_DIRS HYPRE_LIBRARIES)
+# TODO: Remove debugging statements
+message(STATUS "PARFLOW_HAVE_CUDA=${PARFLOW_HAVE_CUDA}")
+message(STATUS "HYPRE_USING_CUDA=${HYPRE_USING_CUDA}")
+message(STATUS "HYPRE_CONFIG_H=${HYPRE_CONFIG_H}")
 
-# TODO: Link CUDA targets only if Hypre is built with CUDA
-if(${PARFLOW_HAVE_CUDA})
-  include(FindCUDAToolkit)
-  if (CUDAToolkit_FOUND)
-    # cuBLAS
-    if(TARGET CUDA::cublas_static)
-      list(APPEND PARFLOW_CUDA_TARGETS CUDA::cublas_static)
-    elseif(TARGET CUDA::cublas)
-      list(APPEND PARFLOW_CUDA_TARGETS CUDA::cublas)
-    elseif(TARGET CUDA::cublasLt_static)
-      list(APPEND PARFLOW_CUDA_TARGETS CUDA::cublasLt_static)
-    elseif(TARGET CUDA::cublasLt)
-      list(APPEND PARFLOW_CUDA_TARGETS CUDA::cublasLt)
+find_package_handle_standard_args(Hypre DEFAULT_MSG HYPRE_LIBRARIES HYPRE_INCLUDE_DIRS)
+mark_as_advanced(HYPRE_INCLUDE_DIRS HYPRE_LIBRARIES)
+
+#
+# Create target Hypre::Hypre
+#
+if (Hypre_FOUND NOT TARGET Hypre::Hypre)
+  add_library(Hypre::Hypre INTERFACE IMPORTED)
+  target_include_directories(Hypre::Hypre INTERFACE ${HYPRE_INCLUDE_DIRS})
+  target_link_libraries(Hypre::Hypre INTERFACE ${HYPRE_LIBRARIES})
+
+  if(${PARFLOW_HAVE_CUDA} AND ${HYPRE_USING_CUDA})
+    # Hypre-CUDA requires linking to cuBLAS, cuRAND, and cuSPARSE
+    # See full list of imported CUDA targets here: https://cmake.org/cmake/help/latest/module/FindCUDAToolkit.html#imported-targets
+    include(FindCUDAToolkit)
+    if (CUDAToolkit_FOUND)
+      if(TARGET CUDA::cublas_static)
+        list(APPEND _cuda_targets CUDA::cublas_static)
+      elseif(TARGET CUDA::cublas)
+        list(APPEND _cuda_targets CUDA::cublas)
+      elseif(TARGET CUDA::cublasLt_static)
+        list(APPEND _cuda_targets CUDA::cublasLt_static)
+      elseif(TARGET CUDA::cublasLt)
+        list(APPEND _cuda_targets CUDA::cublasLt)
+      endif()
+
+      if(TARGET CUDA::curand_static)
+        list(APPEND _cuda_targets CUDA::curand_static)
+      elseif(TARGET CUDA::curand)
+        list(APPEND _cuda_targets CUDA::curand)
+      endif()
+
+      if(TARGET CUDA::cusparse_static)
+        list(APPEND _cuda_targets CUDA::cusparse_static)
+      elseif(TARGET CUDA::cusparse)
+        list(APPEND _cuda_targets CUDA::cusparse)
+      endif()
+
+      string(JOIN ", " _hypre_cuda_targets ${_cuda_targets})
+      message(STATUS "Found Hypre built with CUDA. ParFlow will be linked to: ${_hypre_cuda_targets}")
+      target_link_libraries(Hypre::Hypre INTERFACE ${_cuda_targets})
+
+      unset(_cuda_targets)
+      unset(_hypre_cuda_targets)
     endif()
-
-    # cuRAND
-    if(TARGET CUDA::curand_static)
-      list(APPEND PARFLOW_CUDA_TARGETS CUDA::curand_static)
-    elseif(TARGET CUDA::curand)
-      list(APPEND PARFLOW_CUDA_TARGETS CUDA::curand)
-    endif()
-
-    # cuSPARSE
-    if(TARGET CUDA::cusparse_static)
-      list(APPEND PARFLOW_CUDA_TARGETS CUDA::cusparse_static)
-    elseif(TARGET CUDA::cusparse)
-      list(APPEND PARFLOW_CUDA_TARGETS CUDA::cusparse)
-    endif()
-    message(STATUS "Found CUDAToolKit ${CUDAToolkit_VERSION} with ${PARFLOW_CUDA_TARGETS}")
-  endif()
-endif(${PARFLOW_HAVE_CUDA})
+  endif(${PARFLOW_HAVE_CUDA})
+endif()

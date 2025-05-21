@@ -30,14 +30,6 @@ endif()
 
 add_library(amps STATIC ${COMMON_SRC_FILES} ${AMPS_SRC_FILES})
 
-if(${PARFLOW_HAVE_CUDA})
-  target_include_directories(amps PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
-  if(DEFINED PARFLOW_CUDA_TARGETS)
-    target_link_libraries(amps PUBLIC ${PARFLOW_CUDA_TARGETS})
-    message(STATUS " !!! Linking amps with ${PARFLOW_CUDA_TARGETS}")
-  endif()
-endif(${PARFLOW_HAVE_CUDA})
-
 if( ${PARFLOW_HAVE_UMPIRE} )
   target_link_libraries(amps PUBLIC umpire)
 endif( ${PARFLOW_HAVE_UMPIRE} )

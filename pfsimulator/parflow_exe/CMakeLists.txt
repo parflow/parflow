@@ -14,13 +14,6 @@ if( ${PARFLOW_HAVE_ETRACE} )
   target_link_libraries(parflow etrace)
 endif( ${PARFLOW_HAVE_ETRACE} )
 
-if(${PARFLOW_HAVE_CUDA})
-  if(DEFINED PARFLOW_CUDA_TARGETS)
-    target_link_libraries(parflow ${PARFLOW_CUDA_TARGETS})
-    message(STATUS "Linking ParFlow with ${PARFLOW_CUDA_TARGETS}")
-  endif()
-endif(${PARFLOW_HAVE_CUDA})
-
 if( ${PARFLOW_HAVE_RMM} )
   target_link_libraries(parflow rmm::rmm)
 endif( ${PARFLOW_HAVE_RMM} )
@@ -34,7 +27,7 @@ if( ${PARFLOW_HAVE_CLM} )
 endif( ${PARFLOW_HAVE_CLM} )
 
 if (${PARFLOW_HAVE_HYPRE})
-  target_link_libraries (parflow ${HYPRE_LIBRARIES})
+  target_link_libraries (parflow Hypre::Hypre)
 endif (${PARFLOW_HAVE_HYPRE})
 
 if (${PARFLOW_HAVE_MPI})
