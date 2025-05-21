@@ -92,5 +92,34 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(Hypre DEFAULT_MSG HYPRE_LIBRARIES HYPRE_INCLUD
 
 MARK_AS_ADVANCED(HYPRE_INCLUDE_DIRS HYPRE_LIBRARIES)
 
+# TODO: Link CUDA targets only if Hypre is built with CUDA
+if(${PARFLOW_HAVE_CUDA})
+  include(FindCUDAToolkit)
+  if (CUDAToolkit_FOUND)
+    # cuBLAS
+    if(TARGET CUDA::cublas_static)
+      list(APPEND PARFLOW_CUDA_TARGETS CUDA::cublas_static)
+    elseif(TARGET CUDA::cublas)
+      list(APPEND PARFLOW_CUDA_TARGETS CUDA::cublas)
+    elseif(TARGET CUDA::cublasLt_static)
+      list(APPEND PARFLOW_CUDA_TARGETS CUDA::cublasLt_static)
+    elseif(TARGET CUDA::cublasLt)
+      list(APPEND PARFLOW_CUDA_TARGETS CUDA::cublasLt)
+    endif()
 
+    # cuRAND
+    if(TARGET CUDA::curand_static)
+      list(APPEND PARFLOW_CUDA_TARGETS CUDA::curand_static)
+    elseif(TARGET CUDA::curand)
+      list(APPEND PARFLOW_CUDA_TARGETS CUDA::curand)
+    endif()
 
+    # cuSPARSE
+    if(TARGET CUDA::cusparse_static)
+      list(APPEND PARFLOW_CUDA_TARGETS CUDA::cusparse_static)
+    elseif(TARGET CUDA::cusparse)
+      list(APPEND PARFLOW_CUDA_TARGETS CUDA::cusparse)
+    endif()
+    message(STATUS "Found CUDAToolKit ${CUDAToolkit_VERSION} with ${PARFLOW_CUDA_TARGETS}")
+  endif()
+endif(${PARFLOW_HAVE_CUDA})
