@@ -14,6 +14,13 @@ if( ${PARFLOW_HAVE_ETRACE} )
   target_link_libraries(parflow etrace)
 endif( ${PARFLOW_HAVE_ETRACE} )
 
+if(${PARFLOW_HAVE_CUDA})
+  if(DEFINED PARFLOW_CUDA_TARGET)
+    target_link_libraries(parflow ${PARFLOW_CUDA_TARGETS})
+    message(STATUS "!!! linking ParFlow with ${PARFLOW_CUDA_TARGETS}")
+  endif()
+endif(${PARFLOW_HAVE_CUDA})
+
 if( ${PARFLOW_HAVE_RMM} )
   target_link_libraries(parflow rmm::rmm)
 endif( ${PARFLOW_HAVE_RMM} )
