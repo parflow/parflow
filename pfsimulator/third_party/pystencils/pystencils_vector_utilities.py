@@ -2,11 +2,15 @@ import sympy as sp
 
 import pystencils as ps
 import re
+
 from pystencilssfg import SourceFileGenerator
+from pystencilssfg.lang.gpu import cuda
 
 with SourceFileGenerator() as sfg:
     default_dtype = sfg.context.project_info['default_dtype']
     target = sfg.context.project_info['target']
+
+    block_size = cuda.dim3().var("blockSize")
 
     # set up kernel config
     def get_kernel_cfg(
@@ -33,12 +37,10 @@ with SourceFileGenerator() as sfg:
 
 
     def invoke(kernel):
-        # TODO: invoke handling for CUDA
-        # if sfg.context.project_info['use_cuda']:
-        #     ...
-        # else:
-        #     ...
-        return sfg.call(kernel)
+        if sfg.context.project_info['use_cuda']:
+            return sfg.gpu_invoke(kernel)
+        else:
+            return sfg.call(kernel)
 
 
     def create_kernel_func(assign, func_name: str, allow_vect: bool = True):
@@ -76,7 +78,8 @@ with SourceFileGenerator() as sfg:
 
     # fields
 
-    x, y, z, w = ps.fields(f"x, y, z, w: {default_dtype}[3D]", layout="fzyx")
+    x, y, w = ps.fields(f"x, y, w: {default_dtype}[3D]", layout="fzyx")
+    z = ps.fields(f"z: {default_dtype}[3D]", layout="fzyx")
 
     # kernels
 
@@ -159,11 +162,11 @@ with SourceFileGenerator() as sfg:
     # z = a * x - y (PFVLin2)
     create_kernel_func(ps.Assignment(z.center(), a * x.center() - y.center()), "VLin2")
 
-    # y = y + a * x (PFVAxpy)
-    create_kernel_func(ps.Assignment(y.center(), y.center() + a * x.center()), "VAxpy")
+    # z = y + a * x (PFVAxpy)
+    create_kernel_func(ps.Assignment(z.center(), y.center() + a * x.center()), "VAxpy")
 
-    # x = x * a (PFVScaleBy)
-    create_kernel_func(ps.Assignment(x.center(), x.center() * a), "VScaleBy")
+    # z = x * a (PFVScaleBy)
+    create_kernel_func(ps.Assignment(z.center(), x.center() * a), "VScaleBy")
 
     # TODO: Implement?
     #  PFVLayerCopy (a, b, x, y)        NBE: Extracts layer b from vector y, inserts into layer a of vector x
