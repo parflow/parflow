@@ -270,7 +270,6 @@ endif()
 if(${PARFLOW_HAVE_PYSTENCILS})
   target_link_libraries(pfsimulator VectorUtilitiesPystencils)
   target_include_directories(pfsimulator PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../third_party/pystencils/VectorUtilitiesPystencils")
-  target_compile_definitions(pfsimulator PRIVATE PARFLOW_HAVE_PYSTENCILS)
 endif(${PARFLOW_HAVE_PYSTENCILS})
 
 target_link_libraries(pfsimulator pfkinsol amps cjson ${PARFLOW_ETRACE_LIBRARY})

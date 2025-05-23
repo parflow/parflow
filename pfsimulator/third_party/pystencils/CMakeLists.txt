@@ -19,3 +19,6 @@ pystencilssfg_generate_target_sources ( VectorUtilitiesPystencils
         SCRIPTS pystencils_vector_utilities.py
         OUTPUT_DIRECTORY VectorUtilitiesPystencils
 )
+
+# TODO: only do on-demand
+target_compile_options ( VectorUtilitiesPystencils PRIVATE -mavx )

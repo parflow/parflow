@@ -10,7 +10,7 @@ def configure_sfg(cfg: SfgConfig):
 def project_info():
     return {
         "project_name": "pystencils_coupling",
-        "float_precision": "float64",
+        "default_dtype": "float64",
         "use_cpu": True,
         "use_cuda": False,
         "use_openmp": True,
