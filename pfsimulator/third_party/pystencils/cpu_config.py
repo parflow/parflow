@@ -6,7 +6,6 @@ def configure_sfg(cfg: SfgConfig):
     cfg.extensions.header = "h"
     cfg.extensions.impl = "cpp"
     cfg.c_interfacing = True
-    cfg.header_only = True
 
 def project_info():
     return {

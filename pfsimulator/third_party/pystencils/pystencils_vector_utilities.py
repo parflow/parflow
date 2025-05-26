@@ -7,7 +7,7 @@ from pystencils import Kernel, create_kernel
 from pystencils.codegen import Parameter, GpuKernel
 from pystencils.codegen.properties import FieldBasePtr
 from pystencils.types import PsPointerType
-from pystencils.types.quick import Fp
+from pystencils.types.quick import Fp, SInt
 from pystencilssfg import SourceFileGenerator
 from pystencilssfg.lang.gpu import cuda
 
@@ -67,7 +67,7 @@ with SourceFileGenerator() as sfg:
                 match = pattern.findall(param.name)
 
                 if match:
-                    stride = sfg.var(f"_stride_{match[0]}_0", "int64")
+                    stride = Parameter(f"_stride_{match[0]}_0", SInt(64))
                     params += [stride]
                     missing_strides += [stride]
 

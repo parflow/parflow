@@ -2,9 +2,7 @@ cmake_minimum_required ( VERSION 3.24 )
 
 # determine config file depending on build flags
 
-if ( DEFINED PYSTENCILS_CONFIG_MODULE )
-        set ( PystencilsSfg_CONFIG_MODULE ${PYSTENCILS_CONFIG_MODULE} )
-else ()
+if ( NOT DEFINED PystencilsSfg_CONFIG_MODULE )
         if ( ${PARFLOW_HAVE_CUDA} )
                 set ( PystencilsSfg_CONFIG_MODULE cuda_config.py )
         else ()
