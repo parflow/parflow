@@ -36,9 +36,7 @@
 
 #define size 10
 
-int main(argc, argv)
-int argc;
-char *argv[];
+int main(int argc, char *argv[])
 {
   amps_Package package;
   amps_Handle handle;
