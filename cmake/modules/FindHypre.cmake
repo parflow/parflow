@@ -121,39 +121,41 @@ if (Hypre_FOUND AND NOT TARGET Hypre::Hypre)
   target_include_directories(Hypre::Hypre INTERFACE ${HYPRE_INCLUDE_DIRS})
   target_link_libraries(Hypre::Hypre INTERFACE ${HYPRE_LIBRARIES})
 
-  if(DEFINED PARFLOW_HAVE_CUDA AND ${PARFLOW_HAVE_CUDA} AND ${HYPRE_USING_CUDA})
-    # Hypre-CUDA requires linking to cuBLAS, cuRAND, and cuSPARSE
-    # See full list of imported CUDA targets here: https://cmake.org/cmake/help/latest/module/FindCUDAToolkit.html#imported-targets
-    include(FindCUDAToolkit)
-    if (CUDAToolkit_FOUND)
-      if(TARGET CUDA::cublas_static)
-        list(APPEND _cuda_targets CUDA::cublas_static)
-      elseif(TARGET CUDA::cublas)
-        list(APPEND _cuda_targets CUDA::cublas)
-      elseif(TARGET CUDA::cublasLt_static)
-        list(APPEND _cuda_targets CUDA::cublasLt_static)
-      elseif(TARGET CUDA::cublasLt)
-        list(APPEND _cuda_targets CUDA::cublasLt)
+  if(DEFINED PARFLOW_HAVE_CUDA)
+    if(${PARFLOW_HAVE_CUDA} AND ${HYPRE_USING_CUDA})
+      # Hypre-CUDA requires linking to cuBLAS, cuRAND, and cuSPARSE
+      # See full list of imported CUDA targets here: https://cmake.org/cmake/help/latest/module/FindCUDAToolkit.html#imported-targets
+      include(FindCUDAToolkit)
+      if (CUDAToolkit_FOUND)
+        if(TARGET CUDA::cublas_static)
+          list(APPEND _cuda_targets CUDA::cublas_static)
+        elseif(TARGET CUDA::cublas)
+          list(APPEND _cuda_targets CUDA::cublas)
+        elseif(TARGET CUDA::cublasLt_static)
+          list(APPEND _cuda_targets CUDA::cublasLt_static)
+        elseif(TARGET CUDA::cublasLt)
+          list(APPEND _cuda_targets CUDA::cublasLt)
+        endif()
+
+        if(TARGET CUDA::curand_static)
+          list(APPEND _cuda_targets CUDA::curand_static)
+        elseif(TARGET CUDA::curand)
+          list(APPEND _cuda_targets CUDA::curand)
+        endif()
+
+        if(TARGET CUDA::cusparse_static)
+          list(APPEND _cuda_targets CUDA::cusparse_static)
+        elseif(TARGET CUDA::cusparse)
+          list(APPEND _cuda_targets CUDA::cusparse)
+        endif()
+
+        string(JOIN ", " _hypre_cuda_targets ${_cuda_targets})
+        target_link_libraries(Hypre::Hypre INTERFACE ${_cuda_targets})
+        message(STATUS "Found Hypre with CUDA backend. The ff. CUDA targets will be added to the linker options: ${_hypre_cuda_targets}")
+
+        unset(_cuda_targets)
+        unset(_hypre_cuda_targets)
       endif()
-
-      if(TARGET CUDA::curand_static)
-        list(APPEND _cuda_targets CUDA::curand_static)
-      elseif(TARGET CUDA::curand)
-        list(APPEND _cuda_targets CUDA::curand)
-      endif()
-
-      if(TARGET CUDA::cusparse_static)
-        list(APPEND _cuda_targets CUDA::cusparse_static)
-      elseif(TARGET CUDA::cusparse)
-        list(APPEND _cuda_targets CUDA::cusparse)
-      endif()
-
-      string(JOIN ", " _hypre_cuda_targets ${_cuda_targets})
-      target_link_libraries(Hypre::Hypre INTERFACE ${_cuda_targets})
-      message(STATUS "Found Hypre with CUDA backend. The ff. CUDA targets will be added to the linker options: ${_hypre_cuda_targets}")
-
-      unset(_cuda_targets)
-      unset(_hypre_cuda_targets)
     endif()
   endif()
 
