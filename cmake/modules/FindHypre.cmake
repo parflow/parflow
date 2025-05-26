@@ -121,7 +121,7 @@ if (Hypre_FOUND AND NOT TARGET Hypre::Hypre)
   target_include_directories(Hypre::Hypre INTERFACE ${HYPRE_INCLUDE_DIRS})
   target_link_libraries(Hypre::Hypre INTERFACE ${HYPRE_LIBRARIES})
 
-  if(${PARFLOW_HAVE_CUDA} AND ${HYPRE_USING_CUDA})
+  if(DEFINED PARFLOW_HAVE_CUDA AND ${PARFLOW_HAVE_CUDA} AND ${HYPRE_USING_CUDA})
     # Hypre-CUDA requires linking to cuBLAS, cuRAND, and cuSPARSE
     # See full list of imported CUDA targets here: https://cmake.org/cmake/help/latest/module/FindCUDAToolkit.html#imported-targets
     include(FindCUDAToolkit)
