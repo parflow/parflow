@@ -33,6 +33,7 @@ setup(
             "xarray",
             "numba",
             "dask",
+            "h5py",
         ],
         "pfsol": ["imageio>=2.9.0"],
         "io": [
@@ -42,6 +43,9 @@ setup(
         ],
         "fastio": [
             "numba",
+        ],
+        "pdi": [
+            "h5py",
         ],
     },
     entry_points={
