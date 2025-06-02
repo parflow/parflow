@@ -6,6 +6,8 @@ import re
 from pystencilssfg import SourceFileGenerator
 from pystencilssfg.lang.gpu import cuda
 
+from pystencils.types.quick import SInt
+
 # set up kernel config
 def get_kernel_cfg(
         sfg: SourceFileGenerator,
@@ -57,7 +59,7 @@ def create_kernel_func(
             match = pattern.findall(param.name)
 
             if match:
-                stride = sfg.var(f"_stride_{match[0]}_0", "int64")
+                stride = sfg.var(f"_stride_{match[0]}_0", SInt(64, const=True))
                 params += [stride]
                 missing_strides += [stride]
             params += [param]
