@@ -32,6 +32,10 @@
 //#include "math.h"
 #include "float.h"
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+#include "pystencils_nonlinear_eval.h"
+#endif
+
 /*---------------------------------------------------------------------
  * Define module structures
  *---------------------------------------------------------------------*/
@@ -306,27 +310,77 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
     vol = dx * dy * dz;
 
-    dp = SubvectorData(d_sub);
-    odp = SubvectorData(od_sub);
-    sp = SubvectorData(s_sub);
-    pp = SubvectorData(p_sub);
-    opp = SubvectorData(op_sub);
-    osp = SubvectorData(os_sub);
-    pop = SubvectorData(po_sub);
-    fp = SubvectorData(f_sub);
+#ifdef PARFLOW_HAVE_PYSTENCILS
+      if (r == 0 && GrGeomSolidInteriorBoxes(gr_domain)) {
+          int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;
+          int *PV_visiting = NULL;
+          PF_UNUSED(PV_visiting);
+          BoxArray *boxes = GrGeomSolidInteriorBoxes(gr_domain);
+          for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {
+              Box box = BoxArrayGetBox(boxes, PV_box);
+              /* find octree and region intersection */
+              PV_ixl = pfmax(ix, box.lo[0]);
+              PV_iyl = pfmax(iy, box.lo[1]);
+              PV_izl = pfmax(iz, box.lo[2]);
+              PV_ixu = pfmin((ix + nx - 1), box.up[0]);
+              PV_iyu = pfmin((iy + ny - 1), box.up[1]);
+              PV_izu = pfmin((iz + nz - 1), box.up[2]);
 
-    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-    {
-      int ip = SubvectorEltIndex(f_sub, i, j, k);
-      int ipo = SubvectorEltIndex(po_sub, i, j, k);
+              dp = SubvectorElt(d_sub, PV_ixl, PV_iyl, PV_izl);
+              odp = SubvectorElt(od_sub, PV_ixl, PV_iyl, PV_izl);
+              sp = SubvectorElt(s_sub, PV_ixl, PV_iyl, PV_izl);
+              pp = SubvectorElt(p_sub, PV_ixl, PV_iyl, PV_izl);
+              opp = SubvectorElt(op_sub, PV_ixl, PV_iyl, PV_izl);
+              osp = SubvectorElt(os_sub, PV_ixl, PV_iyl, PV_izl);
+              pop = SubvectorElt(po_sub, PV_ixl, PV_iyl, PV_izl);
+              fp = SubvectorElt(f_sub, PV_ixl, PV_iyl, PV_izl);
 
-      /*  del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
-       *  del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
-      double del_x_slope = 1.0;
-      double del_y_slope = 1.0;
+              const int nx_f = SubvectorNX(f_sub);
+              const int ny_f = SubvectorNY(f_sub);
+              const int nz_f = SubvectorNZ(f_sub);
 
-      fp[ip] = (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol * del_x_slope * del_y_slope * z_mult_dat[ip];
-    });
+              const int nx_po = SubvectorNX(po_sub);
+              const int ny_po = SubvectorNY(po_sub);
+              const int nz_po = SubvectorNZ(po_sub);
+
+              PyCodegen_Flux_Base(dp, fp, odp, osp, pop, sp, z_mult_dat,
+                                  PV_ixu - PV_ixl + 1, PV_iyu - PV_iyl + 1, PV_izu - PV_izl + 1,
+                                  1, nx_f, nx_f * ny_f,
+                                  1, nx_f, nx_f * ny_f,
+                                  1, nx_f, nx_f * ny_f,
+                                  1, nx_f, nx_f * ny_f,
+                                  1, nx_po, nx_po * ny_po,
+                                  1, nx_f, nx_f * ny_f,
+                                  1, nx_f, nx_f * ny_f,
+                                  vol
+                                  );
+          }
+      } else {
+          PARFLOW_ERROR("Pystencils support for base flux computation not available with mesh refinement");
+      }
+#else
+      dp = SubvectorData(d_sub);
+      odp = SubvectorData(od_sub);
+      sp = SubvectorData(s_sub);
+      pp = SubvectorData(p_sub);
+      opp = SubvectorData(op_sub);
+      osp = SubvectorData(os_sub);
+      pop = SubvectorData(po_sub);
+      fp = SubvectorData(f_sub);
+
+      GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+      {
+        int ip = SubvectorEltIndex(f_sub, i, j, k);
+        int ipo = SubvectorEltIndex(po_sub, i, j, k);
+
+        /*  del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
+         *  del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
+        double del_x_slope = 1.0;
+        double del_y_slope = 1.0;
+
+        fp[ip] = (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol * del_x_slope * del_y_slope * z_mult_dat[ip];
+      });
+#endif
   }
 
   /*@ Add in contributions from compressible storage */

@@ -268,8 +268,10 @@ if( ${PARFLOW_BUILD_WITH_CPP} )
 endif()
 
 if(${PARFLOW_HAVE_PYSTENCILS})
-  target_link_libraries(pfsimulator VectorUtilitiesPystencils)
-  target_include_directories(pfsimulator PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../third_party/pystencils/VectorUtilitiesPystencils")
+  foreach (tgt VectorUtilitiesPystencils NonlinearEvalPystencils)
+    target_link_libraries(pfsimulator ${tgt})
+    target_include_directories(pfsimulator PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../third_party/pystencils/${tgt}")
+  endforeach ()
 endif(${PARFLOW_HAVE_PYSTENCILS})
 
 target_link_libraries(pfsimulator pfkinsol amps cjson ${PARFLOW_ETRACE_LIBRARY})

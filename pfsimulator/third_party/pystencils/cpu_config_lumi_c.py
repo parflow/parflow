@@ -13,6 +13,6 @@ def project_info():
         "default_dtype": "float64",
         "use_cpu": True,
         "use_cuda": False,
-        "use_openmp": True,
+        "use_openmp": False,
         "target": ps.Target.X86_AVX,
     }
