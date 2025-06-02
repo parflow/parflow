@@ -427,6 +427,54 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
     vol = dx * dy * dz;
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+      if (r == 0 && GrGeomSolidInteriorBoxes(gr_domain)) {
+          int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;
+          int *PV_visiting = NULL;
+          PF_UNUSED(PV_visiting);
+          BoxArray *boxes = GrGeomSolidInteriorBoxes(gr_domain);
+          for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {
+              Box box = BoxArrayGetBox(boxes, PV_box);
+              /* find octree and region intersection */
+              PV_ixl = pfmax(ix, box.lo[0]);
+              PV_iyl = pfmax(iy, box.lo[1]);
+              PV_izl = pfmax(iz, box.lo[2]);
+              PV_ixu = pfmin((ix + nx - 1), box.up[0]);
+              PV_iyu = pfmin((iy + ny - 1), box.up[1]);
+              PV_izu = pfmin((iz + nz - 1), box.up[2]);
+
+              dp = SubvectorElt(d_sub, PV_ixl, PV_iyl, PV_izl);
+              odp = SubvectorElt(od_sub, PV_ixl, PV_iyl, PV_izl);
+              sp = SubvectorElt(s_sub, PV_ixl, PV_iyl, PV_izl);
+              ss = SubvectorElt(ss_sub, PV_ixl, PV_iyl, PV_izl);
+              pp = SubvectorElt(p_sub, PV_ixl, PV_iyl, PV_izl);
+              opp = SubvectorElt(op_sub, PV_ixl, PV_iyl, PV_izl);
+              osp = SubvectorElt(os_sub, PV_ixl, PV_iyl, PV_izl);
+              pop = SubvectorElt(po_sub, PV_ixl, PV_iyl, PV_izl);
+              fp = SubvectorElt(f_sub, PV_ixl, PV_iyl, PV_izl);
+
+              const int nx_f = SubvectorNX(f_sub);
+              const int ny_f = SubvectorNY(f_sub);
+              const int nz_f = SubvectorNZ(f_sub);
+
+              PyCodegen_Flux_AddCompressibleStorage(dp, fp, odp, opp, osp, pp, sp, ss, z_mult_dat,
+                                                    PV_ixu - PV_ixl + 1, PV_iyu - PV_iyl + 1, PV_izu - PV_izl + 1,
+                                                    1, nx_f, nx_f * ny_f,
+                                                    1, nx_f, nx_f * ny_f,
+                                                    1, nx_f, nx_f * ny_f,
+                                                    1, nx_f, nx_f * ny_f,
+                                                    1, nx_f, nx_f * ny_f,
+                                                    1, nx_f, nx_f * ny_f,
+                                                    1, nx_f, nx_f * ny_f,
+                                                    1, nx_f, nx_f * ny_f,
+                                                    1, nx_f, nx_f * ny_f,
+                                                    vol
+              );
+          }
+      } else {
+          PARFLOW_ERROR("Pystencils support for base flux computation not available with mesh refinement");
+      }
+#else
     ss = SubvectorData(ss_sub);
 
     dp = SubvectorData(d_sub);
@@ -448,6 +496,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
       fp[ip] += ss[ip] * vol * del_x_slope * del_y_slope * z_mult_dat[ip] * (pp[ip] * sp[ip] * dp[ip] - opp[ip] * osp[ip] * odp[ip]);
     });
+#endif
   }
 
   /* Add in contributions from source terms - user specified sources and

@@ -18,8 +18,8 @@ with SourceFileGenerator() as sfg:
 
     # fields
 
-    z_mult_dat, dp, odp, sp, pp, opp, osp, pop, fp = ps.fields(
-        f"z_mult_dat, dp, odp, sp, pp, opp, osp, pop, fp: {default_dtype}[3D]",
+    z_mult_dat, dp, odp, sp, pp, opp, osp, pop, fp, ss = ps.fields(
+        f"z_mult_dat, dp, odp, sp, pp, opp, osp, pop, fp, ss: {default_dtype}[3D]",
         layout="fzyx"
     )
 
@@ -35,3 +35,17 @@ with SourceFileGenerator() as sfg:
                                 pop.center() * vol * del_x_slope * del_y_slope * z_mult_dat.center()
                        ),
                        "Flux_Base")
+
+    # flux add compressible storage
+    # fp[ip] += ss[ip] * vol * del_x_slope * del_y_slope * z_mult_dat[ip] * (pp[ip] * sp[ip] * dp[ip] - opp[ip] * osp[ip] * odp[ip])
+
+    create_kernel_func(sfg,
+                       ps.Assignment(
+                           fp.center(),
+                           fp.center() + (
+                                   ss.center() * vol * del_x_slope * del_y_slope * z_mult_dat.center() *
+                                       (pp.center() * sp.center() * dp.center() - opp.center() * osp.center() * odp.center())
+                           )
+                       ),
+                       "Flux_AddCompressibleStorage")
+
