@@ -9,7 +9,7 @@ with SourceFileGenerator() as sfg:
 
     # symbols
 
-    vol = sp.symbols("vol")
+    vol, dt = sp.symbols("vol, dt")
 
     # constants
 
@@ -18,14 +18,14 @@ with SourceFileGenerator() as sfg:
 
     # fields
 
-    z_mult_dat, dp, odp, sp, pp, opp, osp, pop, fp, ss = ps.fields(
-        f"z_mult_dat, dp, odp, sp, pp, opp, osp, pop, fp, ss: {default_dtype}[3D]",
+    z_mult_dat, dp, odp, sp, pp, opp, osp, pop, fp, ss, et = ps.fields(
+        f"z_mult_dat, dp, odp, sp, pp, opp, osp, pop, fp, ss, et: {default_dtype}[3D]",
         layout="fzyx"
     )
 
     # kernels
 
-    # flux base
+    # flux: base
     # fp[ip] = (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol * del_x_slope * del_y_slope * z_mult_dat[ip]
 
     create_kernel_func(sfg,
@@ -36,7 +36,7 @@ with SourceFileGenerator() as sfg:
                        ),
                        "Flux_Base")
 
-    # flux add compressible storage
+    # flux: add compressible storage
     # fp[ip] += ss[ip] * vol * del_x_slope * del_y_slope * z_mult_dat[ip] * (pp[ip] * sp[ip] * dp[ip] - opp[ip] * osp[ip] * odp[ip])
 
     create_kernel_func(sfg,
@@ -48,4 +48,16 @@ with SourceFileGenerator() as sfg:
                            )
                        ),
                        "Flux_AddCompressibleStorage")
+
+    # flux: add source terms
+    # fp[ip] -= vol * del_x_slope * del_y_slope * z_mult_dat[ip] * dt * (sp[ip] + et[ip])
+
+    create_kernel_func(sfg,
+                       ps.Assignment(
+                           fp.center(),
+                           fp.center() - (
+                                   vol * del_x_slope * del_y_slope * z_mult_dat.center() * dt * (sp.center() + et.center())
+                           )
+                       ),
+                       "Flux_AddSourceTerms")
 
