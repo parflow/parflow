@@ -745,6 +745,8 @@ double PFVDotProd(
                   Vector *x,
                   Vector *y)
 {
+  BeginTiming(VDotProduct);
+
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -820,6 +822,7 @@ double PFVDotProd(
   amps_FreeInvoice(result_invoice);
 
   IncFLOPCount(2 * VectorSize(x));
+  EndTiming(VDotProduct);
 
   return(sum);
 }

@@ -311,6 +311,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     vol = dx * dy * dz;
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
+      BeginTiming(FluxBase);
+
       if (r == 0 && GrGeomSolidInteriorBoxes(gr_domain)) {
           int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;
           int *PV_visiting = NULL;
@@ -359,7 +361,11 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       } else {
           PARFLOW_ERROR("Pystencils support for base flux computation not available with mesh refinement");
       }
+
+      EndTiming(FluxBase);
 #else
+      BeginTiming(FluxBase);
+
       dp = SubvectorData(d_sub);
       odp = SubvectorData(od_sub);
       sp = SubvectorData(s_sub);
@@ -381,6 +387,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
         fp[ip] = (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol * del_x_slope * del_y_slope * z_mult_dat[ip];
       });
+
+      EndTiming(FluxBase);
 #endif
   }
 
@@ -429,6 +437,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     vol = dx * dy * dz;
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
+      BeginTiming(FluxCompressibleStorage);
       if (r == 0 && GrGeomSolidInteriorBoxes(gr_domain)) {
           int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;
           int *PV_visiting = NULL;
@@ -474,9 +483,12 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
               );
           }
       } else {
-          PARFLOW_ERROR("Pystencils support for base flux computation not available with mesh refinement");
+          PARFLOW_ERROR("Pystencils support for compressible storage"
+                        "flux computation not available with mesh refinement");
       }
+      EndTiming(FluxCompressibleStorage);
 #else
+    BeginTiming(FluxCompressibleStorage);
     ss = SubvectorData(ss_sub);
 
     dp = SubvectorData(d_sub);
@@ -498,6 +510,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
       fp[ip] += ss[ip] * vol * del_x_slope * del_y_slope * z_mult_dat[ip] * (pp[ip] * sp[ip] * dp[ip] - opp[ip] * osp[ip] * odp[ip]);
     });
+    EndTiming(FluxCompressibleStorage);
 #endif
   }
 
@@ -533,6 +546,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     vol = dx * dy * dz;
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
+      BeginTiming(FluxSourceTerms);
       if (r == 0 && GrGeomSolidInteriorBoxes(gr_domain)) {
           int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;
           int *PV_visiting = NULL;
@@ -568,9 +582,11 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
               );
           }
       } else {
-          PARFLOW_ERROR("Pystencils support for base flux computation not available with mesh refinement");
+          PARFLOW_ERROR("Pystencils support for flux source terms computation not available with mesh refinement");
       }
+      EndTiming(FluxSourceTerms);
 #else
+    BeginTiming(FluxSourceTerms);
 
     sp = SubvectorData(s_sub);
     fp = SubvectorData(f_sub);
@@ -607,6 +623,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
       fp[ip] -= vol * del_x_slope * del_y_slope * z_mult_dat[ip] * dt * (sp[ip] + et[ip]);
     });
+
+    EndTiming(FluxSourceTerms);
 #endif
   }
 
