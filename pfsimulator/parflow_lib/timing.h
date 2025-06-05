@@ -50,8 +50,12 @@
 #define PFSOLReadTimingIndex  8
 #define ClusteringTimingIndex 9
 #define NetcdfTimingIndex 10
+#define FluxBase 11
+#define FluxCompressibleStorage 12
+#define FluxSourceTerms 13
+#define VDotProduct 14
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  11
+#define VectorUpdateTimingIndex  15
 #endif
 
 

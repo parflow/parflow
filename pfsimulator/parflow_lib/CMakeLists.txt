@@ -168,9 +168,9 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     region.cpp
   )
 
-if(${PARFLOW_HAVE_KOKKOS})
-  list(APPEND SRC_FILES_ARCH_TYPE_0 pf_kokkos.cpp)
-endif(${PARFLOW_HAVE_KOKKOS})
+  if(${PARFLOW_HAVE_KOKKOS})
+    list(APPEND SRC_FILES_ARCH_TYPE_0 pf_kokkos.cpp)
+  endif(${PARFLOW_HAVE_KOKKOS})
 
   #  PF_COMP_UNIT_TYPE determines the behavior of the accelerated compilation unit
 	#  ------------------------------------------------------------
@@ -220,7 +220,7 @@ endif(${PARFLOW_HAVE_KOKKOS})
 
   if( ${PARFLOW_HAVE_UMPIRE} )
     target_link_libraries(pfsimulator umpire)
-  endif( ${PARFLOW_HAVE_UMPIRE} )  
+  endif( ${PARFLOW_HAVE_UMPIRE} )
 
 else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) )
 
@@ -257,6 +257,7 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}
     vector.c
     vector_utilities.c
   )
+
   add_library(pfsimulator ${SRC_FILES_ARCH} ${SRC_FILES_CONST})
 
 endif( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) )
@@ -265,6 +266,11 @@ if( ${PARFLOW_BUILD_WITH_CPP} )
   set_source_files_properties(${SRC_FILES_ARCH} ${SRC_FILES_CONST}
     PROPERTIES LANGUAGE CXX)
 endif()
+
+if(${PARFLOW_HAVE_PYSTENCILS})
+  target_link_libraries(pfsimulator PystencilsGeneratedKernels)
+  target_include_directories(pfsimulator PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../third_party/pystencils/generated_kernels")
+endif(${PARFLOW_HAVE_PYSTENCILS})
 
 target_link_libraries(pfsimulator pfkinsol amps cjson ${PARFLOW_ETRACE_LIBRARY})
 target_include_directories(pfsimulator PUBLIC "../third_party/cjson")
