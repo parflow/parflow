@@ -745,8 +745,6 @@ double PFVDotProd(
                   Vector *x,
                   Vector *y)
 {
-  BeginTiming(VDotProduct);
-
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -792,6 +790,7 @@ double PFVDotProd(
     xp = SubvectorElt(x_sub, ix, iy, iz);
     yp = SubvectorElt(y_sub, ix, iy, iz);
 
+    BeginTiming(VDotProduct);
 #ifdef PARFLOW_HAVE_PYSTENCILS
     double* sum_writeback_ptr; // TODO: move (de-)allocation
     sum_writeback_ptr = ctalloc(double, 1);
@@ -814,6 +813,7 @@ double PFVDotProd(
     {
       ReduceSum(sum, xp[i_x] * yp[i_y]);
     });
+    EndTiming(VDotProduct);
 #endif
   }
 
@@ -822,7 +822,6 @@ double PFVDotProd(
   amps_FreeInvoice(result_invoice);
 
   IncFLOPCount(2 * VectorSize(x));
-  EndTiming(VDotProduct);
 
   return(sum);
 }
