@@ -12,17 +12,11 @@ endif ()
 
 # run source file generator
 
-set ( PystencilsTargets VectorUtilitiesPystencils NonlinearEvalPystencils )
-set ( PystencilsSources pystencils_vector_utilities.py pystencils_nonlinear_eval.py )
+add_library ( PystencilsGeneratedKernels )
+pystencilssfg_generate_target_sources ( PystencilsGeneratedKernels
+        SCRIPTS pystencils_vector_utilities.py pystencils_nonlinear_eval.py
+        OUTPUT_DIRECTORY generated_kernels
+)
 
-foreach(tgt src IN ZIP_LISTS PystencilsTargets PystencilsSources)
-
-        add_library ( ${tgt} )
-        pystencilssfg_generate_target_sources ( ${tgt}
-                SCRIPTS ${src}
-                OUTPUT_DIRECTORY ${tgt}
-        )
-
-        # TODO: only do on-demand
-        target_compile_options ( ${tgt} PRIVATE -mavx )
-endforeach ()
+# TODO: only do on-demand
+target_compile_options ( PystencilsGeneratedKernels PRIVATE -mavx )
