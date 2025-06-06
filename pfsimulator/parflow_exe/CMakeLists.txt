@@ -15,9 +15,7 @@ if( ${PARFLOW_HAVE_ETRACE} )
 endif( ${PARFLOW_HAVE_ETRACE} )
 
 if( ${PARFLOW_HAVE_RMM} )
-  target_link_libraries(parflow rmm)
-  target_include_directories(parflow PRIVATE ${RMM_INCLUDE})
-  target_compile_definitions(parflow PRIVATE PARFLOW_HAVE_RMM)
+  target_link_libraries(parflow rmm::rmm)
 endif( ${PARFLOW_HAVE_RMM} )
 
 if( ${PARFLOW_HAVE_UMPIRE} )
