@@ -31,11 +31,11 @@ extern "C" {
     torch::Tensor slope_y = torch::from_blob(slopey_dat, {1, ny, nx}, torch::kDouble).clone();
     statics_map["slope_y"] = slope_y;
     torch::Tensor perm_x = torch::from_blob(permx_dat, {nz, ny, nx}, torch::kDouble).clone();
-    statics_map["permeability_x"] = perm_x;
+    statics_map["perm_x"] = perm_x;
     torch::Tensor perm_y = torch::from_blob(permy_dat, {nz, ny, nx}, torch::kDouble).clone();
-    statics_map["permeability_y"] = perm_y;
+    statics_map["perm_y"] = perm_y;
     torch::Tensor perm_z = torch::from_blob(permz_dat, {nz, ny, nx}, torch::kDouble).clone();
-    statics_map["permeability_z"] = perm_z;
+    statics_map["perm_z"] = perm_z;
     torch::Tensor sres = torch::from_blob(sres_dat, {nz, ny, nx}, torch::kDouble).clone();
     statics_map["sres"] = sres;
     torch::Tensor ssat = torch::from_blob(ssat_dat, {nz, ny, nx}, torch::kDouble).clone();
@@ -45,9 +45,9 @@ extern "C" {
     torch::Tensor specific_storage = torch::from_blob(specific_storage_dat, {nz, ny, nx}, torch::kDouble).clone();
     statics_map["specific_storage"] = specific_storage;
     torch::Tensor alpha = torch::from_blob(alpha_dat, {nz, ny, nx}, torch::kDouble).clone();
-    statics_map["vg_alpha"] = alpha;
+    statics_map["alpha"] = alpha;
     torch::Tensor n = torch::from_blob(n_dat, {nz, ny, nx}, torch::kDouble).clone();
-    statics_map["vg_n"] = n;
+    statics_map["n"] = n;
 
     statics = model.run_method("get_parflow_statics", statics_map).toTensor();
   }
