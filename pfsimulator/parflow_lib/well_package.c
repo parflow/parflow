@@ -137,6 +137,10 @@ void         WellPackage(
   double x_lower, x_upper, y_lower, y_upper,
          z_lower, z_upper;
 
+  //  Setting these as a placeholder because we don't use them but they are breaking build
+  z_lower = 0.0;
+  z_upper = 0.0;
+
   Grid* grid = VectorGrid(problem_data->rsz);
 
   subgrid_volume = 0;
