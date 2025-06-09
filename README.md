@@ -1,6 +1,7 @@
 # ParFlow
 
-![ParFlow CI Test](https://github.com/parflow/parflow/workflows/ParFlow%20CI%20Test/badge.svg)
+![ParFlow Linux CI Test](https://github.com/parflow/parflow/actions/workflows/linux.yml/badge.svg)
+![ParFlow MacOS CI Test](https://github.com/parflow/parflow/actions/workflows/macos.yml/badge.svg)
 
 ParFlow is an open-source, modular, parallel watershed flow model. It
 includes fully-integrated overland flow, the ability to simulate
@@ -95,7 +96,7 @@ For bash:
 
 ```shell
    export PARFLOW_DIR=/home/snoopy/parflow
-```   
+```
 
 For csh and tcsh:
 
@@ -115,23 +116,13 @@ and extract the release.  Here we assume you are building in new
 subdirectory in your home directory:
 
 ```shell
-   mkdir ~/parflow 
-   cd ~/parflow 
-   tar -xvf ../parflow.tar.gz
+   mkdir ~/parflow
+   cd ~/parflow
+   tar -xzvf ../parflow-<version>.tar.gz
 ```
 
 Note the ParFlow tar file will be have a different name based on the
 version number.
-
-If you are not using GNU tar or have a very old version GNU tar you
-will need to uncompress the file first:
-
-```shell
-   mkdir ~/parflow 
-   cd ~/parflow 
-   gunzip ../parflow.tar.gz
-   tar -xvf ../parflow.tar
-```
 
 ### Step 3: Running CMake to configure ParFlow
 
@@ -149,18 +140,20 @@ You can control build options for ParFlow using the ccmake GUI.
 ```shell
    mkdir build
    cd build
-   ccmake ../parflow 
+   ccmake ../parflow-<version>
 ```
-At a minimum, you will want to set the CMAKE_INSTALL_PREFIX value to the same thing
-as PARFLOW_DIR was set to above.  Other variables should be set as desired.
 
-After setting a variable 'c' will configure `ParFlow.  When you are
-completely done setting configuration options, use 'g' to generate the
+First press `c` to generate an initial configuration.  Hereafter, at a minimum,
+you will want to set the `CMAKE_INSTALL_PREFIX` value to the same thing
+as `PARFLOW_DIR` was set to above.  Other variables should be set as desired.
+
+After setting a variable `c` will configure ParFlow.  When you are
+completely done setting configuration options, use `g` to generate the
 configuration and exit ccmake.
 
 If you are new to CMake, the creators of CMake provide some additional ccmake usage notes here:
 
-https://cmake.org/runningcmake/
+https://cmake.org/resources/
 
 #### Building with the cmake command line
 
@@ -171,16 +164,16 @@ using MPI libraries.  CLM is being enabled.
 ```shell
    mkdir build
    cd build
-   cmake ../parflow \
-   	 -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR} \
-   	 -DPARFLOW_HAVE_CLM=ON
+   cmake ../parflow-<version> \
+     -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR} \
+     -DPARFLOW_HAVE_CLM=ON
 ```
 
 If TCL is not installed in the standard locations (/usr or /usr/local)
 you need to specify the path to the tclsh location:
 
 ```shell
-	-DTCL_TCLSH=${PARFLOW_TCL_DIR}/bin/tclsh8.6
+    -DTCL_TCLSH=${PARFLOW_TCL_DIR}/bin/tclsh8.6
 ```
 
 Building a parallel version of ParFlow requires the communications
@@ -191,9 +184,9 @@ is a minimal example of an MPI build with CLM:
    mkdir build
    cd build
    cmake ../parflow \
-      	 -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR} \
-   	 -DPARFLOW_HAVE_CLM=ON \
-	 -DPARFLOW_AMPS_LAYER=mpi1
+     -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR} \
+     -DPARFLOW_HAVE_CLM=ON \
+     -DPARFLOW_AMPS_LAYER=mpi1
 ```
 
 Here is a more complex example where location of various external
@@ -202,15 +195,15 @@ packages are being specified and some features are being enabled:
 ```shell
    mkdir build
    cd build
-   cmake ../parflow \
-        -DPARFLOW_AMPS_LAYER=mpi1 \
-	-DHYPRE_ROOT=${PARFLOW_HYPRE_DIR} \
-	-DHDF5_ROOT=${PARFLOW_HDF5_DIR} \
-	-DSILO_ROOT=${PARFLOW_SILO_DIR} \
-	-DCMAKE_BUILD_TYPE=Debug \
-	-DPARFLOW_ENABLE_TIMING=TRUE \
-	-DPARFLOW_HAVE_CLM=ON \
-	-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+   cmake ../parflow-<version> \
+     -DPARFLOW_AMPS_LAYER=mpi1 \
+     -DHYPRE_ROOT=${PARFLOW_HYPRE_DIR} \
+     -DHDF5_ROOT=${PARFLOW_HDF5_DIR} \
+     -DSILO_ROOT=${PARFLOW_SILO_DIR} \
+     -DCMAKE_BUILD_TYPE=Debug \
+     -DPARFLOW_ENABLE_TIMING=TRUE \
+     -DPARFLOW_HAVE_CLM=ON \
+     -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR}
 ```
 
 ### Step 4: Building and installing
@@ -220,7 +213,7 @@ easy:
 
 ```shell
    cd build
-   make 
+   make
    make install
 ```
 
@@ -229,11 +222,11 @@ easy:
 If all went well a sample ParFlow problem can be run using:
 
 ```shell
-   cd parflow/test
+   cd parflow-<version>/test/tcl
    tclsh default_single.tcl 1 1 1
 ```
 
-Note that the environment variable `PAFLOW_DIR` must be set for this
+Note that the environment variable `PARFLOW_DIR` must be set for this
 to work and it assumes tclsh is in your path.  Make sure to use the
 same TCL shell as was used in the cmake configure.
 
@@ -251,7 +244,7 @@ Manual](https://parflow.readthedocs.io/en/latest/index.html), a PDF
 version is available at [Parflow Users
 Manual PDF](https://parflow.readthedocs.io/_/downloads/en/latest/pdf/).
 
-#### Generating the user manaul in HTML
+#### Generating the user manual in HTML
 
 An HTML version of the user manual for Parflow may be built using:
 
@@ -262,7 +255,7 @@ pfpython -m pip install -r requirements.txt
 make html
 ```
 
-The main HTML page created at _build/html/index.html.   Open this using 
+The main HTML page created at _build/html/index.html.   Open this using
 a browser.  On MacOS:
 
 ```shell
@@ -275,7 +268,7 @@ or a browser if on Linux:
 firefox _build/html/index.html
 ```
 
-#### Generating the user manaul in PDF
+#### Generating the user manual in PDF
 
 An HTML version of the user manual for Parflow may be built using:
 
@@ -291,11 +284,11 @@ to old LaTex installs.  We are currently investigating.
 
 ### Code documentation
 
-Parflow is moving to using Doxygen for code documenation.  The documentation is currently very sparse.
+Parflow is moving to using Doxygen for code documentation.  The documentation is currently very sparse.
 
 Adding the -DPARFLOW_ENABLE_DOXYGEN=TRUE option to the CMake configure
 will enable building of the code documentation.  After CMake has been
-run the Doxygen code documenation is built with:
+run the Doxygen code documentation is built with:
 
 ```shell
    cd build
@@ -319,11 +312,11 @@ HTML pages are generated in the build/docs/doxygen/html directory.
     cd ./build-docker && make ParFlowKeyDoc
 ```
 
-On MacOS the key documenation may be viewed with `open` or use a browser to open the index.html file:
+On MacOS the key documentation may be viewed with `open` or use a browser to open the index.html file:
 
 ```
     open ./build-docker/docs/user_manual/build-site/index.html
-```	
+```
 
 ## Configure options
 
@@ -365,10 +358,10 @@ submission system used.  By default CMake will attempt to determine an
 appropriate tool; a process that does not always yield the correct result.
 
 There are several ways to modify the CMake guess on how applications
-should be run.  At configure time you may overwride the MPI launcher
+should be run.  At configure time you may override the MPI launcher
 using:
 
-```shell 
+```shell
    -DMPIEXEC="<launcher-name>"
    -DMPIEXEC_NUMPROC_FLAG="<flag used to set number of tasks>"
 ```
@@ -386,7 +379,7 @@ performance:
    export PARFLOW_MPIEXEC_EXTRA_FLAGS="--mca mpi_yield_when_idle 1 --oversubscribe"
 ```
 
-Last the TCL script can explicity set the command to invoke for
+Last the TCL script can explicitly set the command to invoke for
 running ParFlow.  This is done by setting the Process.Command key in
 the input database.  For example to use the mpiexec command and
 control the cpu set used the following command string can be used:
@@ -408,7 +401,7 @@ modified to use the custom command string:
 ```
 ## Building simulator and tools support separately
 
-This section is for advanced users runing on heterogenous HPC architectures.
+This section is for advanced users running on heterogeneous HPC architectures.
 
 ParFlow is composed of two main components that maybe configured and
 built separately.  Some HPC platforms are heterogeneous with the login
@@ -482,9 +475,9 @@ For more information look into our [Docker Readme](./docker/README.md)
 
 ## Release
 
-Copyright (c) 1995-2021, Lawrence Livermore National Security LLC. 
+Copyright (c) 1995-2021, Lawrence Livermore National Security LLC.
 
-Produced at the Lawrence Livermore National Laboratory. 
+Produced at the Lawrence Livermore National Laboratory.
 
 Written by the Parflow Team (see the CONTRIBUTORS file)
 

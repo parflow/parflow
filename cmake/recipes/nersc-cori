@@ -58,7 +58,7 @@ if [[ ${PARFLOW_DIR+x} ]]
 then
    echo "Installing Parflow to $PARFLOW_DIR"
 else
-   echo "ERROR: Set PARFLOW_DIR to install directory befor running, something like:"
+   echo "ERROR: Set PARFLOW_DIR to install directory before running, something like:"
    echo "       export PARFLOW_DIR=/global/project/projectdirs/m2511/parflow/cori-3.6.0-2019-08-01"
    exit
 fi

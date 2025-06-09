@@ -98,13 +98,13 @@ int main(int argc, char *argv [])
 #ifdef HAVE_SAMRAI
     if (amps_EmbeddedInit())
     {
-      amps_Printf("Error: amps_EmbeddedInit initalization failed\n");
+      amps_Printf("Error: amps_EmbeddedInit initialization failed\n");
       exit(1);
     }
 #else
     if (amps_Init(&argc, &argv))
     {
-      amps_Printf("Error: amps_Init initalization failed\n");
+      amps_Printf("Error: amps_Init initialization failed\n");
       exit(1);
     }
 #endif
@@ -176,14 +176,14 @@ int main(int argc, char *argv [])
     /*-----------------------------------------------------------------------
      * Initialize RMM pool allocator
      *-----------------------------------------------------------------------*/
+
 #ifdef PARFLOW_HAVE_RMM
-    // RMM
-    rmmOptions_t rmmOptions;
-    rmmOptions.allocation_mode = (rmmAllocationMode_t)(PoolAllocation | CudaManagedMemory);
-    rmmOptions.initial_pool_size = 1;   // size = 0 initializes half the device memory
-    rmmOptions.enable_logging = false;
-    RMM_ERR(rmmInitialize(&rmmOptions));
-#endif // PARFLOW_HAVE_RMM
+    amps_rmmInit();
+#endif
+
+#ifdef PARFLOW_HAVE_UMPIRE
+    amps_umpireInit();
+#endif
 
     wall_clock_time = amps_Clock();
 
@@ -321,7 +321,7 @@ int main(int argc, char *argv [])
       else
       {
         TBOX_ERROR("restart_interval > 0, but key `restart_write_dirname'"
-                   << " not specifed in input file");
+                   << " not specified in input file");
       }
     }
 
@@ -493,15 +493,12 @@ int main(int argc, char *argv [])
   /*-----------------------------------------------------------------------
    * Shutdown Kokkos
    *-----------------------------------------------------------------------*/
-#ifdef PARFLOW_HAVE_KOKKOS
-  kokkosFinalize();
+#ifdef PARFLOW_HAVE_RMM
+  amps_rmmFinalize();
 #endif
 
-  /*-----------------------------------------------------------------------
-   * Shutdown RMM pool allocator
-   *-----------------------------------------------------------------------*/
-#ifdef PARFLOW_HAVE_RMM
-  RMM_ERR(rmmFinalize());
+#ifdef PARFLOW_HAVE_KOKKOS
+  kokkosFinalize();
 #endif
 
   return 0;

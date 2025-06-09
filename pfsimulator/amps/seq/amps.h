@@ -47,7 +47,10 @@
 #include <cuda_runtime.h>
 #endif
 #ifdef PARFLOW_HAVE_RMM
-#include <rmm/rmm_api.h>
+#include "amps_rmm_wrapper.h"
+#endif
+#ifdef PARFLOW_HAVE_UMPIRE
+#include "amps_umpire_wrapper.h"
 #endif
 
 #define AMPS_EXCHANGE_SPECIALIZED
@@ -463,24 +466,6 @@ static inline void amps_cuda_error(cudaError_t err, const char *file, int line)
 }
 #endif // PARFLOW_HAVE_CUDA || PARFLOW_HAVE_KOKKOS
 
-#ifdef PARFLOW_HAVE_RMM
-/**
- * @brief RMM error handling
- *
- * If error detected, print error message and exit.
- *
- * @param expr RMM error (of type rmmError_t) [IN]
- */
-#define RMM_ERRCHK(err) (amps_rmm_error(err, __FILE__, __LINE__))
-static inline void amps_rmm_error(rmmError_t err, const char *file, int line)
-{
-  if (err != RMM_SUCCESS)
-  {
-    printf("\n\n%s in %s at line %d\n", rmmGetErrorString(err), file, line);
-    exit(1);
-  }
-}
-#endif // PARFLOW_HAVE_RMM
 
 /*--------------------------------------------------------------------------
  * Define static unified memory allocation routines for devices
@@ -521,7 +506,9 @@ static inline void *_amps_talloc_device(size_t size)
   void *ptr = NULL;
 
 #ifdef PARFLOW_HAVE_RMM
-  RMM_ERRCHK(rmmAlloc(&ptr, size, 0, __FILE__, __LINE__));
+  ptr = amps_rmmAlloc(size);
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = amps_umpireAlloc(size);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosUVMAlloc(size);
 #elif defined(PARFLOW_HAVE_CUDA)
@@ -547,7 +534,9 @@ static inline void *_amps_ctalloc_device(size_t size)
   void *ptr = NULL;
 
 #ifdef PARFLOW_HAVE_RMM
-  RMM_ERRCHK(rmmAlloc(&ptr, size, 0, __FILE__, __LINE__));
+  ptr = amps_rmmAlloc(size);
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = amps_umpireAlloc(size);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosUVMAlloc(size);
 #elif defined(PARFLOW_HAVE_CUDA)
@@ -575,7 +564,9 @@ static inline void *_amps_ctalloc_device(size_t size)
 static inline void _amps_tfree_device(void *ptr)
 {
 #ifdef PARFLOW_HAVE_RMM
-  RMM_ERRCHK(rmmFree(ptr, 0, __FILE__, __LINE__));
+  amps_rmmFree(ptr);
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  amps_umpireFree(ptr);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   kokkosUVMFree(ptr);
 #elif defined(PARFLOW_HAVE_CUDA)

@@ -303,7 +303,7 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
 /**
  * Free the module.
  *
- * Similiar to a C++ destructor.
+ * Similar to a C++ destructor.
  *
  * @param pf_module The module instance
  */
@@ -321,7 +321,7 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * the user input.  The method should write any vectors or other state
  * out for the current timestep.
  *
- * @param type Type of the method to invoke for outputing
+ * @param type Type of the method to invoke for outputting
  * @param pf_module The module instance
  * @param args Arguments for the output method
  */
@@ -339,7 +339,7 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * vectors or other state for the module that does not require a
  * timestamp.
  *
- * @param type Type of method to invoke for outputing
+ * @param type Type of method to invoke for outputting
  * @param pf_module The module instance
  * @param args Arguments for the output method
  */

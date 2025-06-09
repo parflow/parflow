@@ -126,7 +126,7 @@ Phase:
         [Type: string] This key specifies the type of saturation function that will be used on all specified geometries. Note that only one
         type of saturation may be used for the entire problem. However, parameters may be different for that type in different
         geometries. For instance, if the problem consists of three geometries, then VanGenuchten may be specified with
-        three different sets of parameters for the three different goemetries. However, once VanGenuchten is specified, one
+        three different sets of parameters for the three different geometries. However, once VanGenuchten is specified, one
         geometry cannot later be specified to have Data as its saturation. The possible values for this key are Constant,
         VanGenuchten, Haverkamp, Data, Polynomial and PFBFile.
       domains:

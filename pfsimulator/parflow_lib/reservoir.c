@@ -38,7 +38,7 @@
 /*****************************************************************************
 *
 * The functions in this file are for manipulating the ReservoirData structure
-*   in ProblemData and work in conjuction with the ReservoirPackage module.
+*   in ProblemData and work in conjunction with the ReservoirPackage module.
 *
 * Because of the times things are called, the New function is twinky
 * (it was basically put in to be symmetric with the New/Free paradigm

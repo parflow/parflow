@@ -540,7 +540,7 @@
 ##############################################################################
 #
 # CUDA
-# These supressions are overly version specific
+# These suppressions are overly version specific
 #
 ##############################################################################
 

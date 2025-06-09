@@ -213,11 +213,11 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
 
   if (strcmp(varName, "time") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 1;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = clmIDs[1];
     int timCLMVarID;
     int res = nc_def_var(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
@@ -235,11 +235,11 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
 
   if (strcmp(varName, "t_soil") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 4;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = clmIDs[1];
     (*myVarNCData)->dimIDs[1] = clmIDs[2];
     (*myVarNCData)->dimIDs[2] = clmIDs[3];
@@ -277,11 +277,11 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
 
   if (strcmp(varName, "eflx_lh_tot") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 3;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = clmIDs[1];
     (*myVarNCData)->dimIDs[1] = clmIDs[3];
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
@@ -317,11 +317,11 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
 
   if (strcmp(varName, "eflx_lwrad_out") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 3;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = clmIDs[1];
     (*myVarNCData)->dimIDs[1] = clmIDs[3];
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
@@ -357,11 +357,11 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
 
   if (strcmp(varName, "eflx_sh_tot") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 3;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = clmIDs[1];
     (*myVarNCData)->dimIDs[1] = clmIDs[3];
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
@@ -397,11 +397,11 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
 
   if (strcmp(varName, "eflx_soil_grnd") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 3;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = clmIDs[1];
     (*myVarNCData)->dimIDs[1] = clmIDs[3];
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
@@ -437,11 +437,11 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
 
   if (strcmp(varName, "qflx_evap_tot") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 3;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = clmIDs[1];
     (*myVarNCData)->dimIDs[1] = clmIDs[3];
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
@@ -477,11 +477,11 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
 
   if (strcmp(varName, "qflx_evap_grnd") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 3;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = clmIDs[1];
     (*myVarNCData)->dimIDs[1] = clmIDs[3];
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
@@ -517,11 +517,11 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
 
   if (strcmp(varName, "qflx_evap_soi") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 3;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = clmIDs[1];
     (*myVarNCData)->dimIDs[1] = clmIDs[3];
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
@@ -557,11 +557,11 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
 
   if (strcmp(varName, "qflx_evap_veg") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 3;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = clmIDs[1];
     (*myVarNCData)->dimIDs[1] = clmIDs[3];
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
@@ -597,11 +597,11 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
 
   if (strcmp(varName, "qflx_tran_veg") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 3;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = clmIDs[1];
     (*myVarNCData)->dimIDs[1] = clmIDs[3];
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
@@ -637,11 +637,11 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
 
   if (strcmp(varName, "qflx_infl") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 3;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = clmIDs[1];
     (*myVarNCData)->dimIDs[1] = clmIDs[3];
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
@@ -677,11 +677,11 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
 
   if (strcmp(varName, "swe_out") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 3;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = clmIDs[1];
     (*myVarNCData)->dimIDs[1] = clmIDs[3];
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
@@ -717,11 +717,11 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
 
   if (strcmp(varName, "t_grnd") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 3;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = clmIDs[1];
     (*myVarNCData)->dimIDs[1] = clmIDs[3];
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
@@ -757,11 +757,11 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
 
   if (strcmp(varName, "qflx_qirr") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 3;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = clmIDs[1];
     (*myVarNCData)->dimIDs[1] = clmIDs[3];
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
@@ -797,11 +797,11 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
 
   if (strcmp(varName, "qflx_qirr_inst") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 4;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = clmIDs[1];
     (*myVarNCData)->dimIDs[1] = clmIDs[2];
     (*myVarNCData)->dimIDs[2] = clmIDs[3];

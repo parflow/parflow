@@ -114,7 +114,7 @@ sub selectHFiles {
 }
 find( \&selectHFiles, '.' );
 for my $file (@filesToProcess) {
-    print "Workign on $file\n" if $debug > 1;
+    print "Working on $file\n" if $debug > 1;
 
     my $directory = dirname $file;
     my $filebasename = basename $file;

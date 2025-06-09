@@ -87,7 +87,7 @@ typedef struct {
 
 typedef struct {
   Subregion  **subregions;    /* Array of pointers to subregions */
-  int size;                   /* Size of subgregion array */
+  int size;                   /* Size of subregion array */
 } SubregionArray;
 
 #define SubregionArrayBlocksize 10

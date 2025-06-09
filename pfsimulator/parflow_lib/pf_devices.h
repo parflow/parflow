@@ -31,6 +31,10 @@
 #include <cuda_runtime.h>
 #include <stdbool.h>
 
+#ifdef PARFLOW_HAVE_RMM
+#include "amps_rmm_wrapper.h"
+#endif
+
 /*--------------------------------------------------------------------------
  * CUDA error handling macros
  *--------------------------------------------------------------------------*/
@@ -56,7 +60,7 @@
  *--------------------------------------------------------------------------*/
 
 /** Record an NVTX range for NSYS if accelerator present. */
-#include "nvToolsExt.h"
+#include "nvtx3/nvToolsExt.h"
 #define PUSH_NVTX_cuda(name, cid)                                                                   \
         {                                                                                           \
           const uint32_t colors_nvtx[] =                                                            \
@@ -78,23 +82,8 @@
 
 #endif // PARFLOW_HAVE_CUDA
 
-#ifdef PARFLOW_HAVE_RMM
-#include <rmm/rmm_api.h>
-/**
- * @brief RMM error handling.
- *
- * If error detected, print error message and exit.
- *
- * @param expr RMM error (of type rmmError_t) [IN]
- */
-#define RMM_ERR(expr)                                                                          \
-        {                                                                                      \
-          rmmError_t err = expr;                                                               \
-          if (err != RMM_SUCCESS) {                                                            \
-            printf("\n\n%s in %s at line %d\n", rmmGetErrorString(err), __FILE__, __LINE__);   \
-            exit(1);                                                                           \
-          }                                                                                    \
-        }
+#ifdef PARFLOW_HAVE_UMPIRE
+#include "amps_umpire_wrapper.h"
 #endif
 
 /*--------------------------------------------------------------------------
@@ -137,7 +126,9 @@ static inline void *_talloc_device(size_t size)
   void *ptr = NULL;
 
 #ifdef PARFLOW_HAVE_RMM
-  RMM_ERR(rmmAlloc(&ptr, size, 0, __FILE__, __LINE__));
+  ptr = amps_rmmAlloc(size);
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = amps_umpireAlloc(size);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosAlloc(size);
 #elif defined(PARFLOW_HAVE_CUDA)
@@ -163,7 +154,9 @@ static inline void *_ctalloc_device(size_t size)
   void *ptr = NULL;
 
 #ifdef PARFLOW_HAVE_RMM
-  RMM_ERR(rmmAlloc(&ptr, size, 0, __FILE__, __LINE__));
+  ptr = amps_rmmAlloc(size);
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = amps_umpireAlloc(size);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosAlloc(size);
 #elif defined(PARFLOW_HAVE_CUDA)
@@ -191,7 +184,9 @@ static inline void *_ctalloc_device(size_t size)
 static inline void _tfree_device(void *ptr)
 {
 #ifdef PARFLOW_HAVE_RMM
-  RMM_ERR(rmmFree(ptr, 0, __FILE__, __LINE__));
+  amps_rmmFree(ptr);
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  amps_umpireFree(ptr);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   kokkosFree(ptr);
 #elif defined(PARFLOW_HAVE_CUDA)

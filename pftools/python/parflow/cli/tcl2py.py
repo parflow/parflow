@@ -104,7 +104,7 @@ if __name__ == "__main__":
         "-o",
         default=None,
         dest="output",
-        help="Python file path to use for writting the " "converted input",
+        help="Python file path to use for writing the converted input",
     )
 
     args = parser.parse_args()

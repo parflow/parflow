@@ -43,7 +43,7 @@
 #
 #   "metaEListBox" can be called on dropdown list widgets that have already
 #   been created.  This allows you to modify the behavior of the dropdown
-#   widget during its existance.  If you want to make more specific
+#   widget during its existence.  If you want to make more specific
 #   configurations, then you will have to modify the widgets directly using
 #   the "configure" command on the objects listed below.
 #  

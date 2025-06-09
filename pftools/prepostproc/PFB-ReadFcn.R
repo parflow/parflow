@@ -59,7 +59,7 @@ print(iy)
 print(iz)
 }
 
-#read in locall nx, ny, nz of this subgrid
+#read in local nx, ny, nz of this subgrid
 nnx = readBin(to.read,integer(),endian="big")
 nny = readBin(to.read,integer(),endian="big")
 nnz = readBin(to.read,integer(),endian="big")

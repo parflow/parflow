@@ -27,7 +27,7 @@
 **********************************************************************EHEADER*/
 /* This file contains utility routines for ParFlow's Vector class.
  *
- * This file was modified from a coresponding PVODE package file to account
+ * This file was modified from a corresponding PVODE package file to account
  * for the ParFlow Vector class and AMPS message-passing system.
  *
  * Routines included:
@@ -71,6 +71,11 @@
 
 #define ZERO 0.0
 #define ONE  1.0
+
+/* Kinsol API is in C */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void PFVLinearSum(
 /* LinearSum : z = a * x + b * y              */
@@ -2077,3 +2082,7 @@ void PFVLayerCopy(
   }
   IncFLOPCount(2 * VectorSize(x));
 }
+
+#ifdef __cplusplus
+} // extern "C"
+#endif

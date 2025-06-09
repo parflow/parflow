@@ -60,7 +60,7 @@ proc XParflow::GetPFFileName {pfType operation} {
 
    #----------------------------------------------
    # Determine the file type to be loaded and set
-   # the pattern and title appropriatly.
+   # the pattern and title appropriately.
    #----------------------------------------------
 
    switch $pfType {

@@ -213,10 +213,12 @@ endif(${PARFLOW_HAVE_KOKKOS})
   endif( ${PARFLOW_HAVE_KOKKOS} )
 
   if( ${PARFLOW_HAVE_RMM} )
-    target_link_libraries(pfsimulator rmm)
-    target_include_directories(pfsimulator PRIVATE ${RMM_INCLUDE})
-    target_compile_definitions(pfsimulator PRIVATE PARFLOW_HAVE_RMM)
+    target_link_libraries(pfsimulator rmm::rmm)
   endif( ${PARFLOW_HAVE_RMM} )
+
+  if( ${PARFLOW_HAVE_UMPIRE} )
+    target_link_libraries(pfsimulator umpire)
+  endif( ${PARFLOW_HAVE_UMPIRE} )  
 
 else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) )
 
@@ -257,6 +259,11 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}
 
 endif( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) )
 
+if( ${PARFLOW_BUILD_WITH_CPP} )
+  set_source_files_properties(${SRC_FILES_ARCH} ${SRC_FILES_CONST}
+    PROPERTIES LANGUAGE CXX)
+endif()
+
 target_link_libraries(pfsimulator pfkinsol amps cjson ${PARFLOW_ETRACE_LIBRARY})
 target_include_directories(pfsimulator PUBLIC "../third_party/cjson")
 
@@ -294,7 +301,5 @@ if (${PARFLOW_HAVE_SILO})
 endif (${PARFLOW_HAVE_SILO})
 
 if (${PARFLOW_HAVE_NETCDF})
-  target_include_directories (pfsimulator PUBLIC "${netCDF_INCLUDE_DIRS}")
-  target_include_directories (pfsimulator PUBLIC "${NETCDF_INCLUDE_DIRS}")
-  target_link_libraries (pfsimulator ${NETCDF_LIBRARIES})
+  target_link_libraries (pfsimulator NetCDF::NetCDF)
 endif (${PARFLOW_HAVE_NETCDF})

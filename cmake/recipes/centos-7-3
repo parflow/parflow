@@ -8,8 +8,8 @@ sudo yum install -y openmpi openmpi-devel
 # Enable modules
 source /etc/profile.d/modules.sh
 
-# The module will be needed everytime one wants to run Openmpi.
-# Likely want to add to enviornment in shell startup script.  module
+# The module will be needed every time one wants to run Openmpi.
+# Likely want to add to environment in shell startup script.  module
 # load mpi/openmpi-x86_64
 
 # CMake in repo is old so use one from cmake.org

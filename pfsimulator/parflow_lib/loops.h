@@ -187,7 +187,7 @@
 *     SPECIAL NOTE! SPECIAL NOTE! SPECIAL NOTE! SPECIAL NOTE! SPECIAL NOTE!   *
 *                                                                             *
 *    The Cray T3D C compiler only allows 31 arguments to a macro, thus the    *
-*       standard defination of BoxLoopI4 would not compile (it has 38).       *
+*       standard definition of BoxLoopI4 would not compile (it has 38).       *
 *                                                                             *
 *   But it REALLY is what needs to be done to maintain consistency with the   *
 *   code as well as just plain being easier to understand.    At this point   *
