@@ -469,12 +469,16 @@ jobs:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          URL=https://github.com/hypre-space/hypre/archive/v2.26.0.tar.gz
+          URL=https://github.com/hypre-space/hypre/archive/v2.32.0.tar.gz
           mkdir hypre
           cd hypre
           curl -L $URL | tar --strip-components=1 -xz
           cd src
-          ./configure --prefix=$PARFLOW_DEP_DIR
+          HYPRE_CONFIG_FLAGS=""
+          if [[ "${{ matrix.config.backend }}" == "cuda" ]]; then HYPRE_CONFIG_FLAGS="$HYPRE_CONFIG_FLAGS -DHYPRE_WITH_CUDA=ON -DHYPRE_ENABLE_UNIFIED_MEMORY=ON"; fi
+          mkdir build
+          cd build
+          cmake $HYPRE_CONFIG_FLAGS -DCMAKE_INSTALL_PREFIX=$PREFIX
           make -j 2 install
         fi
 
