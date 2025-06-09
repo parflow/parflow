@@ -23,3 +23,4 @@ if(OASIS_FOUND AND NOT TARGET OASIS3MCT::OASIS3MCT)
   target_link_libraries(OASIS3MCT::OASIS3MCT INTERFACE OpenMP::OpenMP_Fortran)
   target_link_libraries(OASIS3MCT::OASIS3MCT INTERFACE ${NETCDF_Fortran_LIBRARY})
 endif()
+
