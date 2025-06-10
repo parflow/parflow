@@ -399,7 +399,7 @@ SetupRichards(PFModule * this_module)
 
   int any_file_dumped;
 
-  char filename[128];
+  char filename[PATH_MAX];
 
 #ifdef HAVE_CLM
   /* IMF: for CLM met forcings (local to SetupRichards) */
@@ -1788,7 +1788,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     evap_trans = instance_xtra->evap_trans;
   }
 
-  char filename[2048];          // IMF: 1D input file name *or* 2D/3D input file base name
+  char filename[PATH_MAX];          // IMF: 1D input file name *or* 2D/3D input file base name
 #ifdef HAVE_OAS3
   Grid *grid = (instance_xtra->grid);
   Subgrid *subgrid;

@@ -100,7 +100,7 @@ void CloseSiloFile(void *file, void *userData)
 void     WriteSiloPMPIOInit(char *file_prefix)
 {
 #if defined(HAVE_SILO) && defined(HAVE_MPI)
-  char filename[2048];
+  char filename[PATH_MAX];
 
   int p = amps_Rank(amps_CommWorld);
   int P = amps_Size(amps_CommWorld);
@@ -208,8 +208,8 @@ void     WriteSiloPMPIO(char *  file_prefix,
   int p, P;
 
   char file_extn[7] = "silo";
-  char filename[512];
-  char filename2[512];
+  char filename[PATH_MAX];
+  char filename2[PATH_MAX];
   char nsName[256];
   int i, j, k, ai;
   double         *data;

@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
   char *output_filename;
   /* end of input */
 
-  char filename[1024];
+  char filename[PATH_MAX];
 
   FILE *infile;
 

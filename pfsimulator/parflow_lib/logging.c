@@ -49,7 +49,7 @@ void   NewLogging()
 
   if (!amps_Rank(amps_CommWorld))
   {
-    char filename[2048];
+    char filename[PATH_MAX];
     sprintf(filename, "%s.log", GlobalsOutFileName);
 
     if ((log_file = fopen(filename, "w")) == NULL)
@@ -86,7 +86,7 @@ FILE *OpenLogFile(char *module_name)
 {
   FILE *log_file;
 
-  char filename[2048];
+  char filename[PATH_MAX];
 
   sprintf(filename, "%s.log", GlobalsOutFileName);
 

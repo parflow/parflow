@@ -135,7 +135,7 @@ void     WritePFBinary(
   long size;
 
   char file_extn[7] = "pfb";
-  char filename[255];
+  char filename[PATH_MAX];
   amps_File file;
 
   BeginTiming(PFBTimingIndex);
@@ -326,7 +326,7 @@ void     WritePFSBinary(
   int p, P;
 
   char file_extn[7] = "pfsb";
-  char filename[255];
+  char filename[PATH_MAX];
   amps_File file;
 
   long size;
