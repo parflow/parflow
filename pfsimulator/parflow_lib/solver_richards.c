@@ -384,7 +384,7 @@ SetupRichards(PFModule * this_module)
   double stop_time = ProblemStopTime(problem);
   int start_count = ProblemStartCount(problem);
 
-  char file_prefix[2048], file_type[2048], file_postfix[2048];
+  char file_prefix[PATH_MAX], file_type[2048], file_postfix[2048];
   char nc_postfix[2048];
 
   int take_more_time_steps;
@@ -1882,7 +1882,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   VectorUpdateCommHandle *handle;
 
   char dt_info;
-  char file_prefix[2048], file_type[2048], file_postfix[2048];
+  char file_prefix[PATH_MAX], file_type[2048], file_postfix[2048];
   char nc_postfix[2048];
 
   int first_tstep = 1;
