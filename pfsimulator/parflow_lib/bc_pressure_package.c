@@ -77,6 +77,8 @@ void         BCPressurePackage(
 {
   PFModule         *this_module = ThisPFModule;
   PublicXtra       *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
+  InstanceXtra     *instance_xtra =
+    (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
   BCPressureData   *bc_pressure_data
     = ProblemDataBCPressureData(problem_data);
@@ -439,6 +441,28 @@ void         BCPressurePackage(
             break;
           } /* End OverlandDiffusive */
 
+          case DeepAquifer:
+          {
+            NewBCPressureTypeStruct(DeepAquifer, interval_data);
+
+            BCPressureDataBCType(bc_pressure_data, i) = DeepAquiferBC;
+
+            GetTypeStruct(DeepAquifer, data, public_xtra, i);
+
+            // because the module instance wasn't created before, it is now.
+            PFModule *deepaquifer_eval =
+              ProblemDeepAquiferEval(instance_xtra->problem);
+
+            DeepAquiferModule(data) =
+              PFModuleNewInstanceType(DeepAquiferEvalInitInstanceXtraInvoke,
+                                      deepaquifer_eval, (problem_data));
+
+            BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
+              = (void*)interval_data;
+
+            break;
+          } /* End DeepAquifer */
+
           default:
           {
             PARFLOW_ERROR("Invalid BC input type");
@@ -449,12 +473,21 @@ void         BCPressurePackage(
   }
 }
 
+PFModule* BCPressurePackageDeepAquiferModule(PFModule *bc_pressure_package,
+                                             int       ipatch)
+{
+  PublicXtra *public_xtra =
+    (PublicXtra*)PFModulePublicXtra(bc_pressure_package);
+
+  GetTypeStruct(DeepAquifer, data, public_xtra, ipatch);
+  return DeepAquiferModule(data);
+}
+
 /*--------------------------------------------------------------------------
  * BCPressurePackageInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule *BCPressurePackageInitInstanceXtra(
-                                            Problem *problem)
+PFModule *BCPressurePackageInitInstanceXtra(Problem *problem)
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;
@@ -1008,6 +1041,19 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
           break;
         } /* End OverlandDiffusive */
+
+        case DeepAquifer:
+        {
+          NewTypeStruct(DeepAquifer, data);
+
+          // this cannot be defined here because the module is not available
+          // from Problem's PublicXtra structure.
+          // therefore, it will be defined in BCPressurePackage()
+          DeepAquiferModule(data) = NULL;
+
+          StoreTypeStruct(public_xtra, data, i);
+          break;
+        } /* End DeepAquifer */
       } /* End switch types */
     } /* End for patches */
   } /* if patches */
@@ -1166,6 +1212,17 @@ void  BCPressurePackageFreePublicXtra()
           {
             GetTypeStruct(OverlandDiffusive, data, public_xtra, i);
             tfree(data->values);
+            tfree(data);
+            break;
+          }
+
+          case DeepAquifer:
+          {
+            GetTypeStruct(DeepAquifer, data, public_xtra, i);
+            if (DeepAquiferModule(data))
+            {
+              PFModuleFreeInstance(DeepAquiferModule(data));
+            }
             tfree(data);
             break;
           }

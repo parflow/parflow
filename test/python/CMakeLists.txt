@@ -15,6 +15,7 @@ set(TESTS
   indicator_field
   LW_surface_press
   overland_tiltedV_MGSemiTest
+  daq_infiltration
 )
 
 if(${PARFLOW_HAVE_HYPRE})
