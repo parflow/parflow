@@ -1311,10 +1311,10 @@ SetupRichards(PFModule * this_module)
         double *alpha_dat = SubvectorData(alpha_sub);
         Subvector *n_sub = VectorSubvector(n, is);
         double *n_dat = SubvectorData(n_sub);
-	// Get the nz from n as it 3D
+        // Get the nz from n as it 3D
         nx = SubvectorNX(n_sub);
-	ny = SubvectorNY(n_sub);
-	nz = SubvectorNZ(n_sub);
+        ny = SubvectorNY(n_sub);
+        nz = SubvectorNZ(n_sub);
         init_torch_model(public_xtra->torch_model_filepath, nx, ny, nz, po_dat, mann_dat, slopex_dat,
                          slopey_dat, permx_dat, permy_dat, permz_dat, sres_dat, ssat_dat, fbz_dat,
                          specific_storage_dat, alpha_dat, n_dat);
@@ -3148,9 +3148,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         {
           subgrid = GridSubgrid(grid, is);
           p_sub = VectorSubvector(instance_xtra->pressure, is);
-	  nx = SubvectorNX(p_sub);
-	  ny = SubvectorNY(p_sub);
-	  nz = SubvectorNZ(p_sub);
+          nx = SubvectorNX(p_sub);
+          ny = SubvectorNY(p_sub);
+          nz = SubvectorNZ(p_sub);
           pp = SubvectorData(p_sub);
           et_sub = VectorSubvector(evap_trans, is);
           et = SubvectorData(et_sub);
