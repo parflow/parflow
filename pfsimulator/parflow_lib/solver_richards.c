@@ -3156,6 +3156,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           et = SubvectorData(et_sub);
           SubvectorData(p_sub) = predict_next_pressure_step(pp, et, nx, ny, nz);
         }
+	handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
+	FinalizeVectorUpdate(handle);	
         if (public_xtra->print_predicted_pressure)
         {
           sprintf(file_postfix, "predicted_press.%05d", instance_xtra->file_number);
