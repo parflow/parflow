@@ -18,6 +18,7 @@ extern "C" {
     std::string model_path = std::string(model_filepath);
     try {
       model = torch::jit::load(model_path);
+      model.eval();
     }
     catch (const c10::Error& e) {
       throw std::runtime_error(std::string("Failed to load the Torch model:\n") + e.what());
@@ -57,7 +58,7 @@ extern "C" {
   }
   
   double* predict_next_pressure_step(double* pp, double* et, int nx, int ny, int nz) {
-    torch::Tensor press = torch::from_blob(pp, {nz, ny, nx}, torch::kDouble).index({Slice(1, -1), Slice(1, -1), Slice(1, -1)});
+    torch::Tensor press = torch::from_blob(pp, {nz, ny, nx}, torch::kDouble).index({Slice(1, -1), Slice(1, -1), Slice(1, -1)}).clone();
     torch::Tensor evaptrans = torch::from_blob(et, {nz, ny, nx}, torch::kDouble).index({Slice(1, -1), Slice(1, -1), Slice(1, -1)}).clone();
     press = model.run_method("get_parflow_pressure", press).toTensor();
     evaptrans = model.run_method("get_parflow_evaptrans", evaptrans).toTensor();
