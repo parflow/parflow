@@ -437,7 +437,7 @@ PFModule   *GeometriesNewPublicXtra()
 #if 0
         if (amps_Rank() == 73)
         {
-          char filename[2056];
+          char filename[PATH_MAX];
           sprintf(filename, "octree.%d.domain.pfsol", amps_Rank());
           GrGeomOctree  *data;
           data = new_solids[0]->data;

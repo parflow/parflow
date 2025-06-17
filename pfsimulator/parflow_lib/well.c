@@ -792,7 +792,7 @@ void WriteWells(
   FILE             *file;
 
   char file_suffix[7] = "wells";
-  char filename[255];
+  char filename[PATH_MAX];
 
   int p;
 
