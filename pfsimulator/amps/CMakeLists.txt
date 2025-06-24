@@ -31,12 +31,11 @@ endif()
 add_library(amps STATIC ${COMMON_SRC_FILES} ${AMPS_SRC_FILES})
 
 if( ${PARFLOW_HAVE_UMPIRE} )
-  target_link_libraries(amps PUBLIC umpire)
+  target_link_libraries(amps PRIVATE umpire)
 endif( ${PARFLOW_HAVE_UMPIRE} )
 
 if( ${PARFLOW_HAVE_RMM} )
-  target_link_libraries(amps PUBLIC rmm)
-  target_include_directories(amps PUBLIC ${RMM_INCLUDE})
+  target_link_libraries(amps PRIVATE rmm::rmm)
 endif( ${PARFLOW_HAVE_RMM} )
 
 if( ${PARFLOW_HAVE_KOKKOS} )
