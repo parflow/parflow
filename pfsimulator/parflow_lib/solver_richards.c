@@ -1257,7 +1257,7 @@ SetupRichards(PFModule * this_module)
       sprintf(filename, "%s.sres.pfb", file_prefix);
       ReadPFBinary(filename, sres);
       Vector *ssat = NewVectorType(grid, 1, 1, vector_cell_centered);
-      InitVectorAll(sres, 0.0);
+      InitVectorAll(ssat, 0.0);
       sprintf(filename, "%s.ssat.pfb", file_prefix);
       ReadPFBinary(filename, ssat);
       Vector *alpha = NewVectorType(grid, 1, 1, vector_cell_centered);
