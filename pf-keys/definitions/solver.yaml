@@ -2659,6 +2659,16 @@ Solver:
     domains:
       BoolDomain:
       RequiresModule: TORCH
+      
+  TorchPrintPredictedPressure:
+    help: > 
+      [Type: boolean/string] When this key is set to True, it will print information about the ML Accelerator: the scaled statics, evaptrans
+      and pressure that are used to predict the pressure at each step. Note that the Torch libary must be compiled and linked at runtime for
+      this option to be active.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: TORCH
 
 # SILO options
 SILO: # typo in documentation

@@ -14,7 +14,8 @@ extern "C" {
   void init_torch_model(char* model_filepath, int nx, int ny, int nz, double *po_dat,
 			double *mann_dat, double *slopex_dat, double *slopey_dat, double *permx_dat,
 			double *permy_dat, double *permz_dat, double *sres_dat, double *ssat_dat,
-			double *fbz_dat, double *specific_storage_dat, double *alpha_dat, double *n_dat) {                           
+			double *fbz_dat, double *specific_storage_dat, double *alpha_dat, double *n_dat,
+			int torch_debug) {                           
     std::string model_path = std::string(model_filepath);
     try {
       model = torch::jit::load(model_path);
@@ -55,13 +56,23 @@ extern "C" {
     statics_map["n"] = n;
 
     statics = model.run_method("get_parflow_statics", statics_map).toTensor();
+    if (torch_debug) {
+      torch::save(statics, "scaled_statics.pt");
+    }
   }
   
-  double* predict_next_pressure_step(double* pp, double* et, int nx, int ny, int nz) {
+  double* predict_next_pressure_step(double* pp, double* et, int nx, int ny, int nz, int file_number, int torch_debug) {
     torch::Tensor press = torch::from_blob(pp, {nz, ny, nx}, torch::kDouble).index({Slice(1, -1), Slice(1, -1), Slice(1, -1)}).clone();
     torch::Tensor evaptrans = torch::from_blob(et, {nz, ny, nx}, torch::kDouble).index({Slice(1, -1), Slice(1, -1), Slice(1, -1)}).clone();
     press = model.run_method("get_parflow_pressure", press).toTensor();
     evaptrans = model.run_method("get_parflow_evaptrans", evaptrans).toTensor();
+    if (torch_debug) {
+      char filename[64];
+      std::snprintf(filename, sizeof(filename), "scaled_pressure_%05d.pt", file_number);
+      torch::save(press, filename);
+      std::snprintf(filename, sizeof(filename), "scaled_evaptrans_%05d.pt", file_number);
+      torch::save(evaptrans, filename);
+    }
     
     std::vector<torch::jit::IValue> inputs;
     inputs.push_back(press);

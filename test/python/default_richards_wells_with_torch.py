@@ -356,6 +356,7 @@ drich.Solver.Linear.Preconditioner = "MGSemi"
 drich.Solver.TorchEnableAccelerator = True
 drich.Solver.TorchModelFilePath = "simple_id_model.pt"
 drich.Solver.TorchPrintPredictedPressure = True
+drich.Solver.TorchDebug = True
 
 # -----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
