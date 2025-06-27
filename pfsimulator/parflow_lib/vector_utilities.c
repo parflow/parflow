@@ -813,9 +813,9 @@ double PFVDotProd(
     {
       ReduceSum(sum, xp[i_x] * yp[i_y]);
     });
-    EndTiming(VDotProduct);
 #endif
   }
+  EndTiming(VDotProduct);
 
   result_invoice = amps_NewInvoice("%d", &sum);
   amps_AllReduce(amps_CommWorld, result_invoice, amps_Add);
