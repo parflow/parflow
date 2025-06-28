@@ -10,6 +10,7 @@ namespace import Parflow::*
 # File input version number
 #-----------------------------------------------------------------------------
 pfset FileVersion 4
+pfwritedb default_single
 
 #-----------------------------------------------------------------------------
 # Process Topology
@@ -318,6 +319,7 @@ pfset Solver.PrintVelocities True
 pfset Solver.MaxIter 5
 pfset Solver.AbsTol 1e-25
 
+
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
@@ -327,6 +329,7 @@ pfundist default_single
 # To run with debugging
 # pfrun default_single -g {0 1}
 # will debug process 0 and 1
+
 
 #
 # Tests 
