@@ -10,11 +10,12 @@ set (SRC_FILES_CONST advect.F
   communication.c
   computation.c
   compute_maximums.c
-  compute_top.c
   compute_patch_top.c
+  compute_top.c
   compute_total_concentration.c
   constantRF.c
   constant_porosity.c
+  cpl_parflow.c
   create_grid.c
   diag_scale.c
   diffuse_lb.c
@@ -52,9 +53,7 @@ set (SRC_FILES_CONST advect.F
   pcg.c
   permeability_face.c
   perturb_lb.c
-  pf_hypre.c
   pf_pfmg.c
-  pf_pfmg_octree.c
   pf_smg.c
   pfield.c
   pgsRF.c
@@ -63,15 +62,15 @@ set (SRC_FILES_CONST advect.F
   printmatrix.c
   printvector.c
   problem.c
+  problem_FBx.c
+  problem_FBy.c
+  problem_FBz.c
   problem_bc_internal.c
   problem_bc_phase_saturation.c
   problem_capillary_pressure.c
   problem_domain.c
   problem_dz_scale.c
   problem_eval.c
-  problem_FBx.c
-  problem_FBy.c
-  problem_FBz.c
   problem_geometries.c
   problem_ic_phase_concen.c
   problem_ic_phase_satur.c
@@ -97,6 +96,8 @@ set (SRC_FILES_CONST advect.F
   read_parflow_binary.c
   read_parflow_netcdf.c
   reg_from_stenc.c
+  reservoir.c
+  reservoir_package.c
   sadvect.F
   sadvection_godunov.c
   scale.c
@@ -117,10 +118,7 @@ set (SRC_FILES_CONST advect.F
   well.c
   well_package.c
   wells_lb.c
-  reservoir.c
-  reservoir_package.c
   wrf_parflow.c
-  cpl_parflow.c
   write_clm_netcdf.c
   write_parflow_binary.c
   write_parflow_netcdf.c
@@ -161,16 +159,18 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     background.cpp
     calc_elevations.cpp
     globals.cpp
-    pf_module.cpp
+    pf_hypre.cpp
+    pf_pfmg_octree.cpp
+    pf_module.cpp    
     problem_bc.cpp
     problem_bc_pressure.cpp
     problem_ic_phase_pressure.cpp
     region.cpp
   )
 
-if(${PARFLOW_HAVE_KOKKOS})
-  list(APPEND SRC_FILES_ARCH_TYPE_0 pf_kokkos.cpp)
-endif(${PARFLOW_HAVE_KOKKOS})
+  if(${PARFLOW_HAVE_KOKKOS})
+    list(APPEND SRC_FILES_ARCH_TYPE_0 pf_kokkos.cpp)
+  endif(${PARFLOW_HAVE_KOKKOS})
 
   #  PF_COMP_UNIT_TYPE determines the behavior of the accelerated compilation unit
 	#  ------------------------------------------------------------
@@ -234,14 +234,16 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}
     matrix.c
     matvec.c
     mg_semi.c
-    mg_semi_restrict.c
     mg_semi_prolong.c
+    mg_semi_restrict.c
     nl_function_eval.c
     overlandflow_eval.c
-    overlandflow_eval_diffusive.c
     overlandflow_eval_Kin.c
-    phase_velocity_face.c
+    overlandflow_eval_diffusive.c
+    pf_hypre.c
+    pf_pfmg_octree.c
     pf_module.c
+    phase_velocity_face.c
     problem_bc.c
     problem_bc_pressure.c
     problem_ic_phase_pressure.c
