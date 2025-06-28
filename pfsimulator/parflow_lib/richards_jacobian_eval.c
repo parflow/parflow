@@ -264,7 +264,7 @@ void    RichardsJacobianEval(
 
   Subgrid     *subgrid;
 
-  Subvector   *p_sub, *d_sub, *s_sub, *po_sub, *rp_sub, *ss_sub;
+  Subvector   *p_sub, *op_sub, *d_sub, *s_sub, *po_sub, *rp_sub, *ss_sub;
   Subvector   *permx_sub, *permy_sub, *permz_sub, *dd_sub, *sd_sub, *rpd_sub;
   Submatrix   *J_sub;
   Submatrix   *JC_sub;
@@ -272,7 +272,7 @@ void    RichardsJacobianEval(
   Grid        *grid = VectorGrid(pressure);
   Grid        *grid2d = VectorGrid(slope_x);
 
-  double      *pp, *sp, *sdp, *pop, *dp, *ddp, *rpp, *rpdp;
+  double      *pp, *opp, *sp, *sdp, *pop, *dp, *ddp, *rpp, *rpdp;
   double      *permxp, *permyp, *permzp;
   double      *cp, *wp, *ep, *sop, *np, *lp, *up, *ss;
 
@@ -970,6 +970,7 @@ void    RichardsJacobianEval(
     subgrid = GridSubgrid(grid, is);
 
     p_sub = VectorSubvector(pressure, is);
+    op_sub = VectorSubvector(old_pressure, is);
     s_sub = VectorSubvector(saturation, is);
     dd_sub = VectorSubvector(density_der, is);
     rpd_sub = VectorSubvector(rel_perm_der, is);
@@ -1033,6 +1034,7 @@ void    RichardsJacobianEval(
     ksns_der = SubvectorData(ksns_sub);
 
     pp = SubvectorData(p_sub);
+    opp = SubvectorData(op_sub);
     sp = SubvectorData(s_sub);
     ddp = SubvectorData(dd_sub);
     rpdp = SubvectorData(rpd_sub);
@@ -1385,7 +1387,6 @@ void    RichardsJacobianEval(
                             NULL, NULL, NULL, NULL, NULL, NULL, CALCDER));
       })
                            ); /* End OverlandKinematicBC */
-
       ForPatchCellsPerFace(OverlandDiffusiveBC,
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
@@ -1421,6 +1422,37 @@ void    RichardsJacobianEval(
                             kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
       })
                            ); /* End OverlandDiffusiveBC */
+
+      ForPatchCellsPerFace(DeepAquiferBC,
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int im; double *op; ),
+                           CellSetup({
+        im = SubmatrixEltIndex(J_sub, i, j, k);
+      }),
+                           FACE(LeftFace, { op = wp; }),
+                           FACE(RightFace, { op = ep; }),
+                           FACE(DownFace, { op = sop; }),
+                           FACE(UpFace, { op = np; }),
+                           FACE(BackFace, { op = lp; }),
+                           FACE(FrontFace, { op = up; }),
+                           CellFinalize({
+        cp[im] += op[im];
+        op[im] = 0.0;
+      }),
+                           AfterAllCells({
+        PFModule *bc_pressure_package =
+          ProblemBCPressurePackage(problem);
+
+        PFModule *deepaquifer_eval =
+          BCPressurePackageDeepAquiferModule(bc_pressure_package, ipatch);
+
+        PFModuleInvokeType(DeepAquiferEvalInvoke, deepaquifer_eval,
+                           ((void*)J_sub, CALCDER, bc_struct, subgrid, p_sub,
+                            opp, dt, rpp, permxp, permyp, ipatch, is,
+                            problem_data));
+      })
+                           ); /* End DeepAquiferBC */
     } /* End ipatch loop */
   }            /* End subgrid loop */
 

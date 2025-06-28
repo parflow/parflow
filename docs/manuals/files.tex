@@ -2474,8 +2474,8 @@ pfset BCPressure.PatchNames    "left right front back top bottom"
 \pfkey{string}{Patch.{\em patch\_name}.BCPressure.Type}{no default}
 {This key specifies the type of boundary condition data given for patch
 {\em patch\_name}.  Possible values for this key are {\bf DirEquilRefPatch,
-DirEquilPLinear, FluxConst, FluxVolumetric, PressureFile, FluxFile, OverlandFow, OverlandFlowPFB, SeepageFace, OverlandKinematic, OverlandDiffusive} and
-{\bf ExactSolution}.  The choice {\bf DirEquilRefPatch} specifies that the
+DirEquilPLinear, FluxConst, FluxVolumetric, PressureFile, FluxFile, OverlandFow, OverlandFlowPFB, SeepageFace, OverlandKinematic, OverlandDiffusive}, {\bf ExactSolution} and
+{\bf DeepAquifer}.  The choice {\bf DirEquilRefPatch} specifies that the
 pressure on the specified patch will be in hydrostatic equilibrium with a
 constant reference pressure given on a reference patch.
 The choice {\bf DirEquilPLinear} specifies that the pressure on the specified
@@ -2510,7 +2510,7 @@ Dirichlet boundary condition on the respective patch.  Note that this does not
 change according to any cycle.  Instead, time dependence is handled by
 evaluating at the time the boundary condition value is desired.
 The solution is specified by using a predefined function (choices are described
-below).  NOTE: These last six types of boundary condition input is for
+below).  The choice {\bf DeepAquifer} turns on groundwater interactions with a deep aquifer as described in \cite{Rahman2018}. The aquifer is set with the Specific Yield and Thickness parameters, detailed below. At the current state of the code, this boundary condition only works for a flat bottom.   NOTE: These last seven types of boundary condition inputs are for
 {\em Richards' equation cases only!}
 }
 \begin{display}\begin{verbatim}
@@ -2682,6 +2682,39 @@ $p = x^3 y^4 + x^2 + \sin(xy)\cos y + 1$
 \item[{\bf XYZTPlus1}: ] $p = xyzt + 1$
 \item[{\bf XYZTPlus1PermTensor}: ] $p = xyzt + 1$
 \end{description}
+
+\pfkey{string}
+{Patch.{\em patch\_name}.BCPressure.DeepAquifer.{\em parameter}.Type}
+{no default}
+{This key is required when the DeepAquifer boundary condition is chosen.
+It must be specified for both DeepAquifer parameters {`SpecificYield'} and {`AquiferDepth'}. 
+This key specifies the type of the DeepAquifer parameter: {`Constant'} will set the parameter to a value set in the key {Patch.{\em patch\_name}.BCPressure.DeepAquifer.{\em parameter}.Value}, while {`FileName'} will set the parameter to values read from the file provided in the key {Patch.{\em patch\_name}.BCPressure.DeepAquifer.{\em parameter}.FileName}.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.bottom.BCPressure.DeepAquifer.SpecificYield.Type Constant
+pfset Patch.bottom.BCPressure.DeepAquifer.AquiferDepth.Type FileName
+\end{verbatim}\end{display}
+
+\pfkey{double}
+{Patch.{\em patch\_name}.BCPressure.DeepAquifer.{\em parameter}.Value}
+{no default}
+{
+This key will set the DeepAquifer {`parameter'} to a constant value.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.bottom.BCPressure.DeepAquifer.SpecificYield.Value 0.1
+\end{verbatim}\end{display}
+
+\pfkey{string}
+{Patch.{\em patch\_name}.BCPressure.DeepAquifer.{\em parameter}.FileName}
+{no default}
+{
+This key will set the DeepAquifer {`parameter'} to the values read from the provided file.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.bottom.BCPressure.DeepAquifer.AquiferDepth.FileName "filename"
+\end{verbatim}\end{display}
+
 
 Example Script:
 \begin{display}\begin{verbatim}
