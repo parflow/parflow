@@ -1447,55 +1447,6 @@ SetupRichards(PFModule * this_module)
         any_file_dumped = 1;
       }
 
-      /*-----------------------------------------------------------------
-       * Print out mask?
-       *-----------------------------------------------------------------*/
-
-      if (public_xtra->print_mask)
-      {
-        strcpy(file_postfix, "mask");
-        WritePFBinary(file_prefix, file_postfix, instance_xtra->mask);
-        any_file_dumped = 1;
-
-        static const char* mask_filenames[] = {
-          "mask"
-        };
-        MetadataAddStaticField(
-                               js_inputs, file_prefix, "mask", NULL, "cell", "subsurface",
-                               sizeof(mask_filenames) / sizeof(mask_filenames[0]),
-                               mask_filenames);
-      }
-
-      if (public_xtra->write_netcdf_mask)
-      {
-        sprintf(nc_postfix, "%05d", instance_xtra->file_number);
-        WritePFNC(file_prefix, nc_postfix, t, instance_xtra->mask,
-                  public_xtra->numVarTimeVariant, "mask", 3, true,
-                  public_xtra->numVarIni);
-        any_file_dumped = 1;
-      }
-
-
-      if (public_xtra->write_silo_mask)
-      {
-        strcpy(file_postfix, "");
-        strcpy(file_type, "mask");
-        WriteSilo(file_prefix, file_type, file_postfix,
-                  instance_xtra->mask, t, instance_xtra->file_number,
-                  "Mask");
-        any_file_dumped = 1;
-      }
-
-      if (public_xtra->write_silopmpio_mask)
-      {
-        strcpy(file_postfix, "");
-        strcpy(file_type, "mask");
-        WriteSiloPMPIO(file_prefix, file_type, file_postfix,
-                       instance_xtra->mask, t, instance_xtra->file_number,
-                       "Mask");
-        any_file_dumped = 1;
-      }
-
       /* print initial velocities??? jjb */
       if (print_velocities)
       {
@@ -1620,6 +1571,54 @@ SetupRichards(PFModule * this_module)
                                 sizeof(velz_filenames) / sizeof(velz_filenames[0]),
                                 velz_filenames);
       }
+    }
+
+    /*-----------------------------------------------------------------
+     * Print out mask?
+     *-----------------------------------------------------------------*/
+    if (public_xtra->print_mask)
+    {
+      strcpy(file_postfix, "mask");
+      WritePFBinary(file_prefix, file_postfix, instance_xtra->mask);
+      any_file_dumped = 1;
+
+      static const char* mask_filenames[] = {
+        "mask"
+      };
+      MetadataAddStaticField(
+                             js_inputs, file_prefix, "mask", NULL, "cell", "subsurface",
+                             sizeof(mask_filenames) / sizeof(mask_filenames[0]),
+                             mask_filenames);
+    }
+
+    if (public_xtra->write_netcdf_mask)
+    {
+      sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+      WritePFNC(file_prefix, nc_postfix, t, instance_xtra->mask,
+                public_xtra->numVarTimeVariant, "mask", 3, true,
+                public_xtra->numVarIni);
+      any_file_dumped = 1;
+    }
+
+
+    if (public_xtra->write_silo_mask)
+    {
+      strcpy(file_postfix, "");
+      strcpy(file_type, "mask");
+      WriteSilo(file_prefix, file_type, file_postfix,
+                instance_xtra->mask, t, instance_xtra->file_number,
+                "Mask");
+      any_file_dumped = 1;
+    }
+
+    if (public_xtra->write_silopmpio_mask)
+    {
+      strcpy(file_postfix, "");
+      strcpy(file_type, "mask");
+      WriteSiloPMPIO(file_prefix, file_type, file_postfix,
+                     instance_xtra->mask, t, instance_xtra->file_number,
+                     "Mask");
+      any_file_dumped = 1;
     }
 
     /*-----------------------------------------------------------------
