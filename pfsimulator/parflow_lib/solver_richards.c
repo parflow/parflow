@@ -3034,6 +3034,39 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
       t += dt;
 
+#ifdef PARFLOW_HAVE_TORCH
+      if (public_xtra->enable_torch_accelerator)
+      {
+        BeginTiming(TorchTimingIndex);
+        Subgrid *subgrid;
+        Grid *grid = VectorGrid(evap_trans_sum);
+        Subvector *p_sub;
+        double *pp;
+        int is, nx, ny, nz;
+
+        ForSubgridI(is, GridSubgrids(grid))
+        {
+          subgrid = GridSubgrid(grid, is);
+          p_sub = VectorSubvector(instance_xtra->pressure, is);
+          nx = SubvectorNX(p_sub);
+          ny = SubvectorNY(p_sub);
+          nz = SubvectorNZ(p_sub);
+          pp = SubvectorData(p_sub);
+          et_sub = VectorSubvector(evap_trans, is);
+          et = SubvectorData(et_sub);
+          SubvectorData(p_sub) = predict_next_pressure_step(pp, et, nx, ny, nz, instance_xtra->file_number, public_xtra->torch_debug);
+        }
+	handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
+	FinalizeVectorUpdate(handle);	
+        if (public_xtra->print_predicted_pressure)
+        {
+          sprintf(file_postfix, "predicted_press.%05d", instance_xtra->file_number);
+          WritePFBinary(file_prefix, file_postfix, instance_xtra->pressure);
+        }
+        EndTiming(TorchTimingIndex);
+      }
+#endif      
+      
       /*  experiment with a predictor to adjust land surface pressures to be >0 if rainfall*/
       if (public_xtra->surface_predictor == 1)
       {
@@ -3134,39 +3167,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                        );
         }
       }
-
-#ifdef PARFLOW_HAVE_TORCH
-      if (public_xtra->enable_torch_accelerator)
-      {
-        BeginTiming(TorchTimingIndex);
-        Subgrid *subgrid;
-        Grid *grid = VectorGrid(evap_trans_sum);
-        Subvector *p_sub;
-        double *pp;
-        int is, nx, ny, nz;
-
-        ForSubgridI(is, GridSubgrids(grid))
-        {
-          subgrid = GridSubgrid(grid, is);
-          p_sub = VectorSubvector(instance_xtra->pressure, is);
-          nx = SubvectorNX(p_sub);
-          ny = SubvectorNY(p_sub);
-          nz = SubvectorNZ(p_sub);
-          pp = SubvectorData(p_sub);
-          et_sub = VectorSubvector(evap_trans, is);
-          et = SubvectorData(et_sub);
-          SubvectorData(p_sub) = predict_next_pressure_step(pp, et, nx, ny, nz, instance_xtra->file_number, public_xtra->torch_debug);
-        }
-	handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
-	FinalizeVectorUpdate(handle);	
-        if (public_xtra->print_predicted_pressure)
-        {
-          sprintf(file_postfix, "predicted_press.%05d", instance_xtra->file_number);
-          WritePFBinary(file_prefix, file_postfix, instance_xtra->pressure);
-        }
-        EndTiming(TorchTimingIndex);
-      }
-#endif
+      
 
       /*******************************************************************/
       /*          Solve the nonlinear system for this time step          */
