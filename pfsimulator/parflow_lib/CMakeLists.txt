@@ -279,7 +279,7 @@ endif(${PARFLOW_HAVE_CLM})
 
 if (${PARFLOW_HAVE_HYPRE})
   target_include_directories (pfsimulator PUBLIC ${HYPRE_INCLUDE_DIR})
-  target_link_libraries (pfsimulator ${HYPRE_LIBRARIES})
+  target_link_libraries (pfsimulator Hypre::Hypre)
 endif (${PARFLOW_HAVE_HYPRE})
 
 if (${PARFLOW_HAVE_MPI})

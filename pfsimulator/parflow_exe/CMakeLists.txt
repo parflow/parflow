@@ -27,7 +27,7 @@ if( ${PARFLOW_HAVE_CLM} )
 endif( ${PARFLOW_HAVE_CLM} )
 
 if (${PARFLOW_HAVE_HYPRE})
-  target_link_libraries (parflow ${HYPRE_LIBRARIES})
+  target_link_libraries (parflow Hypre::Hypre)
 endif (${PARFLOW_HAVE_HYPRE})
 
 if (${PARFLOW_HAVE_MPI})
