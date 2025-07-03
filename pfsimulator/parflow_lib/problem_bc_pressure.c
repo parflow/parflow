@@ -1126,10 +1126,39 @@ BCStruct    *BCPressure(
 
           break;
         } /* End OverlandDiffusive */
+
+        case DeepAquifer:
+        {
+          /* Constant flux rate value on patch */
+          GetBCPressureTypeStruct(DeepAquifer, interval_data,
+                                  bc_pressure_data, ipatch, interval_number);
+
+          ForSubgridI(is, subgrids)
+          {
+            /* compute patch_values_size */
+            patch_values_size = 0;
+            ForEachPatchCell(i, j, k, ival, bc_struct, ipatch, is,
+            {
+              patch_values_size++;
+            });
+
+            // patch_values is not used, but needs to be allocated,
+            // otherwise FreeBCStruct will try to free a NULL pointer
+            patch_values = talloc(double, patch_values_size);
+            memset(patch_values, 0, patch_values_size * sizeof(double));
+            values[ipatch][is] = patch_values;
+
+            ForEachPatchCell(i, j, k, ival, bc_struct, ipatch, is,
+            {
+              patch_values[ival] = 0.0;
+            });
+          } /* End subgrid loop */
+          break;
+        }   /* End DeepAquifer */
       }
     }
   }
-  //}
+
   return bc_struct;
 }
 

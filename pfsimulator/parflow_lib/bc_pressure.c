@@ -179,6 +179,12 @@ void FreeBCPressureData(
                   }
                   break;
                 }
+
+                case DeepAquifer:
+                {
+                  // Do Nothing
+                  break;
+                }
               }
               if (BCPressureDataIntervalValue(bc_pressure_data, i,
                                               interval_number))

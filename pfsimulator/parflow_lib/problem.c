@@ -244,6 +244,9 @@ Problem   *NewProblem(
   ProblemOverlandFlowEvalKin(problem) =
     PFModuleNewModule(OverlandFlowEvalKin, ());
 
+  ProblemDeepAquiferEval(problem) =
+    PFModuleNewModule(DeepAquiferEval, ());
+
   if (solver != RichardsSolve)
   {
     ProblemCapillaryPressure(problem) =
@@ -402,6 +405,7 @@ void      FreeProblem(
   PFModuleFreeModule(ProblemOverlandFlowEval(problem));  //DOK
   PFModuleFreeModule(ProblemOverlandFlowEvalDiff(problem));   //@RMM
   PFModuleFreeModule(ProblemOverlandFlowEvalKin(problem));
+  PFModuleFreeModule(ProblemDeepAquiferEval(problem));
 
   PFModuleFreeModule(ProblemDomain(problem));
 
@@ -453,10 +457,16 @@ ProblemData   *NewProblemData(
 
   ProblemDataIndexOfDomainTop(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   ProblemDataPatchIndexOfDomainTop(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+  ProblemDataIndexOfDomainBottom(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
 
   ProblemDataPorosity(problem_data) = NewVectorType(grid, 1, 1, vector_cell_centered);
 
   ProblemDataBCPressureData(problem_data) = NewBCPressureData();
+
+  ProblemDataSpecificYield(problem_data) =
+    NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+  ProblemDataAquiferDepth(problem_data) =
+    NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
 
   ProblemDataWellData(problem_data) = NewWellData();
   ProblemDataReservoirData(problem_data) = NewReservoirData();
@@ -487,6 +497,8 @@ void          FreeProblemData(
 
     FreeWellData(ProblemDataWellData(problem_data));
     FreeReservoirData(ProblemDataReservoirData(problem_data));
+    FreeVector(ProblemDataSpecificYield(problem_data));
+    FreeVector(ProblemDataAquiferDepth(problem_data));
     FreeBCPressureData(ProblemDataBCPressureData(problem_data));
     FreeVector(ProblemDataPorosity(problem_data));
     FreeVector(ProblemDataPermeabilityX(problem_data));
@@ -508,6 +520,7 @@ void          FreeProblemData(
     FreeVector(ProblemDataRealSpaceZ(problem_data));
     FreeVector(ProblemDataIndexOfDomainTop(problem_data));
     FreeVector(ProblemDataPatchIndexOfDomainTop(problem_data));
+    FreeVector(ProblemDataIndexOfDomainBottom(problem_data));
 
     tfree(problem_data);
   }
