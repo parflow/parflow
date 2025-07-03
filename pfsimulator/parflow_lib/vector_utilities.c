@@ -802,7 +802,7 @@ double PFVDotProd(
                   sum_writeback_ptr);
 
     sum = *sum_writeback_ptr;
-    free(sum_writeback_ptr);
+    tfree(sum_writeback_ptr);
 #else
     i_x = 0;
     i_y = 0;
@@ -876,7 +876,7 @@ double PFVMaxNorm(
                          max_writeback_ptr);
 
       max_val = *max_writeback_ptr;
-      free(max_writeback_ptr);
+      tfree(max_writeback_ptr);
 #else
     i_x = 0;
     BoxLoopReduceI1(max_val,
@@ -957,7 +957,7 @@ double PFVWrmsNorm(
                                 sum_writeback_ptr);
 
       sum = *sum_writeback_ptr;
-      free(sum_writeback_ptr);
+      tfree(sum_writeback_ptr);
 #else
     i_x = 0;
     i_w = 0;
@@ -1046,7 +1046,7 @@ double PFVWL2Norm(
                                 sum_writeback_ptr);
 
       sum = *sum_writeback_ptr;
-      free(sum_writeback_ptr);
+      tfree(sum_writeback_ptr);
 #else
     BoxLoopReduceI2(sum,
                     i, j, k, ix, iy, iz, nx, ny, nz,
@@ -1118,7 +1118,7 @@ double PFVL1Norm(
                       sum_writeback_ptr);
 
     sum = *sum_writeback_ptr;
-    free(sum_writeback_ptr);
+    tfree(sum_writeback_ptr);
 #else
     i_x = 0;
     BoxLoopReduceI1(sum,
@@ -1204,7 +1204,7 @@ double PFVMin(
                      min_writeback_ptr);
 
       min_val = *min_writeback_ptr;
-      free(min_writeback_ptr);
+      tfree(min_writeback_ptr);
 #else
     i_x = 0;
     BoxLoopReduceI1(min_val,
@@ -1285,7 +1285,7 @@ double PFVMax(
                      max_writeback_ptr);
 
       max_val = *max_writeback_ptr;
-      free(max_writeback_ptr);
+      tfree(max_writeback_ptr);
 #else
     i_x = 0;
 
