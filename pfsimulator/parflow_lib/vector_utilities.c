@@ -73,6 +73,10 @@
 #include "pystencils_vector_utilities.h"
 #endif
 
+#ifdef PARFLOW_HAVE_CUDA
+#include "pf_cudamalloc.h"
+#endif
+
 #define ZERO 0.0
 #define ONE  1.0
 
@@ -801,6 +805,10 @@ double PFVDotProd(
                   1, nx_y, nx_y * ny_y,
                   sum_writeback_ptr);
 
+#ifdef PARFLOW_HAVE_CUDA
+      MemPrefetchDeviceToHost_cuda(sum_writeback_ptr, sizeof(double), 0);
+#endif
+
     sum = *sum_writeback_ptr;
     tfree(sum_writeback_ptr);
 #else
@@ -874,6 +882,10 @@ double PFVMaxNorm(
                           nx, ny, nz,
                           1, nx_x, nx_x * ny_x,
                          max_writeback_ptr);
+
+#ifdef PARFLOW_HAVE_CUDA
+      MemPrefetchDeviceToHost_cuda(max_writeback_ptr, sizeof(double), 0);
+#endif
 
       max_val = *max_writeback_ptr;
       tfree(max_writeback_ptr);
@@ -955,6 +967,10 @@ double PFVWrmsNorm(
                                 1, nx_w, nx_w * ny_w,
                                 1, nx_x, nx_x * ny_x,
                                 sum_writeback_ptr);
+
+#ifdef PARFLOW_HAVE_CUDA
+      MemPrefetchDeviceToHost_cuda(sum_writeback_ptr, sizeof(double), 0);
+#endif
 
       sum = *sum_writeback_ptr;
       tfree(sum_writeback_ptr);
@@ -1045,6 +1061,10 @@ double PFVWL2Norm(
                                 1, nx_x, nx_x * ny_x,
                                 sum_writeback_ptr);
 
+#ifdef PARFLOW_HAVE_CUDA
+      MemPrefetchDeviceToHost_cuda(sum_writeback_ptr, sizeof(double), 0);
+#endif
+
       sum = *sum_writeback_ptr;
       tfree(sum_writeback_ptr);
 #else
@@ -1116,6 +1136,10 @@ double PFVL1Norm(
                       nx, ny, nz,
                       1, nx_x, nx_x * ny_x,
                       sum_writeback_ptr);
+
+#ifdef PARFLOW_HAVE_CUDA
+      MemPrefetchDeviceToHost_cuda(sum_writeback_ptr, sizeof(double), 0);
+#endif
 
     sum = *sum_writeback_ptr;
     tfree(sum_writeback_ptr);
@@ -1203,6 +1227,10 @@ double PFVMin(
                      1, nx_x, nx_x * ny_x,
                      min_writeback_ptr);
 
+#ifdef PARFLOW_HAVE_CUDA
+      MemPrefetchDeviceToHost_cuda(min_writeback_ptr, sizeof(double), 0);
+#endif
+
       min_val = *min_writeback_ptr;
       tfree(min_writeback_ptr);
 #else
@@ -1283,6 +1311,10 @@ double PFVMax(
                      nx, ny, nz,
                      1, nx_x, nx_x * ny_x,
                      max_writeback_ptr);
+
+#ifdef PARFLOW_HAVE_CUDA
+      MemPrefetchDeviceToHost_cuda(max_writeback_ptr, sizeof(double), 0);
+#endif
 
       max_val = *max_writeback_ptr;
       tfree(max_writeback_ptr);
