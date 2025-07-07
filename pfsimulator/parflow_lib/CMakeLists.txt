@@ -214,9 +214,7 @@ endif(${PARFLOW_HAVE_KOKKOS})
   endif( ${PARFLOW_HAVE_KOKKOS} )
 
   if( ${PARFLOW_HAVE_RMM} )
-    target_link_libraries(pfsimulator rmm)
-    target_include_directories(pfsimulator PRIVATE ${RMM_INCLUDE})
-    target_compile_definitions(pfsimulator PRIVATE PARFLOW_HAVE_RMM)
+    target_link_libraries(pfsimulator rmm::rmm)
   endif( ${PARFLOW_HAVE_RMM} )
 
   if( ${PARFLOW_HAVE_UMPIRE} )
@@ -282,7 +280,7 @@ endif(${PARFLOW_HAVE_CLM})
 
 if (${PARFLOW_HAVE_HYPRE})
   target_include_directories (pfsimulator PUBLIC ${HYPRE_INCLUDE_DIR})
-  target_link_libraries (pfsimulator ${HYPRE_LIBRARIES})
+  target_link_libraries (pfsimulator Hypre::Hypre)
 endif (${PARFLOW_HAVE_HYPRE})
 
 if (${PARFLOW_HAVE_MPI})
@@ -309,7 +307,5 @@ if (${PARFLOW_HAVE_PDI})
 endif (${PARFLOW_HAVE_PDI})
 
 if (${PARFLOW_HAVE_NETCDF})
-  target_include_directories (pfsimulator PUBLIC "${netCDF_INCLUDE_DIRS}")
-  target_include_directories (pfsimulator PUBLIC "${NETCDF_INCLUDE_DIRS}")
-  target_link_libraries (pfsimulator ${NETCDF_LIBRARIES})
+  target_link_libraries (pfsimulator NetCDF::NetCDF)
 endif (${PARFLOW_HAVE_NETCDF})

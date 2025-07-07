@@ -15,9 +15,7 @@ if( ${PARFLOW_HAVE_ETRACE} )
 endif( ${PARFLOW_HAVE_ETRACE} )
 
 if( ${PARFLOW_HAVE_RMM} )
-  target_link_libraries(parflow rmm)
-  target_include_directories(parflow PRIVATE ${RMM_INCLUDE})
-  target_compile_definitions(parflow PRIVATE PARFLOW_HAVE_RMM)
+  target_link_libraries(parflow rmm::rmm)
 endif( ${PARFLOW_HAVE_RMM} )
 
 if( ${PARFLOW_HAVE_UMPIRE} )
@@ -29,7 +27,7 @@ if( ${PARFLOW_HAVE_CLM} )
 endif( ${PARFLOW_HAVE_CLM} )
 
 if (${PARFLOW_HAVE_HYPRE})
-  target_link_libraries (parflow ${HYPRE_LIBRARIES})
+  target_link_libraries (parflow Hypre::Hypre)
 endif (${PARFLOW_HAVE_HYPRE})
 
 if (${PARFLOW_HAVE_MPI})
@@ -49,8 +47,7 @@ if (${PARFLOW_HAVE_PDI})
 endif (${PARFLOW_HAVE_PDI})
 
 if (${PARFLOW_HAVE_NETCDF})
-  target_link_libraries (parflow ${NetCDF_LIBRARIES})
-
+  target_link_libraries (parflow NetCDF::NetCDF)
   target_link_libraries (parflow ${CURL_LIBRARIES})
 endif (${PARFLOW_HAVE_NETCDF})
 
