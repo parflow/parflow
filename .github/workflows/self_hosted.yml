@@ -27,7 +27,7 @@ jobs:
         module purge
         module load anaconda3/2024.6
         module load cudatoolkit/12.6
-        module load openmpi/cuda-12.4/gcc/4.1.6
+        module load openmpi/cuda-12.6/gcc/4.1.6
 
     - name: Directory Setup
       run: |
