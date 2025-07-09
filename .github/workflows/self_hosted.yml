@@ -53,6 +53,7 @@ jobs:
       if: matrix.config.memory_manager == 'umpire'
       run: |
         git clone --recursive https://github.com/LLNL/Umpire.git
+        module list
         cd Umpire
         mkdir build && cd build
         cmake .. -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/depend/Umpire -DENABLE_CUDA=On
