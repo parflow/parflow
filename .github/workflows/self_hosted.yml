@@ -23,6 +23,7 @@ jobs:
 
     - name: Load Environment Modules
       run: |
+        source /etc/profile.d/modules.sh
         module purge
         module load anaconda3/2024.6
         module load cudatoolkit/12.6
