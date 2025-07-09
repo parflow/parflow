@@ -30,7 +30,14 @@ def get_kernel_cfg(
             if sfg.context.project_info['use_openmp']:
                 kernel_cfg.cpu.openmp.enable = True
 
+        # gpu optimization: warp level reductions
+        if sfg.context.project_info['use_cuda']:
+            kernel_cfg.gpu.assume_warp_aligned_block_size = True
+            kernel_cfg.gpu.warp_size = 32
+
         return kernel_cfg
+    else:
+        raise ValueError("Target not specified in platform file.")
 
 
 def invoke(sfg: SourceFileGenerator, k):
