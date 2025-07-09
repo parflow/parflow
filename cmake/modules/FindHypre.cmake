@@ -149,6 +149,12 @@ if (Hypre_FOUND AND NOT TARGET Hypre::Hypre)
           list(APPEND _cuda_targets CUDA::cusparse)
         endif()
 
+        if(TARGET CUDA::cusolver_static)
+          list(APPEND _cuda_targets CUDA::cusolver_static)
+        elseif(TARGET CUDA::cusolver)
+          list(APPEND _cuda_targets CUDA::cusolver)
+        endif()
+
         string(JOIN ", " _hypre_cuda_targets ${_cuda_targets})
         target_link_libraries(Hypre::Hypre INTERFACE ${_cuda_targets})
         message(STATUS "Found Hypre with CUDA backend. The ff. CUDA targets will be added to the linker options: ${_hypre_cuda_targets}")
