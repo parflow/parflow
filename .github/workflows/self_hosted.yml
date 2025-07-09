@@ -78,7 +78,7 @@ jobs:
           -DPARFLOW_HAVE_CLM=ON                                \
           -DPARFLOW_ENABLE_PYTHON=TRUE                          \
           -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install \
-          --DCMAKE_CUDA_ARCHITECTURES=90                          \
+          -DCMAKE_CUDA_ARCHITECTURES=90                           \
           $RMM_FLAGS $UMPIRE_FLAGS
 
     - name: Build ParFlow
