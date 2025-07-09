@@ -44,10 +44,10 @@ jobs:
         git clone --branch main --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git
         cd rmm
         mkdir build && cd build
-        cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/depend/rmm -DBUILD_TESTS=OFF
+        cmake .. -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/depend/rmm -DBUILD_TESTS=OFF
         make -j
         make install
-        echo "RMM_FLAGS=-Drmm_ROOT=$HOME/depend/rmm" >> $GITHUB_ENV
+        echo "RMM_FLAGS=-Drmm_ROOT=${{ github.workspace }}/depend/rmm" >> $GITHUB_ENV
 
     - name: Install Umpire
       if: matrix.config.memory_manager == 'umpire'
@@ -55,10 +55,10 @@ jobs:
         git clone --recursive https://github.com/LLNL/Umpire.git
         cd Umpire
         mkdir build && cd build
-        cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/depend/Umpire -DENABLE_CUDA=On
+        cmake .. -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/depend/Umpire -DENABLE_CUDA=On
         make -j
         make install
-        echo "UMPIRE_FLAGS=-Dumpire_ROOT=$HOME/depend/Umpire" >> $GITHUB_ENV
+        echo "UMPIRE_FLAGS=-Dumpire_ROOT=${{ github.workspace }}/depend/Umpire" >> $GITHUB_ENV
 
     - name: Configure ParFlow
       run: |
