@@ -89,6 +89,11 @@ jobs:
 
     - name: Run ParFlow Tests (GPU)
       run: |
+        source /etc/profile
+        source /etc/profile.d/modules.sh
+        module purge
+        module load cudatoolkit/12.6
+        module load openmpi/cuda-12.6/gcc/4.1.6
         nvidia-smi || echo "No GPU found"
         echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-not set}"
         cd build
