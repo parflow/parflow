@@ -73,6 +73,10 @@
 #include "pystencils_vector_utilities.h"
 #endif
 
+#ifdef PARFLOW_HAVE_CUDA
+#include "pf_cudamalloc.h"
+#endif
+
 #define ZERO 0.0
 #define ONE  1.0
 
@@ -745,8 +749,6 @@ double PFVDotProd(
                   Vector *x,
                   Vector *y)
 {
-  BeginTiming(VDotProduct);
-
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -792,6 +794,7 @@ double PFVDotProd(
     xp = SubvectorElt(x_sub, ix, iy, iz);
     yp = SubvectorElt(y_sub, ix, iy, iz);
 
+    BeginTiming(VDotProduct);
 #ifdef PARFLOW_HAVE_PYSTENCILS
     double* sum_writeback_ptr; // TODO: move (de-)allocation
     sum_writeback_ptr = ctalloc(double, 1);
@@ -802,8 +805,12 @@ double PFVDotProd(
                   1, nx_y, nx_y * ny_y,
                   sum_writeback_ptr);
 
+#ifdef PARFLOW_HAVE_CUDA
+      MemPrefetchDeviceToHost_cuda(sum_writeback_ptr, sizeof(double), 0);
+#endif
+
     sum = *sum_writeback_ptr;
-    free(sum_writeback_ptr);
+    tfree(sum_writeback_ptr);
 #else
     i_x = 0;
     i_y = 0;
@@ -816,13 +823,13 @@ double PFVDotProd(
     });
 #endif
   }
+  EndTiming(VDotProduct);
 
   result_invoice = amps_NewInvoice("%d", &sum);
   amps_AllReduce(amps_CommWorld, result_invoice, amps_Add);
   amps_FreeInvoice(result_invoice);
 
   IncFLOPCount(2 * VectorSize(x));
-  EndTiming(VDotProduct);
 
   return(sum);
 }
@@ -876,8 +883,12 @@ double PFVMaxNorm(
                           1, nx_x, nx_x * ny_x,
                          max_writeback_ptr);
 
+#ifdef PARFLOW_HAVE_CUDA
+      MemPrefetchDeviceToHost_cuda(max_writeback_ptr, sizeof(double), 0);
+#endif
+
       max_val = *max_writeback_ptr;
-      free(max_writeback_ptr);
+      tfree(max_writeback_ptr);
 #else
     i_x = 0;
     BoxLoopReduceI1(max_val,
@@ -957,8 +968,12 @@ double PFVWrmsNorm(
                                 1, nx_x, nx_x * ny_x,
                                 sum_writeback_ptr);
 
+#ifdef PARFLOW_HAVE_CUDA
+      MemPrefetchDeviceToHost_cuda(sum_writeback_ptr, sizeof(double), 0);
+#endif
+
       sum = *sum_writeback_ptr;
-      free(sum_writeback_ptr);
+      tfree(sum_writeback_ptr);
 #else
     i_x = 0;
     i_w = 0;
@@ -1046,8 +1061,12 @@ double PFVWL2Norm(
                                 1, nx_x, nx_x * ny_x,
                                 sum_writeback_ptr);
 
+#ifdef PARFLOW_HAVE_CUDA
+      MemPrefetchDeviceToHost_cuda(sum_writeback_ptr, sizeof(double), 0);
+#endif
+
       sum = *sum_writeback_ptr;
-      free(sum_writeback_ptr);
+      tfree(sum_writeback_ptr);
 #else
     BoxLoopReduceI2(sum,
                     i, j, k, ix, iy, iz, nx, ny, nz,
@@ -1118,8 +1137,12 @@ double PFVL1Norm(
                       1, nx_x, nx_x * ny_x,
                       sum_writeback_ptr);
 
+#ifdef PARFLOW_HAVE_CUDA
+      MemPrefetchDeviceToHost_cuda(sum_writeback_ptr, sizeof(double), 0);
+#endif
+
     sum = *sum_writeback_ptr;
-    free(sum_writeback_ptr);
+    tfree(sum_writeback_ptr);
 #else
     i_x = 0;
     BoxLoopReduceI1(sum,
@@ -1204,8 +1227,12 @@ double PFVMin(
                      1, nx_x, nx_x * ny_x,
                      min_writeback_ptr);
 
+#ifdef PARFLOW_HAVE_CUDA
+      MemPrefetchDeviceToHost_cuda(min_writeback_ptr, sizeof(double), 0);
+#endif
+
       min_val = *min_writeback_ptr;
-      free(min_writeback_ptr);
+      tfree(min_writeback_ptr);
 #else
     i_x = 0;
     BoxLoopReduceI1(min_val,
@@ -1285,8 +1312,12 @@ double PFVMax(
                      1, nx_x, nx_x * ny_x,
                      max_writeback_ptr);
 
+#ifdef PARFLOW_HAVE_CUDA
+      MemPrefetchDeviceToHost_cuda(max_writeback_ptr, sizeof(double), 0);
+#endif
+
       max_val = *max_writeback_ptr;
-      free(max_writeback_ptr);
+      tfree(max_writeback_ptr);
 #else
     i_x = 0;
 
