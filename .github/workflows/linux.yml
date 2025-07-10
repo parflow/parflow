@@ -355,6 +355,7 @@ jobs:
           cmake -S . -B bld                                             \
                      -DCMAKE_CXX_COMPILER=mpicxx                        \
                      -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}/Umpire" \
+                     -DENABLE_MPI="ON"                                  \
                      -DENABLE_CUDA="ON"
           cmake --build bld --parallel 4
           cmake --install bld
@@ -460,22 +461,19 @@ jobs:
           wget https://github.com/hypre-space/hypre/archive/v2.33.0.tar.gz
           tar xf v2.33.0.tar.gz && cd hypre-2.33.0
 
-          # Set Hypre backend
+          # Set Hypre accelerator backend
           if [[ "${{ matrix.config.backend }}" == "cuda" ]]; then
-            BACKEND="CUDA"
+            BACKEND="CUDA"    # GPU
           else
-            BACKEND="OPENMP"
+            BACKEND="OPENMP"  # CPU
           fi
 
-          # Default Hypre build options are exposed below to know which Hypre features are enabled/disabled.
-          # See the full list of options here: https://hypre.readthedocs.io/en/latest/ch-misc.html#build-system-options
+          # Install Hypre. See https://hypre.readthedocs.io/en/latest/ch-misc.html#build-system-options
           cmake -S src -B bld                                \
                 -DCMAKE_C_COMPILER=mpicc                     \
                 -DCMAKE_CXX_COMPILER=mpicxx                  \
                 -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}"  \
                 -DHYPRE_ENABLE_MPI="ON"                      \
-                -DHYPRE_ENABLE_HYPRE_LAPACK="OFF"            \
-                -DHYPRE_ENABLE_HYPRE_BLAS="OFF"              \
                 -DHYPRE_ENABLE_${BACKEND}="ON"
           cmake --build bld --parallel 4
           cmake --install bld
