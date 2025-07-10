@@ -307,7 +307,6 @@ jobs:
 
     - name: NVidia compiler and CUDA toolkit Install
       if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
-      name: Install CUDA compiler and libraries
       uses: awalsh128/cache-apt-pkgs-action@latest
       with:
         packages: nvidia-cuda-toolkit nvidia-cuda-dev
