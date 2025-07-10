@@ -467,6 +467,7 @@ jobs:
           fi
           # Install
           cmake -S src -B bld                                \
+                -DCMAKE_C_COMPILER=mpicc                     \
                 -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}"  \
                 -DHYPRE_ENABLE_${BACKEND}="ON"
           cmake --build bld --parallel 4
