@@ -352,9 +352,9 @@ jobs:
         if [[ "$CACHE_HIT" != 'true' ]]; then
           git clone --recursive https://github.com/LLNL/Umpire.git
           cd Umpire
-          cmake -S . -B bld                                         \
-                     -DCMAKE_CXX_COMPILER=mpicxx                    \
-                     -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR/Umpire \ 
+          cmake -S . -B bld                                             \
+                     -DCMAKE_CXX_COMPILER=mpicxx                        \
+                     -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}/Umpire" \
                      -DENABLE_CUDA="ON"
           cmake --build bld --parallel 4
           cmake --install bld
