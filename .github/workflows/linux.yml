@@ -467,37 +467,24 @@ jobs:
     - name: HYPRE Install
       env:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
-      if: matrix.config.backend != 'cuda'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
           # Download
           wget https://github.com/hypre-space/hypre/archive/v2.33.0.tar.gz
           tar xf v2.33.0.tar.gz && cd hypre-2.33.0
 
+          if [[ "${{ matrix.config.backend }}" == "cuda" ]]; then
+            BACKEND="CUDA"
+          else
+            BACKEND="OPENMP"
+          fi
           # Install
           cmake -S src -B bld                                \
                 -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}"  \
-                -DHYPRE_ENABLE_OPENMP="ON"
+                -DHYPRE_ENABLE_${BACKEND}="ON"
           cmake --build bld --parallel 4
           cmake --install bld
-        fi
-
-    - name: HYPRE Install for CUDA
-      env:
-        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
-      if: matrix.config.backend == 'cuda'
-      run: |
-        if [[ "$CACHE_HIT" != 'true' ]]; then
-          # Download
-          wget https://github.com/hypre-space/hypre/archive/v2.33.0.tar.gz
-          tar xf v2.33.0.tar.gz && cd hypre-2.33.0
-
-          # Install
-          cmake -S src -B bld                                \
-                -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}"  \
-                -DHYPRE_ENABLE_CUDA="ON"
-          cmake --build bld --parallel 4
-          cmake --install bld
+          echo "" && echo "Successfully built Hypre-${BACKEND}"
         fi
 
     - name: ParFlow CMake Configure
