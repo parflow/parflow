@@ -21,7 +21,6 @@ FC=mpifort CC=mpicc CXX=mpicxx \
        -DMPIEXEC_POSTFLAGS="--overcommit" \
        -DMPIEXEC='/usr/bin/srun' -DMPIEXEC_NUMPROC_FLAG='-n' \
        -DPARFLOW_AMPS_LAYER=mpi1 \
-       -DPARFLOW_AMPS_LAYER=mpi1 \
        -DPARFLOW_AMPS_SEQUENTIAL_IO=true \
        -DPARFLOW_HAVE_CLM=yes \
        -DHDF5_ROOT=/usr/gapps/thcs/apps/toss_4_x86_64_ib/hdf5/1.14.4 \
@@ -49,7 +48,6 @@ FC=mpifort CC=mpicc CXX=mpicxx \
        -DPARFLOW_ENABLE_DOXYGEN=ON \
        -DMPIEXEC_POSTFLAGS="--overcommit" \
        -DMPIEXEC='/usr/bin/srun' -DMPIEXEC_NUMPROC_FLAG='-n' \
-       -DPARFLOW_AMPS_LAYER=mpi1 \
        -DPARFLOW_AMPS_LAYER=mpi1 \
        -DPARFLOW_AMPS_SEQUENTIAL_IO=true \
        -DPARFLOW_HAVE_CLM=yes \
