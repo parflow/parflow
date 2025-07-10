@@ -264,7 +264,14 @@ if( ${PARFLOW_BUILD_WITH_CPP} )
     PROPERTIES LANGUAGE CXX)
 endif()
 
-target_link_libraries(pfsimulator pfkinsol amps cjson ${PARFLOW_ETRACE_LIBRARY})
+if (${PARFLOW_HAVE_SUNDIALS})
+  target_include_directories (pfsimulator PUBLIC ${SUNDIALS_INCLUDE_DIR})
+  target_link_libraries (pfsimulator ${SUNDIALS_LIBRARIES})
+else ()
+  target_link_libraries(pfsimulator pfkinsol)
+endif (${PARFLOW_HAVE_SUNDIALS})
+
+target_link_libraries(pfsimulator amps cjson ${PARFLOW_ETRACE_LIBRARY})
 target_include_directories(pfsimulator PUBLIC "../third_party/cjson")
 
 if (${PARFLOW_HAVE_MPI})
@@ -281,6 +288,7 @@ if (${PARFLOW_HAVE_HYPRE})
   target_include_directories (pfsimulator PUBLIC ${HYPRE_INCLUDE_DIR})
   target_link_libraries (pfsimulator Hypre::Hypre)
 endif (${PARFLOW_HAVE_HYPRE})
+
 
 if (${PARFLOW_HAVE_MPI})
   target_include_directories (pfsimulator PUBLIC "${MPI_C_INCLUDE_PATH}")
