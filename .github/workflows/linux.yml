@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   style-check:
-     runs-on: ubuntu-22.04
+     runs-on: ubuntu-24.04
      name: Check Style
      steps:
        - name: Checkout commit
@@ -121,9 +121,9 @@ jobs:
             memory_manager: "none"
           }
         - {
-            name: "Ubuntu 22.04 GCC Python",
-            os: ubuntu-22.04,
-            cudaos: 'ubuntu2204',
+            name: "Ubuntu 24.04 GCC Python",
+            os: ubuntu-24.04,
+            cudaos: 'ubuntu2404',
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "true",
             backend: "none",
@@ -143,9 +143,9 @@ jobs:
             memory_manager: "none"
           }
         - {
-            name: "Ubuntu 22.04 GCC OMP",
-            os: ubuntu-22.04,
-            cudaos: 'ubuntu2204',
+            name: "Ubuntu 24.04 GCC OMP",
+            os: ubuntu-24.04,
+            cudaos: 'ubuntu2404',
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
             backend: "omp",
@@ -156,7 +156,7 @@ jobs:
         - {
             name: "Ubuntu 24.04 LLVM OASIS3-MCT Build",
             os: ubuntu-24.04,
-            cudaos: 'ubuntu2204',
+            cudaos: 'ubuntu2404',
             cc: "clang-18", cxx: "clang++-18", fc: "gfortran",
             python: "false",
             backend: "omp",
@@ -181,7 +181,7 @@ jobs:
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
             backend: "cuda",
-            cudaos: 'ubuntu2204',
+            cudaos: 'ubuntu2404',
             amps_layer: mpi1,
             netcdf: "false",
             memory_manager: "umpire"
@@ -203,7 +203,7 @@ jobs:
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
             backend: "kokkos",
-            cudaos: 'ubuntu2204',
+            cudaos: 'ubuntu2404',
             amps_layer: mpi1,
             netcdf: "false",
             memory_manager: "umpire"
@@ -217,15 +217,7 @@ jobs:
         sudo apt-get -qq update
         sudo apt-get -qq install curl cmake build-essential tcl-dev tk-dev gfortran hdf5-helpers libcurl4 libcurl4-gnutls-dev
 
-    - name: HDF5 and OpenMPI Install on Ubuntu 22.04
-      if: matrix.config.os == 'ubuntu-22.04'
-      run: |
-        sudo apt-get -qq update
-        sudo apt -qq install libhdf5-openmpi-103 libhdf5-openmpi-dev
-
-    # libhdf5-openmpi-103 has been renamed in Ubuntu 24.04.
-    - name: HDF5 and OpenMPI Install on Ubuntu 24.04
-      if: matrix.config.os == 'ubuntu-24.04'
+    - name: HDF5 and OpenMPI Install
       run: |
         sudo apt-get -qq update
         sudo apt -qq install libhdf5-openmpi-103-1t64 libhdf5-openmpi-dev
