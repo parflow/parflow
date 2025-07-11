@@ -40,7 +40,10 @@ CUDA_PACKAGES_IN=(
     "cuda-nvrtc-dev"
     "cuda-nvml-dev"
     "libcurand-dev" # 11-0+
-    "cuda-cccl" # 11.4+, provides cub and thrust. On 11.3 known as cuda-thrust-11-3
+    "libcublas-dev"
+    "libcusparse-dev"
+    "libcusolver-dev"
+    "cuda-cccl" # 11.4+, provides cub and thrust. On 11.3 knwon as cuda-thrust-11-3
 )
 
 ## -------------------

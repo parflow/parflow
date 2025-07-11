@@ -32,6 +32,10 @@
 #ifdef HAVE_HYPRE
 #include "hypre_dependences.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Copy a ParFlow vector to a Hypre vector.
  *
@@ -107,6 +111,10 @@ void HypreAssembleMatrixAsElements(
                                    HYPRE_StructMatrix* hypre_mat,
                                    ProblemData *       problem_data
                                    );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
