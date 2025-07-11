@@ -355,7 +355,6 @@ jobs:
           cmake -S . -B bld                                             \
                      -DCMAKE_CXX_COMPILER=mpicxx                        \
                      -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}/Umpire" \
-                     -DENABLE_MPI="ON"                                  \
                      -DENABLE_CUDA="ON"
           cmake --build bld --parallel 4
           cmake --install bld
