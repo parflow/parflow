@@ -1,10 +1,7 @@
-import sympy as sp
-
 import pystencils as ps
 import re
 
 from pystencilssfg import SourceFileGenerator
-from pystencilssfg.lang.gpu import cuda
 
 from pystencils.types.quick import SInt
 
@@ -42,9 +39,18 @@ def get_kernel_cfg(
 
 def invoke(sfg: SourceFileGenerator, k):
     if sfg.context.project_info['use_cuda']:
-        return sfg.gpu_invoke(k)
+        sfg.include("<stdio.h>")
+
+        return [
+            sfg.gpu_invoke(k),
+            "cudaError_t err = cudaPeekAtLastError();",
+            sfg.branch("err != cudaSuccess")(
+                "printf(\"\\n\\n%s in %s at line %d\\n\", cudaGetErrorString(err), __FILE__, __LINE__);\n"
+                "exit(1);"
+            )
+        ]
     else:
-        return sfg.call(k)
+        return [sfg.call(k)]
 
 
 def create_kernel_func(
@@ -73,8 +79,8 @@ def create_kernel_func(
 
         sfg.function(func_name).params(*params)(
             # TODO: mark _stride_XYZ_0 params as unused via void cast
-            invoke(sfg, kernel)
+            *invoke(sfg, kernel)
         )
     else:
         # no extra handling needed -> just invoke the kernel
-        sfg.function(func_name)(invoke(sfg, kernel))
+        sfg.function(func_name)(*invoke(sfg, kernel))
