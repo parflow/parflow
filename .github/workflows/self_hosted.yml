@@ -33,7 +33,6 @@ jobs:
     - name: Install RMM
       if: matrix.config.memory_manager == 'rmm'
       run: |
-        source /etc/profile.d/modules.sh
         module purge
         module load cudatoolkit/12.6
         module load openmpi/cuda-12.6/gcc/4.1.6
@@ -48,7 +47,6 @@ jobs:
     - name: Install Umpire
       if: matrix.config.memory_manager == 'umpire'
       run: |
-        source /etc/profile.d/modules.sh
         module purge
         module load cudatoolkit/12.6
         module load openmpi/cuda-12.6/gcc/4.1.6
@@ -63,7 +61,6 @@ jobs:
 
     - name: Configure ParFlow
       run: |
-        source /etc/profile.d/modules.sh
         module purge
         module load anaconda3/2024.6
         module load cudatoolkit/12.6
@@ -89,12 +86,5 @@ jobs:
 
     - name: Run ParFlow Tests (GPU)
       run: |
-        source /etc/profile
-        source /etc/profile.d/modules.sh
-        module purge
-        module load cudatoolkit/12.6
-        module load openmpi/cuda-12.6/gcc/4.1.6
-        nvidia-smi || echo "No GPU found"
-        echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-not set}"
         cd build
         ctest --output-on-failure
