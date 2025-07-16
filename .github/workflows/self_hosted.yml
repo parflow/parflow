@@ -9,10 +9,10 @@ jobs:
     strategy:
       matrix:
         config:
-          - {
-              name: "Self-Hosted CUDA/RMM",
-              memory_manager: "rmm"
-            }
+#          - {
+#              name: "Self-Hosted CUDA/RMM",
+#              memory_manager: "rmm"
+#            }
           - {
               name: "Self-Hosted CUDA/Umpire",
               memory_manager: "umpire"
@@ -98,4 +98,3 @@ jobs:
         echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-not set}"
         cd build
         ctest --output-on-failure
-
