@@ -321,12 +321,21 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {
               Box box = BoxArrayGetBox(boxes, PV_box);
               /* find octree and region intersection */
+#ifdef PARFLOW_HAVE_CUDA
+              PV_ixl = pfmax(ix, BoxArrayMinCell(boxes, 0));
+              PV_iyl = pfmax(iy, BoxArrayMinCell(boxes, 1));
+              PV_izl = pfmax(iz, BoxArrayMinCell(boxes, 2));
+              PV_ixu = pfmin((ix + nx - 1), BoxArrayMaxCell(boxes, 0));
+              PV_iyu = pfmin((iy + ny - 1), BoxArrayMaxCell(boxes, 1));
+              PV_izu = pfmin((iz + nz - 1), BoxArrayMaxCell(boxes, 2));
+#else
               PV_ixl = pfmax(ix, box.lo[0]);
               PV_iyl = pfmax(iy, box.lo[1]);
               PV_izl = pfmax(iz, box.lo[2]);
               PV_ixu = pfmin((ix + nx - 1), box.up[0]);
               PV_iyu = pfmin((iy + ny - 1), box.up[1]);
               PV_izu = pfmin((iz + nz - 1), box.up[2]);
+#endif
 
               dp = SubvectorElt(d_sub, PV_ixl, PV_iyl, PV_izl);
               odp = SubvectorElt(od_sub, PV_ixl, PV_iyl, PV_izl);
@@ -446,12 +455,21 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {
               Box box = BoxArrayGetBox(boxes, PV_box);
               /* find octree and region intersection */
+#ifdef PARFLOW_HAVE_CUDA
+              PV_ixl = pfmax(ix, BoxArrayMinCell(boxes, 0));
+              PV_iyl = pfmax(iy, BoxArrayMinCell(boxes, 1));
+              PV_izl = pfmax(iz, BoxArrayMinCell(boxes, 2));
+              PV_ixu = pfmin((ix + nx - 1), BoxArrayMaxCell(boxes, 0));
+              PV_iyu = pfmin((iy + ny - 1), BoxArrayMaxCell(boxes, 1));
+              PV_izu = pfmin((iz + nz - 1), BoxArrayMaxCell(boxes, 2));
+#else
               PV_ixl = pfmax(ix, box.lo[0]);
               PV_iyl = pfmax(iy, box.lo[1]);
               PV_izl = pfmax(iz, box.lo[2]);
               PV_ixu = pfmin((ix + nx - 1), box.up[0]);
               PV_iyu = pfmin((iy + ny - 1), box.up[1]);
               PV_izu = pfmin((iz + nz - 1), box.up[2]);
+#endif
 
               dp = SubvectorElt(d_sub, PV_ixl, PV_iyl, PV_izl);
               odp = SubvectorElt(od_sub, PV_ixl, PV_iyl, PV_izl);
@@ -555,12 +573,21 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {
               Box box = BoxArrayGetBox(boxes, PV_box);
               /* find octree and region intersection */
+#ifdef PARFLOW_HAVE_CUDA
+              PV_ixl = pfmax(ix, BoxArrayMinCell(boxes, 0));
+              PV_iyl = pfmax(iy, BoxArrayMinCell(boxes, 1));
+              PV_izl = pfmax(iz, BoxArrayMinCell(boxes, 2));
+              PV_ixu = pfmin((ix + nx - 1), BoxArrayMaxCell(boxes, 0));
+              PV_iyu = pfmin((iy + ny - 1), BoxArrayMaxCell(boxes, 1));
+              PV_izu = pfmin((iz + nz - 1), BoxArrayMaxCell(boxes, 2));
+#else
               PV_ixl = pfmax(ix, box.lo[0]);
               PV_iyl = pfmax(iy, box.lo[1]);
               PV_izl = pfmax(iz, box.lo[2]);
               PV_ixu = pfmin((ix + nx - 1), box.up[0]);
               PV_iyu = pfmin((iy + ny - 1), box.up[1]);
               PV_izu = pfmin((iz + nz - 1), box.up[2]);
+#endif
 
               sp = SubvectorElt(s_sub, PV_ixl, PV_iyl, PV_izl);
               fp = SubvectorElt(f_sub, PV_ixl, PV_iyl, PV_izl);
