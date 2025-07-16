@@ -98,3 +98,4 @@ jobs:
         echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-not set}"
         cd build
         ctest --output-on-failure
+
