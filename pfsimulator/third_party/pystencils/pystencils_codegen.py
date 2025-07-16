@@ -84,3 +84,5 @@ def create_kernel_func(
     else:
         # no extra handling needed -> just invoke the kernel
         sfg.function(func_name)(*invoke(sfg, kernel))
+
+    return kernel
