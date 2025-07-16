@@ -355,17 +355,19 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
               const int ny_po = SubvectorNY(po_sub);
               const int nz_po = SubvectorNZ(po_sub);
 
-              PyCodegen_Flux_Base(dp, fp, odp, osp, pop, sp, z_mult_dat,
-                                  PV_ixu - PV_ixl + 1, PV_iyu - PV_iyl + 1, PV_izu - PV_izl + 1,
-                                  1, nx_f, nx_f * ny_f,
-                                  1, nx_f, nx_f * ny_f,
-                                  1, nx_f, nx_f * ny_f,
-                                  1, nx_f, nx_f * ny_f,
-                                  1, nx_po, nx_po * ny_po,
-                                  1, nx_f, nx_f * ny_f,
-                                  1, nx_f, nx_f * ny_f,
-                                  vol
-                                  );
+              if (PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu) {
+                  PyCodegen_Flux_Base(dp, fp, odp, osp, pop, sp, z_mult_dat,
+                                      PV_ixu - PV_ixl + 1, PV_iyu - PV_iyl + 1, PV_izu - PV_izl + 1,
+                                      1, nx_f, nx_f * ny_f,
+                                      1, nx_f, nx_f * ny_f,
+                                      1, nx_f, nx_f * ny_f,
+                                      1, nx_f, nx_f * ny_f,
+                                      1, nx_po, nx_po * ny_po,
+                                      1, nx_f, nx_f * ny_f,
+                                      1, nx_f, nx_f * ny_f,
+                                      vol
+                  );
+              }
           }
       } else {
           PARFLOW_ERROR("Pystencils support for base flux computation not available with mesh refinement");
@@ -486,19 +488,21 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
               const int ny_f = SubvectorNY(f_sub);
               const int nz_f = SubvectorNZ(f_sub);
 
-              PyCodegen_Flux_AddCompressibleStorage(dp, fp, odp, opp, osp, pp, sp, ss, z_mult_dat,
-                                                    PV_ixu - PV_ixl + 1, PV_iyu - PV_iyl + 1, PV_izu - PV_izl + 1,
-                                                    1, nx_f, nx_f * ny_f,
-                                                    1, nx_f, nx_f * ny_f,
-                                                    1, nx_f, nx_f * ny_f,
-                                                    1, nx_f, nx_f * ny_f,
-                                                    1, nx_f, nx_f * ny_f,
-                                                    1, nx_f, nx_f * ny_f,
-                                                    1, nx_f, nx_f * ny_f,
-                                                    1, nx_f, nx_f * ny_f,
-                                                    1, nx_f, nx_f * ny_f,
-                                                    vol
-              );
+              if (PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu) {
+                  PyCodegen_Flux_AddCompressibleStorage(dp, fp, odp, opp, osp, pp, sp, ss, z_mult_dat,
+                                                        PV_ixu - PV_ixl + 1, PV_iyu - PV_iyl + 1, PV_izu - PV_izl + 1,
+                                                        1, nx_f, nx_f * ny_f,
+                                                        1, nx_f, nx_f * ny_f,
+                                                        1, nx_f, nx_f * ny_f,
+                                                        1, nx_f, nx_f * ny_f,
+                                                        1, nx_f, nx_f * ny_f,
+                                                        1, nx_f, nx_f * ny_f,
+                                                        1, nx_f, nx_f * ny_f,
+                                                        1, nx_f, nx_f * ny_f,
+                                                        1, nx_f, nx_f * ny_f,
+                                                        vol
+                  );
+              }
           }
       } else {
           PARFLOW_ERROR("Pystencils support for compressible storage"
@@ -598,15 +602,17 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
               const int ny_f = SubvectorNY(f_sub);
               const int nz_f = SubvectorNZ(f_sub);
 
-              PyCodegen_Flux_AddSourceTerms(et, fp, sp, z_mult_dat,
-                                           PV_ixu - PV_ixl + 1, PV_iyu - PV_iyl + 1, PV_izu - PV_izl + 1,
-                                           1, nx_f, nx_f * ny_f,
-                                           1, nx_f, nx_f * ny_f,
-                                           1, nx_f, nx_f * ny_f,
-                                           1, nx_f, nx_f * ny_f,
-                                           dt,
-                                           vol
-              );
+              if (PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu) {
+                  PyCodegen_Flux_AddSourceTerms(et, fp, sp, z_mult_dat,
+                                                PV_ixu - PV_ixl + 1, PV_iyu - PV_iyl + 1, PV_izu - PV_izl + 1,
+                                                1, nx_f, nx_f * ny_f,
+                                                1, nx_f, nx_f * ny_f,
+                                                1, nx_f, nx_f * ny_f,
+                                                1, nx_f, nx_f * ny_f,
+                                                dt,
+                                                vol
+                  );
+              }
           }
       } else {
           PARFLOW_ERROR("Pystencils support for flux source terms computation not available with mesh refinement");
