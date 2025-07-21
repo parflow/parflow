@@ -454,9 +454,11 @@ jobs:
 
           # Set Hypre accelerator backend
           if [[ "${{ matrix.config.backend }}" == "cuda" ]]; then
-            BACKEND="CUDA"    # GPU
+            HAS_CUDA="ON"
+            BACKEND="CUDA"
           else
-            BACKEND="OPENMP"  # CPU
+            HAS_CUDA="OFF"
+            BACKEND=""
           fi
 
           # Install Hypre. See https://hypre.readthedocs.io/en/latest/ch-misc.html#build-system-options
@@ -465,10 +467,10 @@ jobs:
                 -DCMAKE_CXX_COMPILER=mpicxx                  \
                 -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}"  \
                 -DHYPRE_ENABLE_MPI="ON"                      \
-                -DHYPRE_ENABLE_${BACKEND}="ON"
+                -DHYPRE_ENABLE_CUDA="${HAS_CUDA}"
           cmake --build bld --parallel 4
           cmake --install bld
-          echo "" && echo "Successfully built Hypre-${BACKEND}"
+          echo "" && echo "Successfully built Hypre ${BACKEND}"
         fi
 
     - name: ParFlow CMake Configure
