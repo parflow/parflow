@@ -69,22 +69,41 @@ PDI is configured via a YAML file (`conf.yml`), which defines the data specifica
 /parflow/pfsimulator/third_party/pdi/conf.yml
 ```
 
-It describes the vector data structure that ParFlow uses to store physical parameters such as pressure, saturation, etc. When running ParFlow with PDI, ensure that `conf.yml` is copied to your working directory. For example, add the following to your TCL script:
+It describes the vector data structure that ParFlow uses to store physical parameters such as pressure, saturation, etc. When running ParFlow with PDI, ensure that `conf.yml` is copied to your working directory.
+
+### Copying the conf.yml Configuration File
+
+To use the required conf.yml file in your working directory, you can copy it using one of the following methods depending on your scripting environment:
+
+In a TCL script:
 
 ```tcl
 file copy -force /parflow/pfsimulator/third_party/pdi/conf.yml ./
-
 ```
-Or, in a bash sript:
+
+In a Python script:
+
+```python
+import shutil
+
+# Source and destination paths
+src = '/parflow/pfsimulator/third_party/pdi/conf.yml'
+dst = './conf.yml'
+
+# Copy file with overwrite
+shutil.copy2(src, dst)
+```
+
+In a Bash script:
 
 ```shell
 scp /parflow/pfsimulator/third_party/pdi/conf.yml .
 ```
-## Exposing Solver Outputs to PDI
+## Usage: Enabling PDI Output in Solver Configuration
 
 To expose ParFlow outputs through PDI, enable the following options in your solver configuration.
 
-### Impec Solver
+### Configurations for Impec Solver
 #### Python Example:
 ```python
 {run_name}.Solver.WritePDISubsurfData = True
@@ -104,7 +123,7 @@ pfset Solver.WritePDIWells True
 pfset Solver.WritePDIConcentration True
 ```
 
-### Richards solver
+### Configurations for Richards solver
 #### Python Example:
 ```python
 {run_name}.Solver.WritePDISubsurfData = True
@@ -138,7 +157,7 @@ pfset Solver.WritePDIOverlandSum True
 pfset Solver.WritePDIOverlandBCFlux True
 ```
 
-### LB solver
+### Configurations for LB solver
 #### Python Example:
 ```python
 {run_name}.Solver.WritePDISubsurfData = True
@@ -164,15 +183,15 @@ binary files for a given base name.
 
 The script processes all matching HDF5 files, extracts relevant data, and validates
 it against the corresponding PFB file. This includes analyzing subvectors and
-applying optional tolerance thresholds to identify discrepancies.  
+applying optional tolerance thresholds to identify discrepancies.
 
-To verify pressure data outputs for `run_name`, run:
+For example, to verify pressure data outputs for `run_name`, use:
 
 ```shell
 python /parflow/pftools/python/parflow/cli/compare_pdi_pfb.py run_name.press
 ```
 
-## For Developers
+## Further Documentation for Developers
 
-For additional details on the structure of conf.yml and the internal implementation
-of PDI, please refer to the [PDI README.md](/https://github.com/parflow/parflow/tree/master/pfsimulator/third_party/pdi/README.md) located in the `/parflow/pfsimulator/third_party/pdi/` directory.
+For more information about the structure of `conf.yml `and the internal implementation
+of PDI, see the [PDI README.md](/https://github.com/parflow/parflow/tree/master/pfsimulator/third_party/pdi/README.md in the `/parflow/pfsimulator/third_party/pdi/` directory.

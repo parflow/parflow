@@ -299,7 +299,7 @@ if (${PARFLOW_ENABLE_PDI} OR DEFINED PDI_ROOT)
   # These libraries must be found to ensure proper functionality.
   find_package(PARACONF REQUIRED)
   find_package(SPDLOG REQUIRED)
-endif (${PDI_FOUND})
+  endif (${PDI_FOUND})
 endif (${PARFLOW_ENABLE_PDI} OR DEFINED PDI_ROOT)
 
 #-----------------------------------------------------------------------------

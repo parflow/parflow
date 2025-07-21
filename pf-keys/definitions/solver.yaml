@@ -2731,7 +2731,7 @@ Solver:
 
   WritePDIDZMultiplier:
     help: >
-      [Type: boolean/string] This key is used to specifiy the exposrue of DZ
+      [Type: boolean/string] This key is used to specifiy the exposure of DZ
       multipliers to PDI library.
     default: False
     domains:
@@ -2766,7 +2766,7 @@ Solver:
 
   WritePDIOverlandSum:
     help: >
-      [Type: boolean/string] This key is used to specify calculation and exposrue
+      [Type: boolean/string] This key is used to specify calculation and exposure
       of the total overland outflow from the domain PDI library as a running
       cumulative amount. This is integrated along all domain boundaries and is
       calculated any location that slopes at the edge of the domain point outward.

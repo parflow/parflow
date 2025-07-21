@@ -4775,7 +4775,7 @@ in the timing information section.
       <runname>.Solver.WriteSiloOverlandSum = True       ## Python syntax
 
 *string* **Solver.WriteSiloTop** False Key used to control writing of
-two Silo files for the top of the domain.  'TopZIndex' is a NX * NY
+two Silo files for the top of the domain. 'TopZIndex' is a NX * NY
 file with the Z index of the top of the domain. 'TopPatch' is the
 Patch index for the top of the domain.  A value of -1 indicates an
 (i,j) column does not intersect the domain.
@@ -4789,7 +4789,7 @@ Patch index for the top of the domain.  A value of -1 indicates an
 
       <runname>.Solver.WriteSiloTop = True            ## Python syntax
 
-*string* **Solver.WritePDISubsurfData** This key is used to specify exposing of
+*string* **Solver.WritePDISubsurfData** False This key is used to specify exposing of
       the subsurface data, Permeability and Porosity to PDI library. The data is
       exposed after it is generated and before the main time stepping loop - only
       once during the run. The data is subsequently managed by the PDI
@@ -4803,7 +4803,7 @@ Patch index for the top of the domain.  A value of -1 indicates an
 
       <runname>.Solver.WritePDISubsurfData = True       ## Python syntax
 
-*string* **Solver.WritePDIMannings** This key is used to specify exposing of
+*string* **Solver.WritePDIMannings** False This key is used to specify exposing of
       Manning’s roughness data to PDI library. The data exposure is controlled
       by values in the timing information section and is subsequently managed
       by the PDI plugin according to the specification tree defined in conf.yaml.
@@ -4816,7 +4816,7 @@ Patch index for the top of the domain.  A value of -1 indicates an
 
       <runname>.Solver.WritePDIMannings = True       ## Python syntax
 
-*string* **Solver.WritePDISlopes** This key is used to turn on exposure of x
+*string* **Solver.WritePDISlopes** False This key is used to turn on exposure of x
       and y slope data to PDI library. The data exposure is controlled by values
       in the timing information section and is subsequently managed by the PDI
       plugin according to the specification tree defined in conf.yaml.
@@ -4829,7 +4829,7 @@ Patch index for the top of the domain.  A value of -1 indicates an
 
       <runname>.Solver.WritePDISlopes = True       ## Python syntax
 
-*string* **Solver.WritePDIPressure** This key is used to specify exposure of
+*string* **Solver.WritePDIPressure** False This key is used to specify exposure of
       pressure data to PDI library. The data exposure is controlled by values
       in the timing information section and is subsequently managed by the PDI
       plugin according to the specification tree defined in conf.yaml.
@@ -4842,7 +4842,7 @@ Patch index for the top of the domain.  A value of -1 indicates an
 
       <runname>.Solver.WritePDIPressure = True       ## Python syntax
 
-*string* **Solver.WritePDISpecificStorage** This key is used to specify exposure
+*string* **Solver.WritePDISpecificStorage** False This key is used to specify exposure
       of specific storage data to PDI library. The data exposure is controlled
       by values in the timing information section and is subsequently managed by
       the PDI plugin according to the specification tree defined in conf.yaml.
@@ -4855,7 +4855,7 @@ Patch index for the top of the domain.  A value of -1 indicates an
 
       <runname>.Solver.WritePDISpecificStorage = True       ## Python syntax
 
-*string* **Solver.WritePDIVelocities** This key is used to turn on exposure of
+*string* **Solver.WritePDIVelocities** False This key is used to turn on exposure of
       x,y,and z velocity data to PDI library. The data exposure is controlled by
       values in the timing information section and is subsequently managed by the
       PDI plugin according to the specification tree defined in conf.yaml.
@@ -4868,7 +4868,7 @@ Patch index for the top of the domain.  A value of -1 indicates an
 
       <runname>.Solver.WritePDIVelocities = True       ## Python syntax
 
-*string* **Solver.WritePDISaturation** This key is used to specify exposre of
+*string* **Solver.WritePDISaturation** False This key is used to specify exposre of
       the saturation data to PDI library. The data exposure is controlled by
       values in the timing information section and is subsequently managed by
       the PDI plugin according to the specification tree defined in conf.yaml.
@@ -4881,7 +4881,7 @@ Patch index for the top of the domain.  A value of -1 indicates an
 
       <runname>.Solver.WritePDISaturation = True       ## Python syntax
 
-*string* **Solver.WritePDIMask** This key is used to specify exposure of mask
+*string* **Solver.WritePDIMask** False This key is used to specify exposure of mask
       data to PDI library. The mask contains values equal to one for active
       cells and zero for inactive cells. The data exposure is controlled by
       values in the timing information section and is subsequently managed by
@@ -4895,7 +4895,7 @@ Patch index for the top of the domain.  A value of -1 indicates an
 
       <runname>.Solver.WritePDIMask = True       ## Python syntax
 
-*string* **Solver.WritePDIDZMultiplier** This key is used to specifiy the exposrue
+*string* **Solver.WritePDIDZMultiplier** False This key is used to specifiy the exposrue
       of DZ multipliers to PDI library.
 
 .. container:: list
@@ -4906,7 +4906,7 @@ Patch index for the top of the domain.  A value of -1 indicates an
 
       <runname>.Solver.WritePDIDZMultiplier = True       ## Python syntax
 
-*string* **Solver.WritePDIEvapTransSum** This key is used to specify exposure
+*string* **Solver.WritePDIEvapTransSum** False This key is used to specify exposure
       of evaporation and rainfall flux data to PDI libraary, cumulative amount.
       This data comes from either clm or from external calls to ParFlow such as
       WRF. This data is in units of :math:`[L3]`. The data exposure is controlled

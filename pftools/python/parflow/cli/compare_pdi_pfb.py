@@ -312,7 +312,7 @@ def compare_files(name):
     print(f"\n_______________________________ \nData comparison\n")
     error = 0
     for igrid in range(numgrids):
-        error = np.sum(
+        error += np.sum(
             np.abs(pfb_subvectors[igrid]["data"] - pdi_subvectors[igrid]["data"])
         )
 
