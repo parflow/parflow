@@ -3,7 +3,7 @@ import sympy as sp
 from pystencilssfg import SourceFileGenerator
 
 from pystencils import Kernel
-from pystencils.codegen.properties import FieldBasePtr
+from pystencils.codegen.properties import FieldBasePtr, FieldStride, FieldShape
 from pystencils.types import PsPointerType, PsCustomType
 from pystencils.types.quick import Fp, SInt
 
@@ -19,64 +19,69 @@ def create_kernel_wrapper(
     params += [sfg.var(f"i{d}", SInt(32)) for d in ["x", "y", "z"]]
     params += [sfg.var(f"n{d}", SInt(32)) for d in ["x", "y", "z"]]
 
+    fieldnames = []
     fetch_subvectors = []
-    fetch_strides = []
+    fetch_sizes = []
+
+    kernel_symbols = []
+
+    fieldstrides = []
     for param in kernel.parameters:
         if param.wrapped.get_properties(FieldBasePtr):
             fieldname = param.name
             fieldname_sub = f"{fieldname}_sub"
 
+            fieldnames += [fieldname]
+
             params += [sfg.var(fieldname_sub, PsPointerType(PsCustomType("Subvector")))]
 
-            fetch_subvectors += [f"""
-        double* {fieldname} = SubvectorElt({fieldname_sub}, PV_ixl, PV_iyl, PV_izl);"""]
+            fetch_subvectors += [f"double* {fieldname} = SubvectorElt({fieldname_sub}, PV_ixl, PV_iyl, PV_izl);\n"]
 
-            fetch_strides += [f"""
-        const int nx_{fieldname} = SubvectorNX({fieldname_sub});
-        const int ny_{fieldname} = SubvectorNY({fieldname_sub});
-        const int nz_{fieldname} = SubvectorNZ({fieldname_sub});"""]
+            nx, ny, nz = f"nx_{fieldname}", f"ny_{fieldname}", f"nz_{fieldname}"
+            fetch_sizes += [f"const int {nx} = SubvectorNX({fieldname_sub});\n"]
+            fetch_sizes += [f"const int {ny} = SubvectorNY({fieldname_sub});\n"]
+            fetch_sizes += [f"const int {nz} = SubvectorNZ({fieldname_sub});\n"]
+
+            fieldstrides += ["1", f"{nx}", f"{nx} * {ny}"]
+        elif not (param.wrapped.get_properties(FieldStride) or param.wrapped.get_properties(FieldShape)):
+            params += [param]
+            kernel_symbols += [param.name]
 
     sfg.include("parflow.h")
 
-    code = f"""
-if (r == 0 && GrGeomSolidInteriorBoxes(gr_domain)) {{
-    int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;
-    int *PV_visiting = NULL;
-    PF_UNUSED(PV_visiting);
-    BoxArray *boxes = GrGeomSolidInteriorBoxes(gr_domain);
-    for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {{
-        Box box = BoxArrayGetBox(boxes, PV_box);
-        /* find octree and region intersection */
-#ifdef PARFLOW_HAVE_CUDA
-        PV_ixl = pfmax(ix, BoxArrayMinCell(boxes, 0));
-        PV_iyl = pfmax(iy, BoxArrayMinCell(boxes, 1));
-        PV_izl = pfmax(iz, BoxArrayMinCell(boxes, 2));
-        PV_ixu = pfmin((ix + nx - 1), BoxArrayMaxCell(boxes, 0));
-        PV_iyu = pfmin((iy + ny - 1), BoxArrayMaxCell(boxes, 1));
-        PV_izu = pfmin((iz + nz - 1), BoxArrayMaxCell(boxes, 2));
-#else
-        PV_ixl = pfmax(ix, box.lo[0]);
-        PV_iyl = pfmax(iy, box.lo[1]);
-        PV_izl = pfmax(iz, box.lo[2]);
-        PV_ixu = pfmin((ix + nx - 1), box.up[0]);
-        PV_iyu = pfmin((iy + ny - 1), box.up[1]);
-        PV_izu = pfmin((iz + nz - 1), box.up[2]);
-#endif
+    code = sfg.branch("r == 0 && GrGeomSolidInteriorBoxes(gr_domain)")(f"""
+int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;
+int *PV_visiting = NULL;
+PF_UNUSED(PV_visiting);
+BoxArray *boxes = GrGeomSolidInteriorBoxes(gr_domain);
+for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {{
+    Box box = BoxArrayGetBox(boxes, PV_box);
+    /* find octree and region intersection */
+    PV_ixl = pfmax(ix, box.lo[0]);
+    PV_iyl = pfmax(iy, box.lo[1]);
+    PV_izl = pfmax(iz, box.lo[2]);
+    PV_ixu = pfmin((ix + nx - 1), box.up[0]);
+    PV_iyu = pfmin((iy + ny - 1), box.up[1]);
+    PV_izu = pfmin((iz + nz - 1), box.up[2]);
 
-{"".join(fetch_subvectors)}
+    {"    ".join(fetch_subvectors)}
 
-{"".join(fetch_strides)}
+    {"    ".join(fetch_sizes)}
+
+    if (PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu) {{
+        {kernel.name[:-4]}(
+            {", ".join(fieldnames)},
+            PV_ixu - PV_ixl + 1, PV_iyu - PV_iyl + 1, PV_izu - PV_izl + 1,
+            {", ".join(fieldstrides)},
+            {", ".join(kernel_symbols)}
+        );
     }}
 }}
-"""
+    """)
 
 
     sfg.function(f"{kernel.name}_wrapper").params(*params)(
         code,
-        # TODO: invoke kernel with corresponding args
-        #sfg.branch("PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu")(
-        #    *invoke(sfg, kernel)
-        #)
     )
 
 
