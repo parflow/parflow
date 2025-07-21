@@ -121,9 +121,9 @@ jobs:
             memory_manager: "none"
           }
         - {
-            name: "Ubuntu 24.04 GCC Python",
-            os: ubuntu-24.04,
-            cudaos: 'ubuntu2404',
+            name: "Ubuntu 22.04 GCC Python",
+            os: ubuntu-22.04,
+            cudaos: 'ubuntu2204',
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "true",
             backend: "none",
@@ -143,9 +143,9 @@ jobs:
             memory_manager: "none"
           }
         - {
-            name: "Ubuntu 24.04 GCC OMP",
-            os: ubuntu-24.04,
-            cudaos: 'ubuntu2404',
+            name: "Ubuntu 22.04 GCC OMP",
+            os: ubuntu-22.04,
+            cudaos: 'ubuntu2204',
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
             backend: "omp",
