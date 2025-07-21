@@ -217,7 +217,15 @@ jobs:
         sudo apt-get -qq update
         sudo apt-get -qq install curl cmake build-essential tcl-dev tk-dev gfortran hdf5-helpers libcurl4 libcurl4-gnutls-dev
 
-    - name: HDF5 and OpenMPI Install
+    - name: HDF5 and OpenMPI Install on Ubuntu 22.04
+      if: matrix.config.os == 'ubuntu-22.04'
+      run: |
+        sudo apt-get -qq update
+        sudo apt -qq install libhdf5-openmpi-103 libhdf5-openmpi-dev
+
+    # libhdf5-openmpi-103 has been renamed in Ubuntu 24.04.
+    - name: HDF5 and OpenMPI Install on Ubuntu 24.04
+      if: matrix.config.os == 'ubuntu-24.04'
       run: |
         sudo apt-get -qq update
         sudo apt -qq install libhdf5-openmpi-103-1t64 libhdf5-openmpi-dev
