@@ -4,7 +4,9 @@ on: [push, pull_request]
 
 jobs:
   style-check:
-     runs-on: ubuntu-22.04
+     # Runs a check on C and Python coding style.  Code
+     # should not be merged unless the style check passes.
+     runs-on: ubuntu-24.04
      name: Check Style
      steps:
        - name: Checkout commit
@@ -97,6 +99,17 @@ jobs:
     strategy:
       # fail-fast: true
       matrix:
+        # Basic philosophy is to check builds with different compilers, backends
+        # and OS.
+        # 1) Should retain checks for GCC and LLVM
+        # 2) Should at minimum check OMP, CUDA, and Kokkos backends
+        # 3) Most checks an be run on the same version of Ubuntu but at least one older
+        #    version should be retained to verify we still run on older systems.
+        # 4) Should check Python build, currently we retain non-Python build but
+        #    the non-Python build may be deprecated
+        #
+        # Other builds maybe included to test other configuration options as deemed
+        # useful.
         config:
         - {
             name: "Ubuntu 24.04 GCC",
@@ -143,9 +156,9 @@ jobs:
             memory_manager: "none"
           }
         - {
-            name: "Ubuntu 22.04 GCC OMP",
-            os: ubuntu-22.04,
-            cudaos: 'ubuntu2204',
+            name: "Ubuntu 24.04 GCC OMP",
+            os: ubuntu-24.04,
+            cudaos: 'ubuntu2404',
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
             backend: "omp",
@@ -352,12 +365,12 @@ jobs:
         if [[ "$CACHE_HIT" != 'true' ]]; then
           git clone --recursive https://github.com/LLNL/Umpire.git
           cd Umpire
-          cmake -S . -B bld                                             \
+          cmake -S . -B build                                             \
                      -DCMAKE_CXX_COMPILER=mpicxx                        \
                      -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}/Umpire" \
                      -DENABLE_CUDA="ON"
-          cmake --build bld --parallel 4
-          cmake --install bld
+          cmake --build build --parallel 4
+          cmake --install build
         fi
         echo "UMPIRE_FLAGS=-Dumpire_ROOT=$PARFLOW_DEP_DIR/Umpire" >> $GITHUB_ENV
 
@@ -470,14 +483,14 @@ jobs:
           fi
 
           # Install Hypre. See https://hypre.readthedocs.io/en/latest/ch-misc.html#build-system-options
-          cmake -S src -B bld                                \
+          cmake -S src -B build                                \
                 -DCMAKE_C_COMPILER=mpicc                     \
                 -DCMAKE_CXX_COMPILER=mpicxx                  \
                 -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}"  \
                 -DHYPRE_ENABLE_MPI="ON"                      \
                 -DHYPRE_ENABLE_CUDA="${HAS_CUDA}"
-          cmake --build bld --parallel 4
-          cmake --install bld
+          cmake --build build --parallel 4
+          cmake --install build
           echo "" && echo "Successfully built Hypre ${BACKEND}"
         fi
 
