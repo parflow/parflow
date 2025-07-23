@@ -312,6 +312,21 @@ if (${PARFLOW_ENABLE_HDF5} OR DEFINED HDF5_ROOT)
 endif (${PARFLOW_ENABLE_HDF5} OR DEFINED HDF5_ROOT)
 
 #-----------------------------------------------------------------------------
+# PDI
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_PDI False CACHE BOOL "Build with PDI")
+if (${PARFLOW_ENABLE_PDI} OR DEFINED PDI_ROOT)
+  find_package(PDI)
+  if (${PDI_FOUND})
+    set(PARFLOW_HAVE_PDI "yes")
+    # Additional dependencies required when PDI is enabled.
+    # These libraries must be found to ensure proper functionality.
+    find_package(PARACONF REQUIRED)
+    find_package(SPDLOG REQUIRED)
+  endif (${PDI_FOUND})
+endif (${PARFLOW_ENABLE_PDI} OR DEFINED PDI_ROOT)
+
+#-----------------------------------------------------------------------------
 # Hypre
 #-----------------------------------------------------------------------------
 option(PARFLOW_ENABLE_HYPRE "Build with Hypre" "OFF")
