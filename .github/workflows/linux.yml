@@ -1,4 +1,4 @@
-name: ParFlow CI Test
+name: Linux CI Tests
 
 on: [push, pull_request]
 
