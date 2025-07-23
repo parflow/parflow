@@ -3278,7 +3278,7 @@ specifies the type of boundary condition data given for patch
 *patch_name*. Possible values for this key are **DirEquilRefPatch,
 DirEquilPLinear, FluxConst, FluxVolumetric, PressureFile, FluxFile,
 OverlandFow, OverlandFlowPFB, SeepageFace, OverlandKinematic,
-OverlandDiffusive** and **ExactSolution**. The choice
+OverlandDiffusive**, **ExactSolution** and **DeepAquifer**. The choice
 **DirEquilRefPatch** specifies that the pressure on the specified patch
 will be in hydrostatic equilibrium with a constant reference pressure
 given on a reference patch. The choice **DirEquilPLinear** specifies
@@ -3319,8 +3319,11 @@ solution is to be applied as a Dirichlet boundary condition on the
 respective patch. Note that this does not change according to any cycle.
 Instead, time dependence is handled by evaluating at the time the
 boundary condition value is desired. The solution is specified by using
-a predefined function (choices are described below). NOTE: These last
-six types of boundary condition input is for *Richards’ equation cases
+a predefined function (choices are described below). 
+The choice {\bf DeepAquifer} turns on groundwater interactions with a 
+deep aquifer as described in :cite:t:`Rahman2018`. The aquifer is set with the 
+Specific Yield and Thickness parameters, detailed below. NOTE: These last
+seven types of boundary condition input are for *Richards’ equation cases
 only!*
 
 .. container:: list
@@ -3515,6 +3518,38 @@ The choices for this key correspond to pressures as follows.
 
 **XYZTPlus1PermTensor**: 
    :math:`p = xyzt + 1`
+
+
+*string*
+**Patch.\ *patch_name*.BCPressure.DeepAquifer.\ *parameter*.Type**
+no default
+This key is required when the DeepAquifer boundary condition is chosen.
+It must be specified for both DeepAquifer parameters *SpecificYield* and *AquiferDepth*. 
+This key specifies the type of the DeepAquifer parameter: *Constant* will set the parameter to a value set in the key **Patch.\ *patch_name*.BCPressure.DeepAquifer.\ *parameter*.Value**, while *FileName* will set the parameter to values read from the file provided in the key **Patch.\ *patch_name*.BCPressure.DeepAquifer.\ *parameter*.FileName**.
+
+.. container:: list
+   ::
+
+      pfset Patch.bottom.BCPressure.DeepAquifer.SpecificYield.Type Constant
+      pfset Patch.bottom.BCPressure.DeepAquifer.AquiferDepth.Type FileName
+
+*double*
+**Patch.\ *patch_name*.BCPressure.DeepAquifer.\ *parameter*.Value**
+no default
+This key will set the DeepAquifer *parameter* to a constant value.
+
+.. container:: list
+   ::
+      pfset Patch.bottom.BCPressure.DeepAquifer.SpecificYield.Value 0.1
+
+*string*
+**Patch.\ *patch_name*.BCPressure.DeepAquifer.\ *parameter*.FileName**
+no default
+This key will set the DeepAquifer *parameter* to the values read from the provided file.
+
+.. container:: list
+   ::
+      pfset Patch.bottom.BCPressure.DeepAquifer.AquiferDepth.FileName "filename"
 
 Example Script:
 
@@ -4571,6 +4606,18 @@ intersect the domain.  The data is written as a ParFlow binary file.
       pfset Solver.PrintTop False                    ## TCL syntax
 
       <runname>.Solver.PrintTop = False              ## Python syntax
+
+*string* **Solver.PrintBottom** False This key is used to turn on printing
+of the bottom of domain data.  'BottomZIndex' is a NX * NY file with the Z
+index of the top of the domain.  The data is written as a ParFlow binary file.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.PrintBottom False                 ## TCL syntax
+
+      <runname>.Solver.PrintBottom = False           ## Python syntax
       
 *string* **Solver.PrintWells** True This key is used to turn on
 collection and printing of the well data. The data is collected at
@@ -4788,8 +4835,21 @@ Patch index for the top of the domain.  A value of -1 indicates an
       pfset Solver.WriteSiloTop True                  ## TCL syntax
 
       <runname>.Solver.WriteSiloTop = True            ## Python syntax
-      
-      
+
+*string* **Solver.WriteSiloBottom** False Key used to control writing of
+one Silo file for the bottom of the domain.  'BottomZIndex' is a NX * NY
+file with the Z index of the bottom of the domain.
+
+.. container:: list
+
+
+   ::
+
+      pfset Solver.WriteSiloBottom True               ## TCL syntax
+
+      <runname>.Solver.WriteSiloBottom = True         ## Python syntax
+
+
 
 *string* **Solver.TerrainFollowingGrid** False This key specifies that a
 terrain-following coordinate transform is used for solver Richards. This

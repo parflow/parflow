@@ -110,6 +110,7 @@ typedef struct {
   PFModule  *overlandflow_eval;        //DOK
   PFModule  *overlandflow_eval_diff;         //@RMM
   PFModule  *overlandflow_eval_kin;  //@MCB
+  PFModule  *deepaquifer_eval;
 
   /* @RMM Variable dZ */
   PFModule  *dz_mult;           //rmm
@@ -141,6 +142,14 @@ typedef struct {
    */
   Vector         *patch_index_of_domain_top;
 
+  /*
+   * This is a NX * NY vector of Z indices to the bottom
+   * of the domain.
+   *
+   * -1 means domain is not present at that i,j index.
+   */
+  Vector         *index_of_domain_bottom;
+
   Vector         *permeability_x;
   Vector         *permeability_y;
   Vector         *permeability_z;
@@ -157,6 +166,10 @@ typedef struct {
   WellData       *well_data;
   ReservoirData       *reservoir_data;
   BCPressureData *bc_pressure_data;
+
+  /* DeepAquifer BC vectors */
+  Vector *specific_yield;
+  Vector *aquifer_depth;
 
   /*sk  overland flow*/
   Vector *x_slope;
@@ -235,6 +248,8 @@ typedef struct {
 #define ProblemOverlandFlowEval(problem)          ((problem)->overlandflow_eval)   //DOK
 #define ProblemOverlandFlowEvalDiff(problem)          ((problem)->overlandflow_eval_diff)   //@RMM
 #define ProblemOverlandFlowEvalKin(problem)  ((problem)->overlandflow_eval_kin) //@MCB
+#define ProblemDeepAquiferEval(problem)  \
+        ((problem)->deepaquifer_eval)
 
 #define ProblemdzScale(problem)            ((problem)->dz_mult)    //RMM
 #define ProblemRealSpaceZ(problem)            ((problem)->real_space_z)
@@ -274,6 +289,7 @@ typedef struct {
 
 #define ProblemDataIndexOfDomainTop(problem_data)  ((problem_data)->index_of_domain_top)
 #define ProblemDataPatchIndexOfDomainTop(problem_data)  ((problem_data)->patch_index_of_domain_top)
+#define ProblemDataIndexOfDomainBottom(problem_data)  ((problem_data)->index_of_domain_bottom)
 
 #define ProblemDataPermeabilityX(problem_data)  ((problem_data)->permeability_x)
 #define ProblemDataPermeabilityY(problem_data)  ((problem_data)->permeability_y)
@@ -285,6 +301,8 @@ typedef struct {
 #define ProblemDataWellData(problem_data)       ((problem_data)->well_data)
 #define ProblemDataReservoirData(problem_data)       ((problem_data)->reservoir_data)
 #define ProblemDataBCPressureData(problem_data) ((problem_data)->bc_pressure_data)
+#define ProblemDataSpecificYield(problem_data) ((problem_data)->specific_yield)
+#define ProblemDataAquiferDepth(problem_data) ((problem_data)->aquifer_depth)
 #define ProblemDataSpecificStorage(problem_data)((problem_data)->specific_storage)   //sk
 #define ProblemDataTSlopeX(problem_data)        ((problem_data)->x_slope)   //sk
 #define ProblemDataTSlopeY(problem_data)        ((problem_data)->y_slope)   //sk

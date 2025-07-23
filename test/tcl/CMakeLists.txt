@@ -13,6 +13,7 @@ set(TESTS
   small_domain.tcl
   richards_hydrostatic_equalibrium.tcl
   LW_surface_press.tcl
+  daq_infiltration.tcl
 )
 
 if(${PARFLOW_HAVE_HYPRE})

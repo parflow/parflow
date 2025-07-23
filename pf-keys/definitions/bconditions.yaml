@@ -254,7 +254,7 @@ Patch:
         help: >
           [Type: string] This key specifies the type of boundary condition data given for patch patch_name. Possible values for this key
           are DirEquilRefPatch, DirEquilPLinear, FluxConst, FluxVolumetric, PressureFile, FluxFile, OverlandFlow,
-          OverlandFlowPFB, SeepageFace, OverlandKinematic, OverlandDiffusive and ExactSolution.
+          OverlandFlowPFB, SeepageFace, OverlandKinematic, OverlandDiffusive, ExactSolution and DeepAquifer.
           The choice DirEquilRefPatch specifies that the pressure on the specified patch will be in hydrostatic equilibrium
           with a constant reference pressure given on a reference patch. The choice DirEquilPLinear specifies that the pressure
           on the specified patch will be in hydrostatic equilibrium with pressure given along a piecewise line at elevation
@@ -277,7 +277,11 @@ Patch:
           The choice ExactSolution specifies that an exact known solution is to be applied as a Dirichlet boundary condition
           on the respective patch. Note that this does not change according to any cycle. Instead, time dependence is handled
           by evaluating at the time the boundary condition value is desired. The solution is specified by using a predefined
-          function (choices are described below). NOTE: These last six types of boundary condition input is for Richards’
+          function (choices are described below). The choice 
+          DeepAquifer turns on groundwater interactions with a deep 
+          aquifer as described in [Rahman2018]. The aquifer is set with the 
+          Specific Yield and Aquifer Depth parameters, detailed below. NOTE: 
+          These last seven types of boundary condition input are for Richards’
           equation cases only!
         domains:
           EnumDomain:
@@ -306,6 +310,7 @@ Patch:
                 - OverlandKinematic
                 - OverlandDiffusive
                 - ExactSolution
+                - DeepAquifer
 
       Cycle:
         help: >
@@ -438,4 +443,80 @@ Patch:
               line, then linearly interpolating between the neighboring water-table height values onto the line.
             domains:
               DoubleValue:
+
+
+  BCPressure:
+    __class__: BCGeneralItem
+    __rst__:
+      skip:
+    __doc__: ''
+
+
+    DeepAquifer:
+      __doc__: >
+        This section defines the parameters necessary to describe the
+        interactions with the aquifer in the DeepAquifer boundary 
+        condition.
+
+      SpecificYield:
+        __doc__: >
+          In this section, the aquifer variable "Specific Yield" is set.
+
+        Type:
+          help: >
+            [Type: string] This key specifies the type of the DeepAquifer 
+            parameter: "Constant" will set the parameter to a constant value,
+            while "FileName" will set the parameter to values read from a 
+            file. 
+          domains:
+            EnumDomain:
+              enum_list:
+                - Constant
+                - FileName
+          
+        Value:
+          help: >
+            [Type: double] This key will set the DeepAquifer parameter to 
+            the inserted constant value.
+          domains:
+            DoubleValue:
+        
+        FileName:
+          help: >
+            [Type: string] This key will set the DeepAquifer parameter to 
+            the values read from the inserted file.
+          domains:
+            AnyString:
+            ValidFile:
+
+      AquiferDepth:
+        __doc__: >
+          In this section, the aquifer variable "Aquifer Depth" is set.
+
+        Type:
+          help: >
+            [Type: string] This key specifies the type of the DeepAquifer 
+            parameter: "Constant" will set the parameter to a constant value,
+            while "FileName" will set the parameter to values read from a 
+            file. 
+          domains:
+            EnumDomain:
+              enum_list:
+                - Constant
+                - FileName
+          
+        Value:
+          help: >
+            [Type: double] This key will set the DeepAquifer parameter to 
+            the inserted constant value.
+          domains:
+            DoubleValue:
+        
+        FileName:
+          help: >
+            [Type: string] This key will set the DeepAquifer parameter to 
+            the values read from the inserted file.
+          domains:
+            AnyString:
+            ValidFile:
 
