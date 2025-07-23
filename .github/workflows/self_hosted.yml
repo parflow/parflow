@@ -1,4 +1,4 @@
-name: run-tests-gpu
+name: GPU CI Tests
 
 on: [push, pull_request]
 
