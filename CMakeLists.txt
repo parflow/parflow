@@ -224,6 +224,30 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
     set(PARFLOW_HAVE_MPI "yes")
     set(HAVE_MPI ${PARFLOW_HAVE_MPI})
     message(STATUS "Found MPIEXEC: ${MPIEXEC}")    
+
+    # Need to pass MPI include header to nvcc to avoid missing <mpi.h> error at amps.h.
+    if (${PARFLOW_HAVE_CUDA})
+      if (MPI_C_INCLUDE_DIRS)
+        # Construct the compiler string for the include directories.
+        foreach(dir ${MPI_C_INCLUDE_DIRS})
+          string(APPEND CUDA_MPI_INCLUDES "-I${dir} ")
+        endforeach()
+      else()
+        # Guess MPI include dir from MPI_HOME (if it exists)
+        # https://gitlab.kitware.com/cmake/cmake/-/blob/master/Modules/FindMPI.cmake?ref_type=heads#L120
+        if(DEFINED CACHE{MPI_HOME})
+          set(CUDA_MPI_INCLUDES -I${MPI_HOME}/include)
+       elseif(DEFINED ENV{MPI_HOME})
+          set(CUDA_MPI_INCLUDES -I$ENV{MPI_HOME}/include)
+        endif()
+      endif()
+
+      if(CUDA_MPI_INCLUDES)
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} ${CUDA_MPI_INCLUDES}")
+      else()
+        message(WARNING "MPI include dir not found. This might cause compile problems when building CUDA sources with MPI headers.")
+      endif()
+    endif()
   endif (${MPI_C_FOUND})
 
 endif ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
