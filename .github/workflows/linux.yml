@@ -1,10 +1,12 @@
-name: ParFlow CI Test
+name: Linux CI Tests
 
 on: [push, pull_request]
 
 jobs:
   style-check:
-     runs-on: ubuntu-22.04
+     # Runs a check on C and Python coding style.  Code
+     # should not be merged unless the style check passes.
+     runs-on: ubuntu-24.04
      name: Check Style
      steps:
        - name: Checkout commit
@@ -97,6 +99,17 @@ jobs:
     strategy:
       # fail-fast: true
       matrix:
+        # Basic philosophy is to check builds with different compilers, backends
+        # and OS.
+        # 1) Should retain checks for GCC and LLVM
+        # 2) Should at minimum check OMP, CUDA, and Kokkos backends
+        # 3) Most checks an be run on the same version of Ubuntu but at least one older
+        #    version should be retained to verify we still run on older systems.
+        # 4) Should check Python build, currently we retain non-Python build but
+        #    the non-Python build may be deprecated
+        #
+        # Other builds maybe included to test other configuration options as deemed
+        # useful.
         config:
         - {
             name: "Ubuntu 24.04 GCC",
@@ -107,7 +120,8 @@ jobs:
             backend: "none",
             amps_layer: mpi1,
             netcdf: "true",
-            memory_manager: "none"
+            memory_manager: "none",
+            pdi: "false"
           }
         - {
             name: "Ubuntu 24.04 LLVM",
@@ -118,7 +132,8 @@ jobs:
             backend: "none",
             amps_layer: mpi1,
             netcdf: "true",
-            memory_manager: "none"
+            memory_manager: "none",
+            pdi: "false"
           }
         - {
             name: "Ubuntu 22.04 GCC Python",
@@ -129,7 +144,8 @@ jobs:
             backend: "none",
             amps_layer: mpi1,
             netcdf: "true",
-            memory_manager: "none"
+            memory_manager: "none",
+            pdi: "false"
           }
         - {
             name: "Ubuntu 24.04 GCC Python",
@@ -140,29 +156,32 @@ jobs:
             backend: "none",
             amps_layer: mpi1,
             netcdf: "false",
-            memory_manager: "none"
+            memory_manager: "none",
+            pdi: "false"
           }
         - {
-            name: "Ubuntu 22.04 GCC OMP",
-            os: ubuntu-22.04,
-            cudaos: 'ubuntu2204',
+            name: "Ubuntu 24.04 GCC OMP",
+            os: ubuntu-24.04,
+            cudaos: 'ubuntu2404',
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
             backend: "omp",
             amps_layer: mpi1,
             netcdf: "false",
-            memory_manager: "none"
+            memory_manager: "none",
+            pdi: "false"
           }
         - {
             name: "Ubuntu 24.04 LLVM OASIS3-MCT Build",
             os: ubuntu-24.04,
-            cudaos: 'ubuntu2204',
+            cudaos: 'ubuntu2404',
             cc: "clang-18", cxx: "clang++-18", fc: "gfortran",
             python: "false",
             backend: "omp",
             amps_layer: oas3,
             netcdf: "true",
-            memory_manager: "none"
+            memory_manager: "none",
+            pdi: "false"
           }
 #        - {
 #            name: "Ubuntu 24.04 GCC CUDA/RMM Build",
@@ -181,10 +200,11 @@ jobs:
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
             backend: "cuda",
-            cudaos: 'ubuntu2204',
+            cudaos: 'ubuntu2404',
             amps_layer: mpi1,
             netcdf: "false",
-            memory_manager: "umpire"
+            memory_manager: "umpire",
+            pdi: "false"
           }
 #        - {
 #            name: "Ubuntu 24.04 GCC Kokkos/RMM Build",
@@ -203,10 +223,23 @@ jobs:
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
             backend: "kokkos",
-            cudaos: 'ubuntu2204',
+            cudaos: 'ubuntu2404',
             amps_layer: mpi1,
             netcdf: "false",
-            memory_manager: "umpire"
+            memory_manager: "umpire",
+            pdi: "false"
+          }
+        - {
+            name: "Ubuntu 24.04 GCC PDI Build",
+            os: ubuntu-24.04,
+            cudaos: 'ubuntu2404',
+            cc: "gcc", cxx: "g++", fc: "gfortran",
+            python: "false",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "false",
+            memory_manager: "none",
+            pdi: "true"
           }
 
     steps:
@@ -253,7 +286,7 @@ jobs:
         cache-parflow-hit: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       with:
         path: "~/depend"
-        key: cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ matrix.config.memory_manager }}-${{ secrets.CACHE_VERSION }}
+        key: cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ matrix.config.memory_manager }}-${{ matrix.config.pdi }}-${{ secrets.CACHE_VERSION }}
 
     - name: Directory Setup
       run: |
@@ -305,27 +338,13 @@ jobs:
         fi
         echo "$HOME/depend/cmake-3.26.5-linux-x86_64/bin" >> $GITHUB_PATH
 
-    - name: NVidia Driver Install
+    - name: NVidia compiler and CUDA toolkit Install
       if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
-      run: |
-        sudo add-apt-repository -y ppa:graphics-drivers
-        sudo apt-get update -qq
-        sudo apt-get install -y nvidia-driver-535
-
-    - name: CUDA Install
-      if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
-      run: |
-        export CUDA_VERSION_MAJOR_MINOR=12.4.0
-        export CUDA_SHORT=12.4
-        export CUDA_OS=${{ matrix.config.cudaos }}
-        ./bin/install-cuda.sh
-        export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
-        echo "CUDA_HOME=${CUDA_HOME}" >> $GITHUB_ENV
-        export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
-        echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
-        export LIBRARY_PATH=${CUDA_HOME}/lib64/stubs
-        echo "LIBRARY_PATH=${LIBRARY_PATH}" >> $GITHUB_ENV
-        echo "${CUDA_HOME}/bin" >> $GITHUB_PATH
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: nvidia-cuda-toolkit nvidia-cuda-dev
+        version: 1.0
+        execute_install_scripts: true
 
     - name: UCX
       if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
@@ -366,11 +385,12 @@ jobs:
         if [[ "$CACHE_HIT" != 'true' ]]; then
           git clone --recursive https://github.com/LLNL/Umpire.git
           cd Umpire
-          mkdir build
-          cd build
-          cmake ../ -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR/Umpire -DENABLE_CUDA=On
-          make
-          make install
+          cmake -S . -B build                                             \
+                     -DCMAKE_CXX_COMPILER=mpicxx                        \
+                     -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}/Umpire" \
+                     -DENABLE_CUDA="ON"
+          cmake --build build --parallel 4
+          cmake --install build
         fi
         echo "UMPIRE_FLAGS=-Dumpire_ROOT=$PARFLOW_DEP_DIR/Umpire" >> $GITHUB_ENV
 
@@ -469,14 +489,54 @@ jobs:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          URL=https://github.com/hypre-space/hypre/archive/v2.26.0.tar.gz
-          mkdir hypre
-          cd hypre
-          curl -L $URL | tar --strip-components=1 -xz
-          cd src
-          ./configure --prefix=$PARFLOW_DEP_DIR
-          make -j 2 install
+          # Download
+          wget https://github.com/hypre-space/hypre/archive/v2.33.0.tar.gz
+          tar xf v2.33.0.tar.gz && cd hypre-2.33.0
+
+          # Set Hypre accelerator backend
+          if [[ "${{ matrix.config.backend }}" == "cuda" ]]; then
+            HAS_CUDA="ON"
+            BACKEND="CUDA"
+          else
+            HAS_CUDA="OFF"
+            BACKEND=""
+          fi
+
+          # Install Hypre. See https://hypre.readthedocs.io/en/latest/ch-misc.html#build-system-options
+          cmake -S src -B build                                \
+                -DCMAKE_C_COMPILER=mpicc                     \
+                -DCMAKE_CXX_COMPILER=mpicxx                  \
+                -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}"  \
+                -DHYPRE_ENABLE_MPI="ON"                      \
+                -DHYPRE_ENABLE_CUDA="${HAS_CUDA}"
+          cmake --build build --parallel 4
+          cmake --install build
+          echo "" && echo "Successfully built Hypre ${BACKEND}"
         fi
+
+    - name: PDI Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: matrix.config.pdi == 'true'
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          PDI_VERSION="1.8.1"
+          URL="https://github.com/pdidev/pdi/archive/refs/tags/1.8.1.tar.gz"
+          export curr_pdi=$(pwd)
+          mkdir -p pdi
+          cd pdi
+          curl -L $URL | tar --strip-components=1 -xz
+          # Configure and install PDI
+          mkdir build install
+          cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=../install
+          make -j 2 install
+          mv -v ${curr_pdi}/pdi ${PARFLOW_DEP_DIR}
+        fi
+
+        export LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/pdi/install/lib:${LD_LIBRARY_PATH}
+        echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+        echo "PDI_FLAGS=-DPDI_ROOT=${PARFLOW_DEP_DIR}/pdi/install" >> $GITHUB_ENV
 
     - name: ParFlow CMake Configure
       run: |
@@ -503,14 +563,15 @@ jobs:
            -DSILO_ROOT=$PARFLOW_DEP_DIR                                 \
            -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }}          \
            -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR                          \
-           $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS $UMPIRE_FLAGS
+           $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS $UMPIRE_FLAGS $PDI_FLAGS
 
     - name: ParFlow CMake Build
       run: (cd build; make -j 2 install)
 
     # Can't test with GPU since have no GPU hardware on testing nodes, GPU test is build only
+    # PDI testing requires a configuration file for specification tree, so for now, it is only being built and not tested.
     - name: ParFlow CTest
-      if: matrix.config.backend != 'cuda' && matrix.config.backend != 'kokkos'
+      if: matrix.config.backend != 'cuda' && matrix.config.backend != 'kokkos' && matrix.config.pdi != 'true'
       run: |
         export OMPI_MCA_rmaps_base_oversubscribe=1
         export OMP_NUM_THREADS=1

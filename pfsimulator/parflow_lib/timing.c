@@ -61,6 +61,7 @@ void  NewTiming()
   RegisterTiming("PFSOL Read");
   RegisterTiming("Clustering");
   RegisterTiming("Netcdf I/O");
+  RegisterTiming("PDI I/O");
 #ifdef VECTOR_UPDATE_TIMING
   RegisterTiming("VectorUpdate");
 #endif
