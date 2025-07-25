@@ -77,7 +77,9 @@ for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {{
         );
     }}
 }}
-    """)
+    """)("""
+    printf(\"\\n\\nPystencils support unavailable for mesh refinement at file %s and line %d\\n\", __FILE__, __LINE__);
+    exit(1);""")
 
 
     sfg.function(f"{kernel.name[:-4]}_wrapper").params(*params)(

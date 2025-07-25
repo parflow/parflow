@@ -313,56 +313,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 #ifdef PARFLOW_HAVE_PYSTENCILS
       BeginTiming(FluxBase);
 
-      if (r == 0 && GrGeomSolidInteriorBoxes(gr_domain)) {
-          int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;
-          int *PV_visiting = NULL;
-          PF_UNUSED(PV_visiting);
-          BoxArray *boxes = GrGeomSolidInteriorBoxes(gr_domain);
-          for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {
-              Box box = BoxArrayGetBox(boxes, PV_box);
-              /* find octree and region intersection */
-              PV_ixl = pfmax(ix, box.lo[0]);
-              PV_iyl = pfmax(iy, box.lo[1]);
-              PV_izl = pfmax(iz, box.lo[2]);
-              PV_ixu = pfmin((ix + nx - 1), box.up[0]);
-              PV_iyu = pfmin((iy + ny - 1), box.up[1]);
-              PV_izu = pfmin((iz + nz - 1), box.up[2]);
-
-              dp = SubvectorElt(d_sub, PV_ixl, PV_iyl, PV_izl);
-              odp = SubvectorElt(od_sub, PV_ixl, PV_iyl, PV_izl);
-              sp = SubvectorElt(s_sub, PV_ixl, PV_iyl, PV_izl);
-              pp = SubvectorElt(p_sub, PV_ixl, PV_iyl, PV_izl);
-              opp = SubvectorElt(op_sub, PV_ixl, PV_iyl, PV_izl);
-              osp = SubvectorElt(os_sub, PV_ixl, PV_iyl, PV_izl);
-              pop = SubvectorElt(po_sub, PV_ixl, PV_iyl, PV_izl);
-              fp = SubvectorElt(f_sub, PV_ixl, PV_iyl, PV_izl);
-              z_mult_dat = SubvectorElt(z_mult_sub, PV_ixl, PV_iyl, PV_izl);
-
-              const int nx_f = SubvectorNX(f_sub);
-              const int ny_f = SubvectorNY(f_sub);
-              const int nz_f = SubvectorNZ(f_sub);
-
-              const int nx_po = SubvectorNX(po_sub);
-              const int ny_po = SubvectorNY(po_sub);
-              const int nz_po = SubvectorNZ(po_sub);
-
-              if (PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu) {
-                  PyCodegen_Flux_Base(dp, fp, odp, osp, pop, sp, z_mult_dat,
-                                      PV_ixu - PV_ixl + 1, PV_iyu - PV_iyl + 1, PV_izu - PV_izl + 1,
-                                      1, nx_f, nx_f * ny_f,
-                                      1, nx_f, nx_f * ny_f,
-                                      1, nx_f, nx_f * ny_f,
-                                      1, nx_f, nx_f * ny_f,
-                                      1, nx_po, nx_po * ny_po,
-                                      1, nx_f, nx_f * ny_f,
-                                      1, nx_f, nx_f * ny_f,
-                                      vol
-                  );
-              }
-          }
-      } else {
-          PARFLOW_ERROR("Pystencils support for base flux computation not available with mesh refinement");
-      }
+      PyCodegen_Flux_Base_wrapper(gr_domain, r, ix, iy, iz, nx, ny, nz, d_sub, f_sub, od_sub, os_sub, po_sub, s_sub, z_mult_sub, vol);
 
       EndTiming(FluxBase);
 #else
@@ -440,56 +391,9 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
       BeginTiming(FluxCompressibleStorage);
-      if (r == 0 && GrGeomSolidInteriorBoxes(gr_domain)) {
-          int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;
-          int *PV_visiting = NULL;
-          PF_UNUSED(PV_visiting);
-          BoxArray *boxes = GrGeomSolidInteriorBoxes(gr_domain);
-          for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {
-              Box box = BoxArrayGetBox(boxes, PV_box);
-              /* find octree and region intersection */
-              PV_ixl = pfmax(ix, box.lo[0]);
-              PV_iyl = pfmax(iy, box.lo[1]);
-              PV_izl = pfmax(iz, box.lo[2]);
-              PV_ixu = pfmin((ix + nx - 1), box.up[0]);
-              PV_iyu = pfmin((iy + ny - 1), box.up[1]);
-              PV_izu = pfmin((iz + nz - 1), box.up[2]);
 
-              dp = SubvectorElt(d_sub, PV_ixl, PV_iyl, PV_izl);
-              odp = SubvectorElt(od_sub, PV_ixl, PV_iyl, PV_izl);
-              sp = SubvectorElt(s_sub, PV_ixl, PV_iyl, PV_izl);
-              ss = SubvectorElt(ss_sub, PV_ixl, PV_iyl, PV_izl);
-              pp = SubvectorElt(p_sub, PV_ixl, PV_iyl, PV_izl);
-              opp = SubvectorElt(op_sub, PV_ixl, PV_iyl, PV_izl);
-              osp = SubvectorElt(os_sub, PV_ixl, PV_iyl, PV_izl);
-              pop = SubvectorElt(po_sub, PV_ixl, PV_iyl, PV_izl);
-              fp = SubvectorElt(f_sub, PV_ixl, PV_iyl, PV_izl);
-              z_mult_dat = SubvectorElt(z_mult_sub, PV_ixl, PV_iyl, PV_izl);
+      PyCodegen_Flux_AddCompressibleStorage_wrapper(gr_domain, r, ix, iy, iz, nx, ny, nz, d_sub, f_sub, od_sub, op_sub, os_sub, p_sub, s_sub, ss_sub, z_mult_sub, vol);
 
-              const int nx_f = SubvectorNX(f_sub);
-              const int ny_f = SubvectorNY(f_sub);
-              const int nz_f = SubvectorNZ(f_sub);
-
-              if (PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu) {
-                  PyCodegen_Flux_AddCompressibleStorage(dp, fp, odp, opp, osp, pp, sp, ss, z_mult_dat,
-                                                        PV_ixu - PV_ixl + 1, PV_iyu - PV_iyl + 1, PV_izu - PV_izl + 1,
-                                                        1, nx_f, nx_f * ny_f,
-                                                        1, nx_f, nx_f * ny_f,
-                                                        1, nx_f, nx_f * ny_f,
-                                                        1, nx_f, nx_f * ny_f,
-                                                        1, nx_f, nx_f * ny_f,
-                                                        1, nx_f, nx_f * ny_f,
-                                                        1, nx_f, nx_f * ny_f,
-                                                        1, nx_f, nx_f * ny_f,
-                                                        1, nx_f, nx_f * ny_f,
-                                                        vol
-                  );
-              }
-          }
-      } else {
-          PARFLOW_ERROR("Pystencils support for compressible storage"
-                        "flux computation not available with mesh refinement");
-      }
       EndTiming(FluxCompressibleStorage);
 #else
     BeginTiming(FluxCompressibleStorage);
@@ -551,45 +455,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
       BeginTiming(FluxSourceTerms);
-      if (r == 0 && GrGeomSolidInteriorBoxes(gr_domain)) {
-          int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;
-          int *PV_visiting = NULL;
-          PF_UNUSED(PV_visiting);
-          BoxArray *boxes = GrGeomSolidInteriorBoxes(gr_domain);
-          for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {
-              Box box = BoxArrayGetBox(boxes, PV_box);
-              /* find octree and region intersection */
-              PV_ixl = pfmax(ix, box.lo[0]);
-              PV_iyl = pfmax(iy, box.lo[1]);
-              PV_izl = pfmax(iz, box.lo[2]);
-              PV_ixu = pfmin((ix + nx - 1), box.up[0]);
-              PV_iyu = pfmin((iy + ny - 1), box.up[1]);
-              PV_izu = pfmin((iz + nz - 1), box.up[2]);
-
-              sp = SubvectorElt(s_sub, PV_ixl, PV_iyl, PV_izl);
-              fp = SubvectorElt(f_sub, PV_ixl, PV_iyl, PV_izl);
-              et = SubvectorElt(et_sub, PV_ixl, PV_iyl, PV_izl);
-              z_mult_dat = SubvectorElt(z_mult_sub, PV_ixl, PV_iyl, PV_izl);
-
-              const int nx_f = SubvectorNX(f_sub);
-              const int ny_f = SubvectorNY(f_sub);
-              const int nz_f = SubvectorNZ(f_sub);
-
-              if (PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu) {
-                  PyCodegen_Flux_AddSourceTerms(et, fp, sp, z_mult_dat,
-                                                PV_ixu - PV_ixl + 1, PV_iyu - PV_iyl + 1, PV_izu - PV_izl + 1,
-                                                1, nx_f, nx_f * ny_f,
-                                                1, nx_f, nx_f * ny_f,
-                                                1, nx_f, nx_f * ny_f,
-                                                1, nx_f, nx_f * ny_f,
-                                                dt,
-                                                vol
-                  );
-              }
-          }
-      } else {
-          PARFLOW_ERROR("Pystencils support for flux source terms computation not available with mesh refinement");
-      }
+      PyCodegen_Flux_AddSourceTerms_wrapper(gr_domain, r, ix, iy, iz, nx, ny, nz, et_sub, f_sub, s_sub, z_mult_sub, dt, vol);
       EndTiming(FluxSourceTerms);
 #else
     BeginTiming(FluxSourceTerms);
