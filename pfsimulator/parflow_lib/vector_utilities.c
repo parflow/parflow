@@ -796,21 +796,10 @@ double PFVDotProd(
 
     BeginTiming(VDotProduct);
 #ifdef PARFLOW_HAVE_PYSTENCILS
-    double* sum_writeback_ptr; // TODO: move (de-)allocation
-    sum_writeback_ptr = ctalloc(double, 1);
-
-    PyCodegen_VDotProd(xp, yp,
+    sum = PyCodegen_VDotProd_wrapper(xp, yp,
                   nx, ny, nz,
                   1, nx_x, nx_x * ny_x,
-                  1, nx_y, nx_y * ny_y,
-                  sum_writeback_ptr);
-
-#ifdef PARFLOW_HAVE_CUDA
-      MemPrefetchDeviceToHost_cuda(sum_writeback_ptr, sizeof(double), 0);
-#endif
-
-    sum = *sum_writeback_ptr;
-    tfree(sum_writeback_ptr);
+                  1, nx_y, nx_y * ny_y);
 #else
     i_x = 0;
     i_y = 0;
@@ -875,20 +864,9 @@ double PFVMaxNorm(
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      double* max_writeback_ptr; // TODO: move (de-)allocation
-      max_writeback_ptr = ctalloc(double, 1);
-
-      PyCodegen_VMaxNorm(xp,
+      max_val = PyCodegen_VMaxNorm_wrapper(xp,
                           nx, ny, nz,
-                          1, nx_x, nx_x * ny_x,
-                         max_writeback_ptr);
-
-#ifdef PARFLOW_HAVE_CUDA
-      MemPrefetchDeviceToHost_cuda(max_writeback_ptr, sizeof(double), 0);
-#endif
-
-      max_val = *max_writeback_ptr;
-      tfree(max_writeback_ptr);
+                          1, nx_x, nx_x * ny_x);
 #else
     i_x = 0;
     BoxLoopReduceI1(max_val,
@@ -959,21 +937,10 @@ double PFVWrmsNorm(
     wp = SubvectorElt(w_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      double* sum_writeback_ptr; // TODO: move (de-)allocation
-      sum_writeback_ptr = ctalloc(double, 1);
-
-      PyCodegen_VWrmsNormHelper(wp, xp,
+      sum = PyCodegen_VWrmsNormHelper_wrapper(wp, xp,
                                 nx, ny, nz,
                                 1, nx_w, nx_w * ny_w,
-                                1, nx_x, nx_x * ny_x,
-                                sum_writeback_ptr);
-
-#ifdef PARFLOW_HAVE_CUDA
-      MemPrefetchDeviceToHost_cuda(sum_writeback_ptr, sizeof(double), 0);
-#endif
-
-      sum = *sum_writeback_ptr;
-      tfree(sum_writeback_ptr);
+                                1, nx_x, nx_x * ny_x);
 #else
     i_x = 0;
     i_w = 0;
@@ -1052,21 +1019,10 @@ double PFVWL2Norm(
     i_w = 0;
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      double* sum_writeback_ptr; // TODO: move (de-)allocation
-      sum_writeback_ptr = ctalloc(double, 1);
-
-      PyCodegen_VWrmsNormHelper(wp, xp,
+      sum = PyCodegen_VWrmsNormHelper_wrapper(wp, xp,
                                 nx, ny, nz,
                                 1, nx_w, nx_w * ny_w,
-                                1, nx_x, nx_x * ny_x,
-                                sum_writeback_ptr);
-
-#ifdef PARFLOW_HAVE_CUDA
-      MemPrefetchDeviceToHost_cuda(sum_writeback_ptr, sizeof(double), 0);
-#endif
-
-      sum = *sum_writeback_ptr;
-      tfree(sum_writeback_ptr);
+                                1, nx_x, nx_x * ny_x);
 #else
     BoxLoopReduceI2(sum,
                     i, j, k, ix, iy, iz, nx, ny, nz,
@@ -1129,20 +1085,9 @@ double PFVL1Norm(
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-    double* sum_writeback_ptr; // TODO: move (de-)allocation
-    sum_writeback_ptr = ctalloc(double, 1);
-
-    PyCodegen_VL1Norm(xp,
+    sum = PyCodegen_VL1Norm_wrapper(xp,
                       nx, ny, nz,
-                      1, nx_x, nx_x * ny_x,
-                      sum_writeback_ptr);
-
-#ifdef PARFLOW_HAVE_CUDA
-      MemPrefetchDeviceToHost_cuda(sum_writeback_ptr, sizeof(double), 0);
-#endif
-
-    sum = *sum_writeback_ptr;
-    tfree(sum_writeback_ptr);
+                      1, nx_x, nx_x * ny_x);
 #else
     i_x = 0;
     BoxLoopReduceI1(sum,
@@ -1218,21 +1163,10 @@ double PFVMin(
     }
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      double* min_writeback_ptr; // TODO: move (de-)allocation
-      min_writeback_ptr = talloc(double, 1);
-      *min_writeback_ptr = min_val;
-
-      PyCodegen_VMin(xp,
+      double lmin = PyCodegen_VMin_wrapper(xp,
                      nx, ny, nz,
-                     1, nx_x, nx_x * ny_x,
-                     min_writeback_ptr);
-
-#ifdef PARFLOW_HAVE_CUDA
-      MemPrefetchDeviceToHost_cuda(min_writeback_ptr, sizeof(double), 0);
-#endif
-
-      min_val = *min_writeback_ptr;
-      tfree(min_writeback_ptr);
+                     1, nx_x, nx_x * ny_x);
+      min_val = fmin(min_val, lmin);
 #else
     i_x = 0;
     BoxLoopReduceI1(min_val,
@@ -1303,21 +1237,10 @@ double PFVMax(
     }
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      double* max_writeback_ptr; // TODO: move (de-)allocation
-      max_writeback_ptr = talloc(double, 1);
-      *max_writeback_ptr = max_val;
-
-      PyCodegen_VMax(xp,
+      double lmax = PyCodegen_VMax_wrapper(xp,
                      nx, ny, nz,
-                     1, nx_x, nx_x * ny_x,
-                     max_writeback_ptr);
-
-#ifdef PARFLOW_HAVE_CUDA
-      MemPrefetchDeviceToHost_cuda(max_writeback_ptr, sizeof(double), 0);
-#endif
-
-      max_val = *max_writeback_ptr;
-      tfree(max_writeback_ptr);
+                     1, nx_x, nx_x * ny_x);
+      max_val = fmax(max_val, lmax);
 #else
     i_x = 0;
 
