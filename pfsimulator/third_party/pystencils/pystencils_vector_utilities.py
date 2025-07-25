@@ -2,7 +2,77 @@ import sympy as sp
 
 from pystencilssfg import SourceFileGenerator
 
+from pystencils import Kernel
+from pystencils.types.quick import Fp, SInt
+from pystencils.types import PsPointerType
+
 from pystencils_codegen import *
+
+def create_reduction_kernel_wrapper(
+        sfg: SourceFileGenerator,
+        allow_vect: bool,
+        kernel: Kernel
+):
+    kernel_params = [pw for pw in kernel.parameters if pw.wrapped.is_field_parameter or not isinstance(pw.dtype, PsPointerType)]
+
+    params = []
+    args = []
+
+    # TODO: code duplication
+    target = sfg.context.project_info['target']
+    if target.is_vector_cpu() and allow_vect:
+        for param in kernel_params:
+            pattern = re.compile('_stride_(.*)_1')
+            match = pattern.findall(param.name)
+
+            if match:
+                stridename = f"_stride_{match[0]}_0"
+                stride = sfg.var(stridename, SInt(64, const=True))
+                params += [stride]
+                args += [stridename]
+            params += [param]
+            args += [param.wrapped.name]
+    else:
+        for param in kernel_params:
+            params += [param]
+            args += [param.wrapped.name]
+
+    sfg.include("parflow.h")
+    if sfg.context.project_info['use_cuda']:
+        sfg.include("pf_cudamalloc.h")
+
+    code = f"""
+    double* reduction_writeback_ptr;
+    reduction_writeback_ptr = ctalloc(double, 1);
+
+    {kernel.name[:-4]}(
+        {", ".join(args)}, reduction_writeback_ptr
+    );
+
+    {"MemPrefetchDeviceToHost_cuda(reduction_writeback_ptr, sizeof(double), 0);" if sfg.context.project_info['use_cuda'] else ""}
+
+    double result = *reduction_writeback_ptr;
+    tfree(reduction_writeback_ptr);
+    return result;
+"""
+
+    sfg.function(f"{kernel.name[:-4]}_wrapper").returns(Fp(64)).params(*params)(
+        code,
+    )
+
+
+def create_kernel_func_and_reduction_wrapper(
+        sfg: SourceFileGenerator,
+        assign,
+        func_name: str,
+        allow_vect: bool = True
+):
+    # create kernel func
+    kernel = create_kernel_func(sfg, assign, func_name, allow_vect)
+
+    # create reduction wrapper func
+    create_reduction_kernel_wrapper(sfg, allow_vect, kernel)
+
 
 with SourceFileGenerator() as sfg:
     default_dtype = sfg.context.project_info['default_dtype']
@@ -44,22 +114,22 @@ with SourceFileGenerator() as sfg:
     create_kernel_func(sfg, ps.Assignment(z.center(), x.center() + b), "VAddConst")
 
     # Returns x dot y (PFVDotProd)
-    create_kernel_func(sfg, ps.AddReductionAssignment(r, x.center() * y.center()), "VDotProd")
+    create_kernel_func_and_reduction_wrapper(sfg, ps.AddReductionAssignment(r, x.center() * y.center()), "VDotProd")
 
     # Returns ||x||_{max} (PFVMaxNorm)
-    create_kernel_func(sfg, ps.MaxReductionAssignment(r, sp.Max(x.center())), "VMaxNorm")
+    create_kernel_func_and_reduction_wrapper(sfg, ps.MaxReductionAssignment(r, sp.Max(x.center())), "VMaxNorm")
 
     # Returns sum_i (x_i * w_i)^2 (PFVWrmsNormHelper)
-    create_kernel_func(sfg, ps.AddReductionAssignment(r, x.center() ** 2 * w.center() ** 2), "VWrmsNormHelper")
+    create_kernel_func_and_reduction_wrapper(sfg, ps.AddReductionAssignment(r, x.center() ** 2 * w.center() ** 2), "VWrmsNormHelper")
 
     # Returns sum_i |x_i| (PFVL1Norm)
-    create_kernel_func(sfg, ps.AddReductionAssignment(r, sp.Abs(x.center())), "VL1Norm")
+    create_kernel_func_and_reduction_wrapper(sfg, ps.AddReductionAssignment(r, sp.Abs(x.center())), "VL1Norm")
 
     # Returns min_i x_i (PFVMin)
-    create_kernel_func(sfg, ps.MinReductionAssignment(r, x.center()), "VMin")
+    create_kernel_func_and_reduction_wrapper(sfg, ps.MinReductionAssignment(r, x.center()), "VMin")
 
     # Returns max_i x_i (PFVMax)
-    create_kernel_func(sfg, ps.MaxReductionAssignment(r, x.center()), "VMax")
+    create_kernel_func_and_reduction_wrapper(sfg, ps.MaxReductionAssignment(r, x.center()), "VMax")
 
     # TODO: Implement? Not ideal target code for pystencils
     #  PFVConstrProdPos(c, x)            Returns FALSE if some c_i = 0 &

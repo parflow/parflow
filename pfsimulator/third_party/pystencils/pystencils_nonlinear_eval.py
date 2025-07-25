@@ -80,7 +80,7 @@ for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {{
     """)
 
 
-    sfg.function(f"{kernel.name}_wrapper").params(*params)(
+    sfg.function(f"{kernel.name[:-4]}_wrapper").params(*params)(
         code,
     )
 
