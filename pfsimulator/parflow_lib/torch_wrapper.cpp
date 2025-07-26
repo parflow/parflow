@@ -10,7 +10,7 @@ using namespace torch::indexing;
 
 static torch::jit::script::Module model;
 static torch::Tensor statics;
-static torch::Device device;
+static torch::Device device = torch::kCPU;
 
 extern "C" {
   void init_torch_model(char* model_filepath, int nx, int ny, int nz, double *po_dat,

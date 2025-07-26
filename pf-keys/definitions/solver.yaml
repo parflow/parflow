@@ -2672,8 +2672,9 @@ Solver:
 
   TorchDevice:
     help: > 
-      [Type: string] This key specifies the device that the torch model is going to run on. Options are 'cpu' or 'cuda'. Note that the Torch
-      libary must be compiled and linked at runtime for this option to be active.
+      [Type: string] This key specifies the device that the torch model is going to run on. Options are 'cpu' or 'cuda'. Default is 'cpu'.
+      Note that the Torch libary must be compiled and linked at runtime for this option to be active.
+    defalt: 'cpu'
     domains:
       AnyString:
       RequiresModule: TORCH
