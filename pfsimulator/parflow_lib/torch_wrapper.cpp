@@ -20,6 +20,9 @@ extern "C" {
                         int torch_debug, char* torch_device) {
     // Determine device from string
     if (std::string(torch_device) == "cuda") {
+      if (!torch::cuda::is_available()) {
+	throw std::runtime_error(std::string("No CUDA device available for Torch!\n"));
+      }
       device = torch::kCUDA;
     } else {
       device = torch::kCPU;
