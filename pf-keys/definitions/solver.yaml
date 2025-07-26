@@ -2660,7 +2660,7 @@ Solver:
       BoolDomain:
       RequiresModule: TORCH
       
-  TorchPrintPredictedPressure:
+  TorchDebug:
     help: > 
       [Type: boolean/string] When this key is set to True, it will print information about the ML Accelerator: the scaled statics, evaptrans
       and pressure that are used to predict the pressure at each step. Note that the Torch libary must be compiled and linked at runtime for
@@ -2668,6 +2668,14 @@ Solver:
     default: False
     domains:
       BoolDomain:
+      RequiresModule: TORCH
+
+  TorchDevice:
+    help: > 
+      [Type: string] This key specifies the device that the torch model is going to run on. Options are 'cpu' or 'cuda'. Note that the Torch
+      libary must be compiled and linked at runtime for this option to be active.
+    domains:
+      AnyString:
       RequiresModule: TORCH
 
 # SILO options

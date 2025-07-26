@@ -214,6 +214,7 @@ typedef struct {
   char *torch_model_filepath;         /* Path to the .pth file containing the trained Torch model */
   int print_predicted_pressure;       /* Print the predicted pressure from the ML Accelerator at each step. */
   int torch_debug;                    /* Print scaled pressure, evaptrans and statics that are passed to ML Accelerator. */
+  char *torch_device;                 /* Device for the torch model ("cpu" or "cuda") */
 } PublicXtra;
 
 typedef struct {
@@ -1318,7 +1319,7 @@ SetupRichards(PFModule * this_module)
         nz = SubvectorNZ(n_sub);
         init_torch_model(public_xtra->torch_model_filepath, nx, ny, nz, po_dat, mann_dat, slopex_dat,
                          slopey_dat, permx_dat, permy_dat, permz_dat, sres_dat, ssat_dat, fbz_dat,
-                         specific_storage_dat, alpha_dat, n_dat, public_xtra->torch_debug);
+                         specific_storage_dat, alpha_dat, n_dat, public_xtra->torch_debug, public_xtra->torch_device);
       }
       FreeVector(sres);
       FreeVector(ssat);
@@ -6177,6 +6178,9 @@ SolverRichardsNewPublicXtra(char *name)
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->torch_debug = switch_value;
+
+  sprintf(key, "%s.TorchDevice", name);
+  public_xtra->torch_device = GetStringDefault(key, "");
 #endif
 
   NA_FreeNameArray(switch_na);
