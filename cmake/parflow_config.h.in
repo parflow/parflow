@@ -68,6 +68,7 @@
 
 #cmakedefine PARFLOW_HAVE_KOKKOS
 
+#cmakedefine PARFLOW_HAVE_TORCH
 
 #cmakedefine PARFLOW_HAVE_RMM
 

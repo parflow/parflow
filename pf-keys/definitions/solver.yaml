@@ -2638,6 +2638,51 @@ Solver:
       BoolDomain:
       RequiresModule: SILO
 
+  TorchEnableAccelerator:
+    help: >
+      [Type: boolean/string] This key specifies whether the Torch ML Accelerator is turned on or off. Choices for
+      this key include True and False. Note that the Torch library must be compiled and linked at runtime for this option to be active.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: TORCH
+
+  TorchModelFilePath:
+    help: > 
+      [Type: string] This key specifies the location of the Torch file that contains the trained ML model for the accelerator. This must
+      be an absolute path. Note that the Torch libary must be compiled and linked at runtime for this option to be active.
+    domains:
+      AnyString:
+      RequiresModule: TORCH
+
+  TorchPrintPredictedPressure:
+    help: > 
+      [Type: boolean/string] This key specifies whether the predicted pressure from the Torch ML Accelerator will be printed for each step.
+      Note that the Torch libary must be compiled and linked at runtime for this option to be active.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: TORCH
+      
+  TorchDebug:
+    help: > 
+      [Type: boolean/string] When this key is set to True, it will print information about the ML Accelerator: the scaled statics, evaptrans
+      and pressure that are used to predict the pressure at each step. Note that the Torch libary must be compiled and linked at runtime for
+      this option to be active.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: TORCH
+
+  TorchDevice:
+    help: > 
+      [Type: string] This key specifies the device that the torch model is going to run on. Options are 'cpu' or 'cuda'. Default is 'cpu'.
+      Note that the Torch libary must be compiled and linked at runtime for this option to be active.
+    defalt: 'cpu'
+    domains:
+      AnyString:
+      RequiresModule: TORCH
+
   # PDI outputs
   WritePDISubsurfData:
     help: >
@@ -2873,3 +2918,4 @@ KnownSolution:
       [Type: double] This key specifies the constant value of the known solution for type Constant known solutions.
     domains:
       DoubleValue:
+
