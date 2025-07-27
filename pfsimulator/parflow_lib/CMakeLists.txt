@@ -125,6 +125,7 @@ set (SRC_FILES_CONST torch_wrapper.cpp
   write_clm_netcdf.c
   write_parflow_binary.c
   write_parflow_netcdf.c
+  write_parflow_pdi.c
   write_parflow_silo.c
   write_parflow_silo_pmpio.c
 )
@@ -280,7 +281,7 @@ endif(${PARFLOW_HAVE_CLM})
 
 if (${PARFLOW_HAVE_HYPRE})
   target_include_directories (pfsimulator PUBLIC ${HYPRE_INCLUDE_DIR})
-  target_link_libraries (pfsimulator ${HYPRE_LIBRARIES})
+  target_link_libraries (pfsimulator Hypre::Hypre)
 endif (${PARFLOW_HAVE_HYPRE})
 
 if (${PARFLOW_HAVE_TORCH})
@@ -305,6 +306,11 @@ if (${PARFLOW_HAVE_SILO})
   target_include_directories (pfsimulator PUBLIC "${SILO_INCLUDE_DIRS}")
   target_link_libraries (pfsimulator ${SILO_LIBRARIES})
 endif (${PARFLOW_HAVE_SILO})
+
+if (${PARFLOW_HAVE_PDI})
+  target_include_directories (pfsimulator PUBLIC "${PDI_INCLUDE_DIRS}")
+  target_include_directories (pfsimulator PUBLIC "${PARACONF_INCLUDE_DIRS}")
+endif (${PARFLOW_HAVE_PDI})
 
 if (${PARFLOW_HAVE_NETCDF})
   target_link_libraries (pfsimulator NetCDF::NetCDF)

@@ -4449,9 +4449,9 @@ minimum value for the :math:`\bar{S_{f}}` used in the
 
 ::
 
-   pfset Solver.OverlandKinematic.Epsilon 1E-7           ## TCL syntax
+      pfset Solver.OverlandKinematic.Epsilon 1E-7           ## TCL syntax
 
-   <runname>.Solver.OverlandKinematic.Epsilon = 1E-7     ## Python syntax
+      <runname>.Solver.OverlandKinematic.Epsilon = 1E-7     ## Python syntax
 
 
 *string* **Solver.PrintInitialConditions** True This key is used to
@@ -4775,7 +4775,7 @@ in the timing information section.
       <runname>.Solver.WriteSiloOverlandSum = True       ## Python syntax
 
 *string* **Solver.WriteSiloTop** False Key used to control writing of
-two Silo files for the top of the domain.  'TopZIndex' is a NX * NY
+two Silo files for the top of the domain. 'TopZIndex' is a NX * NY
 file with the Z index of the top of the domain. 'TopPatch' is the
 Patch index for the top of the domain.  A value of -1 indicates an
 (i,j) column does not intersect the domain.
@@ -4788,8 +4788,201 @@ Patch index for the top of the domain.  A value of -1 indicates an
       pfset Solver.WriteSiloTop True                  ## TCL syntax
 
       <runname>.Solver.WriteSiloTop = True            ## Python syntax
-      
-      
+
+*string* **Solver.WritePDISubsurfData** False This key is used to specify exposing of
+      the subsurface data, Permeability and Porosity to PDI library. The data is
+      exposed after it is generated and before the main time stepping loop - only
+      once during the run. The data is subsequently managed by the PDI
+      plugin according to the specification tree defined in conf.yaml.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WritePDISubsurfData  True            ## TCL syntax
+
+      <runname>.Solver.WritePDISubsurfData = True       ## Python syntax
+
+*string* **Solver.WritePDIMannings** False This key is used to specify exposing of
+      Manning’s roughness data to PDI library. The data exposure is controlled
+      by values in the timing information section and is subsequently managed
+      by the PDI plugin according to the specification tree defined in conf.yaml.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WritePDIMannings  True            ## TCL syntax
+
+      <runname>.Solver.WritePDIMannings = True       ## Python syntax
+
+*string* **Solver.WritePDISlopes** False This key is used to turn on exposure of x
+      and y slope data to PDI library. The data exposure is controlled by values
+      in the timing information section and is subsequently managed by the PDI
+      plugin according to the specification tree defined in conf.yaml.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WritePDISlopes  True            ## TCL syntax
+
+      <runname>.Solver.WritePDISlopes = True       ## Python syntax
+
+*string* **Solver.WritePDIPressure** False This key is used to specify exposure of
+      pressure data to PDI library. The data exposure is controlled by values
+      in the timing information section and is subsequently managed by the PDI
+      plugin according to the specification tree defined in conf.yaml.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WritePDIPressure  True            ## TCL syntax
+
+      <runname>.Solver.WritePDIPressure = True       ## Python syntax
+
+*string* **Solver.WritePDISpecificStorage** False This key is used to specify exposure
+      of specific storage data to PDI library. The data exposure is controlled
+      by values in the timing information section and is subsequently managed by
+      the PDI plugin according to the specification tree defined in conf.yaml.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WritePDISpecificStorage  True            ## TCL syntax
+
+      <runname>.Solver.WritePDISpecificStorage = True       ## Python syntax
+
+*string* **Solver.WritePDIVelocities** False This key is used to turn on exposure of
+      x,y,and z velocity data to PDI library. The data exposure is controlled by
+      values in the timing information section and is subsequently managed by the
+      PDI plugin according to the specification tree defined in conf.yaml.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WritePDIVelocities  True            ## TCL syntax
+
+      <runname>.Solver.WritePDIVelocities = True       ## Python syntax
+
+*string* **Solver.WritePDISaturation** False This key is used to specify exposre of
+      the saturation data to PDI library. The data exposure is controlled by
+      values in the timing information section and is subsequently managed by
+      the PDI plugin according to the specification tree defined in conf.yaml.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WritePDISaturation  True            ## TCL syntax
+
+      <runname>.Solver.WritePDISaturation = True       ## Python syntax
+
+*string* **Solver.WritePDIMask** False This key is used to specify exposure of mask
+      data to PDI library. The mask contains values equal to one for active
+      cells and zero for inactive cells. The data exposure is controlled by
+      values in the timing information section and is subsequently managed by
+      the PDI plugin according to the specification tree defined in conf.yaml.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WritePDIMask  True            ## TCL syntax
+
+      <runname>.Solver.WritePDIMask = True       ## Python syntax
+
+*string* **Solver.WritePDIDZMultiplier** False This key is used to specifiy the exposrue
+      of DZ multipliers to PDI library.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WritePDIDZMultiplier  True            ## TCL syntax
+
+      <runname>.Solver.WritePDIDZMultiplier = True       ## Python syntax
+
+*string* **Solver.WritePDIEvapTransSum** False This key is used to specify exposure
+      of evaporation and rainfall flux data to PDI libraary, cumulative amount.
+      This data comes from either clm or from external calls to ParFlow such as
+      WRF. This data is in units of :math:`[L3]`. The data exposure is controlled
+      by values in the timing information section and is subsequently managed by
+      the PDI plugin according to the specification tree defined in conf.yaml.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WritePDIEvapTransSum  True            ## TCL syntax
+
+      <runname>.Solver.WritePDIEvapTransSum = True       ## Python syntax
+
+*string* **Solver.WritePDIEvapTrans** False This key is used to specify exposure
+      of the evaporation and rainfall flux data to PDI library. This data comes
+      from either clm or from external calls to ParFlow such as WRF. This data
+      is in units of :math:`[L3T-1]`. The data exposure is controlled by values
+      in the timing information section and is subsequently managed by the PDI
+      plugin according to the specification tree defined in conf.yaml.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WritePDIEvapTrans  True            ## TCL syntax
+
+      <runname>.Solver.WritePDIEvapTrans = True       ## Python syntax
+
+*string* **Solver.WritePDIOverlandSum** False This key is used to specify
+      calculation and exposrue of the total overland outflow from the domain
+      PDI library as a running cumulative amount. This is integrated along all
+      domain boundaries and is calculated any location that slopes at the edge
+      of the domain point outward. This data is in units of :math:`[L^3]`. The
+      data exposure is controlled by values in the timing information section and
+      is subsequently managed by the PDI plugin according to the specification tree
+      defined in conf.yaml.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WritePDIOverlandSum  True            ## TCL syntax
+
+      <runname>.Solver.WritePDIOverlandSum = True       ## Python syntax    
+
+*string* **Solver.WritePDIOverlandBCFlux** False This key is used to specify the
+      expousre of overland bc flux to PDI library.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WritePDIOverlandBCFlux	True        ## TCL syntax
+      <runname>.Solver.WritePDIOverlandBCFlux = True  ## Python syntax
+
+*string* **Solver.WritePDIWells** False This key is used to specify the
+      expousre of wells data to PDI library.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WritePDIWells	True        ## TCL syntax
+      <runname>.Solver.WritePDIWells = True  ## Python syntax
+
+*string* **Solver.WritePDIConcentration** False This key is used to specify the
+      exposure of concentration data to PDI library. The data exposure is
+      controlled by values in the timing information section.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WritePDIConcentration	True        ## TCL syntax
+      <runname>.Solver.WritePDIConcentration = True  ## Python syntax
 
 *string* **Solver.TerrainFollowingGrid** False This key specifies that a
 terrain-following coordinate transform is used for solver Richards. This
