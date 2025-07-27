@@ -39,6 +39,7 @@ extern "C" {
       throw std::runtime_error("Invalid Torch model dtype: expected 'kFloat' or 'kDouble'");
     }
 
+    c10::InferenceMode guard(true);
     std::string model_path = std::string(model_filepath);
     try {
       model = torch::jit::load(model_path);
@@ -87,8 +88,9 @@ extern "C" {
   }
 
   double* predict_next_pressure_step(double* pp, double* et, int nx, int ny, int nz, int file_number, int torch_debug) {
+    c10::InferenceMode guard(true);
     auto interior = Slice(1, -1);
-
+    
     torch::Tensor press = torch::from_blob(pp, {nz, ny, nx}, torch::kDouble)
                             .index({interior, interior, interior}).clone().to(dtype).to(device);
     torch::Tensor evaptrans = torch::from_blob(et, {nz, ny, nx}, torch::kDouble)
