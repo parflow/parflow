@@ -234,7 +234,7 @@ typedef struct {
   int torch_debug;                    /* Print scaled pressure, evaptrans and statics that are passed to ML Accelerator. */
   char *torch_device;                 /* Device for the torch model ("cpu" or "cuda") */
   char *torch_model_dtype;            /* Data type for the torch model */
-  int torch_include_ghost_nodes;      /* Include ghost nodes in x and y directions for torch wrapper */
+  int torch_include_ghost_nodes;      /* Include ghost nodes in x and y directions when passing data to torch model */
 } PublicXtra;
 
 typedef struct {
