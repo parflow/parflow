@@ -1403,7 +1403,7 @@ SetupRichards(PFModule * this_module)
         init_torch_model(public_xtra->torch_model_filepath, nx, ny, nz, po_dat, mann_dat, slopex_dat,
                          slopey_dat, permx_dat, permy_dat, permz_dat, sres_dat, ssat_dat, fbz_dat,
                          specific_storage_dat, alpha_dat, n_dat, public_xtra->torch_debug, public_xtra->torch_device,
-			 public_xtra->torch_model_dtype);
+                         public_xtra->torch_model_dtype);
       }
       FreeVector(sres);
       FreeVector(ssat);
@@ -3172,8 +3172,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           et = SubvectorData(et_sub);
           SubvectorData(p_sub) = predict_next_pressure_step(pp, et, nx, ny, nz, instance_xtra->file_number, public_xtra->torch_debug);
         }
-	handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
-	FinalizeVectorUpdate(handle);	
+        handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
+        FinalizeVectorUpdate(handle);
         if (public_xtra->print_predicted_pressure)
         {
           sprintf(file_postfix, "predicted_press.%05d", instance_xtra->file_number);
@@ -3181,8 +3181,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         }
         EndTiming(TorchTimingIndex);
       }
-#endif      
-      
+#endif
+
       /*  experiment with a predictor to adjust land surface pressures to be >0 if rainfall*/
       if (public_xtra->surface_predictor == 1)
       {
@@ -3283,7 +3283,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                        );
         }
       }
-      
+
 
       /*******************************************************************/
       /*          Solve the nonlinear system for this time step          */
