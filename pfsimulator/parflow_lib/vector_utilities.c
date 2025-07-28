@@ -799,7 +799,8 @@ double PFVDotProd(
     sum = PyCodegen_VDotProd_wrapper(xp, yp,
                   nx, ny, nz,
                   1, nx_x, nx_x * ny_x,
-                  1, nx_y, nx_y * ny_y);
+                  1, nx_y, nx_y * ny_y,
+                  sum);
 #else
     i_x = 0;
     i_y = 0;
@@ -866,7 +867,8 @@ double PFVMaxNorm(
 #ifdef PARFLOW_HAVE_PYSTENCILS
       max_val = PyCodegen_VMaxNorm_wrapper(xp,
                           nx, ny, nz,
-                          1, nx_x, nx_x * ny_x);
+                          1, nx_x, nx_x * ny_x,
+                          max_val);
 #else
     i_x = 0;
     BoxLoopReduceI1(max_val,
@@ -940,7 +942,8 @@ double PFVWrmsNorm(
       sum = PyCodegen_VWrmsNormHelper_wrapper(wp, xp,
                                 nx, ny, nz,
                                 1, nx_w, nx_w * ny_w,
-                                1, nx_x, nx_x * ny_x);
+                                1, nx_x, nx_x * ny_x,
+                                sum);
 #else
     i_x = 0;
     i_w = 0;
@@ -1022,7 +1025,8 @@ double PFVWL2Norm(
       sum = PyCodegen_VWrmsNormHelper_wrapper(wp, xp,
                                 nx, ny, nz,
                                 1, nx_w, nx_w * ny_w,
-                                1, nx_x, nx_x * ny_x);
+                                1, nx_x, nx_x * ny_x,
+                                sum);
 #else
     BoxLoopReduceI2(sum,
                     i, j, k, ix, iy, iz, nx, ny, nz,
@@ -1087,7 +1091,8 @@ double PFVL1Norm(
 #ifdef PARFLOW_HAVE_PYSTENCILS
     sum = PyCodegen_VL1Norm_wrapper(xp,
                       nx, ny, nz,
-                      1, nx_x, nx_x * ny_x);
+                      1, nx_x, nx_x * ny_x,
+                      sum);
 #else
     i_x = 0;
     BoxLoopReduceI1(sum,
@@ -1163,10 +1168,10 @@ double PFVMin(
     }
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      double lmin = PyCodegen_VMin_wrapper(xp,
+      min_val = PyCodegen_VMin_wrapper(xp,
                      nx, ny, nz,
-                     1, nx_x, nx_x * ny_x);
-      min_val = fmin(min_val, lmin);
+                     1, nx_x, nx_x * ny_x,
+                     min_val);
 #else
     i_x = 0;
     BoxLoopReduceI1(min_val,
@@ -1237,10 +1242,10 @@ double PFVMax(
     }
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      double lmax = PyCodegen_VMax_wrapper(xp,
+      max_val = PyCodegen_VMax_wrapper(xp,
                      nx, ny, nz,
-                     1, nx_x, nx_x * ny_x);
-      max_val = fmax(max_val, lmax);
+                     1, nx_x, nx_x * ny_x,
+                     max_val);
 #else
     i_x = 0;
 

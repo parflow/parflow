@@ -20,6 +20,8 @@ def create_reduction_kernel_wrapper(
 
     # TODO: code duplication
     target = sfg.context.project_info['target']
+    use_cuda = sfg.context.project_info['use_cuda']
+
     if target.is_vector_cpu() and allow_vect:
         for param in kernel_params:
             pattern = re.compile('_stride_(.*)_1')
@@ -37,22 +39,30 @@ def create_reduction_kernel_wrapper(
             params += [param]
             args += [param.wrapped.name]
 
+    # extend params with initial value for reduction pointer
+    rptr_name = "reduction_writeback_ptr"
+    initval_name = "initval_rptr"
+    params += [sfg.var("initval_rptr", Fp(64, const=True))]
+
+    init_reduction_ptr = f"cudaMemset({rptr_name}, {initval_name}, sizeof(double));" if use_cuda \
+        else f"*{rptr_name} = {initval_name};"
+
     sfg.include("parflow.h")
-    if sfg.context.project_info['use_cuda']:
+    if use_cuda:
         sfg.include("pf_cudamalloc.h")
 
     code = f"""
-    double* reduction_writeback_ptr;
-    reduction_writeback_ptr = ctalloc(double, 1);
+    double* {rptr_name} = talloc(double, 1);
+    {init_reduction_ptr}
 
     {kernel.name[:-4]}(
-        {", ".join(args)}, reduction_writeback_ptr
+        {", ".join(args)}, {rptr_name}
     );
 
-    {"MemPrefetchDeviceToHost_cuda(reduction_writeback_ptr, sizeof(double), 0);" if sfg.context.project_info['use_cuda'] else ""}
+    {f"MemPrefetchDeviceToHost_cuda({rptr_name}, sizeof(double), 0);" if use_cuda else ""}
 
-    double result = *reduction_writeback_ptr;
-    tfree(reduction_writeback_ptr);
+    double result = *{rptr_name};
+    tfree({rptr_name});
     return result;
 """
 
