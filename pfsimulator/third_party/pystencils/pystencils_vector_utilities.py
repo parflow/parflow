@@ -11,7 +11,8 @@ from pystencils_codegen import *
 def create_reduction_kernel_wrapper(
         sfg: SourceFileGenerator,
         allow_vect: bool,
-        kernel: Kernel
+        kernel: Kernel,
+        has_init_val: bool = False
 ):
     kernel_params = [pw for pw in kernel.parameters if pw.wrapped.is_field_parameter or not isinstance(pw.dtype, PsPointerType)]
 
@@ -39,21 +40,27 @@ def create_reduction_kernel_wrapper(
             params += [param]
             args += [param.wrapped.name]
 
-    # extend params with initial value for reduction pointer
+    # reduction ptr
     rptr_name = "reduction_writeback_ptr"
-    initval_name = "initval_rptr"
-    params += [sfg.var("initval_rptr", Fp(64, const=True))]
 
-    init_reduction_ptr = f"cudaMemset({rptr_name}, {initval_name}, sizeof(double));" if use_cuda \
-        else f"*{rptr_name} = {initval_name};"
+    # extend params with initial value for reduction pointer
+    init_reduction_ptr = ""
+    if has_init_val:
+        initval_name = "initval_rptr"
+        params += [sfg.var("initval_rptr", Fp(64, const=True))]
+
+        # only init ptr if initial value is provided by user, otherwise set to 0
+        init_reduction_ptr = f"*{rptr_name} = {initval_name};"
 
     sfg.include("parflow.h")
     if use_cuda:
         sfg.include("pf_cudamalloc.h")
 
     code = f"""
-    double* {rptr_name} = {"talloc_cuda" if use_cuda else "talloc"}(double, 1);
+    double* {rptr_name} = {("c" if not has_init_val else "") + ("talloc_cuda" if use_cuda else "talloc")}(double, 1);
     {init_reduction_ptr}
+    
+    {f"MemPrefetchHostToDevice_cuda({rptr_name}, sizeof(double), 0);" if use_cuda else ""}
 
     {kernel.name[:-4]}(
         {", ".join(args)}, {rptr_name}
@@ -75,13 +82,14 @@ def create_kernel_func_and_reduction_wrapper(
         sfg: SourceFileGenerator,
         assign,
         func_name: str,
-        allow_vect: bool = True
+        allow_vect: bool = True,
+        has_init_val: bool = False
 ):
     # create kernel func
     kernel = create_kernel_func(sfg, assign, func_name, allow_vect)
 
     # create reduction wrapper func
-    create_reduction_kernel_wrapper(sfg, allow_vect, kernel)
+    create_reduction_kernel_wrapper(sfg, allow_vect, kernel, has_init_val)
 
 
 with SourceFileGenerator() as sfg:
@@ -136,10 +144,10 @@ with SourceFileGenerator() as sfg:
     create_kernel_func_and_reduction_wrapper(sfg, ps.AddReductionAssignment(r, sp.Abs(x.center())), "VL1Norm")
 
     # Returns min_i x_i (PFVMin)
-    create_kernel_func_and_reduction_wrapper(sfg, ps.MinReductionAssignment(r, x.center()), "VMin")
+    create_kernel_func_and_reduction_wrapper(sfg, ps.MinReductionAssignment(r, x.center()), "VMin", has_init_val=True)
 
     # Returns max_i x_i (PFVMax)
-    create_kernel_func_and_reduction_wrapper(sfg, ps.MaxReductionAssignment(r, x.center()), "VMax")
+    create_kernel_func_and_reduction_wrapper(sfg, ps.MaxReductionAssignment(r, x.center()), "VMax", has_init_val=True)
 
     # TODO: Implement? Not ideal target code for pystencils
     #  PFVConstrProdPos(c, x)            Returns FALSE if some c_i = 0 &
