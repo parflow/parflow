@@ -18,7 +18,7 @@ extern "C" {
                         double *mann_dat, double *slopex_dat, double *slopey_dat, double *permx_dat,
                         double *permy_dat, double *permz_dat, double *sres_dat, double *ssat_dat,
                         double *fbz_dat, double *specific_storage_dat, double *alpha_dat, double *n_dat,
-                        int torch_debug, char* torch_device, char* torch_model_dtype) {
+                        int torch_debug, char* torch_device, char* torch_model_dtype, int torch_include_ghost_nodes) {
 
     if (std::string(torch_device) == "cuda") {
       if (!torch::cuda::is_available()) {
@@ -52,34 +52,37 @@ extern "C" {
     }
 
     std::unordered_map<std::string, torch::Tensor> statics_map;
-    auto interior = Slice(1, -1);
+    
+    // Define slicing based on torch_include_ghost_nodes
+    auto z_interior = Slice(1, -1);  // Always exclude ghost nodes in z direction
+    auto xy_slice = torch_include_ghost_nodes ? Slice() : Slice(1, -1);  // Conditionally include ghost nodes in x,y
 
     statics_map["porosity"] = torch::from_blob(po_dat, {nz, ny, nx}, torch::kDouble)
-                                .index({interior, interior, interior}).clone().to(dtype).to(device);
+                                .index({z_interior, xy_slice, xy_slice}).clone().to(dtype).to(device);
     statics_map["mannings"] = torch::from_blob(mann_dat, {3, ny, nx}, torch::kDouble)
-                                .index({interior, interior, interior}).clone().to(dtype).to(device);
+                                .index({z_interior, xy_slice, xy_slice}).clone().to(dtype).to(device);
     statics_map["slope_x"] = torch::from_blob(slopex_dat, {3, ny, nx}, torch::kDouble)
-                                .index({interior, interior, interior}).clone().to(dtype).to(device);
+                                .index({z_interior, xy_slice, xy_slice}).clone().to(dtype).to(device);
     statics_map["slope_y"] = torch::from_blob(slopey_dat, {3, ny, nx}, torch::kDouble)
-                                .index({interior, interior, interior}).clone().to(dtype).to(device);
+                                .index({z_interior, xy_slice, xy_slice}).clone().to(dtype).to(device);
     statics_map["perm_x"] = torch::from_blob(permx_dat, {nz, ny, nx}, torch::kDouble)
-                                .index({interior, interior, interior}).clone().to(dtype).to(device);
+                                .index({z_interior, xy_slice, xy_slice}).clone().to(dtype).to(device);
     statics_map["perm_y"] = torch::from_blob(permy_dat, {nz, ny, nx}, torch::kDouble)
-                                .index({interior, interior, interior}).clone().to(dtype).to(device);
+                                .index({z_interior, xy_slice, xy_slice}).clone().to(dtype).to(device);
     statics_map["perm_z"] = torch::from_blob(permz_dat, {nz, ny, nx}, torch::kDouble)
-                                .index({interior, interior, interior}).clone().to(dtype).to(device);
+                                .index({z_interior, xy_slice, xy_slice}).clone().to(dtype).to(device);
     statics_map["sres"] = torch::from_blob(sres_dat, {nz, ny, nx}, torch::kDouble)
-                                .index({interior, interior, interior}).clone().to(dtype).to(device);
+                                .index({z_interior, xy_slice, xy_slice}).clone().to(dtype).to(device);
     statics_map["ssat"] = torch::from_blob(ssat_dat, {nz, ny, nx}, torch::kDouble)
-                                .index({interior, interior, interior}).clone().to(dtype).to(device);
+                                .index({z_interior, xy_slice, xy_slice}).clone().to(dtype).to(device);
     statics_map["pf_flowbarrier"] = torch::from_blob(fbz_dat, {nz, ny, nx}, torch::kDouble)
-                                .index({interior, interior, interior}).clone().to(dtype).to(device);
+                                .index({z_interior, xy_slice, xy_slice}).clone().to(dtype).to(device);
     statics_map["specific_storage"] = torch::from_blob(specific_storage_dat, {nz, ny, nx}, torch::kDouble)
-                                .index({interior, interior, interior}).clone().to(dtype).to(device);
+                                .index({z_interior, xy_slice, xy_slice}).clone().to(dtype).to(device);
     statics_map["alpha"] = torch::from_blob(alpha_dat, {nz, ny, nx}, torch::kDouble)
-                                .index({interior, interior, interior}).clone().to(dtype).to(device);
+                                .index({z_interior, xy_slice, xy_slice}).clone().to(dtype).to(device);
     statics_map["n"] = torch::from_blob(n_dat, {nz, ny, nx}, torch::kDouble)
-                                .index({interior, interior, interior}).clone().to(dtype).to(device);
+                                .index({z_interior, xy_slice, xy_slice}).clone().to(dtype).to(device);
 
     statics = model.run_method("get_parflow_statics", statics_map).toTensor();
     if (torch_debug) {
@@ -87,14 +90,17 @@ extern "C" {
     }
   }
 
-  double* predict_next_pressure_step(double* pp, double* et, int nx, int ny, int nz, int file_number, int torch_debug) {
+  double* predict_next_pressure_step(double* pp, double* et, int nx, int ny, int nz, int file_number, int torch_debug, int torch_include_ghost_nodes) {
     c10::InferenceMode guard(true);
-    auto interior = Slice(1, -1);
+    
+    // Define slicing based on torch_include_ghost_nodes
+    auto z_interior = Slice(1, -1);  // Always exclude ghost nodes in z direction
+    auto xy_slice = torch_include_ghost_nodes ? Slice() : Slice(1, -1);  // Conditionally include ghost nodes in x,y
     
     torch::Tensor press = torch::from_blob(pp, {nz, ny, nx}, torch::kDouble)
-                            .index({interior, interior, interior}).clone().to(dtype).to(device);
+                            .index({z_interior, xy_slice, xy_slice}).clone().to(dtype).to(device);
     torch::Tensor evaptrans = torch::from_blob(et, {nz, ny, nx}, torch::kDouble)
-                            .index({interior, interior, interior}).clone().to(dtype).to(device);
+                            .index({z_interior, xy_slice, xy_slice}).clone().to(dtype).to(device);
 
     press = model.run_method("get_parflow_pressure", press).toTensor();
     evaptrans = model.run_method("get_parflow_evaptrans", evaptrans).toTensor();
@@ -113,7 +119,7 @@ extern "C" {
                                    .to(torch::kCPU).to(torch::kDouble);
 
     torch::Tensor predicted_pressure = torch::from_blob(pp, {nz, ny, nx}, torch::kDouble);
-    predicted_pressure.index_put_({Slice(1, nz-1), Slice(1, ny-1), Slice(1, nx-1)}, model_output);
+    predicted_pressure.index_put_({z_interior, xy_slice, xy_slice}, model_output);
 
     if (!predicted_pressure.is_contiguous()) {
       predicted_pressure = predicted_pressure.contiguous();

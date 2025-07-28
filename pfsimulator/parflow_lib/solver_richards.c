@@ -234,6 +234,7 @@ typedef struct {
   int torch_debug;                    /* Print scaled pressure, evaptrans and statics that are passed to ML Accelerator. */
   char *torch_device;                 /* Device for the torch model ("cpu" or "cuda") */
   char *torch_model_dtype;            /* Data type for the torch model */
+  int torch_include_ghost_nodes;      /* Include ghost nodes in x and y directions for torch wrapper */
 } PublicXtra;
 
 typedef struct {
@@ -1400,10 +1401,11 @@ SetupRichards(PFModule * this_module)
         nx = SubvectorNX(n_sub);
         ny = SubvectorNY(n_sub);
         nz = SubvectorNZ(n_sub);
+                
         init_torch_model(public_xtra->torch_model_filepath, nx, ny, nz, po_dat, mann_dat, slopex_dat,
                          slopey_dat, permx_dat, permy_dat, permz_dat, sres_dat, ssat_dat, fbz_dat,
                          specific_storage_dat, alpha_dat, n_dat, public_xtra->torch_debug, public_xtra->torch_device,
-                         public_xtra->torch_model_dtype);
+                         public_xtra->torch_model_dtype, public_xtra->torch_include_ghost_nodes);
       }
       FreeVector(sres);
       FreeVector(ssat);
@@ -3170,7 +3172,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           pp = SubvectorData(p_sub);
           et_sub = VectorSubvector(evap_trans, is);
           et = SubvectorData(et_sub);
-          SubvectorData(p_sub) = predict_next_pressure_step(pp, et, nx, ny, nz, instance_xtra->file_number, public_xtra->torch_debug);
+          SubvectorData(p_sub) = predict_next_pressure_step(pp, et, nx, ny, nz, instance_xtra->file_number, public_xtra->torch_debug, public_xtra->torch_include_ghost_nodes);
         }
         handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
         FinalizeVectorUpdate(handle);
@@ -6554,6 +6556,11 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "%s.TorchModelDtype", name);
   public_xtra->torch_model_dtype = GetStringDefault(key, "kDouble");
+
+  sprintf(key, "%s.TorchIncludeGhostNodes", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->torch_include_ghost_nodes = switch_value;
 #endif
 
   NA_FreeNameArray(switch_na);
