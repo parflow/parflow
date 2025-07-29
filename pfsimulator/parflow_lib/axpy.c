@@ -80,9 +80,9 @@ void     Axpy(
 #ifdef PARFLOW_HAVE_PYSTENCILS
     PyCodegen_VAxpy(xp, yp,
                     nx, ny, nz,
-                    1, nx_x, nx_x * ny_x,
-                    1, nx_y, nx_y * ny_y,
-                    alpha)
+                    1, nx_v, nx_v * ny_v,
+                    1, nx_v, nx_v * ny_v,
+                    alpha);
 #else
     iv = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,

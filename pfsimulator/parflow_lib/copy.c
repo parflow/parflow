@@ -88,7 +88,7 @@ void     Copy(
     PyCodegen_VCopy(xp, yp,
                     nx, ny, nz,
                     1, nx_x, nx_x * ny_x,
-                    1, nx_z, nx_z * ny_z);
+                    1, nx_y, nx_y * ny_y);
 #else
     i_x = 0;
     i_y = 0;
