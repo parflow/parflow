@@ -1153,6 +1153,12 @@ double PFVMin(
     /* Get initial guess for min_val */
     if (sg == 0)
     {
+#ifdef PARFLOW_HAVE_PYSTENCILS
+      min_val = PyCodegen_VMin_wrapper(xp,
+                                       nx, ny, nz,
+                                       1, nx_x, nx_x * ny_x,
+                                       min_val);
+#else
       i_x = 0;
       BoxLoopReduceI1(min_val,
                       i, j, k, ix, iy, iz, 1, 1, 1,
@@ -1160,6 +1166,7 @@ double PFVMin(
       {
         ReduceSum(min_val, xp[i_x]);
       });
+#endif
     }
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
@@ -1227,6 +1234,12 @@ double PFVMax(
     /* Get initial guess for max_val */
     if (sg == 0)
     {
+#ifdef PARFLOW_HAVE_PYSTENCILS
+      max_val = PyCodegen_VMax_wrapper(xp,
+                                       nx, ny, nz,
+                                       1, nx_x, nx_x * ny_x,
+                                       max_val);
+#else
       i_x = 0;
       BoxLoopReduceI1(max_val,
                       i, j, k, ix, iy, iz, 1, 1, 1,
@@ -1234,6 +1247,7 @@ double PFVMax(
       {
         ReduceSum(max_val, xp[i_x]);
       });
+#endif
     }
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
