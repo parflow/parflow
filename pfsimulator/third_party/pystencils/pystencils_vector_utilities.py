@@ -164,7 +164,7 @@ with SourceFileGenerator() as sfg:
     #  PFVInvTest(x, z)                  Returns (x_i != 0 forall i), z_i = 1 / x_i
 
     # y = x (PFVCopy)
-    # create_kernel_func(ps.Assignment(y.center(), x.center()), "VCopy")
+    create_kernel_func(sfg, ps.Assignment(y.center(), x.center()), "VCopy")
 
     # z = x + y (PFVSum)
     create_kernel_func(sfg, ps.Assignment(z.center(), x.center() + y.center()), "VSum")

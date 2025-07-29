@@ -33,6 +33,10 @@
 
 #include "parflow.h"
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+#include "pystencils_vector_utilities.h"
+#endif
+
 
 void     Scale(
                double  alpha,
@@ -72,12 +76,19 @@ void     Scale(
 
     yp = SubvectorElt(y_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+      PyCodegen_VScaleBy(yp,
+                         nx, ny, nz,
+                         1, nx_v, nx_v * ny_v,
+                         alpha);
+#else
     iv = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       yp[iv] *= alpha;
     });
+#endif
   }
 
   IncFLOPCount(VectorSize(y));
