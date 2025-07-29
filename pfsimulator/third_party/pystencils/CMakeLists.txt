@@ -14,7 +14,7 @@ endif ()
 
 add_library ( PystencilsGeneratedKernels )
 pystencilssfg_generate_target_sources ( PystencilsGeneratedKernels
-        SCRIPTS pystencils_vector_utilities.py pystencils_nonlinear_eval.py
+        SCRIPTS pystencils_vector_utilities.py pystencils_nonlinear_eval.py pystencils_rbgs.py
         OUTPUT_DIRECTORY generated_kernels
 )
 
