@@ -131,6 +131,9 @@ with SourceFileGenerator() as sfg:
     # z_i = x_i + b (PFVAddConst)
     create_kernel_func(sfg, ps.Assignment(z.center(), x.center() + b), "VAddConst")
 
+    # Returns sum_i x_i (PFVSumNorm)
+    create_kernel_func_and_reduction_wrapper(sfg, ps.AddReductionAssignment(r, x.center()), "VSumNorm")
+
     # Returns x dot y (PFVDotProd)
     create_kernel_func_and_reduction_wrapper(sfg, ps.AddReductionAssignment(r, x.center() * y.center()), "VDotProd")
 
