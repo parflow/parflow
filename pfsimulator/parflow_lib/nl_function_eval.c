@@ -57,7 +57,7 @@ typedef struct {
   PFModule     *overlandflow_module_kin;
 
   // Overland flow variables
-  int           using_overland_flow;
+  int using_overland_flow;
   Vector       *KW;
   Vector       *KE;
   Vector       *KN;
@@ -2213,7 +2213,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 PFModule    *NlFunctionEvalInitInstanceXtra(Problem *problem,
                                             Grid *   grid,
                                             Grid *   grid2d,
-                                            ProblemData *problem_data,
                                             double * temp_data)
 
 {

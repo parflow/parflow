@@ -359,7 +359,7 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
 
     instance_xtra->nl_function_eval =
       PFModuleNewInstanceType(NlFunctionEvalInitInstanceXtraInvoke, public_xtra->nl_function_eval,
-                              (problem, grid, grid2d, problem_data, temp_data));
+                              (problem, grid, grid2d, temp_data));
 
     if (public_xtra->richards_jacobian_eval != NULL)
       /* Initialize instance for nonsymmetric matrix */
@@ -378,7 +378,7 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
                                  NULL, NULL, NULL, NULL, 0, 0));
 
     PFModuleReNewInstanceType(NlFunctionEvalInitInstanceXtraInvoke, instance_xtra->nl_function_eval,
-                              (problem, grid, grid2d, problem_data, temp_data));
+                              (problem, grid, grid2d, temp_data));
 
     if (instance_xtra->richards_jacobian_eval != NULL)
       PFModuleReNewInstanceType(RichardsJacobianEvalInitInstanceXtraInvoke, instance_xtra->richards_jacobian_eval,

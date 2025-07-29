@@ -1013,7 +1013,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
         } /* End OverlandDiffusive */
       } /* End switch types */
 
-      switch ((public_xtra)->input_types[(i)]) 
+      switch ((public_xtra)->input_types[(i)])
       {
         case OverlandFlow:
         case OverlandFlowPFB:
@@ -1039,7 +1039,8 @@ int BCPressurePackageUsingOverlandFlow(Problem *problem)
 {
   PFModule *bc_pressure = ProblemBCPressurePackage(problem);
   PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(bc_pressure);
-  return (public_xtra->using_overland_flow);
+
+  return(public_xtra->using_overland_flow);
 }
 
 /*-------------------------------------------------------------------------

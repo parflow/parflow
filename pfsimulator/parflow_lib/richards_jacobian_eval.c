@@ -106,7 +106,7 @@ typedef struct {
   Vector       *saturation_der;
 
   // Overland flow variables
-  int           using_overland_flow;
+  int using_overland_flow;
   Vector       *KW;
   Vector       *KE;
   Vector       *KN;
@@ -331,8 +331,8 @@ void    RichardsJacobianEval(
   vector_update_handle = InitVectorUpdate(pressure, VectorUpdateAll);
   FinalizeVectorUpdate(vector_update_handle);
 
-  InitVector(density_der, 0.0);
-  InitVector(saturation_der, 0.0);
+  InitVectorAll(density_der, 0.0);
+  InitVectorAll(saturation_der, 0.0);
 
   // /* Define grid for surface contribution */
   if ((instance_xtra->using_overland_flow) == 1)
@@ -2311,7 +2311,6 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
 void  RichardsJacobianEvalFreeInstanceXtra()
 {
   PFModule      *this_module = ThisPFModule;
-  PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
   if (instance_xtra)
