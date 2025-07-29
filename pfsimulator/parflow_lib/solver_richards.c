@@ -4778,7 +4778,7 @@ SolverRichardsInitInstanceXtra()
     (instance_xtra->nonlin_solver) =
       PFModuleNewInstanceType(NonlinSolverInitInstanceXtraInvoke,
                               public_xtra->nonlin_solver,
-                              (problem, grid, instance_xtra->problem_data,
+                              (problem, grid, grid2d, instance_xtra->problem_data,
                                NULL));
   }
   else
@@ -4874,7 +4874,7 @@ SolverRichardsInitInstanceXtra()
   /* renew nonlinear solver module */
   PFModuleReNewInstanceType(NonlinSolverInitInstanceXtraInvoke,
                             (instance_xtra->nonlin_solver),
-                            (NULL, NULL, instance_xtra->problem_data,
+                            (NULL, NULL, NULL, instance_xtra->problem_data,
                              temp_data));
 
   /* renew set_problem_data module */
