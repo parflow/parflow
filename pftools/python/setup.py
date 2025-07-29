@@ -7,7 +7,8 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="pftools",
-    version="1.3.11",
+    # First two digets should match the PF version, minor is used to track pftools updates"
+    version="3.14.1",
     description=(
         "A Python package creating an interface with the ParFlow " "hydrologic model."
     ),
