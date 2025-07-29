@@ -33,6 +33,10 @@
 
 #include "parflow.h"
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+#include "pystencils_rbgs.h"
+#endif
+
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
@@ -205,6 +209,13 @@ void     RedBlackGSPoint(
           x0 = SubvectorElt(x_sub, ix, iy, iz);
           bp = SubvectorElt(b_sub, ix, iy, iz);
 
+#if 0 //#ifdef PARFLOW_HAVE_PYSTENCILS
+            PyCodegen_RBGS_ZeroOptimizationKernel(a0, bp, x0,
+                                                  nx, ny, nz,
+                                                  sx, sy * nx_m, sz * nx_m * ny_m,
+                                                  sx, sy * nx_v, sz * nx_v * ny_v,
+                                                  sx, sy * nx_v, sz * nx_v * ny_v);
+#else
           iv = im = 0;
 
           BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
@@ -215,6 +226,7 @@ void     RedBlackGSPoint(
 
             SKIP_PARALLEL_SYNC;
           });
+#endif
         }
       }
     }
@@ -337,6 +349,28 @@ void     RedBlackGSPoint(
 
           bp = SubvectorElt(b_sub, ix, iy, iz);
 
+#if 0 //#ifdef PARFLOW_HAVE_PYSTENCILS
+          // TODO: summarize strides for a and x entries
+          PyCodegen_RBGS_7PtKernel(a0, a1, a2, a3, a4, a5, a6,
+                                   bp,
+                                   x0, x1, x2, x3, x4, x5, x6,
+                                   nx, ny, nz,
+                                   sx, sy * nx_m, sz * nx_m * ny_m,
+                                   sx, sy * nx_m, sz * nx_m * ny_m,
+                                   sx, sy * nx_m, sz * nx_m * ny_m,
+                                   sx, sy * nx_m, sz * nx_m * ny_m,
+                                   sx, sy * nx_m, sz * nx_m * ny_m,
+                                   sx, sy * nx_m, sz * nx_m * ny_m,
+                                   sx, sy * nx_m, sz * nx_m * ny_m,
+                                   sx, sy * nx_v, sz * nx_v * ny_v,
+                                   sx, sy * nx_v, sz * nx_v * ny_v,
+                                   sx, sy * nx_v, sz * nx_v * ny_v,
+                                   sx, sy * nx_v, sz * nx_v * ny_v,
+                                   sx, sy * nx_v, sz * nx_v * ny_v,
+                                   sx, sy * nx_v, sz * nx_v * ny_v,
+                                   sx, sy * nx_v, sz * nx_v * ny_v,
+                                   sx, sy * nx_v, sz * nx_v * ny_v);
+#else
           iv = im = 0;
 
           BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
@@ -352,6 +386,7 @@ void     RedBlackGSPoint(
 
             SKIP_PARALLEL_SYNC;
           });
+#endif
         }
       }
     }
