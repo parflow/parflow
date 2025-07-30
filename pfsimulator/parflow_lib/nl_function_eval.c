@@ -311,37 +311,37 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     vol = dx * dy * dz;
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      BeginTiming(FluxBase);
+    BeginTiming(FluxBase);
 
-      PyCodegen_Flux_Base_wrapper(gr_domain, r, ix, iy, iz, nx, ny, nz, d_sub, f_sub, od_sub, os_sub, po_sub, s_sub, z_mult_sub, vol);
+    PyCodegen_Flux_Base_wrapper(gr_domain, r, ix, iy, iz, nx, ny, nz, d_sub, f_sub, od_sub, os_sub, po_sub, s_sub, z_mult_sub, vol);
 
-      EndTiming(FluxBase);
+    EndTiming(FluxBase);
 #else
-      BeginTiming(FluxBase);
+    BeginTiming(FluxBase);
 
-      dp = SubvectorData(d_sub);
-      odp = SubvectorData(od_sub);
-      sp = SubvectorData(s_sub);
-      pp = SubvectorData(p_sub);
-      opp = SubvectorData(op_sub);
-      osp = SubvectorData(os_sub);
-      pop = SubvectorData(po_sub);
-      fp = SubvectorData(f_sub);
+    dp = SubvectorData(d_sub);
+    odp = SubvectorData(od_sub);
+    sp = SubvectorData(s_sub);
+    pp = SubvectorData(p_sub);
+    opp = SubvectorData(op_sub);
+    osp = SubvectorData(os_sub);
+    pop = SubvectorData(po_sub);
+    fp = SubvectorData(f_sub);
 
-      GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-      {
-        int ip = SubvectorEltIndex(f_sub, i, j, k);
-        int ipo = SubvectorEltIndex(po_sub, i, j, k);
+    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+    {
+      int ip = SubvectorEltIndex(f_sub, i, j, k);
+      int ipo = SubvectorEltIndex(po_sub, i, j, k);
 
-        /*  del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
-         *  del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
-        double del_x_slope = 1.0;
-        double del_y_slope = 1.0;
+      /*  del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
+       *  del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
+      double del_x_slope = 1.0;
+      double del_y_slope = 1.0;
 
-        fp[ip] = (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol * del_x_slope * del_y_slope * z_mult_dat[ip];
-      });
+      fp[ip] = (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol * del_x_slope * del_y_slope * z_mult_dat[ip];
+    });
 
-      EndTiming(FluxBase);
+    EndTiming(FluxBase);
 #endif
   }
 
@@ -390,11 +390,11 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     vol = dx * dy * dz;
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      BeginTiming(FluxCompressibleStorage);
+    BeginTiming(FluxCompressibleStorage);
 
-      PyCodegen_Flux_AddCompressibleStorage_wrapper(gr_domain, r, ix, iy, iz, nx, ny, nz, d_sub, f_sub, od_sub, op_sub, os_sub, p_sub, s_sub, ss_sub, z_mult_sub, vol);
+    PyCodegen_Flux_AddCompressibleStorage_wrapper(gr_domain, r, ix, iy, iz, nx, ny, nz, d_sub, f_sub, od_sub, op_sub, os_sub, p_sub, s_sub, ss_sub, z_mult_sub, vol);
 
-      EndTiming(FluxCompressibleStorage);
+    EndTiming(FluxCompressibleStorage);
 #else
     BeginTiming(FluxCompressibleStorage);
     ss = SubvectorData(ss_sub);
@@ -454,9 +454,9 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     vol = dx * dy * dz;
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      BeginTiming(FluxSourceTerms);
-      PyCodegen_Flux_AddSourceTerms_wrapper(gr_domain, r, ix, iy, iz, nx, ny, nz, et_sub, f_sub, s_sub, z_mult_sub, dt, vol);
-      EndTiming(FluxSourceTerms);
+    BeginTiming(FluxSourceTerms);
+    PyCodegen_Flux_AddSourceTerms_wrapper(gr_domain, r, ix, iy, iz, nx, ny, nz, et_sub, f_sub, s_sub, z_mult_sub, dt, vol);
+    EndTiming(FluxSourceTerms);
 #else
     BeginTiming(FluxSourceTerms);
 

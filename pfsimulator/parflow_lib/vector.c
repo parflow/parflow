@@ -818,10 +818,10 @@ void    InitVectorAll(
     vp = SubvectorData(v_sub);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      PyCodegen_VConstInit(vp,
-                           nx_v, ny_v, nz_v,
-                           1, nx_v, nx_v * ny_v,
-                           value);
+    PyCodegen_VConstInit(vp,
+                         nx_v, ny_v, nz_v,
+                         1, nx_v, nx_v * ny_v,
+                         value);
 #else
     iv = 0;
     BoxLoopI1(i, j, k, ix_v, iy_v, iz_v, nx_v, ny_v, nz_v,

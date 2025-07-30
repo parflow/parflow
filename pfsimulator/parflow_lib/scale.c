@@ -77,10 +77,10 @@ void     Scale(
     yp = SubvectorElt(y_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      PyCodegen_VScaleBy(yp,
-                         nx, ny, nz,
-                         1, nx_v, nx_v * ny_v,
-                         alpha);
+    PyCodegen_VScaleBy(yp,
+                       nx, ny, nz,
+                       1, nx_v, nx_v * ny_v,
+                       alpha);
 #else
     iv = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
