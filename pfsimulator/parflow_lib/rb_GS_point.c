@@ -349,7 +349,7 @@ void     RedBlackGSPoint(
 
           bp = SubvectorElt(b_sub, ix, iy, iz);
 
-#ifdef PARFLOW_HAVE_PYSTENCILS
+#if 0 //#ifdef PARFLOW_HAVE_PYSTENCILS
           // TODO: summarize strides for a and x entries
           PyCodegen_RBGS_7PtKernel(a0, a1, a2, a3, a4, a5, a6,
                                    bp,
