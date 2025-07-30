@@ -150,7 +150,6 @@ void    OverlandFlowEvalKin(
       //printf("Current Patch %d, lower x %d, lower y %d, (%d,%d,%d)\n",p1, p0x, p0y, i,j,k);
       //printf("Current top %d, lower x %d, lower y %d, (%d,%d,%d)\n",k1, k0x, k0y, i,j,k);
 
-
       if (k1 >= 0)
       {
         ip = SubvectorEltIndex(p_sub, i, j, k1);
@@ -161,15 +160,14 @@ void    OverlandFlowEvalKin(
 
         Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);
         if (Sf_mag < ov_epsilon)
-        Sf_mag = ov_epsilon;
+          Sf_mag = ov_epsilon;
         PP_ipp1 = 0.0;
-        PP_ippsy= 0.0;
+        PP_ippsy = 0.0;
         PP_ip = pp[ip];
         if (ipp1 >= 0)
-           PP_ipp1 = pp[ipp1];
+          PP_ipp1 = pp[ipp1];
         if (ippsy >= 0)
-           PP_ippsy = pp[ippsy];
-    
+          PP_ippsy = pp[ippsy];
         Press_x = RPMean(-Sf_x, 0.0,
                          pfmax((PP_ip), 0.0),
                          pfmax((PP_ipp1), 0.0));
