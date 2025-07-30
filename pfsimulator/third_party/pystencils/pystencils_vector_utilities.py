@@ -8,24 +8,29 @@ from pystencils.types import PsPointerType
 
 from pystencils_codegen import *
 
+
 def create_reduction_kernel_wrapper(
-        sfg: SourceFileGenerator,
-        allow_vect: bool,
-        kernel: Kernel,
-        has_init_val: bool = False
+    sfg: SourceFileGenerator,
+    allow_vect: bool,
+    kernel: Kernel,
+    has_init_val: bool = False,
 ):
-    kernel_params = [pw for pw in kernel.parameters if pw.wrapped.is_field_parameter or not isinstance(pw.dtype, PsPointerType)]
+    kernel_params = [
+        pw
+        for pw in kernel.parameters
+        if pw.wrapped.is_field_parameter or not isinstance(pw.dtype, PsPointerType)
+    ]
 
     params = []
     args = []
 
     # TODO: code duplication
-    target = sfg.context.project_info['target']
-    use_cuda = sfg.context.project_info['use_cuda']
+    target = sfg.context.project_info["target"]
+    use_cuda = sfg.context.project_info["use_cuda"]
 
     if target.is_vector_cpu() and allow_vect:
         for param in kernel_params:
-            pattern = re.compile('_stride_(.*)_1')
+            pattern = re.compile("_stride_(.*)_1")
             match = pattern.findall(param.name)
 
             if match:
@@ -79,11 +84,11 @@ def create_reduction_kernel_wrapper(
 
 
 def create_kernel_func_and_reduction_wrapper(
-        sfg: SourceFileGenerator,
-        assign,
-        func_name: str,
-        allow_vect: bool = True,
-        has_init_val: bool = False
+    sfg: SourceFileGenerator,
+    assign,
+    func_name: str,
+    allow_vect: bool = True,
+    has_init_val: bool = False,
 ):
     # create kernel func
     kernel = create_kernel_func(sfg, assign, func_name, allow_vect)
@@ -93,7 +98,7 @@ def create_kernel_func_and_reduction_wrapper(
 
 
 with SourceFileGenerator() as sfg:
-    default_dtype = sfg.context.project_info['default_dtype']
+    default_dtype = sfg.context.project_info["default_dtype"]
 
     # symbols
 
@@ -108,7 +113,9 @@ with SourceFileGenerator() as sfg:
     # kernels
 
     # z = a * x + b * y (PFVLinearSum)
-    create_kernel_func(sfg, ps.Assignment(z.center(), a * x.center() + b * y.center()), "VLinearSum")
+    create_kernel_func(
+        sfg, ps.Assignment(z.center(), a * x.center() + b * y.center()), "VLinearSum"
+    )
 
     # z = c (PFVConstInit)
     create_kernel_func(sfg, ps.Assignment(z.center(), c), "VConstInit")
@@ -132,25 +139,41 @@ with SourceFileGenerator() as sfg:
     create_kernel_func(sfg, ps.Assignment(z.center(), x.center() + b), "VAddConst")
 
     # Returns sum_i x_i (PFVSumNorm)
-    create_kernel_func_and_reduction_wrapper(sfg, ps.AddReductionAssignment(r, x.center()), "VSumNorm")
+    create_kernel_func_and_reduction_wrapper(
+        sfg, ps.AddReductionAssignment(r, x.center()), "VSumNorm"
+    )
 
     # Returns x dot y (PFVDotProd)
-    create_kernel_func_and_reduction_wrapper(sfg, ps.AddReductionAssignment(r, x.center() * y.center()), "VDotProd")
+    create_kernel_func_and_reduction_wrapper(
+        sfg, ps.AddReductionAssignment(r, x.center() * y.center()), "VDotProd"
+    )
 
     # Returns ||x||_{max} (PFVMaxNorm)
-    create_kernel_func_and_reduction_wrapper(sfg, ps.MaxReductionAssignment(r, sp.Max(x.center())), "VMaxNorm")
+    create_kernel_func_and_reduction_wrapper(
+        sfg, ps.MaxReductionAssignment(r, sp.Max(x.center())), "VMaxNorm"
+    )
 
     # Returns sum_i (x_i * w_i)^2 (PFVWrmsNormHelper)
-    create_kernel_func_and_reduction_wrapper(sfg, ps.AddReductionAssignment(r, x.center() ** 2 * w.center() ** 2), "VWrmsNormHelper")
+    create_kernel_func_and_reduction_wrapper(
+        sfg,
+        ps.AddReductionAssignment(r, x.center() ** 2 * w.center() ** 2),
+        "VWrmsNormHelper",
+    )
 
     # Returns sum_i |x_i| (PFVL1Norm)
-    create_kernel_func_and_reduction_wrapper(sfg, ps.AddReductionAssignment(r, sp.Abs(x.center())), "VL1Norm")
+    create_kernel_func_and_reduction_wrapper(
+        sfg, ps.AddReductionAssignment(r, sp.Abs(x.center())), "VL1Norm"
+    )
 
     # Returns min_i x_i (PFVMin)
-    create_kernel_func_and_reduction_wrapper(sfg, ps.MinReductionAssignment(r, x.center()), "VMin", has_init_val=True)
+    create_kernel_func_and_reduction_wrapper(
+        sfg, ps.MinReductionAssignment(r, x.center()), "VMin", has_init_val=True
+    )
 
     # Returns max_i x_i (PFVMax)
-    create_kernel_func_and_reduction_wrapper(sfg, ps.MaxReductionAssignment(r, x.center()), "VMax", has_init_val=True)
+    create_kernel_func_and_reduction_wrapper(
+        sfg, ps.MaxReductionAssignment(r, x.center()), "VMax", has_init_val=True
+    )
 
     # TODO: Implement? Not ideal target code for pystencils
     #  PFVConstrProdPos(c, x)            Returns FALSE if some c_i = 0 &
@@ -159,9 +182,12 @@ with SourceFileGenerator() as sfg:
     # z_i = (x_i > c)(PFVCompare)
     create_kernel_func(
         sfg,
-        ps.Assignment(z.center(),
-                      sp.Piecewise((1.0, sp.Abs(x.center()) >= c), (0.0, True))),
-        "VCompare", allow_vect=False)
+        ps.Assignment(
+            z.center(), sp.Piecewise((1.0, sp.Abs(x.center()) >= c), (0.0, True))
+        ),
+        "VCompare",
+        allow_vect=False,
+    )
 
     # TODO: Implement? Not ideal target code for pystencils
     #  PFVInvTest(x, z)                  Returns (x_i != 0 forall i), z_i = 1 / x_i
@@ -176,22 +202,32 @@ with SourceFileGenerator() as sfg:
     create_kernel_func(sfg, ps.Assignment(z.center(), x.center() - y.center()), "VDiff")
 
     # z = - x (PFVNeg)
-    create_kernel_func(sfg, ps.Assignment(z.center(), - x.center()), "VNeg")
+    create_kernel_func(sfg, ps.Assignment(z.center(), -x.center()), "VNeg")
 
     # z = c * (x + y) (PFVScaleSum)
-    create_kernel_func(sfg, ps.Assignment(z.center(), c * (x.center() + y.center())), "VScaleSum")
+    create_kernel_func(
+        sfg, ps.Assignment(z.center(), c * (x.center() + y.center())), "VScaleSum"
+    )
 
     # z = c * (x - y) (PFVScaleDiff)
-    create_kernel_func(sfg, ps.Assignment(z.center(), c * (x.center() - y.center())), "VScaleDiff")
+    create_kernel_func(
+        sfg, ps.Assignment(z.center(), c * (x.center() - y.center())), "VScaleDiff"
+    )
 
     # z = a * x + y (PFVLin1)
-    create_kernel_func(sfg, ps.Assignment(z.center(), a * x.center() + y.center()), "VLin1")
+    create_kernel_func(
+        sfg, ps.Assignment(z.center(), a * x.center() + y.center()), "VLin1"
+    )
 
     # z = a * x - y (PFVLin2)
-    create_kernel_func(sfg, ps.Assignment(z.center(), a * x.center() - y.center()), "VLin2")
+    create_kernel_func(
+        sfg, ps.Assignment(z.center(), a * x.center() - y.center()), "VLin2"
+    )
 
     # y = y + a * x (PFVAxpy)
-    create_kernel_func(sfg, ps.Assignment(y.center(), y.center() + a * x.center()), "VAxpy")
+    create_kernel_func(
+        sfg, ps.Assignment(y.center(), y.center() + a * x.center()), "VAxpy"
+    )
 
     # x = x * a (PFVScaleBy)
     create_kernel_func(sfg, ps.Assignment(x.center(), x.center() * a), "VScaleBy")
