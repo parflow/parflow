@@ -1,4 +1,4 @@
------------------name: Linux CI Tests
+name: Linux CI Tests
 
 on: [push, pull_request]
 
