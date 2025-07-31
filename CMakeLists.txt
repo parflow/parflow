@@ -3,7 +3,8 @@ cmake_minimum_required (VERSION 3.14)
 project (PARFLOW LANGUAGES C Fortran CXX)
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/")
-cmake_policy(SET CMP0144 NEW)
+
+#cmake_policy(SET CMP0144 NEW)
 
 #-----------------------------------------------------------------------------
 # Set standard compiler flagsx
