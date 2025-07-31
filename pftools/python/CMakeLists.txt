@@ -87,7 +87,7 @@ install(
     "bin"
     )
 
-install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_PREFIX}/py-env/bin/pip3 install ${CMAKE_INSTALL_PREFIX}/python)" )
+install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_PREFIX}/py-env/bin/pip3 install --use-pep517 ${CMAKE_INSTALL_PREFIX}/python)" )
 
 add_custom_target(
   pf-python ALL
@@ -106,11 +106,13 @@ add_custom_target(PythonCreatePackage
   COMMAND
       "${CMAKE_COMMAND}" -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/dist/"
   COMMAND
-      ${PARFLOW_PYTHON} setup.py sdist bdist_wheel
+      ${CMAKE_INSTALL_PREFIX}/py-env/bin/pip3 install build
+  COMMAND
+      ${CMAKE_INSTALL_PREFIX}/py-env/bin/python3 -m build --wheel --sdist
   COMMAND
       ${CMAKE_INSTALL_PREFIX}/py-env/bin/twine check "${CMAKE_CURRENT_BINARY_DIR}/dist/*"
   COMMENT
-      "Updating the pftools Python package"
+      "Updating the pftools Python package using modern build system"
   VERBATIM
   DEPENDS
     pf-python
