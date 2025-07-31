@@ -384,6 +384,7 @@ jobs:
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
           URL=https://github.com/LLNL/Umpire/archive/refs/tags/v2025.03.1.tar.gz
+          mkdir Umpire
           cd Umpire
           curl -L $URL | tar --strip-components=1 -xz
           cmake -S . -B build                                             \
