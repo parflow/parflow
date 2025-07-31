@@ -383,8 +383,9 @@ jobs:
       if: (matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos') && matrix.config.memory_manager == 'umpire'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          git clone --recursive https://github.com/LLNL/Umpire.git
+          URL=https://github.com/LLNL/Umpire/archive/refs/tags/v2025.03.1.tar.gz
           cd Umpire
+          curl -L $URL | tar --strip-components=1 -xz
           cmake -S . -B build                                             \
                      -DCMAKE_CXX_COMPILER=mpicxx                        \
                      -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}/Umpire" \
