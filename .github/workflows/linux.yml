@@ -529,9 +529,8 @@ jobs:
           # Configure and install PDI
           mkdir build install
           cd build
-          cmake .. -DCMAKE_INSTALL_PREFIX=../install
+          cmake .. -DCMAKE_INSTALL_PREFIX=${PARFLOW_DEP_DIR}
           make -j 2 install
-          mv -v ${curr_pdi}/pdi ${PARFLOW_DEP_DIR}
         fi
 
         export LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/pdi/install/lib:${LD_LIBRARY_PATH}
