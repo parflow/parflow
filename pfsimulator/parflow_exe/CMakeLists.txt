@@ -40,6 +40,12 @@ if (${PARFLOW_HAVE_SILO})
   target_link_libraries (parflow ${SILO_LIBRARIES})
 endif (${PARFLOW_HAVE_SILO})
 
+if (${PARFLOW_HAVE_PDI})
+  target_link_libraries (parflow ${PDI_LIBRARIES})
+  target_link_libraries (parflow ${PARACONF_LIBRARIES})
+  target_link_libraries(parflow ${SPDLOG_LIBRARIES})
+endif (${PARFLOW_HAVE_PDI})
+
 if (${PARFLOW_HAVE_NETCDF})
   target_link_libraries (parflow NetCDF::NetCDF)
   target_link_libraries (parflow ${CURL_LIBRARIES})
