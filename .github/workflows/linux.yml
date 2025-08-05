@@ -77,7 +77,7 @@ jobs:
                echo "Installing"
                mkdir -p $HOME/depend/{include,lib}
                cd $HOME/depend
-               echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ secrets.CACHE_VERSION }}" > $HOME/depend/cache-key
+               echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ hashfiles('**/.github/workflows/linux.yml') }}" > $HOME/depend/cache-key
                wget -nv --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-x86_64.tar.gz
                tar -xf cmake-3.25.1-linux-x86_64.tar.gz
                $HOME/depend/cmake-3.25.1-linux-x86_64/bin/cmake --version
@@ -273,10 +273,6 @@ jobs:
       run: |
         sudo apt-get -qq update
         sudo apt -qq install python3 python3-venv
-
-    # Cache dependencies so don't have to rebuild on each test.
-    # Can flush caches by resetting the CACHE_VERSION secret on GitHub
-    # settings for the project (using date-timestamp for secret).
 
     - name: Cache dependencies
       uses: actions/cache@v4
