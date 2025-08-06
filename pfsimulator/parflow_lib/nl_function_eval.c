@@ -238,7 +238,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   /* Initialize function values to zero. */
   PFVConstInit(0.0, fval);
 
-  if ((instance_xtra->using_overland_flow) == 1)
+  if ((instance_xtra->using_overland_flow) == TRUE)
   {
     InitVectorAll(KW, 0.0);
     InitVectorAll(KE, 0.0);
@@ -818,7 +818,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     y_ssl_sub = VectorSubvector(y_ssl, is);
 
     // sk Overland flow
-    if ((instance_xtra->using_overland_flow) == 1)
+    if ((instance_xtra->using_overland_flow) == TRUE)
     {
       kw_sub = VectorSubvector(KW, is);
       ke_sub = VectorSubvector(KE, is);
@@ -2257,7 +2257,7 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem *problem,
       PFModuleNewInstance(ProblemOverlandFlowEvalKin(problem), ());
 
     (instance_xtra->using_overland_flow) = BCPressurePackageUsingOverlandFlow(problem);
-    if ((instance_xtra->using_overland_flow) == 1)
+    if ((instance_xtra->using_overland_flow) == TRUE)
     {
       (instance_xtra->KW) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
       (instance_xtra->KE) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
@@ -2311,7 +2311,7 @@ void  NlFunctionEvalFreeInstanceXtra()
 
   if (instance_xtra)
   {
-    if ((instance_xtra->using_overland_flow) == 1)
+    if ((instance_xtra->using_overland_flow) == TRUE)
     {
       FreeVector(instance_xtra->qy);
       FreeVector(instance_xtra->qx);

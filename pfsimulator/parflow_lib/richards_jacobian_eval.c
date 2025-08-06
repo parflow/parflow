@@ -335,7 +335,7 @@ void    RichardsJacobianEval(
   InitVectorAll(saturation_der, 0.0);
 
   // /* Define grid for surface contribution */
-  if ((instance_xtra->using_overland_flow) == 1)
+  if ((instance_xtra->using_overland_flow) == TRUE)
   {
     InitVectorAll(KW, 0.0);
     InitVectorAll(KE, 0.0);
@@ -953,7 +953,7 @@ void    RichardsJacobianEval(
     J_sub = MatrixSubmatrix(J, is);
 
     /* overland flow - DOK */
-    if ((instance_xtra->using_overland_flow) == 1)
+    if ((instance_xtra->using_overland_flow) == TRUE)
     {
       kw_sub = VectorSubvector(KW, is);
       ke_sub = VectorSubvector(KE, is);
@@ -1415,7 +1415,7 @@ void    RichardsJacobianEval(
       FinalizeMatrixUpdate(handle);
     }
 
-    if ((instance_xtra->using_overland_flow) == 1)
+    if ((instance_xtra->using_overland_flow) == TRUE)
     {
       /* Pass KW values to neighbors.  */
       vector_update_handle = InitVectorUpdate(KW, VectorUpdateAll);
@@ -1849,7 +1849,7 @@ void    RichardsJacobianEval(
 
       J_sub = MatrixSubmatrix(J, is);
 
-      if ((instance_xtra->using_overland_flow) == 1)
+      if ((instance_xtra->using_overland_flow) == TRUE)
       {
         kw_sub = VectorSubvector(KW, is);
         ke_sub = VectorSubvector(KE, is);
@@ -2252,7 +2252,7 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
     {
       // Default to simple
       public_xtra->type = simple;
-      if ((instance_xtra->using_overland_flow) == 1)
+      if ((instance_xtra->using_overland_flow) == TRUE)
       {
         (public_xtra->type) = overland_flow;
       }
@@ -2261,7 +2261,7 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
        * but later use the simple/symmetric preconditioner (RMM) */
     }
 
-    if ((instance_xtra->using_overland_flow) == 1)
+    if ((instance_xtra->using_overland_flow) == TRUE)
     {
       (instance_xtra->KW) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
       (instance_xtra->KE) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
@@ -2315,7 +2315,7 @@ void  RichardsJacobianEvalFreeInstanceXtra()
 
   if (instance_xtra)
   {
-    if ((instance_xtra->using_overland_flow) == 1)
+    if ((instance_xtra->using_overland_flow) == TRUE)
     {
       FreeVector(instance_xtra->KSns);
       FreeVector(instance_xtra->KNns);

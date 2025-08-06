@@ -559,7 +559,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
     (public_xtra->patch_indexes) = ctalloc(int, num_patches);
     (public_xtra->cycle_numbers) = ctalloc(int, num_patches);
     (public_xtra->data) = ctalloc(void *, num_patches);
-    (public_xtra->using_overland_flow) = 0;
+    (public_xtra->using_overland_flow) = FALSE;
 
     /* Determine the domain geom index from domain name */
     switch_name = GetString("Domain.GeomName");
@@ -1020,7 +1020,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
         case OverlandKinematic:
         case OverlandDiffusive:
         {
-          (public_xtra->using_overland_flow) = 1;
+          (public_xtra->using_overland_flow) = TRUE;
           break;
         }
       }
