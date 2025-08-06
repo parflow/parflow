@@ -204,11 +204,13 @@ void         WellPackage(
 
           ix = IndexSpaceX((dummy0->xlocation), 0);
           iy = IndexSpaceY((dummy0->ylocation), 0);
-          if (public_xtra->correct_for_var_dz == 1){
+          if (public_xtra->correct_for_var_dz == 1)
+          {
             iz_lower = CalculateIndexSpaceZ(dummy0->z_lower, problem_data);
             iz_upper = CalculateIndexSpaceZ(dummy0->z_upper, problem_data);
           }
-          else{
+          else
+          {
             iz_lower = IndexSpaceZ(dummy0->z_lower, 0);
             iz_upper = IndexSpaceZ(dummy0->z_upper, 0);
           }
@@ -236,13 +238,15 @@ void         WellPackage(
           dx = SubgridDX(new_subgrid);
           dy = SubgridDY(new_subgrid);
           dz = SubgridDZ(new_subgrid);
-          if(public_xtra->correct_for_var_dz){
+          if (public_xtra->correct_for_var_dz)
+          {
             if (SubgridLivesOnThisRank(new_subgrid, grid))
             {
               subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
             }
           }
-          else{
+          else
+          {
             subgrid_volume = nx * ny * nz * dx * dy * dz;
           }
 
@@ -522,11 +526,13 @@ void         WellPackage(
             iz_upper = -1;
             if (well_action == 0)
             {
-              if (public_xtra->correct_for_var_dz == 1){
+              if (public_xtra->correct_for_var_dz == 1)
+              {
                 iz_lower = CalculateIndexSpaceZ(dummy1->z_lower_ext, problem_data);
                 iz_upper = CalculateIndexSpaceZ(dummy1->z_upper_ext, problem_data);
               }
-              else{
+              else
+              {
                 iz_lower = IndexSpaceZ(dummy1->z_lower_ext, 0);
                 iz_upper = IndexSpaceZ(dummy1->z_upper_ext, 0);
               }
@@ -537,11 +543,13 @@ void         WellPackage(
             }
             else
             {
-              if (public_xtra->correct_for_var_dz == 1){
+              if (public_xtra->correct_for_var_dz == 1)
+              {
                 iz_lower = CalculateIndexSpaceZ(dummy1->z_lower_inj, problem_data);
                 iz_upper = CalculateIndexSpaceZ(dummy1->z_upper_inj, problem_data);
               }
-              else{
+              else
+              {
                 iz_lower = IndexSpaceZ(dummy1->z_lower_inj, 0);
                 iz_upper = IndexSpaceZ(dummy1->z_upper_inj, 0);
               }
@@ -568,13 +576,15 @@ void         WellPackage(
             dx = SubgridDX(new_subgrid);
             dy = SubgridDY(new_subgrid);
             dz = SubgridDZ(new_subgrid);
-            if(public_xtra->correct_for_var_dz){
+            if (public_xtra->correct_for_var_dz)
+            {
               if (SubgridLivesOnThisRank(new_subgrid, grid))
               {
                 subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
               }
             }
-            else{
+            else
+            {
               subgrid_volume = nx * ny * nz * dx * dy * dz;
             }
 #ifdef PARFLOW_HAVE_MPI
