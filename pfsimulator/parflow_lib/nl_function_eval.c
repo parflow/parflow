@@ -629,8 +629,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     /* @RMM added to provide variable dz */
     z_mult_dat = SubvectorData(z_mult_sub);
 
-    qx_sub = VectorSubvector(qx, is);
-
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
       int ip = SubvectorEltIndex(p_sub, i, j, k);
