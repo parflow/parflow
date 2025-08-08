@@ -62,7 +62,7 @@ jobs:
               cd uncrustify-uncrustify-0.79.0
               mkdir build
               cd build
-              cmake -DCMAKE_INSTALL_PREFIX=/usr/local ..
+              cmake -DCMAKE_INSTALL_PREFIX=${PARFLOW_DEP_DIR} ..
               make
               sudo make -j 2 install
               cd ../..
