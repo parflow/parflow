@@ -75,14 +75,20 @@ function parse_params() {
 }
 
 function check_version() {
-   version=$(uncrustify --version)
-   case ${version} in
-      *${UNCRUSTIFY_VERSION}*)
+   if command -v "uncrustify" &>/dev/null; then
+      version=$(uncrustify --version)
+      case ${version} in
+	 *${UNCRUSTIFY_VERSION}*)
 	 ;;
-      *)
-	 script_exit "Uncrustify must be version ${UNCRUSTIFY_VERSION}"
-	 ;;
-   esac
+	 *)
+	    script_exit "Uncrustify must be version ${UNCRUSTIFY_VERSION}"
+	    exit 1
+	    ;;
+      esac
+   else
+      echo "uncrustify not found."
+      exit 1
+   fi
 }
 
 function log () {
@@ -137,7 +143,7 @@ function main() {
       if $failed ;
       then
 	 printf 'pfFormat style check : FAILED\n'
-	 exit -1
+	 exit 1
       else
 	 printf 'pfFormat style check : PASSED\n'
       fi
