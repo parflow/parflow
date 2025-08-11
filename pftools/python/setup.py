@@ -7,7 +7,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="pftools",
-    version="1.3.11",
+    version="1.3.12",
     description=(
         "A Python package creating an interface with the ParFlow " "hydrologic model."
     ),
