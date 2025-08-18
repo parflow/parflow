@@ -51,6 +51,7 @@ elseif (PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
     # Initialize CUDA
     include(CheckLanguage)
     check_language(CUDA)
+    find_package(CUDAToolkit REQUIRED)
     if (CMAKE_CUDA_COMPILER)
       enable_language(CUDA)
       set(CMAKE_CUDA_STANDARD 14)
