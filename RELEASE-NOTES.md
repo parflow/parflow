@@ -166,9 +166,11 @@ ParFlow development and bug-fixes would not be possible without contributions of
 
 Configuration flags have been added to support building only ParFlow-CLM for use cases where only CLM is desired.
 
-### Kokkos version support updated to version 4.2.01
+### Kokkos version support updated to version 4.2.01 and performance improved
 
-The Kokkos supported version has been updated to version 4.2.01.  This is the version used in our regression suite.  Other versions may or may not work.
+The Kokkos supported version has been updated to version 4.2.01.  This is the version used in our regression suite. Other versions may or may not work.
+
+Refactors `KokkosMemSet` operations by replacing manual zero-initialization via `parallel_for `with a more efficient and portable. Up to ~38% reduction in solve time compared to the previous loop based implementation.
 
 ### OASIS version support updated to version 5.1.
 
@@ -181,6 +183,11 @@ Improve speed of reading large vegm files in the Python read_vegm function.
 ### Documentation updates
 
 Clarified top flux boundary conditions (e.g., OverlandFlow, SeepageFace) and EvapTrans files sign convention.  Typo in Haverkamp saturation formula: alpha replaced with A.  Key names "TensorByFileX" renamed to the correct "TensorFileX" key name.
+
+ReadTheDocs had the irrigation type key with an 's' at the end but there should not be an 's' there.   This example shows the corrected documentation:
+```
+<runname>.Solver.CLM.IrrigationType "Drip"
+```
 
 ## Bug Fixes
 
