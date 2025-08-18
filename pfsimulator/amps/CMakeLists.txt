@@ -30,6 +30,11 @@ endif()
 
 add_library(amps STATIC ${COMMON_SRC_FILES} ${AMPS_SRC_FILES})
 
+# AMPS has a dependency on CUDA
+if ( ${PARFLOW_HAVE_CUDA} )
+  target_include_directories(amps PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+endif ( ${PARFLOW_HAVE_CUDA} )
+
 if( ${PARFLOW_HAVE_UMPIRE} )
   target_link_libraries(amps PUBLIC umpire)
 endif( ${PARFLOW_HAVE_UMPIRE} )
