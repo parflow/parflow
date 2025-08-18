@@ -210,11 +210,11 @@ void     RedBlackGSPoint(
           bp = SubvectorElt(b_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-            PyCodegen_RBGS_ZeroOptimizationKernel(a0, bp, x0,
-                                                  nx, ny, nz,
-                                                  sx, sy * nx_m, sz * nx_m * ny_m,
-                                                  sx, sy * nx_v, sz * nx_v * ny_v,
-                                                  sx, sy * nx_v, sz * nx_v * ny_v);
+          PyCodegen_RBGS_ZeroOptimizationKernel(a0, bp, x0,
+                                                nx, ny, nz,
+                                                sx, sy * nx_m, sz * nx_m * ny_m,
+                                                sx, sy * nx_v, sz * nx_v * ny_v,
+                                                sx, sy * nx_v, sz * nx_v * ny_v);
 #else
           iv = im = 0;
 

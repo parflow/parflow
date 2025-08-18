@@ -9,9 +9,8 @@ from pystencils.types.quick import Fp, SInt
 
 from pystencils_codegen import *
 
-def create_kernel_wrapper(
-        kernel: Kernel
-):
+
+def create_kernel_wrapper(kernel: Kernel):
     params = []
 
     params += [sfg.var("gr_domain", PsPointerType(PsCustomType("GrGeomSolid")))]
@@ -35,7 +34,9 @@ def create_kernel_wrapper(
 
             params += [sfg.var(fieldname_sub, PsPointerType(PsCustomType("Subvector")))]
 
-            fetch_subvectors += [f"double* {fieldname} = SubvectorElt({fieldname_sub}, PV_ixl, PV_iyl, PV_izl);\n"]
+            fetch_subvectors += [
+                f"double* {fieldname} = SubvectorElt({fieldname_sub}, PV_ixl, PV_iyl, PV_izl);\n"
+            ]
 
             nx, ny, nz = f"nx_{fieldname}", f"ny_{fieldname}", f"nz_{fieldname}"
             fetch_sizes += [f"const int {nx} = SubvectorNX({fieldname_sub});\n"]
@@ -43,13 +44,17 @@ def create_kernel_wrapper(
             fetch_sizes += [f"const int {nz} = SubvectorNZ({fieldname_sub});\n"]
 
             fieldstrides += ["1", f"{nx}", f"{nx} * {ny}"]
-        elif not (param.wrapped.get_properties(FieldStride) or param.wrapped.get_properties(FieldShape)):
+        elif not (
+            param.wrapped.get_properties(FieldStride)
+            or param.wrapped.get_properties(FieldShape)
+        ):
             params += [param]
             kernel_symbols += [param.name]
 
     sfg.include("parflow.h")
 
-    code = sfg.branch("r == 0 && GrGeomSolidInteriorBoxes(gr_domain)")(f"""
+    code = sfg.branch("r == 0 && GrGeomSolidInteriorBoxes(gr_domain)")(
+        f"""
 int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;
 int *PV_visiting = NULL;
 PF_UNUSED(PV_visiting);
@@ -77,10 +82,12 @@ for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {{
         );
     }}
 }}
-    """)("""
+    """
+    )(
+        """
     printf(\"\\n\\nPystencils support unavailable for mesh refinement at file %s and line %d\\n\", __FILE__, __LINE__);
-    exit(1);""")
-
+    exit(1);"""
+    )
 
     sfg.function(f"{kernel.name[:-4]}_wrapper").params(*params)(
         code,
@@ -88,10 +95,7 @@ for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {{
 
 
 def create_kernel_func_and_wrapper(
-        sfg: SourceFileGenerator,
-        assign,
-        func_name: str,
-        allow_vect: bool = True
+    sfg: SourceFileGenerator, assign, func_name: str, allow_vect: bool = True
 ):
     # create kernel func
     kernel = create_kernel_func(sfg, assign, func_name, allow_vect)
@@ -99,8 +103,9 @@ def create_kernel_func_and_wrapper(
     # create wrapper func
     create_kernel_wrapper(kernel)
 
+
 with SourceFileGenerator() as sfg:
-    default_dtype = sfg.context.project_info['default_dtype']
+    default_dtype = sfg.context.project_info["default_dtype"]
 
     # symbols
 
@@ -115,7 +120,7 @@ with SourceFileGenerator() as sfg:
 
     z_mult_dat, dp, odp, sp, pp, opp, osp, pop, fp, ss, et = ps.fields(
         f"z_mult_dat, dp, odp, sp, pp, opp, osp, pop, fp, ss, et: {default_dtype}[3D]",
-        layout="fzyx"
+        layout="fzyx",
     )
 
     # kernels
@@ -123,36 +128,59 @@ with SourceFileGenerator() as sfg:
     # flux: base
     # fp[ip] = (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol * del_x_slope * del_y_slope * z_mult_dat[ip]
 
-    create_kernel_func_and_wrapper(sfg,
-                       ps.Assignment(
-                           fp.center(),
-                           (sp.center() * dp.center() - osp.center() * odp.center()) *
-                                pop.center() * vol * del_x_slope * del_y_slope * z_mult_dat.center()
-                       ),
-                       "Flux_Base")
+    create_kernel_func_and_wrapper(
+        sfg,
+        ps.Assignment(
+            fp.center(),
+            (sp.center() * dp.center() - osp.center() * odp.center())
+            * pop.center()
+            * vol
+            * del_x_slope
+            * del_y_slope
+            * z_mult_dat.center(),
+        ),
+        "Flux_Base",
+    )
 
     # flux: add compressible storage
     # fp[ip] += ss[ip] * vol * del_x_slope * del_y_slope * z_mult_dat[ip] * (pp[ip] * sp[ip] * dp[ip] - opp[ip] * osp[ip] * odp[ip])
 
-    create_kernel_func_and_wrapper(sfg,
-                       ps.Assignment(
-                           fp.center(),
-                           fp.center() + (
-                                   ss.center() * vol * del_x_slope * del_y_slope * z_mult_dat.center() *
-                                       (pp.center() * sp.center() * dp.center() - opp.center() * osp.center() * odp.center())
-                           )
-                       ),
-                       "Flux_AddCompressibleStorage")
+    create_kernel_func_and_wrapper(
+        sfg,
+        ps.Assignment(
+            fp.center(),
+            fp.center()
+            + (
+                ss.center()
+                * vol
+                * del_x_slope
+                * del_y_slope
+                * z_mult_dat.center()
+                * (
+                    pp.center() * sp.center() * dp.center()
+                    - opp.center() * osp.center() * odp.center()
+                )
+            ),
+        ),
+        "Flux_AddCompressibleStorage",
+    )
 
     # flux: add source terms
     # fp[ip] -= vol * del_x_slope * del_y_slope * z_mult_dat[ip] * dt * (sp[ip] + et[ip])
 
-    create_kernel_func_and_wrapper(sfg,
-                       ps.Assignment(
-                           fp.center(),
-                           fp.center() - (
-                                   vol * del_x_slope * del_y_slope * z_mult_dat.center() * dt * (sp.center() + et.center())
-                           )
-                       ),
-                       "Flux_AddSourceTerms")
-
+    create_kernel_func_and_wrapper(
+        sfg,
+        ps.Assignment(
+            fp.center(),
+            fp.center()
+            - (
+                vol
+                * del_x_slope
+                * del_y_slope
+                * z_mult_dat.center()
+                * dt
+                * (sp.center() + et.center())
+            ),
+        ),
+        "Flux_AddSourceTerms",
+    )

@@ -5,18 +5,19 @@ from pystencilssfg import SourceFileGenerator
 
 from pystencils.types.quick import SInt
 
+
 # set up kernel config
 def get_kernel_cfg(
-        sfg: SourceFileGenerator,
-        allow_vect: bool,
+    sfg: SourceFileGenerator,
+    allow_vect: bool,
 ):
-    if target:= sfg.context.project_info['target']:
+    if target := sfg.context.project_info["target"]:
         kernel_cfg = ps.CreateKernelConfig(
             target=target,
         )
 
         # cpu optimizations
-        if sfg.context.project_info['use_cpu']:
+        if sfg.context.project_info["use_cpu"]:
 
             # vectorization
             if target.is_vector_cpu() and allow_vect:
@@ -24,11 +25,11 @@ def get_kernel_cfg(
                 kernel_cfg.cpu.vectorize.assume_inner_stride_one = True
 
             # OpenMP
-            if sfg.context.project_info['use_openmp']:
+            if sfg.context.project_info["use_openmp"]:
                 kernel_cfg.cpu.openmp.enable = True
 
         # gpu optimization: warp level reductions
-        if sfg.context.project_info['use_cuda']:
+        if sfg.context.project_info["use_cuda"]:
             kernel_cfg.gpu.assume_warp_aligned_block_size = True
             kernel_cfg.gpu.warp_size = 32
 
@@ -38,28 +39,25 @@ def get_kernel_cfg(
 
 
 def invoke(sfg: SourceFileGenerator, k):
-    if sfg.context.project_info['use_cuda']:
+    if sfg.context.project_info["use_cuda"]:
         sfg.include("<stdio.h>")
 
         return [
             sfg.gpu_invoke(k),
             "cudaError_t err = cudaPeekAtLastError();",
             sfg.branch("err != cudaSuccess")(
-                "printf(\"\\n\\n%s in %s at line %d\\n\", cudaGetErrorString(err), __FILE__, __LINE__);\n"
+                'printf("\\n\\n%s in %s at line %d\\n", cudaGetErrorString(err), __FILE__, __LINE__);\n'
                 "exit(1);"
-            )
+            ),
         ]
     else:
         return [sfg.call(k)]
 
 
 def create_kernel_func(
-        sfg: SourceFileGenerator,
-        assign,
-        func_name: str,
-        allow_vect: bool = True
+    sfg: SourceFileGenerator, assign, func_name: str, allow_vect: bool = True
 ):
-    target = sfg.context.project_info['target']
+    target = sfg.context.project_info["target"]
     func_name = f"PyCodegen_{func_name}"
     kernel_name = f"{func_name}_gen"
     kernel = sfg.kernels.create(assign, kernel_name, get_kernel_cfg(sfg, allow_vect))
@@ -68,7 +66,7 @@ def create_kernel_func(
         params = []
         missing_strides = []
         for i, param in enumerate(kernel.parameters):
-            pattern = re.compile('_stride_(.*)_1')
+            pattern = re.compile("_stride_(.*)_1")
             match = pattern.findall(param.name)
 
             if match:

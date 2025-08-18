@@ -286,10 +286,10 @@ void PFVConstInit(
     zp = SubvectorElt(z_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      PyCodegen_VConstInit(zp,
-                           nx, ny, nz,
-                           1, nx_z, nx_z * ny_z,
-                           c);
+    PyCodegen_VConstInit(zp,
+                         nx, ny, nz,
+                         1, nx_z, nx_z * ny_z,
+                         c);
 #else
     i_z = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
@@ -439,11 +439,11 @@ void PFVDiv(
     yp = SubvectorElt(y_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      PyCodegen_VDiv(xp, yp, zp,
-                     nx, ny, nz,
-                     1, nx_x, nx_x * ny_x,
-                     1, nx_y, nx_y * ny_y,
-                     1, nx_z, nx_z * ny_z);
+    PyCodegen_VDiv(xp, yp, zp,
+                   nx, ny, nz,
+                   1, nx_x, nx_x * ny_x,
+                   1, nx_y, nx_y * ny_y,
+                   1, nx_z, nx_z * ny_z);
 #else
     i_x = 0;
     i_y = 0;
@@ -525,11 +525,11 @@ void PFVScale(
       xp = SubvectorElt(x_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-        PyCodegen_VScale(xp, zp,
-                        nx, ny, nz,
-                        1, nx_x, nx_x * ny_x,
-                        1, nx_z, nx_z * ny_z,
-                        c);
+      PyCodegen_VScale(xp, zp,
+                       nx, ny, nz,
+                       1, nx_x, nx_x * ny_x,
+                       1, nx_z, nx_z * ny_z,
+                       c);
 #else
       i_x = 0;
       i_z = 0;
@@ -593,10 +593,10 @@ void PFVAbs(
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      PyCodegen_VAbs(xp, zp,
-                     nx, ny, nz,
-                     1, nx_x, nx_x * ny_x,
-                     1, nx_z, nx_z * ny_z);
+    PyCodegen_VAbs(xp, zp,
+                   nx, ny, nz,
+                   1, nx_x, nx_x * ny_x,
+                   1, nx_z, nx_z * ny_z);
 #else
     i_x = 0;
     i_z = 0;
@@ -658,10 +658,10 @@ void PFVInv(
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      PyCodegen_VInv(xp, zp,
-                     nx, ny, nz,
-                     1, nx_x, nx_x * ny_x,
-                     1, nx_z, nx_z * ny_z);
+    PyCodegen_VInv(xp, zp,
+                   nx, ny, nz,
+                   1, nx_x, nx_x * ny_x,
+                   1, nx_z, nx_z * ny_z);
 #else
     i_x = 0;
     i_z = 0;
@@ -725,11 +725,11 @@ void PFVAddConst(
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      PyCodegen_VAddConst(xp, zp,
-                     nx, ny, nz,
-                     1, nx_x, nx_x * ny_x,
-                     1, nx_z, nx_z * ny_z,
-                     b);
+    PyCodegen_VAddConst(xp, zp,
+                        nx, ny, nz,
+                        1, nx_x, nx_x * ny_x,
+                        1, nx_z, nx_z * ny_z,
+                        b);
 #else
     i_x = 0;
     i_z = 0;
@@ -797,9 +797,9 @@ double PFVDotProd(
     BeginTiming(VDotProduct);
 #ifdef PARFLOW_HAVE_PYSTENCILS
     sum = PyCodegen_VDotProd_wrapper(xp, yp,
-                  nx, ny, nz,
-                  1, nx_x, nx_x * ny_x,
-                  1, nx_y, nx_y * ny_y);
+                                     nx, ny, nz,
+                                     1, nx_x, nx_x * ny_x,
+                                     1, nx_y, nx_y * ny_y);
 #else
     i_x = 0;
     i_y = 0;
@@ -864,9 +864,9 @@ double PFVMaxNorm(
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      max_val = PyCodegen_VMaxNorm_wrapper(xp,
-                          nx, ny, nz,
-                          1, nx_x, nx_x * ny_x);
+    max_val = PyCodegen_VMaxNorm_wrapper(xp,
+                                         nx, ny, nz,
+                                         1, nx_x, nx_x * ny_x);
 #else
     i_x = 0;
     BoxLoopReduceI1(max_val,
@@ -937,10 +937,10 @@ double PFVWrmsNorm(
     wp = SubvectorElt(w_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      sum = PyCodegen_VWrmsNormHelper_wrapper(wp, xp,
-                                nx, ny, nz,
-                                1, nx_w, nx_w * ny_w,
-                                1, nx_x, nx_x * ny_x);
+    sum = PyCodegen_VWrmsNormHelper_wrapper(wp, xp,
+                                            nx, ny, nz,
+                                            1, nx_w, nx_w * ny_w,
+                                            1, nx_x, nx_x * ny_x);
 #else
     i_x = 0;
     i_w = 0;
@@ -1019,10 +1019,10 @@ double PFVWL2Norm(
     i_w = 0;
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      sum = PyCodegen_VWrmsNormHelper_wrapper(wp, xp,
-                                nx, ny, nz,
-                                1, nx_w, nx_w * ny_w,
-                                1, nx_x, nx_x * ny_x);
+    sum = PyCodegen_VWrmsNormHelper_wrapper(wp, xp,
+                                            nx, ny, nz,
+                                            1, nx_w, nx_w * ny_w,
+                                            1, nx_x, nx_x * ny_x);
 #else
     BoxLoopReduceI2(sum,
                     i, j, k, ix, iy, iz, nx, ny, nz,
@@ -1086,8 +1086,8 @@ double PFVL1Norm(
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
     sum = PyCodegen_VL1Norm_wrapper(xp,
-                      nx, ny, nz,
-                      1, nx_x, nx_x * ny_x);
+                                    nx, ny, nz,
+                                    1, nx_x, nx_x * ny_x);
 #else
     i_x = 0;
     BoxLoopReduceI1(sum,
@@ -1155,8 +1155,8 @@ double PFVMin(
     {
 #ifdef PARFLOW_HAVE_PYSTENCILS
       min_val = PyCodegen_VSumNorm_wrapper(xp,
-                                             nx, ny, nz,
-                                             1, nx_x, nx_x * ny_x);
+                                           nx, ny, nz,
+                                           1, nx_x, nx_x * ny_x);
 #else
       i_x = 0;
       BoxLoopReduceI1(min_val,
@@ -1169,10 +1169,10 @@ double PFVMin(
     }
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      min_val = PyCodegen_VMin_wrapper(xp,
-                     nx, ny, nz,
-                     1, nx_x, nx_x * ny_x,
-                     min_val);
+    min_val = PyCodegen_VMin_wrapper(xp,
+                                     nx, ny, nz,
+                                     1, nx_x, nx_x * ny_x,
+                                     min_val);
 #else
     i_x = 0;
     BoxLoopReduceI1(min_val,
@@ -1249,10 +1249,10 @@ double PFVMax(
     }
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      max_val = PyCodegen_VMax_wrapper(xp,
-                     nx, ny, nz,
-                     1, nx_x, nx_x * ny_x,
-                     max_val);
+    max_val = PyCodegen_VMax_wrapper(xp,
+                                     nx, ny, nz,
+                                     1, nx_x, nx_x * ny_x,
+                                     max_val);
 #else
     i_x = 0;
 
@@ -1404,11 +1404,11 @@ void PFVCompare(
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      PyCodegen_VCompare(xp, zp,
-                     nx, ny, nz,
-                     1, nx_x, nx_x * ny_x,
-                     1, nx_z, nx_z * ny_z,
-                     c);
+    PyCodegen_VCompare(xp, zp,
+                       nx, ny, nz,
+                       1, nx_x, nx_x * ny_x,
+                       1, nx_z, nx_z * ny_z,
+                       c);
 #else
     i_x = 0;
     i_z = 0;
@@ -1590,11 +1590,11 @@ void PFVSum(
     zp = SubvectorElt(z_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      PyCodegen_VSum(xp, yp, zp,
-                     nx, ny, nz,
-                     1, nx_x, nx_x * ny_x,
-                     1, nx_y, nx_y * ny_y,
-                     1, nx_z, nx_z * ny_z);
+    PyCodegen_VSum(xp, yp, zp,
+                   nx, ny, nz,
+                   1, nx_x, nx_x * ny_x,
+                   1, nx_y, nx_y * ny_y,
+                   1, nx_z, nx_z * ny_z);
 #else
     i_x = 0;
     i_y = 0;
@@ -1670,11 +1670,11 @@ void PFVDiff(
     zp = SubvectorElt(z_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      PyCodegen_VDiff(xp, yp, zp,
-                     nx, ny, nz,
-                     1, nx_x, nx_x * ny_x,
-                     1, nx_y, nx_y * ny_y,
-                     1, nx_z, nx_z * ny_z);
+    PyCodegen_VDiff(xp, yp, zp,
+                    nx, ny, nz,
+                    1, nx_x, nx_x * ny_x,
+                    1, nx_y, nx_y * ny_y,
+                    1, nx_z, nx_z * ny_z);
 #else
     i_x = 0;
     i_y = 0;
@@ -1740,10 +1740,10 @@ void PFVNeg(
     zp = SubvectorElt(z_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      PyCodegen_VNeg(xp, zp,
-                      nx, ny, nz,
-                      1, nx_x, nx_x * ny_x,
-                      1, nx_z, nx_z * ny_z);
+    PyCodegen_VNeg(xp, zp,
+                   nx, ny, nz,
+                   1, nx_x, nx_x * ny_x,
+                   1, nx_z, nx_z * ny_z);
 #else
     i_x = 0;
     i_z = 0;
@@ -1817,12 +1817,12 @@ void PFVScaleSum(
     zp = SubvectorElt(z_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      PyCodegen_VScaleSum(xp, yp, zp,
-                      nx, ny, nz,
-                      1, nx_x, nx_x * ny_x,
-                      1, nx_y, nx_y * ny_y,
-                      1, nx_z, nx_z * ny_z,
-                      c);
+    PyCodegen_VScaleSum(xp, yp, zp,
+                        nx, ny, nz,
+                        1, nx_x, nx_x * ny_x,
+                        1, nx_y, nx_y * ny_y,
+                        1, nx_z, nx_z * ny_z,
+                        c);
 #else
     i_x = 0;
     i_y = 0;
@@ -1899,12 +1899,12 @@ void PFVScaleDiff(
     zp = SubvectorElt(z_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      PyCodegen_VScaleDiff(xp, yp, zp,
-                          nx, ny, nz,
-                          1, nx_x, nx_x * ny_x,
-                          1, nx_y, nx_y * ny_y,
-                          1, nx_z, nx_z * ny_z,
-                          c);
+    PyCodegen_VScaleDiff(xp, yp, zp,
+                         nx, ny, nz,
+                         1, nx_x, nx_x * ny_x,
+                         1, nx_y, nx_y * ny_y,
+                         1, nx_z, nx_z * ny_z,
+                         c);
 #else
     i_x = 0;
     i_y = 0;
@@ -1981,12 +1981,12 @@ void PFVLin1(
     zp = SubvectorElt(z_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      PyCodegen_VLin1(xp, yp, zp,
-                           nx, ny, nz,
-                           1, nx_x, nx_x * ny_x,
-                           1, nx_y, nx_y * ny_y,
-                           1, nx_z, nx_z * ny_z,
-                           a);
+    PyCodegen_VLin1(xp, yp, zp,
+                    nx, ny, nz,
+                    1, nx_x, nx_x * ny_x,
+                    1, nx_y, nx_y * ny_y,
+                    1, nx_z, nx_z * ny_z,
+                    a);
 #else
     i_x = 0;
     i_y = 0;
@@ -2063,12 +2063,12 @@ void PFVLin2(
     zp = SubvectorElt(z_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      PyCodegen_VLin2(xp, yp, zp,
-                      nx, ny, nz,
-                      1, nx_x, nx_x * ny_x,
-                      1, nx_y, nx_y * ny_y,
-                      1, nx_z, nx_z * ny_z,
-                      a);
+    PyCodegen_VLin2(xp, yp, zp,
+                    nx, ny, nz,
+                    1, nx_x, nx_x * ny_x,
+                    1, nx_y, nx_y * ny_y,
+                    1, nx_z, nx_z * ny_z,
+                    a);
 #else
     i_x = 0;
     i_y = 0;
@@ -2135,11 +2135,11 @@ void PFVAxpy(
     yp = SubvectorElt(y_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      PyCodegen_VAxpy(xp, yp,
-                      nx, ny, nz,
-                      1, nx_x, nx_x * ny_x,
-                      1, nx_y, nx_y * ny_y,
-                      a);
+    PyCodegen_VAxpy(xp, yp,
+                    nx, ny, nz,
+                    1, nx_x, nx_x * ny_x,
+                    1, nx_y, nx_y * ny_y,
+                    a);
 #else
     i_x = 0;
     i_y = 0;
@@ -2194,10 +2194,10 @@ void PFVScaleBy(
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-      PyCodegen_VScaleBy(xp,
-                      nx, ny, nz,
-                      1, nx_x, nx_x * ny_x,
-                      a);
+    PyCodegen_VScaleBy(xp,
+                       nx, ny, nz,
+                       1, nx_x, nx_x * ny_x,
+                       a);
 #else
     i_x = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
