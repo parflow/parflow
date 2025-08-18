@@ -112,7 +112,7 @@ add_custom_target(PythonCreatePackage
   COMMAND
       ${CMAKE_INSTALL_PREFIX}/py-env/bin/twine check "${CMAKE_CURRENT_BINARY_DIR}/dist/*"
   COMMENT
-      "Updating the pftools Python package using modern build system"
+      "Updating the pftools Python package"
   VERBATIM
   DEPENDS
     pf-python
