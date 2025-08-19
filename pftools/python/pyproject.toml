@@ -21,7 +21,7 @@ classifiers = [
 ]
 requires-python = ">=3.7"
 dependencies = [
-    "pyyaml>=5.4",
+    "pyyaml>=6.0.1",
 ]
 
 [project.optional-dependencies]
