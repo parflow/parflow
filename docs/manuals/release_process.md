@@ -34,7 +34,7 @@ Edit `./docs/user_Manual/conf.py` and update version number.
 
 ### Update pftools version number 
 
-Edit `./pftools/python/setup.py` and increment the version number.
+Edit `./pftools/python/pyproject.toml` and increment the version number.
 
 ## Commit release file changes
 
