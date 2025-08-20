@@ -50,8 +50,11 @@ Documentation = "https://parflow.readthedocs.io/en/latest/"
 [project.entry-points."xarray.backends"]
 parflow = "parflow.tools.pf_backend:ParflowBackendEntrypoint"
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["*"]
+
 [tool.setuptools]
-packages = ["parflow"]
 include-package-data = true
 
 [tool.setuptools.package-data]
