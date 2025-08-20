@@ -28,18 +28,14 @@ Edit the RELEASE-NOTES.md file to add notes about what was changed in
 this release.  Notes should should be appended.  PF has changed to appending
 release changes to the RELEASE notes.
 
-Edit VERSION file with current version.
+Edit `./VERSION` file with current version.
 
 Edit `./docs/user_Manual/conf.py` and update version number.
 
 ### Update pftools version number 
 
-Edit `parflow/pftools/python/setup.py` and increment the version number.
+Edit `./pftools/python/pyproject.toml` and increment the version number.
 
-## Regenerate the ParFlowUser Manual
-
-The update should be automated by ReadTheDocs.   Check that a new version has been uploaded.
-  
 ## Commit release file changes
 
 Use standard git add and git commit commands to add the modified files
@@ -121,4 +117,11 @@ make PythonPublishPackage
 ### Check PyPI
 
 Check PyPI to make sure your package update was published correctly.
+
+## Check ParFlow User Manual
+
+The manual update should be automated by ReadTheDocs.   Check that a new version has been uploaded after the 
+release has been merged on GitHub.
+  
+
 
