@@ -113,9 +113,17 @@ Replace hard-coded tclsh command name with TCL_TCLSH found during CMake configur
 
 ## Internal/Developer Changes
 
+### Python package setup updated.
+
+Update Python to use the more modern pyproject.toml package file.
+
 ### Python style check added
 
 Python Black code style format check was added to pfformat.   Checking for proper formatting is part of the CI system and merge requests will not be accepted if style checks fail.
+
+### GitHub CI
+
+Previous method of using variable to force rebuilds was manual and caused issues. Forks can not see the cache variable which also can cause problems. Changed to use hash of the workflow files to trigger cache builds. This is conservative and will cause some unnecessary builds but workflow changes are relatively infrequent.
 
 ### Netcdf timing
 
