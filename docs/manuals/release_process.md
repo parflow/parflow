@@ -75,10 +75,10 @@ Example using podman to build and push
 
 ```shell
   VERSION=3.13.0
-  podman build -t docker.io/parflow/parflow:version-$(VERSION) .
+  podman build -t docker.io/parflow/parflow:version-${VERSION} .
   podman login docker.io
-  podman push docker.io/parflow/parflow:version-$(VERSION)
-  podman tag docker.io/parflow/parflow:version-$(VERSION) docker.io/parflow/parflow:latest
+  podman push docker.io/parflow/parflow:version-${VERSION}
+  podman tag docker.io/parflow/parflow:version-${VERSION} docker.io/parflow/parflow:latest
   podman push  docker.io/parflow/parflow:latest
 ```
 

@@ -86,7 +86,7 @@ install(
     "bin"
     )
 
-install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_PREFIX}/py-env/bin/pip3 install --use-pep517 ${CMAKE_INSTALL_PREFIX}/python)" )
+install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_PREFIX}/py-env/bin/pip3 install ${CMAKE_INSTALL_PREFIX}/python)" )
 
 add_custom_target(
   pf-python ALL
