@@ -1,4 +1,4 @@
-# ParFlow Release Notes 3.14.0
+# ParFlow Release Notes 3.14.1
 ------------------------------
 
 This release contains several bug fixes and minor feature updates.
@@ -6,6 +6,8 @@ This release contains several bug fixes and minor feature updates.
 ParFlow development and bug-fixes would not be possible without contributions of the ParFlow community.  Thank you for all the great contributions.
 
 ## Overview of Changes
+
+**Release 3.14.1 was generated due to errors the integrated DOI number generation on Zenodo for the 3.14.0 release.**   3.14.0 does not have an explicit DOI number attatched to it.
 
 ## User Visible Changes
 
