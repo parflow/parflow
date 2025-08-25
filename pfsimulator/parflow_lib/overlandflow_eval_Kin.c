@@ -83,10 +83,11 @@ void    OverlandFlowEvalKin(
   Vector      *slope_y = ProblemDataTSlopeY(problem_data);
   Vector      *mannings = ProblemDataMannings(problem_data);
   Vector      *top = ProblemDataIndexOfDomainTop(problem_data);
+  Vector      *patch = ProblemDataPatchIndexOfDomainTop(problem_data);
 
-  Subvector     *sx_sub, *sy_sub, *mann_sub, *top_sub, *p_sub;
+  Subvector     *sx_sub, *sy_sub, *mann_sub, *top_sub, *patch_sub, *p_sub;
 
-  double        *sx_dat, *sy_dat, *mann_dat, *top_dat, *pp;
+  double        *sx_dat, *sy_dat, *mann_dat, *top_dat, *patch_dat, *pp;
 
   double ov_epsilon;
 
@@ -100,6 +101,7 @@ void    OverlandFlowEvalKin(
   sy_sub = VectorSubvector(slope_y, sg);
   mann_sub = VectorSubvector(mannings, sg);
   top_sub = VectorSubvector(top, sg);
+  patch_sub = VectorSubvector(patch, sg);
 
   pp = SubvectorData(p_sub);
 
@@ -107,6 +109,7 @@ void    OverlandFlowEvalKin(
   sy_dat = SubvectorData(sy_sub);
   mann_dat = SubvectorData(mann_sub);
   top_dat = SubvectorData(top_sub);
+  patch_dat = SubvectorData(patch_sub);
 
   sy_v = SubvectorNX(top_sub);
 
@@ -119,11 +122,12 @@ void    OverlandFlowEvalKin(
     ForPatchCellsPerFaceWithGhost(BC_ALL,
                                   BeforeAllCells(DoNothing),
                                   LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
-                                  Locals(int io, itop, ip, ipp1, ippsy;
+                                  Locals(int io, itop, ip, ipp1, ipm1, ipmsy, ippsy, ipat;
                                          int k1, k0x, k0y, k1x, k1y;
+                                         int p1, p0x, p0y;
                                          double Sf_x, Sf_y, Sf_mag;
-                                         double Press_x, Press_y;
-                                         double PP_ipp1, PP_ippsy, PP_ip; ),
+                                         double Press_x, Press_y; 
+                                         double PP_ipp1, PP_ippsy, PP_ip;),
                                   CellSetup(DoNothing),
                                   FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
                                   FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
@@ -132,12 +136,19 @@ void    OverlandFlowEvalKin(
     {
       io = SubvectorEltIndex(sx_sub, i, j, 0);
       itop = SubvectorEltIndex(top_sub, i, j, 0);
+      ipat = SubvectorEltIndex(patch_sub, i, j, 0);
 
       k1 = (int)top_dat[itop];
       k0x = (int)top_dat[itop - 1];
       k0y = (int)top_dat[itop - sy_v];
       k1x = (int)top_dat[itop + 1];
       k1y = (int)top_dat[itop + sy_v];
+      //RMM added patches to check for internal bc edges
+      p1 = (int)patch_dat[ipat];
+      p0x = (int)patch_dat[ipat - 1];
+      p0y = (int)patch_dat[ipat - sy_v];
+      //printf("Current Patch %d, lower x %d, lower y %d, (%d,%d,%d)\n",p1, p0x, p0y, i,j,k);
+      //printf("Current top %d, lower x %d, lower y %d, (%d,%d,%d)\n",k1, k0x, k0y, i,j,k);
 
       if (k1 >= 0)
       {
@@ -157,7 +168,6 @@ void    OverlandFlowEvalKin(
           PP_ipp1 = pp[ipp1];
         if (ippsy >= 0)
           PP_ippsy = pp[ippsy];
-
         Press_x = RPMean(-Sf_x, 0.0,
                          pfmax((PP_ip), 0.0),
                          pfmax((PP_ipp1), 0.0));
@@ -169,6 +179,51 @@ void    OverlandFlowEvalKin(
                    * RPowerR(Press_x, (5.0 / 3.0));
         qy_v[io] = -(Sf_y / (RPowerR(fabs(Sf_mag), 0.5)
                              * mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
+      }
+      // fix for internal patch edges in x direction
+      if (p1 != p0x)
+      {
+        if (k1 >= 0)
+        {
+          ip = SubvectorEltIndex(p_sub, i, j, k1);
+          Sf_x = sx_dat[io - 1];
+          Sf_y = sy_dat[io - 1];
+          ipm1 = (int)SubvectorEltIndex(p_sub, i - 1, j, k1x);
+
+          Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);
+          if (Sf_mag < ov_epsilon)
+            Sf_mag = ov_epsilon;
+
+          Press_x = RPMean(-Sf_x, 0.0,
+                           pfmax((pp[ipm1]), 0.0),
+                           pfmax((pp[ip]), 0.0));
+
+          qx_v[io - 1] = -(Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - 1]))
+                         * RPowerR(Press_x, (5.0 / 3.0));
+        }
+      }
+
+      // fix for internal patch edges in y direction
+      if (p1 != p0y)
+      {
+        if (k1 >= 0)
+        {
+          ip = SubvectorEltIndex(p_sub, i, j, k1);
+          Sf_x = sx_dat[io - sy_v];
+          Sf_y = sy_dat[io - sy_v];
+          ipmsy = (int)SubvectorEltIndex(p_sub, i, j - 1, k1y);
+
+          Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);
+          if (Sf_mag < ov_epsilon)
+            Sf_mag = ov_epsilon;
+
+          Press_y = RPMean(-Sf_y, 0.0,
+                           pfmax((pp[ipmsy]), 0.0),
+                           pfmax((pp[ip]), 0.0));
+
+          qy_v[io - sy_v] = -(Sf_y / (RPowerR(fabs(Sf_mag), 0.5)
+                                      * mann_dat[io - sy_v])) * RPowerR(Press_y, (5.0 / 3.0));
+        }
       }
 
       //fix for lower x boundary
@@ -242,8 +297,9 @@ void    OverlandFlowEvalKin(
     ForPatchCellsPerFaceWithGhost(BC_ALL,
                                   BeforeAllCells(DoNothing),
                                   LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
-                                  Locals(int io, itop, ip, ipp1, ippsy;
+                                  Locals(int io, itop, ipat, ip, ipp1, ippsy, ipm1, ipmsy;
                                          int k1, k0x, k0y, k1x, k1y;
+                                         int p1, p0x, p0y;
                                          double Sf_x, Sf_y, Sf_mag;
                                          double Press_x, Press_y, qx_temp, qy_temp; ),
                                   CellSetup(DoNothing),
@@ -254,12 +310,17 @@ void    OverlandFlowEvalKin(
     {
       io = SubvectorEltIndex(sx_sub, i, j, 0);
       itop = SubvectorEltIndex(top_sub, i, j, 0);
+      ipat = SubvectorEltIndex(patch_sub, i, j, 0);
 
       k1 = (int)top_dat[itop];
       k0x = (int)top_dat[itop - 1];
       k0y = (int)top_dat[itop - sy_v];
       k1x = (int)top_dat[itop + 1];
       k1y = (int)top_dat[itop + sy_v];
+      //RMM added patches to check for internal bc edges
+      p1 = (int)patch_dat[ipat];
+      p0x = (int)patch_dat[ipat - 1];
+      p0y = (int)patch_dat[ipat - sy_v];
 
       if (k1 >= 0)
       {
@@ -283,11 +344,68 @@ void    OverlandFlowEvalKin(
 
         qx_temp = -(5.0 / 3.0) * (Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_x, (2.0 / 3.0));
         qy_temp = -(5.0 / 3.0) * (Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_y, (2.0 / 3.0));
+        //ke_v[io] = qx_temp;
+        //kn_v[io] = qy_temp;
+        //kw_v[io+1] = qx_temp;
+        //ks_v[io+sy_v] = qy_temp;
+
+        //ke_v[io] = qx_v[io];**
+        //kw_v[io] = qx_v[io - 1];
+        //kn_v[io] = qy_v[io];**
+        //ks_v[io] = qy_v[io - sy_v];
 
         ke_v[io] = pfmax(qx_temp, 0);
         kw_v[io + 1] = -pfmax(-qx_temp, 0);
         kn_v[io] = pfmax(qy_temp, 0);
         ks_v[io + sy_v] = -pfmax(-qy_temp, 0);
+      }
+
+// fix for internal patch edges in x direction
+      if (p1 != p0x)
+      {
+        if (k1 >= 0)
+        {
+          ip = SubvectorEltIndex(p_sub, i, j, k1);
+          Sf_x = sx_dat[io - 1];
+          Sf_y = sy_dat[io - 1];
+          ipm1 = (int)SubvectorEltIndex(p_sub, i - 1, j, k1x);
+
+          Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);
+          if (Sf_mag < ov_epsilon)
+            Sf_mag = ov_epsilon;
+
+          Press_x = RPMean(-Sf_x, 0.0,
+                           pfmax((pp[ipm1]), 0.0),
+                           pfmax((pp[ip]), 0.0));
+
+          qx_temp = -(5.0 / 3.0) * (Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - 1])) * RPowerR(Press_x, (2.0 / 3.0));
+          kw_v[io] = -pfmax(-qx_temp, 0);
+          ke_v[io - 1] = pfmax(qx_temp, 0);
+        }
+      }
+
+      // fix for internal patch edges in y direction
+      if (p1 != p0y)
+      {
+        if (k1 >= 0)
+        {
+          ip = SubvectorEltIndex(p_sub, i, j, k1);
+          Sf_x = sx_dat[io - sy_v];
+          Sf_y = sy_dat[io - sy_v];
+          ipmsy = (int)SubvectorEltIndex(p_sub, i, j - 1, k1y);
+
+          Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);
+          if (Sf_mag < ov_epsilon)
+            Sf_mag = ov_epsilon;
+
+          Press_y = RPMean(-Sf_y, 0.0,
+                           pfmax((pp[ipmsy]), 0.0),
+                           pfmax((pp[ip]), 0.0));
+
+          qy_temp = -(5.0 / 3.0) * (Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - sy_v])) * RPowerR(Press_y, (2.0 / 3.0));
+          ks_v[io] = -pfmax(-qy_temp, 0);
+          kn_v[io - sy_v] = pfmax(qy_temp, 0);
+        }
       }
 
       //fix for lower x boundary
@@ -307,9 +425,12 @@ void    OverlandFlowEvalKin(
             ip = SubvectorEltIndex(p_sub, i, j, k1);
             Press_x = pfmax((pp[ip]), 0.0);
             qx_temp = -(5.0 / 3.0) * (Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_x, (2.0 / 3.0));
+            //qx_v[io - 1] = qx_temp;
 
-            kw_v[io] = qx_temp;
-            ke_v[io - 1] = qx_temp;
+            //kw_v[io] = qx_temp;
+            //ke_v[io - 1] = qx_temp;
+            kw_v[io] = -pfmax(-qx_temp, 0);
+            ke_v[io - 1] = pfmax(qx_temp, 0);
           }
         }
       }
@@ -331,9 +452,11 @@ void    OverlandFlowEvalKin(
             ip = SubvectorEltIndex(p_sub, i, j, k1);
             Press_y = pfmax((pp[ip]), 0.0);
             qy_temp = -(5.0 / 3.0) * (Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_y, (2.0 / 3.0));
-
-            ks_v[io] = qy_temp;
-            kn_v[io - sy_v] = qy_temp;
+            //qy_v[io - sy_v] = qy_temp;
+            //ks_v[io] = qy_temp;
+            ks_v[io] = -pfmax(-qy_temp, 0);
+            //kn_v[io - sy_v] = qy_temp;
+            kn_v[io - sy_v] = pfmax(qy_temp, 0);
           }
         }
       }
@@ -341,6 +464,25 @@ void    OverlandFlowEvalKin(
                                   CellFinalize(DoNothing),
                                   AfterAllCells(DoNothing)
                                   );
+    /*                        ForPatchCellsPerFace(BC_ALL,
+     *             BeforeAllCells(DoNothing),
+     *             LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
+     *             Locals(int io; ),
+     *             CellSetup(DoNothing),
+     *             FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+     *             FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+     *             FACE(BackFace, DoNothing),
+     *             FACE(FrontFace,
+     * {
+     * io = SubvectorEltIndex(sx_sub, i, j, 0);
+     * ke_v[io] = qx_v[io];
+     * kw_v[io] = qx_v[io - 1];
+     * kn_v[io] = qy_v[io];
+     * ks_v[io] = qy_v[io - sy_v];
+     * }),
+     *             CellFinalize(DoNothing),
+     *             AfterAllCells(DoNothing)
+     *             ); */
   }   // else calcder
 }     // function
 
