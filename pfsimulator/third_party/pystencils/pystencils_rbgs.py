@@ -34,10 +34,10 @@ with SourceFileGenerator() as sfg:
     )
 
     ## regular 7pt kernel
-    stencil_convolution = sum([xi.center() * ai.center() for xi, ai in zip(x, A)])
+    stencil_convolution = sum([xi.center() * ai.center() for xi, ai in zip(x[1:], A[1:])])
     create_kernel_func(
         sfg,
-        ps.Assignment(x0.center(), b.center() - stencil_convolution / a0.center()),
+        ps.Assignment(x0.center(), (b.center() - stencil_convolution) / a0.center()),
         "RBGS_7PtKernel",
         allow_vect=False,
     )
