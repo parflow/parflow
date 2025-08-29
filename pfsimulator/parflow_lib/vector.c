@@ -767,7 +767,7 @@ void    InitVector(
 
     vp = SubvectorElt(v_sub, ix, iy, iz);
 
-#ifdef PARFLOW_HAVE_PYSTENCILS
+#if 0 //#ifdef PARFLOW_HAVE_PYSTENCILS
     PyCodegen_VConstInit(vp,
                          nx, ny, nz,
                          1, nx_v, nx_v * ny_v,
@@ -815,7 +815,7 @@ void    InitVectorAll(
     ny_v = SubvectorNY(v_sub);
     nz_v = SubvectorNZ(v_sub);
 
-#ifdef PARFLOW_HAVE_PYSTENCILS
+#if 0 //#ifdef PARFLOW_HAVE_PYSTENCILS
     vp = SubvectorElt(v_sub, ix_v, iy_v, iz_v);
 
     PyCodegen_VConstInit(vp,
