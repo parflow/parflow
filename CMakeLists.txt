@@ -591,7 +591,7 @@ include_directories ("${PROJECT_BINARY_DIR}/include")
 
 option(PARFLOW_ENABLE_PYTHON "Build python module for running ParFlow" "FALSE")
 if (PARFLOW_ENABLE_PYTHON)
-  find_package(Python3 3.6 QUIET REQUIRED COMPONENTS Interpreter)
+  find_package(Python3 3.7 QUIET REQUIRED COMPONENTS Interpreter)
   set(PARFLOW_PYTHON_DEPENDS)
   set(PARFLOW_HAVE_PYTHON)
   set(PARFLOW_PYTHON "${CMAKE_INSTALL_PREFIX}/py-env/bin/python3")

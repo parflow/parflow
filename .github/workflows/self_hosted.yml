@@ -4,6 +4,8 @@ on: [push, pull_request]
 
 jobs:
   test-gpu:
+    # only run GPU test if in parflow project
+    if: github.repository == 'parflow/parflow'
     name: ${{ matrix.config.name }}
     runs-on: self-hosted
     strategy:

@@ -5979,7 +5979,7 @@ to be active.
       pfset Solver.CLM.FieldCapacity  0.95         ## TCL syntax
       <runname>.Solver.CLM.FieldCapacity = 0.95    ## Python syntax
 
-*string* **Solver.CLM.IrrigationTypes** none This key specifies the form
+*string* **Solver.CLM.IrrigationType** none This key specifies the form
 of the irrigation in ``CLM``. The valid types for this key are **none**, 
 **Spray**, **Drip**, **Instant**.
 
@@ -5987,14 +5987,14 @@ of the irrigation in ``CLM``. The valid types for this key are **none**,
 
    ::
 
-      pfset Solver.CLM.IrrigationTypes "Drip"      ## TCL syntax
-      <runname>.Solver.CLM.IrrigationTypes "Drip"  ## Python syntax
+      pfset Solver.CLM.IrrigationType "Drip"      ## TCL syntax
+      <runname>.Solver.CLM.IrrigationType "Drip"  ## Python syntax
 
 *string* **Solver.CLM.IrrigationCycle** Constant This key specifies the
 cycle of the irrigation in ``CLM``. The valid types for this key are 
 **Constant**, **Deficit**. Note only **Constant** is currently implemented. Constant 
 cycle applies irrigation each day from IrrigationStartTime to 
-IrrigationStopTime in GMT.
+IrrigationStopTime in hours of the day (24-hour time) in GMT.
 
 .. container:: list
 
@@ -6020,8 +6020,8 @@ specifies the start time of the irrigation in ``CLM`` GMT.
 
    ::
 
-      pfset Solver.CLM.IrrigationStartTime 0800          ## TCL syntax
-      <runname>.Solver.CLM.IrrigationStartTime = 0800    ## Python syntax
+      pfset Solver.CLM.IrrigationStartTime 8.0          ## TCL syntax
+      <runname>.Solver.CLM.IrrigationStartTime = 8.0    ## Python syntax
 
 *double* **Solver.CLM.IrrigationStopTime** no default This key specifies
 the stop time of the irrigation in ``CLM`` GMT.
@@ -6030,8 +6030,8 @@ the stop time of the irrigation in ``CLM`` GMT.
 
    ::
 
-      pfset Solver.CLM.IrrigationStopTime 1200        ## TCL syntax
-      <runname>.Solver.CLM.IrrigationStopTime = 1200  ## Python syntax
+      pfset Solver.CLM.IrrigationStopTime 12.0        ## TCL syntax
+      <runname>.Solver.CLM.IrrigationStopTime = 12.0  ## Python syntax
 
 *double* **Solver.CLM.IrrigationThreshold** 0.5 This key specifies the
 threshold value for the irrigation in ``CLM``.
