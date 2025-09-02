@@ -75,7 +75,13 @@ void CopyParFlowVectorToHypreVector(Vector *            rhs,
       index[1] = j;
       index[2] = k;
 
+      // SGS this should be fixed for release 3.0      
+#if HYPRE_RELEASE_NUMBER >= 23300
+      HYPRE_StructVectorSetValues(*hypre_b, index, &rhs_ptr[iv]);
+#else
       HYPRE_StructVectorSetValues(*hypre_b, index, rhs_ptr[iv]);
+#endif
+      
     });
   }
   HYPRE_StructVectorAssemble(*hypre_b);
