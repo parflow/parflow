@@ -125,7 +125,7 @@ jobs:
             sundials: "internal"
           }
         - {
-            name: "Ubuntu 24.04 GCC",
+            name: "Ubuntu 24.04 GCC Sundials",
             os: ubuntu-24.04,
             cudaos: 'ubuntu2404',
             cc: "gcc", cxx: "g++", fc: "gfortran",
@@ -135,7 +135,7 @@ jobs:
             netcdf: "true",
             memory_manager: "none",
             pdi: "false",
-            sundials: "internal"
+            sundials: "external"
           }
         - {
             name: "Ubuntu 24.04 LLVM",
