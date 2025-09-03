@@ -369,9 +369,9 @@ int  Exp2(int p)
 }
 
 #ifdef PARFLOW_HAVE_SUNDIALS
-/* This method defined in the old embedded Kinsol implementation and used 
-   in ParFlow.  When linking with the SUNDIAL library this is not longer available 
-*/
+/* This method defined in the old embedded Kinsol implementation and used
+ * in ParFlow.  When linking with the SUNDIAL library this is not longer available
+ */
 double RPowerR(double base, double exponent)
 {
   if (base <= 0.0)
