@@ -541,8 +541,8 @@ jobs:
           # Download
           wget https://github.com/llnl/sundials/archive/v7.4.0.tar.gz
           tar xf v7.4.0.tar.gz
-
-          cmake -S sundials-7.4.0 -B build                   \
+	  cd sundials-7.4.0
+          cmake -S . -B build                   \
                 -DCMAKE_C_COMPILER=mpicc                     \
                 -DCMAKE_CXX_COMPILER=mpicxx                  \
                 -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}"
