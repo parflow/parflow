@@ -541,7 +541,7 @@ jobs:
           # Download
           wget https://github.com/llnl/sundials/archive/v7.4.0.tar.gz
           tar xf v7.4.0.tar.gz
-	  cd sundials-7.4.0
+          cd sundials-7.4.0
           cmake -S . -B build                   \
                 -DCMAKE_C_COMPILER=mpicc                     \
                 -DCMAKE_CXX_COMPILER=mpicxx                  \
