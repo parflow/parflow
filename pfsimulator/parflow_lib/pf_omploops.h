@@ -41,7 +41,7 @@
 #else
 
 extern "C++" {
-#include <omp.h>
+  #include <omp.h>
 }
 #include <stdarg.h>
 
