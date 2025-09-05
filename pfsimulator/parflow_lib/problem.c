@@ -244,6 +244,9 @@ Problem   *NewProblem(
   ProblemOverlandFlowEvalKin(problem) =
     PFModuleNewModule(OverlandFlowEvalKin, ());
 
+  ProblemDeepAquiferEval(problem) =
+    PFModuleNewModule(DeepAquiferEval, ());
+
   if (solver != RichardsSolve)
   {
     ProblemCapillaryPressure(problem) =
@@ -351,6 +354,7 @@ void      FreeProblem(
                       Problem *problem,
                       int      solver)
 {
+  PFModuleFreeModule(ProblemDeepAquiferEval(problem));
   PFModuleFreeModule(ProblemWellPackage(problem));
   PFModuleFreeModule(ProblemReservoirPackage(problem));
 

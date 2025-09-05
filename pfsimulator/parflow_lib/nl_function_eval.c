@@ -55,6 +55,7 @@ typedef struct {
   PFModule     *overlandflow_module;  //DOK
   PFModule     *overlandflow_module_diff;  //@RMM
   PFModule     *overlandflow_module_kin;
+  PFModule     *deepaquifer_module;
 } InstanceXtra;
 
 /*---------------------------------------------------------------------
@@ -140,7 +141,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   PFModule    *overlandflow_module = (instance_xtra->overlandflow_module);
   PFModule    *overlandflow_module_diff = (instance_xtra->overlandflow_module_diff);
   PFModule    *overlandflow_module_kin = (instance_xtra->overlandflow_module_kin);
-
+  PFModule    *deepaquifer_module = (instance_xtra->deepaquifer_module);
 
   /* Reuse saturation vector to save memory */
   Vector      *rel_perm = saturation;
@@ -2133,6 +2134,217 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       }),
                            AfterAllCells(DoNothing)
                            ); /* End OverlandDiffusiveBC case */
+
+      ForPatchCellsPerFace(DeepAquiferBC,
+                           BeforeAllCells(
+      {
+        /*  @RMM this is a new module for diffusive wave
+         */
+        double *dummy1 = NULL;
+        double *dummy2 = NULL;
+        double *dummy3 = NULL;
+        double *dummy4 = NULL;
+        PFModuleInvokeType(DeepAquiferEvalInvoke, deepaquifer_module,
+                           (CALCFCN));
+      }),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int ip, io, dir;
+                                  int vel_idx, vx_l, vy_l, vz_l;
+                                  double *vel_vec;
+                                  double q_deepaquifer, u_old, u_new, diff, h;
+                                  double x_dir_g, y_dir_g, z_dir_g;
+                                  double sep, lower_cond, upper_cond;
+                                  double del_x_slope, del_y_slope; ),
+                           CellSetup(
+      {
+        ip = SubvectorEltIndex(p_sub, i, j, k);
+        io = SubvectorEltIndex(x_sl_sub, i, j, 0);
+        dir = 0;
+
+        vel_idx = 0;
+        vx_l = SubvectorEltIndex(vx_sub, i, j, k);
+        vy_l = SubvectorEltIndex(vy_sub, i, j, k);
+        vz_l = SubvectorEltIndex(vz_sub, i, j, k);
+        vel_vec = NULL;
+        h = 0.0;
+
+        diff = 0.0e0;
+        u_new = 0.0e0;
+        u_old = 0.0e0;
+
+        x_dir_g = 0.0;
+        y_dir_g = 0.0;
+        z_dir_g = 1.0;
+
+        sep = 0.0;
+        lower_cond = 0.0;
+        upper_cond = 0.0;
+
+        del_x_slope = 1.0;
+        del_y_slope = 1.0;
+
+        q_deepaquifer = 0;
+      }),
+                           FACE(LeftFace,
+      {
+        h = ffx * z_mult_dat[ip] * del_y_slope;
+        vel_vec = vx;
+        vel_idx = vx_l;
+
+        dir = -1;
+        diff = pp[ip - 1] - pp[ip];
+        u_old = h
+                * PMean(pp[ip - 1], pp[ip],
+                        permxp[ip - 1], permxp[ip])
+                * (diff / dx)
+                * RPMean(pp[ip - 1], pp[ip],
+                         rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip])
+                / viscosity;
+
+        u_old += h
+                 * PMean(pp[ip - 1], pp[ip],
+                         permxp[ip - 1], permxp[ip])
+                 * (-x_dir_g)
+                 * RPMean(pp[ip - 1], pp[ip], rpp[ip - 1] * dp[ip - 1],
+                          rpp[ip] * dp[ip])
+                 / viscosity;
+      }),
+                           FACE(RightFace,
+      {
+        h = ffx * z_mult_dat[ip] * del_y_slope;
+        vel_vec = vx;
+        vel_idx = vx_l + 1;
+
+        dir = 1;
+        diff = pp[ip] - pp[ip + 1];
+        u_old = h
+                * PMean(pp[ip], pp[ip + 1],
+                        permxp[ip], permxp[ip + 1])
+                * (diff / dx)
+                * RPMean(pp[ip], pp[ip + 1],
+                         rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1])
+                / viscosity;
+
+        u_old += h
+                 * PMean(pp[ip], pp[ip + 1],
+                         permxp[ip], permxp[ip + 1])
+                 * (-x_dir_g)
+                 * RPMean(pp[ip], pp[ip + 1], rpp[ip] * dp[ip],
+                          rpp[ip + 1] * dp[ip + 1])
+                 / viscosity;
+      }),
+                           FACE(DownFace,
+      {
+        h = ffy * z_mult_dat[ip] * del_x_slope;
+        vel_vec = vy;
+        vel_idx = vy_l;
+
+        dir = -1;
+        diff = pp[ip - sy_p] - pp[ip];
+        u_old = h
+                * PMean(pp[ip - sy_p], pp[ip],
+                        permyp[ip - sy_p], permyp[ip])
+                * (diff / dy)
+                * RPMean(pp[ip - sy_p], pp[ip],
+                         rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip])
+                / viscosity;
+
+        u_old += h *
+                 PMean(pp[ip], pp[ip - sy_p], permyp[ip],
+                       permyp[ip - sy_p])
+                 * (-y_dir_g)
+                 * RPMean(pp[ip], pp[ip - sy_p], rpp[ip] * dp[ip],
+                          rpp[ip - sy_p] * dp[ip - sy_p])
+                 / viscosity;
+      }),
+                           FACE(UpFace,
+      {
+        h = ffy * z_mult_dat[ip] * del_x_slope;
+        vel_vec = vy;
+        vel_idx = vy_l + sy_v;
+
+        dir = 1;
+        diff = pp[ip] - pp[ip + sy_p];
+        u_old = h
+                * PMean(pp[ip], pp[ip + sy_p],
+                        permyp[ip], permyp[ip + sy_p])
+                * (diff / dy)
+                * RPMean(pp[ip], pp[ip + sy_p],
+                         rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p])
+                / viscosity;
+
+        u_old += h
+                 * PMean(pp[ip], pp[ip + sy_p], permyp[ip],
+                         permyp[ip + sy_p])
+                 * (-y_dir_g)
+                 * RPMean(pp[ip], pp[ip + sy_p], rpp[ip] * dp[ip],
+                          rpp[ip + sy_p] * dp[ip + sy_p])
+                 / viscosity;
+      }),
+                           FACE(BackFace,
+      {
+        h = ffz * del_x_slope * del_y_slope;
+        vel_vec = vz;
+        vel_idx = vz_l;
+
+        dir = -1;
+        sep = dz * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_p]);                      //RMM
+        //  sep = dz*z_mult_dat[ip];  //RMM
+
+        lower_cond = (pp[ip - sz_p] / sep)
+                     - (z_mult_dat[ip - sz_p] / (z_mult_dat[ip] + z_mult_dat[ip - sz_p])) * dp[ip - sz_p] * gravity *
+                     z_dir_g;
+        upper_cond = (pp[ip] / sep) + (z_mult_dat[ip] / (z_mult_dat[ip] + z_mult_dat[ip - sz_p])) * dp[ip] * gravity *
+                     z_dir_g;
+
+        diff = lower_cond - upper_cond;
+        u_old = h
+                * PMeanDZ(permzp[ip - sz_p], permzp[ip],
+                          z_mult_dat[ip - sz_p], z_mult_dat[ip])
+                * diff
+                * RPMean(lower_cond, upper_cond,
+                         rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip])
+                / viscosity;
+
+        q_deepaquifer = 0.0; // compute here the values using the returns from the module
+      }),
+                           FACE(FrontFace,
+      {
+        h = ffz * del_x_slope * del_y_slope;
+        vel_vec = vz;
+        vel_idx = vz_l + sz_v;
+
+        dir = 1;
+        sep = dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_p]);                      //RMM
+
+        lower_cond = (pp[ip] / sep) - (z_mult_dat[ip] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p])) * dp[ip] * gravity *
+                     z_dir_g;
+        upper_cond = (pp[ip + sz_p] / sep)
+                     + (z_mult_dat[ip + sz_p] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p])) * dp[ip + sz_p] * gravity *
+                     z_dir_g;
+        diff = lower_cond - upper_cond;
+        u_old = h
+                * PMeanDZ(permzp[ip], permzp[ip + sz_p],
+                          z_mult_dat[ip], z_mult_dat[ip + sz_p])
+                * diff
+                * RPMean(lower_cond, upper_cond,
+                         rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
+                / viscosity;
+      }),
+                           CellFinalize(
+      {
+        /* Remove the boundary term computed above */
+        fp[ip] -= dt * dir * u_old;
+
+        /* Add the new boundary term */
+        fp[ip] += q_deepaquifer;
+
+        u_new = q_deepaquifer / dt;
+
+        vel_vec[vel_idx] = u_new / h;
+      }),
+                           AfterAllCells(DoNothing)
+                           ); /* End DeepAquiferBC case */
     }          /* End ipatch loop */
   }            /* End subgrid loop */
 
@@ -2254,6 +2466,8 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem *problem,
       PFModuleNewInstance(ProblemOverlandFlowEvalDiff(problem), ());   //@RMM
     (instance_xtra->overlandflow_module_kin) =
       PFModuleNewInstance(ProblemOverlandFlowEvalKin(problem), ());
+    (instance_xtra->deepaquifer_module) =
+      PFModuleNewInstance(ProblemDeepAquiferEval(problem), ());
   }
   else
   {
@@ -2272,6 +2486,7 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem *problem,
     PFModuleReNewInstance((instance_xtra->overlandflow_module), ());     //DOK
     PFModuleReNewInstance((instance_xtra->overlandflow_module_diff), ());      //@RMM
     PFModuleReNewInstance((instance_xtra->overlandflow_module_kin), ());
+    PFModuleReNewInstance((instance_xtra->deepaquifer_module), ());
   }
 
   PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -2290,6 +2505,7 @@ void  NlFunctionEvalFreeInstanceXtra()
 
   if (instance_xtra)
   {
+    PFModuleFreeInstance(instance_xtra->deepaquifer_module);
     PFModuleFreeInstance(instance_xtra->density_module);
     PFModuleFreeInstance(instance_xtra->saturation_module);
     PFModuleFreeInstance(instance_xtra->rel_perm_module);

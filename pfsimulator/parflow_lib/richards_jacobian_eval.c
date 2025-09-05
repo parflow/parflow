@@ -76,6 +76,7 @@ typedef struct {
   PFModule     *overlandflow_module;  //DOK
   PFModule     *overlandflow_module_diff;  //@LEC
   PFModule     *overlandflow_module_kin;
+  PFModule     *deepaquifer_module;
 
   /* The analytic Jacobian matrix is decomposed as follows:
    *
@@ -217,6 +218,7 @@ void    RichardsJacobianEval(
   PFModule    *overlandflow_module = (instance_xtra->overlandflow_module);
   PFModule    *overlandflow_module_diff = (instance_xtra->overlandflow_module_diff);
   PFModule    *overlandflow_module_kin = (instance_xtra->overlandflow_module_kin);
+  PFModule    *deepaquifer_module = (instance_xtra->deepaquifer_module);
 
   Matrix      *J = (instance_xtra->J);
   Matrix      *JC = (instance_xtra->JC);
@@ -1421,6 +1423,29 @@ void    RichardsJacobianEval(
                             kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
       })
                            ); /* End OverlandDiffusiveBC */
+
+      ForPatchCellsPerFace(DeepAquiferBC,
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int im, ip;
+                                  double *op; ),
+                           CellSetup({ im = SubmatrixEltIndex(J_sub, i, j, k); }),
+                           FACE(LeftFace, { op = wp; }),
+                           FACE(RightFace, { op = ep; }),
+                           FACE(DownFace, { op = sop; }),
+                           FACE(UpFace, { op = np; }),
+                           FACE(BackFace, { op = lp; }),
+                           FACE(FrontFace, { op = up; }),
+                           CellFinalize({
+        cp[im] += op[im];
+        op[im] = 0.0;
+      }),
+                           AfterAllCells(
+      {
+        PFModuleInvokeType(DeepAquiferEvalInvoke, deepaquifer_module,
+                           (CALCDER));
+      })
+                           ); /* End DeepAquiferBC */
     } /* End ipatch loop */
   }            /* End subgrid loop */
 
@@ -2270,6 +2295,8 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
       PFModuleNewInstance(ProblemOverlandFlowEvalDiff(problem), ());   //RMM-LEC
     (instance_xtra->overlandflow_module_kin)
       = PFModuleNewInstance(ProblemOverlandFlowEvalKin(problem), ());
+    (instance_xtra->deepaquifer_module) =
+      PFModuleNewInstance(ProblemDeepAquiferEval(problem), ());
   }
   else
   {
@@ -2283,6 +2310,7 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
     PFModuleReNewInstance((instance_xtra->overlandflow_module), ());     //DOK
     PFModuleReNewInstance((instance_xtra->overlandflow_module_diff), ());      //RMM-LEC
     PFModuleReNewInstance((instance_xtra->overlandflow_module_kin), ());
+    PFModuleReNewInstance((instance_xtra->deepaquifer_module), ());
   }
 
 
@@ -2302,6 +2330,7 @@ void  RichardsJacobianEvalFreeInstanceXtra()
 
   if (instance_xtra)
   {
+    PFModuleFreeInstance(instance_xtra->deepaquifer_module);
     PFModuleFreeInstance(instance_xtra->density_module);
     PFModuleFreeInstance(instance_xtra->bc_pressure);
     PFModuleFreeInstance(instance_xtra->saturation_module);
