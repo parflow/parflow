@@ -41,6 +41,7 @@
 #else
 
 extern "C++" {
+  /* to avoid a GCC error from overloaded C++ functions */
   #include <omp.h>
 }
 #include <stdarg.h>
