@@ -205,7 +205,6 @@ clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak)
   end if ! CLM log
 
      !=== Allocate Memory for Grid Module
-     allocate( counter(nx,ny) )
      allocate (grid(drv%nc,drv%nr),stat=ierr) ; call drv_astp(ierr) 
      do r=1,drv%nr                              ! rows
         do c=1,drv%nc                           ! columns
