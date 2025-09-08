@@ -1828,8 +1828,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 #ifdef HAVE_CLM
   Grid *grid = (instance_xtra->grid);
   Subgrid *subgrid;
-  Subvector *p_sub, *s_sub, *et_sub, *m_sub, *po_sub, *dz_sub;
-  double *pp, *sp, *et, *ms, *po_dat, *dz_dat;
+  Subvector *p_sub, *s_sub, *et_sub, *po_sub, *dz_sub;
+  double *pp, *sp, *et, *po_dat, *dz_dat;
 
   /* IMF: For CLM met forcing (local to AdvanceRichards) */
   int istep;                    // IMF: counter for clm output times
@@ -2447,11 +2447,19 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         int soi_z;
         int x, y, z;
 
+        Vector *top = ProblemDataIndexOfDomainTop(problem_data);
+        Vector *bot = ProblemDataIndexOfDomainBottom(problem_data);
+        Subvector *top_sub;
+        Subvector *bot_sub;
+        double *top_dat;
+        double *bot_dat;
+
         subgrid = GridSubgrid(grid, is);
         p_sub = VectorSubvector(instance_xtra->pressure, is);
         s_sub = VectorSubvector(instance_xtra->saturation, is);
         et_sub = VectorSubvector(evap_trans, is);
-        m_sub = VectorSubvector(instance_xtra->mask, is);
+        top_sub = VectorSubvector(top, is);
+        bot_sub = VectorSubvector(bot, is);
         po_sub = VectorSubvector(porosity, is);
         dz_sub = VectorSubvector(instance_xtra->dz_mult, is);
 
@@ -2528,7 +2536,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         sp = SubvectorData(s_sub);
         pp = SubvectorData(p_sub);
         et = SubvectorData(et_sub);
-        ms = SubvectorData(m_sub);
+        top = SubvectorData(top_sub);
+        bot = SubvectorData(bot_sub);
         po_dat = SubvectorData(po_sub);
         dz_dat = SubvectorData(dz_sub);
 
@@ -2658,7 +2667,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           {
             /*BH: added vegetation forcings and associated option (clm_forc_veg) */
             clm_file_dir_length = strlen(public_xtra->clm_file_dir);
-            CALL_CLM_LSM(pp, sp, et, ms, po_dat, dz_dat, istep, cdt, t,
+            CALL_CLM_LSM(pp, sp, et, top, bot, po_dat, dz_dat, istep, cdt, t,
                          start_time, dx, dy, dz, ix, iy, nx, ny, nz,
                          nx_f, ny_f, nz_f, nz_rz, ip, p, q, r, gnx,
                          gny, rank, sw_data, lw_data, prcp_data,
