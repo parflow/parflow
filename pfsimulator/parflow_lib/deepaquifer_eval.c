@@ -46,8 +46,25 @@ typedef void InstanceXtra;
  *
  * @param fcn flag = {CALCFCN , CALCDER}
  */
-void DeepAquiferEval(int fcn)
+void DeepAquiferEval(ProblemData *problem_data,
+                     int          isubgrid,
+                     int          fcn)
 {
+  Vector *permeability = ProblemDataDeepAquiferPermeability(problem_data);
+  Vector *specific_yield = ProblemDataDeepAquiferSpecificYield(problem_data);
+  Vector *aquifer_depth = ProblemDataDeepAquiferAquiferDepth(problem_data);
+  Vector *elevation = ProblemDataDeepAquiferElevation(problem_data);
+
+  Subvector *K_sub = VectorSubvector(permeability, isubgrid);
+  Subvector *Sy_sub = VectorSubvector(specific_yield, isubgrid);
+  Subvector *Ad_sub = VectorSubvector(aquifer_depth, isubgrid);
+  Subvector *El_sub = VectorSubvector(elevation, isubgrid);
+
+  double *K = SubvectorData(K_sub);
+  double *Sy = SubvectorData(Sy_sub);
+  double *Ad = SubvectorData(Ad_sub);
+  double *El = SubvectorData(El_sub);
+
   return;
 }
 
@@ -114,4 +131,183 @@ void DeepAquiferEvalFreePublicXtra()
 int DeepAquiferEvalSizeOfTempData()
 {
   return 0;
+}
+
+/*--------------------------------------------------------------------------
+ * SetDeepAquiferPermeability
+ *--------------------------------------------------------------------------*/
+
+void SetDeepAquiferPermeability(ProblemData *problem_data)
+{
+  Vector *permeability = ProblemDataDeepAquiferPermeability(problem_data);
+  NameArray switch_na = NA_NewNameArray("Constant PFBFile SameAsBottomLayer");
+  char key[IDB_MAX_KEY_LEN];
+
+  sprintf(key, "Patch.BCPressure.DeepAquifer.Permeability.Type");
+
+  char *switch_name = GetString(key);
+  int switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  switch (switch_value)
+  {
+    case 0: // Constant
+    {
+      sprintf(key, "Patch.BCPressure.DeepAquifer.Permeability.Value");
+      double value = GetDouble(key);
+      InitVectorAll(permeability, value);
+      break;
+    }
+
+    case 1: // PFBFile
+    {
+      sprintf(key, "Patch.BCPressure.DeepAquifer.Permeability.FileName");
+      char *filename = GetString(key);
+      ReadPFBinary(filename, permeability);
+
+      VectorUpdateCommHandle *handle = InitVectorUpdate(permeability, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
+
+      break;
+    }
+
+    case 2: // SameAsBottomLayer
+    {
+      // Not implemented yet
+      InputError("Swicth value <%s> not yet implemented for key <%s>", switch_name, key);
+      break;
+    }
+
+    default:
+    {
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+    }
+  }
+  NA_FreeNameArray(switch_na);
+
+  return;
+}
+
+/*--------------------------------------------------------------------------
+ * SetDeepAquiferSpecificYield
+ *--------------------------------------------------------------------------*/
+
+void SetDeepAquiferSpecificYield(ProblemData *problem_data)
+{
+  Vector *specific_yield = ProblemDataDeepAquiferSpecificYield(problem_data);
+  NameArray switch_na = NA_NewNameArray("Constant PFBFile");
+  char key[IDB_MAX_KEY_LEN];
+
+  sprintf(key, "Patch.BCPressure.DeepAquifer.SpecificYield.Type");
+
+  char *switch_name = GetString(key);
+  int switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  switch (switch_value)
+  {
+    case 0: // Constant
+    {
+      sprintf(key, "Patch.BCPressure.DeepAquifer.SpecificYield.Value");
+      double value = GetDouble(key);
+      InitVectorAll(specific_yield, value);
+      break;
+    }
+
+    case 1: // PFBFile
+    {
+      sprintf(key, "Patch.BCPressure.DeepAquifer.SpecificYield.FileName");
+      char *filename = GetString(key);
+      ReadPFBinary(filename, specific_yield);
+
+      VectorUpdateCommHandle *handle = InitVectorUpdate(specific_yield, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
+
+      break;
+    }
+
+    default:
+    {
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+    }
+  }
+  NA_FreeNameArray(switch_na);
+
+  return;
+}
+
+/*--------------------------------------------------------------------------
+ * SetDeepAquiferAquiferDepth
+ *--------------------------------------------------------------------------*/
+
+void SetDeepAquiferAquiferDepth(ProblemData *problem_data)
+{
+  Vector *aquifer_depth = ProblemDataDeepAquiferAquiferDepth(problem_data);
+  NameArray switch_na = NA_NewNameArray("Constant");
+  char key[IDB_MAX_KEY_LEN];
+
+  sprintf(key, "Patch.BCPressure.DeepAquifer.AquiferDepth.Type");
+
+  char *switch_name = GetString(key);
+  int switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  switch (switch_value)
+  {
+    case 0: // Constant
+    {
+      sprintf(key, "Patch.BCPressure.DeepAquifer.AquiferDepth.Value");
+      double value = GetDouble(key);
+      InitVectorAll(aquifer_depth, value);
+      break;
+    }
+
+    default:
+    {
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+    }
+  }
+  NA_FreeNameArray(switch_na);
+
+  return;
+}
+
+/*--------------------------------------------------------------------------
+ * SetDeepAquiferElevation
+ *--------------------------------------------------------------------------*/
+
+void SetDeepAquiferElevation(ProblemData *problem_data)
+{
+  Vector *elevation = ProblemDataDeepAquiferElevation(problem_data);
+  NameArray switch_na = NA_NewNameArray("Constant PFBFile");
+  char key[IDB_MAX_KEY_LEN];
+
+  sprintf(key, "Patch.BCPressure.DeepAquifer.Elevation.Type");
+
+  char *switch_name = GetString(key);
+  int switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  switch (switch_value)
+  {
+    case 0: // Constant
+    {
+      sprintf(key, "Patch.BCPressure.DeepAquifer.Elevation.Value");
+      double value = GetDouble(key);
+      InitVectorAll(elevation, value);
+      break;
+    }
+
+    case 1: // PFBFile
+    {
+      sprintf(key, "Patch.BCPressure.DeepAquifer.Elevation.FileName");
+      char *filename = GetString(key);
+      ReadPFBinary(filename, elevation);
+
+      VectorUpdateCommHandle *handle = InitVectorUpdate(elevation, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
+
+      break;
+    }
+
+    default:
+    {
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+    }
+  }
+  NA_FreeNameArray(switch_na);
+
+  return;
 }

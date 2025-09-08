@@ -883,18 +883,28 @@ void OverlandFlowEvalKinFreePublicXtra(void);
 int OverlandFlowEvalKinSizeOfTempData(void);
 
 /* deepaquifer_eval.c */
-typedef void (*DeepAquiferEvalInvoke)(int fcn);
-void DeepAquiferEval(int fcn);
+typedef void (*DeepAquiferEvalInvoke)(ProblemData *problem_data,
+                                      int          isubgrid,
+                                      int          fcn);
+
+void DeepAquiferEval(ProblemData *problem_data,
+                     int          isubgrid,
+                     int          fcn);
+
 PFModule *DeepAquiferEvalInitInstanceXtra(void);
 void DeepAquiferEvalFreeInstanceXtra(void);
 PFModule *DeepAquiferEvalNewPublicXtra(void);
 void DeepAquiferEvalFreePublicXtra(void);
 int DeepAquiferEvalSizeOfTempData(void);
+void SetDeepAquiferPermeability(ProblemData *problem_data);
+void SetDeepAquiferSpecificYield(ProblemData *problem_data);
+void SetDeepAquiferAquiferDepth(ProblemData *problem_data);
+void SetDeepAquiferElevation(ProblemData *problem_data);
 
+/* problem_ic_phase_satur.c */
 typedef void (*ICPhaseSaturInvoke) (Vector *ic_phase_satur, int phase, ProblemData *problem_data);
 typedef PFModule *(*ICPhaseSaturNewPublicXtraInvoke) (int num_phases);
 
-/* problem_ic_phase_satur.c */
 void ICPhaseSatur(Vector *ic_phase_satur, int phase, ProblemData *problem_data);
 PFModule *ICPhaseSaturInitInstanceXtra(void);
 void ICPhaseSaturFreeInstanceXtra(void);

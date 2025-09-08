@@ -440,6 +440,12 @@ ProblemData   *NewProblemData(
   ProblemDataChannelWidthY(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   ProblemDataMannings(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);  //sk
 
+  /* added vectors for deepaquifer */
+  ProblemDataDeepAquiferPermeability(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+  ProblemDataDeepAquiferSpecificYield(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+  ProblemDataDeepAquiferAquiferDepth(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+  ProblemDataDeepAquiferElevation(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+
   /* @RMM added vectors for subsurface slopes for terrain-following grid */
   ProblemDataSSlopeX(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);   //RMM
   ProblemDataSSlopeY(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);   //RMM
@@ -488,6 +494,11 @@ void          FreeProblemData(
       GrGeomFreeSolid(ProblemDataGrSolids(problem_data)[i]);
     tfree(ProblemDataGrSolids(problem_data));
 #endif
+
+    FreeVector(ProblemDataDeepAquiferElevation(problem_data));
+    FreeVector(ProblemDataDeepAquiferAquiferDepth(problem_data));
+    FreeVector(ProblemDataDeepAquiferSpecificYield(problem_data));
+    FreeVector(ProblemDataDeepAquiferPermeability(problem_data));
 
     FreeWellData(ProblemDataWellData(problem_data));
     FreeReservoirData(ProblemDataReservoirData(problem_data));

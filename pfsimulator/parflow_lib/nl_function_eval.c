@@ -2145,7 +2145,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
         double *dummy3 = NULL;
         double *dummy4 = NULL;
         PFModuleInvokeType(DeepAquiferEvalInvoke, deepaquifer_module,
-                           (CALCFCN));
+                           (problem_data, is, CALCFCN));
       }),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                            Locals(int ip, io, dir;

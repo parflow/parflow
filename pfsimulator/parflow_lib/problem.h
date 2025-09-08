@@ -166,6 +166,12 @@ typedef struct {
   Vector *wc_y;
   Vector *mann;
 
+  /* deep aquifer */
+  Vector *deep_aquifer_permeability;
+  Vector *deep_aquifer_specific_yield;
+  Vector *deep_aquifer_aquifer_depth;
+  Vector *deep_aquifer_elevation;
+
   /* @RMM terrain grid */
   Vector *x_sslope;
   Vector *y_sslope;
@@ -293,6 +299,12 @@ typedef struct {
 #define ProblemDataChannelWidthX(problem_data)  ((problem_data)->wc_x)
 #define ProblemDataChannelWidthY(problem_data)  ((problem_data)->wc_y)
 #define ProblemDataMannings(problem_data)       ((problem_data)->mann)   //sk
+
+#define ProblemDataDeepAquiferPermeability(problem_data)   ((problem_data)->deep_aquifer_permeability)
+#define ProblemDataDeepAquiferSpecificYield(problem_data)  ((problem_data)->deep_aquifer_specific_yield)
+#define ProblemDataDeepAquiferAquiferDepth(problem_data)      ((problem_data)->deep_aquifer_aquifer_depth)
+#define ProblemDataDeepAquiferElevation(problem_data)      ((problem_data)->deep_aquifer_elevation)
+
 #define ProblemDataSSlopeX(problem_data)        ((problem_data)->x_sslope)   //RMM
 #define ProblemDataSSlopeY(problem_data)        ((problem_data)->y_sslope)   //RMM
 #define ProblemDataZmult(problem_data)          ((problem_data)->dz_mult)    //RMM

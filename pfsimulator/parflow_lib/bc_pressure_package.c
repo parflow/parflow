@@ -439,6 +439,32 @@ void         BCPressurePackage(
             break;
           } /* End OverlandDiffusive */
 
+          /* Set up DeepAquifer condition structure */
+          case DeepAquifer:
+          {
+            /* Set deep aquifer parameters */
+            GetTypeStruct(DeepAquifer, data, public_xtra, i);
+            if((data->is_initialized) == FALSE)
+            {
+              SetDeepAquiferPermeability(problem_data);
+              SetDeepAquiferSpecificYield(problem_data);
+              SetDeepAquiferAquiferDepth(problem_data);
+              SetDeepAquiferElevation(problem_data);
+              (data->is_initialized) = TRUE;
+            }
+
+            NewBCPressureTypeStruct(DeepAquifer, interval_data);
+
+            BCPressureDataBCType(bc_pressure_data, i) = DeepAquiferBC;
+
+            /* No additional parameters in interval_data to set */
+            
+            BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
+            = (void*)interval_data;
+
+            break;
+          }
+
           default:
           {
             PARFLOW_ERROR("Invalid BC input type");
@@ -1008,6 +1034,15 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
           break;
         } /* End OverlandDiffusive */
+
+        case DeepAquifer:
+        {
+          NewTypeStruct(DeepAquifer, data);
+          (data->is_initialized) = FALSE;
+          /* No additional parameters to set */
+          StoreTypeStruct(public_xtra, data, i);
+          break;
+        } /* End DeepAquifer */
       } /* End switch types */
     } /* End for patches */
   } /* if patches */
@@ -1166,6 +1201,14 @@ void  BCPressurePackageFreePublicXtra()
           {
             GetTypeStruct(OverlandDiffusive, data, public_xtra, i);
             tfree(data->values);
+            tfree(data);
+            break;
+          }
+
+          case DeepAquifer:
+          {
+            GetTypeStruct(DeepAquifer, data, public_xtra, i);
+            /* nothing inside data to free */
             tfree(data);
             break;
           }
