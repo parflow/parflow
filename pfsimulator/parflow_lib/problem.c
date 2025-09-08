@@ -454,7 +454,7 @@ ProblemData   *NewProblemData(
   ProblemDataIndexOfDomainTop(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   ProblemDataPatchIndexOfDomainTop(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   ProblemDataIndexOfDomainBottom(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
-  
+
   ProblemDataPorosity(problem_data) = NewVectorType(grid, 1, 1, vector_cell_centered);
 
   ProblemDataBCPressureData(problem_data) = NewBCPressureData();
