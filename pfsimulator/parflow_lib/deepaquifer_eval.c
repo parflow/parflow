@@ -163,6 +163,8 @@ void DeepAquiferEval(ProblemData *problem_data,
       // because Ad is constant, it cancels out in head differences
       // since head is not used anywhere else, we skip the 0.5 * Ad term.
       // also, we assume density and gravity equal to 1.
+      // also, its missing adding the z coordinate of the bottom cell
+      // but this is only relevant if the bottom is not flat.
       head_mid = pp[ip_mid] + El[ibot_mid]; // + 0.5 * Ad
       head_lft = pp[ip_lft] + El[ibot_lft]; // + 0.5 * Ad
       head_rgt = pp[ip_rgt] + El[ibot_rgt]; // + 0.5 * Ad
@@ -201,7 +203,91 @@ void DeepAquiferEval(ProblemData *problem_data,
   }
   else /* fcn == CALCDER *//*----------------------------------------------*/
   {
-    amps_Printf("DeepAquiferEval: CALCDER not implemented yet.\n");
+    /* derivs of KE,KW,KN,KS w.r.t. current cell (i,j,k) */
+
+    ForPatchCellsPerFace(BC_ALL,
+                         BeforeAllCells(DoNothing),
+                         LoopVars(i, j, k, ival, bc_struct, ipatch, isubgrid),
+                         Locals(int ibot_mid = 0;
+                                int ibot_lft = 0, ibot_rgt = 0;
+                                int ibot_lwr = 0, ibot_upr = 0;
+
+                                int k_lft = 0, k_rgt = 0;
+                                int k_lwr = 0, k_upr = 0;
+
+                                int is_lft_edge = FALSE;
+                                int is_rgt_edge = FALSE;
+                                int is_lwr_edge = FALSE;
+                                int is_upr_edge = FALSE;
+
+                                double T_mid = 0.0;
+                                double T_lft = 0.0, T_rgt = 0.0;
+                                double T_lwr = 0.0, T_upr = 0.0;
+
+                                double dh_lft_der = 0.0, dh_rgt_der = 0.0;
+                                double dh_lwr_der = 0.0, dh_upr_der = 0.0;
+                                ),
+                         CellSetup({ PF_UNUSED(ival); }),
+                         FACE(LeftFace, DoNothing),
+                         FACE(RightFace, DoNothing),
+                         FACE(DownFace, DoNothing),
+                         FACE(UpFace, DoNothing),
+                         FACE(BackFace,
+    {
+      // get indices of bottom cell in current and adjacent cells
+      ibot_mid = SubvectorEltIndex(bottom_sub, i, j, 0);
+      ibot_lft = SubvectorEltIndex(bottom_sub, i - 1, j, 0);
+      ibot_rgt = SubvectorEltIndex(bottom_sub, i + 1, j, 0);
+      ibot_lwr = SubvectorEltIndex(bottom_sub, i, j - 1, 0);
+      ibot_upr = SubvectorEltIndex(bottom_sub, i, j + 1, 0);
+
+      // while bottom index is not available, assume flat bottom
+      k_lft = 0; // rint(bottom_dat[ibot_lft]);
+      k_rgt = 0; // rint(bottom_dat[ibot_rgt]);
+      k_lwr = 0; // rint(bottom_dat[ibot_lwr]);
+      k_upr = 0; // rint(bottom_dat[ibot_upr]);
+
+      // find if we are at an edge cell:
+      is_lft_edge = (k_lft < 0);
+      is_rgt_edge = (k_rgt < 0);
+      is_lwr_edge = (k_lwr < 0);
+      is_upr_edge = (k_upr < 0);
+
+      // if at edge, use current cell index
+      ibot_lft = is_lft_edge ? ibot_mid : ibot_lft;
+      ibot_rgt = is_rgt_edge ? ibot_mid : ibot_rgt;
+      ibot_lwr = is_lwr_edge ? ibot_mid : ibot_lwr;
+      ibot_upr = is_upr_edge ? ibot_mid : ibot_upr;
+
+      // compute transmissivity at the cell faces
+      // the aquifer is assumed to be fully saturated: Kr = 1
+      T_mid = Ks[ibot_mid] * Ad;
+
+      // transmissivity at interface is given by harmonic mean
+      T_lft = HarmonicMean(Ks[ibot_lft] * Ad, T_mid);
+      T_rgt = HarmonicMean(Ks[ibot_rgt] * Ad, T_mid);
+      T_lwr = HarmonicMean(Ks[ibot_lwr] * Ad, T_mid);
+      T_upr = HarmonicMean(Ks[ibot_upr] * Ad, T_mid);
+
+      // derivative of differences in head between adjacent cells
+      // with respect to middle cell head
+      dh_rgt_der = is_rgt_edge ? 0.0 : -1.0;
+      dh_lft_der = is_lft_edge ? 0.0 :  1.0;
+      dh_upr_der = is_upr_edge ? 0.0 : -1.0;
+      dh_lwr_der = is_lwr_edge ? 0.0 :  1.0;
+
+      // compute derivative of flux terms with respect to middle cell head.
+      // the derivative of this BC is already symmetric, so no need for
+      // non-symmetric storage.
+      ke_[ibot_mid] = T_rgt * dh_rgt_der;
+      kw_[ibot_mid] = T_lft * dh_lft_der;
+      kn_[ibot_mid] = T_upr * dh_upr_der;
+      ks_[ibot_mid] = T_lwr * dh_lwr_der;
+    }),
+                         FACE(FrontFace, DoNothing),
+                         CellFinalize(DoNothing),
+                         AfterAllCells(DoNothing)
+                         );
   }
 
   return;

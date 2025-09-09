@@ -236,11 +236,12 @@ void    RichardsJacobianEval(
   Vector      *permeability_z = ProblemDataPermeabilityZ(problem_data);
   Vector      *sstorage = ProblemDataSpecificStorage(problem_data);           //sk
   Vector      *top = ProblemDataIndexOfDomainTop(problem_data);               //DOK
+  Vector      *bottom = top; // while bottom index is not available, use top index to determine edge cells
   Vector      *slope_x = ProblemDataTSlopeX(problem_data);                //DOK
 
   /* Overland flow variables */  //DOK
   Vector      *KW, *KE, *KN, *KS, *KWns, *KEns, *KNns, *KSns;
-  Subvector   *kw_sub, *ke_sub, *kn_sub, *ks_sub, *kwns_sub, *kens_sub, *knns_sub, *ksns_sub, *top_sub, *sx_sub;
+  Subvector   *kw_sub, *ke_sub, *kn_sub, *ks_sub, *kwns_sub, *kens_sub, *knns_sub, *ksns_sub, *top_sub, *bottom_sub, *sx_sub;
   double      *kw_der, *ke_der, *kn_der, *ks_der, *kwns_der, *kens_der, *knns_der, *ksns_der;
 
   double gravity = ProblemGravity(problem);
@@ -278,7 +279,7 @@ void    RichardsJacobianEval(
   double      *permxp, *permyp, *permzp;
   double      *cp, *wp, *ep, *sop, *np, *lp, *up, *ss;
 
-  double      *cp_c, *wp_c, *ep_c, *sop_c, *np_c, *top_dat;  //DOK
+  double      *cp_c, *wp_c, *ep_c, *sop_c, *np_c, *top_dat, *bottom_dat;  //DOK
 
   int i, j, k, r, is;
   int ix, iy, iz;
@@ -971,6 +972,7 @@ void    RichardsJacobianEval(
   {
     subgrid = GridSubgrid(grid, is);
 
+    bottom_sub = VectorSubvector(bottom, is);
     p_sub = VectorSubvector(pressure, is);
     s_sub = VectorSubvector(saturation, is);
     dd_sub = VectorSubvector(density_der, is);
@@ -1034,6 +1036,7 @@ void    RichardsJacobianEval(
     knns_der = SubvectorData(knns_sub);
     ksns_der = SubvectorData(ksns_sub);
 
+    bottom_dat = SubvectorData(bottom_sub);
     pp = SubvectorData(p_sub);
     sp = SubvectorData(s_sub);
     ddp = SubvectorData(dd_sub);
@@ -1425,11 +1428,64 @@ void    RichardsJacobianEval(
                            ); /* End OverlandDiffusiveBC */
 
       ForPatchCellsPerFace(DeepAquiferBC,
-                           BeforeAllCells(DoNothing),
+                           BeforeAllCells(
+      {
+        // unlike overland flow BCs, the module for this BC is called before
+        // the loop. this sets the values for the derivatives of the fluxes,
+        // which are not needed for computations further ahead like is the case
+        // with overland flow BCs. therefore, we make use of this loop to set 
+        // the derivatives already.
+
+        // the derivative of this BC is already symmetric, so no need for
+        // non-symmetric storage. only ke_der, kw_der, kn_der, ks_der are set.
+
+        // there is a problem with using these vectors. so far, the BCs that
+        // use these vectors are mutually exclusive. with the introduction
+        // of this BC, this assumption is no longer valid.
+        // therefore, this BC cannot be used together with overland flow BCs.
+        // this needs to be fixed in the future.
+
+        PFModuleInvokeType(DeepAquiferEvalInvoke, deepaquifer_module,
+                           (problem_data, pressure, bc_struct, ipatch, is,
+                            ke_der, kw_der, kn_der, ks_der, CALCDER));
+
+        // Update ghost points before filling in JB
+        /* Pass KW values to neighbors.  */
+        vector_update_handle = InitVectorUpdate(KW, VectorUpdateAll);
+        FinalizeVectorUpdate(vector_update_handle);
+        /* Pass KE values to neighbors.  */
+        vector_update_handle = InitVectorUpdate(KE, VectorUpdateAll);
+        FinalizeVectorUpdate(vector_update_handle);
+        /* Pass KS values to neighbors.  */
+        vector_update_handle = InitVectorUpdate(KS, VectorUpdateAll);
+        FinalizeVectorUpdate(vector_update_handle);
+        /* Pass KN values to neighbors.  */
+        vector_update_handle = InitVectorUpdate(KN, VectorUpdateAll);
+        FinalizeVectorUpdate(vector_update_handle);
+      }),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                           Locals(int im, ip;
+                           Locals(int im, ibot_c;
+                                  int ibot_w, ibot_e, ibot_s, ibot_n;
+                                  double dxdy = dx * dy;
+                                  double dtdx_over_dy = dt * dx / dy;
+                                  double dtdy_over_dx = dt * dy / dx;
+                                  Vector *Sy_v = NULL;
+                                  Subvector *Sy_sub = NULL;
+                                  double *Sy = NULL;
                                   double *op; ),
-                           CellSetup({ im = SubmatrixEltIndex(J_sub, i, j, k); }),
+                           CellSetup(
+      { 
+        im = SubmatrixEltIndex(J_sub, i, j, k);
+        ibot_c = SubvectorEltIndex(bottom_sub, i, j, 0);
+        ibot_w = SubvectorEltIndex(bottom_sub, i-1, j, 0);
+        ibot_e = SubvectorEltIndex(bottom_sub, i+1, j, 0);
+        ibot_s = SubvectorEltIndex(bottom_sub, i, j-1, 0);
+        ibot_n = SubvectorEltIndex(bottom_sub, i, j+1, 0);
+
+        Sy_v = ProblemDataDeepAquiferSpecificYield(problem_data);
+        Sy_sub = VectorSubvector(Sy_v, is);
+        Sy = SubvectorData(Sy_sub);
+      }),
                            FACE(LeftFace, { op = wp; }),
                            FACE(RightFace, { op = ep; }),
                            FACE(DownFace, { op = sop; }),
@@ -1437,15 +1493,20 @@ void    RichardsJacobianEval(
                            FACE(BackFace, { op = lp; }),
                            FACE(FrontFace, { op = up; }),
                            CellFinalize({
-        cp[im] += op[im];
+        PlusEquals(cp[im], op[im]);
         op[im] = 0.0;
+
+        // add storage term derivatives' contribution to diagonal
+        PlusEquals(cp[im], dxdy * Sy[ibot_c]);
+        // add divergence term derivatives' contribution to diagonal
+        PlusEquals(cp[im], -dtdy_over_dx * (ke_der[ibot_c] - kw_der[ibot_c]) - dtdx_over_dy * (kn_der[ibot_c] - ks_der[ibot_c]));
+        // add divergence term derivatives' contribution to adjacents
+        PlusEquals(wp[im],  dtdy_over_dx * ke_der[ibot_w]);
+        PlusEquals(ep[im], -dtdy_over_dx * kw_der[ibot_e]);
+        PlusEquals(sop[im], dtdx_over_dy * kn_der[ibot_s]);
+        PlusEquals(np[im], -dtdx_over_dy * ks_der[ibot_n]);
       }),
-                           AfterAllCells(
-      {
-        PFModuleInvokeType(DeepAquiferEvalInvoke, deepaquifer_module,
-                           (problem_data, pressure, bc_struct, ipatch, is,
-                            ke_der, kw_der, kn_der, ks_der, CALCDER));
-      })
+                           AfterAllCells(DoNothing)
                            ); /* End DeepAquiferBC */
     } /* End ipatch loop */
   }            /* End subgrid loop */
