@@ -52,18 +52,17 @@ void DeepAquiferEval(ProblemData *problem_data,
 {
   Vector *permeability = ProblemDataDeepAquiferPermeability(problem_data);
   Vector *specific_yield = ProblemDataDeepAquiferSpecificYield(problem_data);
-  Vector *aquifer_depth = ProblemDataDeepAquiferAquiferDepth(problem_data);
   Vector *elevation = ProblemDataDeepAquiferElevation(problem_data);
 
   Subvector *K_sub = VectorSubvector(permeability, isubgrid);
   Subvector *Sy_sub = VectorSubvector(specific_yield, isubgrid);
-  Subvector *Ad_sub = VectorSubvector(aquifer_depth, isubgrid);
   Subvector *El_sub = VectorSubvector(elevation, isubgrid);
 
   double *K = SubvectorData(K_sub);
   double *Sy = SubvectorData(Sy_sub);
-  double *Ad = SubvectorData(Ad_sub);
   double *El = SubvectorData(El_sub);
+
+  double Ad = ProblemDataDeepAquiferAquiferDepth(problem_data);
 
   return;
 }
@@ -238,7 +237,6 @@ void SetDeepAquiferSpecificYield(ProblemData *problem_data)
 
 void SetDeepAquiferAquiferDepth(ProblemData *problem_data)
 {
-  Vector *aquifer_depth = ProblemDataDeepAquiferAquiferDepth(problem_data);
   NameArray switch_na = NA_NewNameArray("Constant");
   char key[IDB_MAX_KEY_LEN];
 
@@ -252,7 +250,7 @@ void SetDeepAquiferAquiferDepth(ProblemData *problem_data)
     {
       sprintf(key, "Patch.BCPressure.DeepAquifer.AquiferDepth.Value");
       double value = GetDouble(key);
-      InitVectorAll(aquifer_depth, value);
+      ProblemDataDeepAquiferAquiferDepth(problem_data) = value;
       break;
     }
 

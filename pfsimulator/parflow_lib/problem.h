@@ -169,8 +169,8 @@ typedef struct {
   /* deep aquifer */
   Vector *deep_aquifer_permeability;
   Vector *deep_aquifer_specific_yield;
-  Vector *deep_aquifer_aquifer_depth;
   Vector *deep_aquifer_elevation;
+  double deep_aquifer_aquifer_depth;
 
   /* @RMM terrain grid */
   Vector *x_sslope;
