@@ -444,7 +444,7 @@ void         BCPressurePackage(
           {
             /* Set deep aquifer parameters */
             GetTypeStruct(DeepAquifer, data, public_xtra, i);
-            if((data->is_initialized) == FALSE)
+            if ((data->is_initialized) == FALSE)
             {
               SetDeepAquiferPermeability(problem_data);
               SetDeepAquiferSpecificYield(problem_data);
@@ -458,9 +458,9 @@ void         BCPressurePackage(
             BCPressureDataBCType(bc_pressure_data, i) = DeepAquiferBC;
 
             /* No additional parameters in interval_data to set */
-            
+
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
-            = (void*)interval_data;
+              = (void*)interval_data;
 
             break;
           }

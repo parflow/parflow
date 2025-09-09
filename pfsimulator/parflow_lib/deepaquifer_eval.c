@@ -44,25 +44,165 @@ typedef void InstanceXtra;
  * and its jacobian. When invoked, the `fcn` flag tracks
  * which output to compute.
  *
- * @param fcn flag = {CALCFCN , CALCDER}
+ * @param problem_data problem data structure - holds deepaquifer parameters
+ * @param pressure current step's pressure values
+ * @param bc_struct structure necessary for BC looping
+ * @param ipatch current patch index
+ * @param isubgrid current subgrid index
+ * @param ke_ return array for east face
+ * @param kw_ return array for west face
+ * @param kn_ return array for north face
+ * @param ks_ return array for south face
+ * @param fcn flag = {CALCFCN , CALCDER} - computes function or derivative
  */
 void DeepAquiferEval(ProblemData *problem_data,
+                     Vector *     pressure,
+                     BCStruct *   bc_struct,
+                     int          ipatch,
                      int          isubgrid,
+                     double *     ke_,
+                     double *     kw_,
+                     double *     kn_,
+                     double *     ks_,
                      int          fcn)
 {
   Vector *permeability = ProblemDataDeepAquiferPermeability(problem_data);
-  Vector *specific_yield = ProblemDataDeepAquiferSpecificYield(problem_data);
   Vector *elevation = ProblemDataDeepAquiferElevation(problem_data);
+  // while bottom index is not available, use top index to determine edge cells
+  Vector *top = ProblemDataIndexOfDomainTop(problem_data);
+  Vector *bottom = top;
 
-  Subvector *K_sub = VectorSubvector(permeability, isubgrid);
-  Subvector *Sy_sub = VectorSubvector(specific_yield, isubgrid);
+  Subvector *p_sub = VectorSubvector(pressure, isubgrid);
+  Subvector *Ks_sub = VectorSubvector(permeability, isubgrid);
   Subvector *El_sub = VectorSubvector(elevation, isubgrid);
+  Subvector *bottom_sub = VectorSubvector(bottom, isubgrid);
 
-  double *K = SubvectorData(K_sub);
-  double *Sy = SubvectorData(Sy_sub);
+  double *pp = SubvectorData(p_sub);
+  double *Ks = SubvectorData(Ks_sub);
   double *El = SubvectorData(El_sub);
+  double *bottom_dat = SubvectorData(bottom_sub);
 
   double Ad = ProblemDataDeepAquiferAquiferDepth(problem_data);
+
+  int i = 0, j = 0, k = 0, ival = 0;
+
+  if (fcn == CALCFCN)
+  {
+    ForPatchCellsPerFace(BC_ALL,
+                         BeforeAllCells(DoNothing),
+                         LoopVars(i, j, k, ival, bc_struct, ipatch, isubgrid),
+                         Locals(int ibot_mid = 0;
+                                int ibot_lft = 0, ibot_rgt = 0;
+                                int ibot_lwr = 0, ibot_upr = 0;
+
+                                int k_lft = 0, k_rgt = 0;
+                                int k_lwr = 0, k_upr = 0;
+
+                                int ip_mid = 0;
+                                int ip_lft = 0, ip_rgt = 0;
+                                int ip_lwr = 0, ip_upr = 0;
+
+                                int is_lft_edge = FALSE;
+                                int is_rgt_edge = FALSE;
+                                int is_lwr_edge = FALSE;
+                                int is_upr_edge = FALSE;
+
+                                double T_mid = 0.0;
+                                double T_lft = 0.0, T_rgt = 0.0;
+                                double T_lwr = 0.0, T_upr = 0.0;
+
+                                double head_mid = 0.0;
+                                double head_lft = 0.0, head_rgt = 0.0;
+                                double head_lwr = 0.0, head_upr = 0.0;
+
+                                double dh_lft = 0.0, dh_rgt = 0.0;
+                                double dh_lwr = 0.0, dh_upr = 0.0;
+                                ),
+                         CellSetup({
+      ip_mid = SubvectorEltIndex(p_sub, i, j, k);
+      PF_UNUSED(ival);
+    }),
+                         FACE(LeftFace, DoNothing),
+                         FACE(RightFace, DoNothing),
+                         FACE(DownFace, DoNothing),
+                         FACE(UpFace, DoNothing),
+                         FACE(BackFace,
+    {
+      // get indices of bottom cell in current and adjacent cells
+      ibot_mid = SubvectorEltIndex(bottom_sub, i, j, 0);
+      ibot_lft = SubvectorEltIndex(bottom_sub, i - 1, j, 0);
+      ibot_rgt = SubvectorEltIndex(bottom_sub, i + 1, j, 0);
+      ibot_lwr = SubvectorEltIndex(bottom_sub, i, j - 1, 0);
+      ibot_upr = SubvectorEltIndex(bottom_sub, i, j + 1, 0);
+
+      // while bottom index is not available, assume flat bottom
+      k_lft = 0; // rint(bottom_dat[ibot_lft]);
+      k_rgt = 0; // rint(bottom_dat[ibot_rgt]);
+      k_lwr = 0; // rint(bottom_dat[ibot_lwr]);
+      k_upr = 0; // rint(bottom_dat[ibot_upr]);
+
+      // find if we are at an edge cell:
+      is_lft_edge = (k_lft < 0);
+      is_rgt_edge = (k_rgt < 0);
+      is_lwr_edge = (k_lwr < 0);
+      is_upr_edge = (k_upr < 0);
+
+      // if at edge, use current cell index
+      ibot_lft = is_lft_edge ? ibot_mid : ibot_lft;
+      ibot_rgt = is_rgt_edge ? ibot_mid : ibot_rgt;
+      ibot_lwr = is_lwr_edge ? ibot_mid : ibot_lwr;
+      ibot_upr = is_upr_edge ? ibot_mid : ibot_upr;
+
+      // get indices of adjacent cells in 3d grid
+      ip_lft = is_lft_edge ? ip_mid : SubvectorEltIndex(p_sub, i - 1, j, k_lft);
+      ip_rgt = is_rgt_edge ? ip_mid : SubvectorEltIndex(p_sub, i + 1, j, k_rgt);
+      ip_lwr = is_lwr_edge ? ip_mid : SubvectorEltIndex(p_sub, i, j - 1, k_lwr);
+      ip_upr = is_upr_edge ? ip_mid : SubvectorEltIndex(p_sub, i, j + 1, k_upr);
+
+      // compute pressure head in adjacent cells:
+      // because Ad is constant, it cancels out in head differences
+      // since head is not used anywhere else, we skip the 0.5 * Ad term.
+      // also, we assume density and gravity equal to 1.
+      head_mid = pp[ip_mid] + El[ibot_mid]; // + 0.5 * Ad
+      head_lft = pp[ip_lft] + El[ibot_lft]; // + 0.5 * Ad
+      head_rgt = pp[ip_rgt] + El[ibot_rgt]; // + 0.5 * Ad
+      head_lwr = pp[ip_lwr] + El[ibot_lwr]; // + 0.5 * Ad
+      head_upr = pp[ip_upr] + El[ibot_upr]; // + 0.5 * Ad
+
+      // compute transmissivity at the cell faces
+      // the aquifer is assumed to be fully saturated: Kr = 1
+      T_mid = Ks[ip_mid] * Ad;
+
+      // transmissivity at interface is given by harmonic mean
+      T_lft = HarmonicMean(Ks[ip_lft] * Ad, T_mid);
+      T_rgt = HarmonicMean(Ks[ip_rgt] * Ad, T_mid);
+      T_lwr = HarmonicMean(Ks[ip_lwr] * Ad, T_mid);
+      T_upr = HarmonicMean(Ks[ip_upr] * Ad, T_mid);
+
+      // differences in head between adjacent cells
+      // there is no flow across the domain edges
+      dh_rgt = is_rgt_edge ? 0.0 : head_rgt - head_mid;
+      dh_lft = is_lft_edge ? 0.0 : head_mid - head_lft;
+      dh_upr = is_upr_edge ? 0.0 : head_upr - head_mid;
+      dh_lwr = is_lwr_edge ? 0.0 : head_mid - head_lwr;
+
+      // compute flux terms
+      // this is unoptimised. fluxes from one cell
+      // are not reused in adjacent cells.
+      ke_[ibot_mid] = T_rgt * dh_rgt;
+      kw_[ibot_mid] = T_lft * dh_lft;
+      kn_[ibot_mid] = T_upr * dh_upr;
+      ks_[ibot_mid] = T_lwr * dh_lwr;
+    }),
+                         FACE(FrontFace, DoNothing),
+                         CellFinalize(DoNothing),
+                         AfterAllCells(DoNothing)
+                         );
+  }
+  else /* fcn == CALCDER *//*----------------------------------------------*/
+  {
+    amps_Printf("DeepAquiferEval: CALCDER not implemented yet.\n");
+  }
 
   return;
 }

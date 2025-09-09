@@ -884,11 +884,25 @@ int OverlandFlowEvalKinSizeOfTempData(void);
 
 /* deepaquifer_eval.c */
 typedef void (*DeepAquiferEvalInvoke)(ProblemData *problem_data,
+                                      Vector *     pressure,
+                                      BCStruct *   bc_struct,
+                                      int          ipatch,
                                       int          isubgrid,
+                                      double *     ke_,
+                                      double *     kw_,
+                                      double *     kn_,
+                                      double *     ks_,
                                       int          fcn);
 
 void DeepAquiferEval(ProblemData *problem_data,
+                     Vector *     pressure,
+                     BCStruct *   bc_struct,
+                     int          ipatch,
                      int          isubgrid,
+                     double *     ke_,
+                     double *     kw_,
+                     double *     kn_,
+                     double *     ks_,
                      int          fcn);
 
 PFModule *DeepAquiferEvalInitInstanceXtra(void);

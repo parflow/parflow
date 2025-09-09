@@ -2138,23 +2138,32 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       ForPatchCellsPerFace(DeepAquiferBC,
                            BeforeAllCells(
       {
-        /*  @RMM this is a new module for diffusive wave
-         */
         double *dummy1 = NULL;
         double *dummy2 = NULL;
         double *dummy3 = NULL;
         double *dummy4 = NULL;
         PFModuleInvokeType(DeepAquiferEvalInvoke, deepaquifer_module,
-                           (problem_data, is, CALCFCN));
+                           (problem_data, pressure, bc_struct, ipatch, is,
+                            ke_, kw_, kn_, ks_, CALCFCN));
       }),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                            Locals(int ip, io, dir;
                                   int vel_idx, vx_l, vy_l, vz_l;
                                   double *vel_vec;
-                                  double q_deepaquifer, u_old, u_new, diff, h;
+                                  double u_old, u_new, diff, h;
                                   double x_dir_g, y_dir_g, z_dir_g;
                                   double sep, lower_cond, upper_cond;
-                                  double del_x_slope, del_y_slope; ),
+                                  double del_x_slope, del_y_slope;
+                                  double dxdy = dx * dy;
+                                  double dtdx_over_dy = dt * dx / dy;
+                                  double dtdy_over_dx = dt * dy / dx;
+                                  Vector *Sy_v = NULL;
+                                  Subvector *Sy_sub = NULL;
+                                  double *Sy = NULL;
+                                  double dh_dt = 0.0;
+                                  double q_deepaquifer = 0.0;
+                                  double q_storage = 0.0;
+                                  double q_divergence = 0.0; ),
                            CellSetup(
       {
         ip = SubvectorEltIndex(p_sub, i, j, k);
@@ -2183,7 +2192,14 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
         del_x_slope = 1.0;
         del_y_slope = 1.0;
 
-        q_deepaquifer = 0;
+        Sy_v = ProblemDataDeepAquiferSpecificYield(problem_data);
+        Sy_sub = VectorSubvector(Sy_v, is);
+        Sy = SubvectorData(Sy_sub);
+
+        dh_dt = 0.0;
+        q_deepaquifer = 0.0;
+        q_storage = 0.0;
+        q_divergence = 0.0;
       }),
                            FACE(LeftFace,
       {
@@ -2306,7 +2322,11 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                          rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip])
                 / viscosity;
 
-        q_deepaquifer = 0.0; // compute here the values using the returns from the module
+        /* Actual Deep Aquifer BC Computations */
+        dh_dt = pp[ip] - opp[ip]; // head change in time
+        q_storage = dxdy * Sy[ip] * dh_dt; // storage term
+        q_divergence = dtdy_over_dx * (ke_[io] - kw_[io]) + dtdx_over_dy * (kn_[io] - ks_[io]); // divergence term
+        q_deepaquifer = q_storage - q_divergence;
       }),
                            FACE(FrontFace,
       {

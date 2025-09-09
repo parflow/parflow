@@ -1443,7 +1443,8 @@ void    RichardsJacobianEval(
                            AfterAllCells(
       {
         PFModuleInvokeType(DeepAquiferEvalInvoke, deepaquifer_module,
-                           (problem_data, is, CALCDER));
+                           (problem_data, pressure, bc_struct, ipatch, is,
+                            ke_der, kw_der, kn_der, ks_der, CALCDER));
       })
                            ); /* End DeepAquiferBC */
     } /* End ipatch loop */
