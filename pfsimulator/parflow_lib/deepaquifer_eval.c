@@ -171,13 +171,13 @@ void DeepAquiferEval(ProblemData *problem_data,
 
       // compute transmissivity at the cell faces
       // the aquifer is assumed to be fully saturated: Kr = 1
-      T_mid = Ks[ip_mid] * Ad;
+      T_mid = Ks[ibot_mid] * Ad;
 
       // transmissivity at interface is given by harmonic mean
-      T_lft = HarmonicMean(Ks[ip_lft] * Ad, T_mid);
-      T_rgt = HarmonicMean(Ks[ip_rgt] * Ad, T_mid);
-      T_lwr = HarmonicMean(Ks[ip_lwr] * Ad, T_mid);
-      T_upr = HarmonicMean(Ks[ip_upr] * Ad, T_mid);
+      T_lft = HarmonicMean(Ks[ibot_lft] * Ad, T_mid);
+      T_rgt = HarmonicMean(Ks[ibot_rgt] * Ad, T_mid);
+      T_lwr = HarmonicMean(Ks[ibot_lwr] * Ad, T_mid);
+      T_upr = HarmonicMean(Ks[ibot_upr] * Ad, T_mid);
 
       // differences in head between adjacent cells
       // there is no flow across the domain edges
