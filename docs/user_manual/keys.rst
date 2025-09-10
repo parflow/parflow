@@ -5877,8 +5877,11 @@ to be active.
       <runname>.Solver.CLM.CLMFileDir = "CLM_Output/"    ## Python syntax
 
 *integer* **Solver.CLM.CLMDumpInterval** 1 This key specifies how often
-output from the ``CLM`` is written. This key is in integer multipliers 
-of the ``CLM`` timestep. Note that ``CLM`` must be compiled and linked 
+output from the ``CLM`` is written. This key is the real
+time interval at which time-dependent output should be written. A value
+of **0** will produce undefined behavior. If the value is negative,
+output will be dumped out every :math:`n` time steps, where :math:`n` is
+the absolute value of the integer part of the value.  Note that ``CLM`` must be compiled and linked 
 at runtime for this option to be active.
 
 .. container:: list
