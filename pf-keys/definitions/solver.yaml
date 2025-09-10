@@ -112,12 +112,12 @@ Solver:
 
     CLMDumpInterval:
       help: >
-        [Type: int] This key specifies how often output from the CLM is written. This key is in integer multipliers of the CLM timestep.
+        [Type: double] This key specifies how often output from the CLM is written. This key is in integer multipliers of the CLM timestep if negative if positive it is run time steps in real units.
         Note that CLM must be compiled and linked at runtime for this option to be active.
       default: 1
       domains:
         IntValue:
-          min_value: 1
+          min_value: -100000
         RequiresModule: CLM
 
     CLMFileDir:
