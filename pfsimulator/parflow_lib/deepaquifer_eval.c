@@ -136,10 +136,10 @@ void DeepAquiferEval(ProblemData *problem_data,
       ibot_upr = SubvectorEltIndex(bottom_sub, i, j + 1, 0);
 
       // while bottom index is not available, assume flat bottom
-      k_lft = 0; // rint(bottom_dat[ibot_lft]);
-      k_rgt = 0; // rint(bottom_dat[ibot_rgt]);
-      k_lwr = 0; // rint(bottom_dat[ibot_lwr]);
-      k_upr = 0; // rint(bottom_dat[ibot_upr]);
+      k_lft = rint(bottom_dat[ibot_lft]);
+      k_rgt = rint(bottom_dat[ibot_rgt]);
+      k_lwr = rint(bottom_dat[ibot_lwr]);
+      k_upr = rint(bottom_dat[ibot_upr]);
 
       // find if we are at an edge cell:
       is_lft_edge = (k_lft < 0);
@@ -242,10 +242,10 @@ void DeepAquiferEval(ProblemData *problem_data,
       ibot_upr = SubvectorEltIndex(bottom_sub, i, j + 1, 0);
 
       // while bottom index is not available, assume flat bottom
-      k_lft = 0; // rint(bottom_dat[ibot_lft]);
-      k_rgt = 0; // rint(bottom_dat[ibot_rgt]);
-      k_lwr = 0; // rint(bottom_dat[ibot_lwr]);
-      k_upr = 0; // rint(bottom_dat[ibot_upr]);
+      k_lft = rint(bottom_dat[ibot_lft]);
+      k_rgt = rint(bottom_dat[ibot_rgt]);
+      k_lwr = rint(bottom_dat[ibot_lwr]);
+      k_upr = rint(bottom_dat[ibot_upr]);
 
       // find if we are at an edge cell:
       is_lft_edge = (k_lft < 0);
