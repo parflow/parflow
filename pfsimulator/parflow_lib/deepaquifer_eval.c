@@ -500,7 +500,7 @@ void SetDeepAquiferElevation(ProblemData *problem_data)
   NameArray switch_na = NA_NewNameArray("Constant PFBFile");
   char key[IDB_MAX_KEY_LEN];
 
-  sprintf(key, "Patch.BCPressure.DeepAquifer.Elevation.Type");
+  sprintf(key, "Patch.BCPressure.DeepAquifer.Elevations.Type");
 
   char *switch_name = GetString(key);
   int switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
@@ -508,7 +508,7 @@ void SetDeepAquiferElevation(ProblemData *problem_data)
   {
     case 0: // Constant
     {
-      sprintf(key, "Patch.BCPressure.DeepAquifer.Elevation.Value");
+      sprintf(key, "Patch.BCPressure.DeepAquifer.Elevations.Value");
       double value = GetDouble(key);
       InitVectorAll(elevation, value);
       break;
@@ -516,7 +516,7 @@ void SetDeepAquiferElevation(ProblemData *problem_data)
 
     case 1: // PFBFile
     {
-      sprintf(key, "Patch.BCPressure.DeepAquifer.Elevation.FileName");
+      sprintf(key, "Patch.BCPressure.DeepAquifer.Elevations.FileName");
       char *filename = GetString(key);
       ReadPFBinary(filename, elevation);
 
