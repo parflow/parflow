@@ -120,7 +120,7 @@ void SADVECT(double *s, double *sn,
 #define CLM_LSM clm_lsm_
 #endif
 
-#define CALL_CLM_LSM(pressure_data, saturation_data, evap_trans_data, mask, porosity_data,                                                                                                                  \
+#define CALL_CLM_LSM(pressure_data, saturation_data, evap_trans_data, top, bottom, porosity_data,                                                                                                           \
                      dz_mult_data, istep, dt, t, start_time, dx, dy, dz, ix, iy, nx, ny, nz,                                                                                                                \
                      nx_f, ny_f, nz_f, nz_rz, ip, p, q, r, gnx, gny, rank,                                                                                                                                  \
                      sw_data, lw_data, prcp_data, tas_data, u_data, v_data, patm_data, qatm_data,                                                                                                           \
@@ -133,7 +133,7 @@ void SADVECT(double *s, double *sn,
                      clm_beta_function, clm_veg_function, clm_veg_wilting, clm_veg_fieldc, clm_res_sat,                                                                                                     \
                      clm_irr_type, clm_irr_cycle, clm_irr_rate, clm_irr_start, clm_irr_stop,                                                                                                                \
                      clm_irr_threshold, qirr, qirr_inst, iflag, clm_irr_thresholdtype, soi_z, clm_next, clm_write_logs, clm_last_rst, clm_daily_rst, clm_water_stress_type, clm_nlevsoi, clm_nlevlak)       \
-        CLM_LSM(pressure_data, saturation_data, evap_trans_data, mask, porosity_data,                                                                                                                       \
+        CLM_LSM(pressure_data, saturation_data, evap_trans_data, top, bottom, porosity_data,                                                                                                                \
                 dz_mult_data, &istep, &dt, &t, &start_time, &dx, &dy, &dz, &ix, &iy, &nx, &ny, &nz, &nx_f, &ny_f, &nz_f, &nz_rz, &ip, &p, &q, &r, &gnx, &gny, &rank,                                        \
                 sw_data, lw_data, prcp_data, tas_data, u_data, v_data, patm_data, qatm_data,                                                                                                                \
                 lai_data, sai_data, z0m_data, displa_data,                                                                                                                                                  \
@@ -146,7 +146,7 @@ void SADVECT(double *s, double *sn,
                 &clm_res_sat, &clm_irr_type, &clm_irr_cycle, &clm_irr_rate, &clm_irr_start, &clm_irr_stop,                                                                                                  \
                 &clm_irr_threshold, qirr, qirr_inst, iflag, &clm_irr_thresholdtype, &soi_z, &clm_next, &clm_write_logs, &clm_last_rst, &clm_daily_rst, &clm_water_stress_type, &clm_nlevsoi, &clm_nlevlak);
 
-void CLM_LSM(double *pressure_data, double *saturation_data, double *evap_trans_data, double *mask, double *porosity_data,
+void CLM_LSM(double *pressure_data, double *saturation_data, double *evap_trans_data, double *top, double *bottom, double *porosity_data,
              double *dz_mult_data, int *istep, double *dt, double *t, double *start_time,
              double *dx, double *dy, double *dz, int *ix, int *iy, int *nx, int *ny, int *nz,
              int *nx_f, int *ny_f, int *nz_f, int *nz_rz, int *ip, int *p, int *q, int *r, int *gnx, int *gny, int *rank,
