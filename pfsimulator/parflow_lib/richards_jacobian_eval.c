@@ -1449,6 +1449,12 @@ void    RichardsJacobianEval(
                            (problem_data, pressure, bc_struct, ipatch, is,
                             ke_der, kw_der, kn_der, ks_der, CALCDER));
 
+        if (MatrixCommPkg(J))
+        {
+          handle = InitMatrixUpdate(J);
+          FinalizeMatrixUpdate(handle);
+        }
+
         // Update ghost points before filling in JB
         /* Pass KW values to neighbors.  */
         vector_update_handle = InitVectorUpdate(KW, VectorUpdateAll);
@@ -1472,6 +1478,12 @@ void    RichardsJacobianEval(
                                   Vector *Sy_v = NULL;
                                   Subvector *Sy_sub = NULL;
                                   double *Sy = NULL;
+                                  double q_storage_der = 0.0;
+                                  double q_divergence_der = 0.0;
+                                  double west_der = 0.0;
+                                  double east_der = 0.0;
+                                  double north_der = 0.0;
+                                  double south_der = 0.0;
                                   double *op; ),
                            CellSetup(
       { 
@@ -1485,26 +1497,44 @@ void    RichardsJacobianEval(
         Sy_v = ProblemDataDeepAquiferSpecificYield(problem_data);
         Sy_sub = VectorSubvector(Sy_v, is);
         Sy = SubvectorData(Sy_sub);
+
+        q_storage_der = 0.0;
+        q_divergence_der = 0.0;
+        west_der = 0.0;
+        east_der = 0.0;
+        north_der = 0.0;
+        south_der = 0.0;
       }),
                            FACE(LeftFace, { op = wp; }),
                            FACE(RightFace, { op = ep; }),
                            FACE(DownFace, { op = sop; }),
                            FACE(UpFace, { op = np; }),
-                           FACE(BackFace, { op = lp; }),
+                           FACE(BackFace, 
+      { 
+        op = lp;
+      
+        // add storage term derivatives' contribution to diagonal
+        q_storage_der = dxdy * Sy[ibot_c];
+        // add divergence term derivatives' contribution to diagonal
+        q_divergence_der = dtdy_over_dx * (ke_der[ibot_c] - kw_der[ibot_c]) + dtdx_over_dy * (kn_der[ibot_c] - ks_der[ibot_c]);
+        // add divergence term derivatives' contribution to adjacents
+        west_der  =  dtdy_over_dx * ke_der[ibot_w];
+        east_der  = -dtdy_over_dx * kw_der[ibot_e];
+        south_der =  dtdx_over_dy * kn_der[ibot_s];
+        north_der = -dtdx_over_dy * ks_der[ibot_n];
+      }),
                            FACE(FrontFace, { op = up; }),
                            CellFinalize({
         PlusEquals(cp[im], op[im]);
         op[im] = 0.0;
 
-        // add storage term derivatives' contribution to diagonal
-        PlusEquals(cp[im], dxdy * Sy[ibot_c]);
-        // add divergence term derivatives' contribution to diagonal
-        PlusEquals(cp[im], -dtdy_over_dx * (ke_der[ibot_c] - kw_der[ibot_c]) - dtdx_over_dy * (kn_der[ibot_c] - ks_der[ibot_c]));
+        // add storage and divergence term derivatives' contribution to diagonal
+        PlusEquals(cp[im], q_storage_der - q_divergence_der);
         // add divergence term derivatives' contribution to adjacents
-        PlusEquals(wp[im],  dtdy_over_dx * ke_der[ibot_w]);
-        PlusEquals(ep[im], -dtdy_over_dx * kw_der[ibot_e]);
-        PlusEquals(sop[im], dtdx_over_dy * kn_der[ibot_s]);
-        PlusEquals(np[im], -dtdx_over_dy * ks_der[ibot_n]);
+        PlusEquals(wp[im],  west_der);
+        PlusEquals(ep[im],  east_der);
+        PlusEquals(sop[im], south_der);
+        PlusEquals(np[im],  north_der);
       }),
                            AfterAllCells(DoNothing)
                            ); /* End DeepAquiferBC */
