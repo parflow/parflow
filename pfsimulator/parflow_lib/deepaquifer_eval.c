@@ -396,8 +396,68 @@ void SetDeepAquiferPermeability(ProblemData *problem_data)
 
     case 2: // SameAsBottomLayer
     {
-      // Not implemented yet
-      InputError("Swicth value <%s> not yet implemented for key <%s>", switch_name, key);
+      InitVectorAll(permeability, 0.0);
+
+      GrGeomSolid *gr_solid = ProblemDataGrDomain(problem_data);
+      // Since SetDeepAquiferPermeability is being called from 
+      // BCPressurePackageInvoke, which is the last module to be called from
+      // SetProblemData, the permeabilities have already been set up.
+      // Therefore, we can just copy the values from the bottom layer
+      // without needing to worry if the permeability_z vector has been 
+      // initialized.
+      Vector *permeability_z = ProblemDataPermeabilityZ(problem_data);
+      // add when available:
+      // Vector *bottom = ProblemDataIndexOfDomainBottom(problem_data);
+
+      Grid         *grid3d = VectorGrid(permeability_z);
+      SubgridArray *grid3d_subgrids = GridSubgrids(grid3d);
+
+      Grid          *grid2d = VectorGrid(permeability);
+      SubgridArray  *grid2d_subgrids = GridSubgrids(grid2d);
+
+      int is = 0;
+      ForSubgridI(is, grid3d_subgrids)
+      {
+        Subgrid *grid3d_subgrid = SubgridArraySubgrid(grid3d_subgrids, is);
+        Subgrid *grid2d_subgrid = SubgridArraySubgrid(grid2d_subgrids, is);
+      
+        Subvector *permz_sub = VectorSubvector(permeability_z, is);
+        Subvector *aquifer_perm_sub = VectorSubvector(permeability, is);
+        // Subvector *bottom_sub = VectorSubvector(bottom, is);
+
+        int grid3d_ix = SubgridIX(grid3d_subgrid);
+        int grid3d_iy = SubgridIY(grid3d_subgrid);
+        int grid3d_iz = SubgridIZ(grid3d_subgrid);
+
+        int grid3d_nx = SubgridNX(grid3d_subgrid);
+        int grid3d_ny = SubgridNY(grid3d_subgrid);
+        int grid3d_nz = SubgridNZ(grid3d_subgrid);
+
+        int grid3d_r = SubgridRX(grid3d_subgrid);
+
+        int grid2d_iz = SubgridIZ(grid2d_subgrid);
+
+        double *aquifer_perm_dat = SubvectorData(aquifer_perm_sub);
+        double *permzp = SubvectorData(permz_sub);
+        // double *bottom_dat = SubvectorData(bottom_sub);
+
+        int i = 0, j = 0, k = 0;
+        GrGeomInLoop(i, j, k,
+                    gr_solid, grid3d_r,
+                    grid3d_ix, grid3d_iy, grid3d_iz,
+                    grid3d_nx, grid3d_ny, grid3d_nz,
+        {
+          int index2d = SubvectorEltIndex(aquifer_perm_sub, i, j, grid2d_iz);
+          // replace with bottom index when available
+          int index3d = SubvectorEltIndex(permz_sub, i, j, grid2d_iz);
+
+          aquifer_perm_dat[index2d] = permzp[index3d];
+        });
+      } /* End of subgrid loop */
+
+      VectorUpdateCommHandle *handle = InitVectorUpdate(permeability, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
+
       break;
     }
 
