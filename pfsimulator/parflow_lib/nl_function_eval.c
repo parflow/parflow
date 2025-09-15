@@ -2324,7 +2324,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
         /* Actual Deep Aquifer BC Computations */
         dh_dt = pp[ip] - opp[ip]; // head change in time
-        q_storage = dxdy * Sy[ip] * dh_dt; // storage term
+        q_storage = dxdy * Sy[io] * dh_dt; // storage term
         q_divergence = dtdy_over_dx * (ke_[io] - kw_[io]) + dtdx_over_dy * (kn_[io] - ks_[io]); // divergence term
         q_deepaquifer = q_storage - q_divergence;
       }),
