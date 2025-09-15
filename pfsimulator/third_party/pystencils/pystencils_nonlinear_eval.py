@@ -1,7 +1,5 @@
 import sympy as sp
 
-from pystencilssfg import SourceFileGenerator
-
 from pystencils import Kernel
 from pystencils.codegen.properties import FieldBasePtr, FieldStride, FieldShape
 from pystencils.types import PsPointerType, PsCustomType

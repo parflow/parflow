@@ -1,7 +1,5 @@
 import sympy as sp
 
-from pystencilssfg import SourceFileGenerator
-
 from pystencils import Kernel
 from pystencils.types.quick import Fp, SInt
 from pystencils.types import PsPointerType

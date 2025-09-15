@@ -1,5 +1,3 @@
-from pystencilssfg import SourceFileGenerator
-
 from pystencils_codegen import *
 
 with SourceFileGenerator() as sfg:
