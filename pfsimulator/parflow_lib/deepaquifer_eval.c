@@ -128,6 +128,16 @@ void DeepAquiferEval(ProblemData *problem_data,
                          FACE(UpFace, DoNothing),
                          FACE(BackFace,
     {
+      /*   i-1  i  i+1
+       *      +---+
+       *      |upr|     j+1
+       *  +---+---+---+
+       *  |lft|mid|rgt|  j
+       *  +---+---+---+
+       *      |lwr|     j-1
+       *      +---+     
+       */
+
       // get indices of bottom cell in current and adjacent cells
       ibot_mid = SubvectorEltIndex(bottom_sub, i, j, 0);
       ibot_lft = SubvectorEltIndex(bottom_sub, i - 1, j, 0);
@@ -154,10 +164,11 @@ void DeepAquiferEval(ProblemData *problem_data,
       ibot_upr = is_upr_edge ? ibot_mid : ibot_upr;
 
       // get indices of adjacent cells in 3d grid
-      ip_lft = is_lft_edge ? ip_mid : SubvectorEltIndex(p_sub, i - 1, j, k_lft);
-      ip_rgt = is_rgt_edge ? ip_mid : SubvectorEltIndex(p_sub, i + 1, j, k_rgt);
-      ip_lwr = is_lwr_edge ? ip_mid : SubvectorEltIndex(p_sub, i, j - 1, k_lwr);
-      ip_upr = is_upr_edge ? ip_mid : SubvectorEltIndex(p_sub, i, j + 1, k_upr);
+      // for now, use k because other bottom indexes are not available
+      ip_lft = is_lft_edge ? ip_mid : SubvectorEltIndex(p_sub, i - 1, j, k); // , k_lft);
+      ip_rgt = is_rgt_edge ? ip_mid : SubvectorEltIndex(p_sub, i + 1, j, k); // , k_rgt);
+      ip_lwr = is_lwr_edge ? ip_mid : SubvectorEltIndex(p_sub, i, j - 1, k); // , k_lwr);
+      ip_upr = is_upr_edge ? ip_mid : SubvectorEltIndex(p_sub, i, j + 1, k); // , k_upr);
 
       // compute pressure head in adjacent cells:
       // because Ad is constant, it cancels out in head differences
