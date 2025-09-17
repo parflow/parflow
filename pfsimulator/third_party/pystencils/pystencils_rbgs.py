@@ -1,32 +1,49 @@
+from field_factory import FieldFactory
+
+from pystencils import TypedSymbol
+from pystencils import DynamicType
+
 from pystencils_codegen import *
 
 with SourceFileGenerator() as sfg:
     default_dtype = sfg.context.project_info["default_dtype"]
 
-    # fields
+    # iteration space
 
-    ## subentries of A
+    nx = TypedSymbol("size_x", DynamicType.INDEX_TYPE)
+    ny = TypedSymbol("size_y", DynamicType.INDEX_TYPE)
+    nz = TypedSymbol("size_z", DynamicType.INDEX_TYPE)
 
-    a0, a1, a2, a3, a4, a5, a6 = ps.fields(
-        f"a0, a1, a2, a3, a4, a5, a6: {default_dtype}[3D]", layout="fzyx"
-    )
-    A = [a0, a1, a2, a3, a4, a5, a6]
+    # field strides
+
+    m_sx = TypedSymbol("stride_mx", DynamicType.INDEX_TYPE)
+    m_sy = TypedSymbol("stride_my", DynamicType.INDEX_TYPE)
+    m_sz = TypedSymbol("stride_mz", DynamicType.INDEX_TYPE)
+
+    v_sx = TypedSymbol("stride_vx", DynamicType.INDEX_TYPE)
+    v_sy = TypedSymbol("stride_vy", DynamicType.INDEX_TYPE)
+    v_sz = TypedSymbol("stride_vz", DynamicType.INDEX_TYPE)
+
+    # field declarations
+
+    m_ff = FieldFactory((nx, ny, nz), (m_sx, m_sy, m_sz))
+    v_ff = FieldFactory((nx, ny, nz), (v_sx, v_sy, v_sz))
+
+    ## subentries of matrix A
+    A = [m_ff.create_new(f"a{i}") for i in range(7)]
 
     ## entries of solution field x offset by stencil
-    x0, x1, x2, x3, x4, x5, x6 = ps.fields(
-        f"x0, x1, x2, x3, x4, x5, x6: {default_dtype}[3D]", layout="fzyx"
-    )
-    x = [x0, x1, x2, x3, x4, x5, x6]
+    x = [v_ff.create_new(f"x{i}") for i in range(7)]
 
-    ## right-hand side
-    b = ps.fields(f"b: {default_dtype}[3D]", layout="fzyx")
+    ## right-hand side b
+    b = v_ff.create_new("b")
 
     # kernels
 
     ## zero-optimization kernel
     create_kernel_func(
         sfg,
-        ps.Assignment(x0.center(), b.center() / a0.center()),
+        ps.Assignment(x[0].center(), b.center() / A[0].center()),
         "RBGS_ZeroOptimizationKernel",
         allow_vect=False,
     )
@@ -35,7 +52,7 @@ with SourceFileGenerator() as sfg:
     stencil_convolution = sum([xi.center() * ai.center() for xi, ai in zip(x, A)])
     create_kernel_func(
         sfg,
-        ps.Assignment(x0.center(), b.center() - stencil_convolution / a0.center()),
+        ps.Assignment(x[0].center(), b.center() - stencil_convolution / A[0].center()),
         "RBGS_7PtKernel",
         allow_vect=False,
     )
