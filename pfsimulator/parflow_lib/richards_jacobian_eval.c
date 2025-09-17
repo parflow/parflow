@@ -1472,6 +1472,7 @@ void    RichardsJacobianEval(
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                            Locals(int im, ibot_c;
                                   int ibot_w, ibot_e, ibot_s, ibot_n;
+                                  double use_off_diagonals = symm_part == TRUE ? 0.0 : 1.0;
                                   double dxdy = dx * dy;
                                   double dtdx_over_dy = dt * dx / dy;
                                   double dtdy_over_dx = dt * dy / dx;
@@ -1531,10 +1532,10 @@ void    RichardsJacobianEval(
         // add storage and divergence term derivatives' contribution to diagonal
         PlusEquals(cp[im], q_storage_der - q_divergence_der);
         // add divergence term derivatives' contribution to adjacents
-        PlusEquals(wp[im],  west_der);
-        PlusEquals(ep[im],  east_der);
-        PlusEquals(sop[im], south_der);
-        PlusEquals(np[im],  north_der);
+        PlusEquals(wp[im],  use_off_diagonals * west_der);
+        PlusEquals(ep[im],  use_off_diagonals * east_der);
+        PlusEquals(sop[im], use_off_diagonals * south_der);
+        PlusEquals(np[im],  use_off_diagonals * north_der);
       }),
                            AfterAllCells(DoNothing)
                            ); /* End DeepAquiferBC */
