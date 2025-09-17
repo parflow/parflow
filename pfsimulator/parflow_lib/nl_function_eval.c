@@ -2138,10 +2138,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       ForPatchCellsPerFace(DeepAquiferBC,
                            BeforeAllCells(
       {
-        double *dummy1 = NULL;
-        double *dummy2 = NULL;
-        double *dummy3 = NULL;
-        double *dummy4 = NULL;
         PFModuleInvokeType(DeepAquiferEvalInvoke, deepaquifer_module,
                            (problem_data, pressure, bc_struct, ipatch, is,
                             ke_, kw_, kn_, ks_, CALCFCN));
