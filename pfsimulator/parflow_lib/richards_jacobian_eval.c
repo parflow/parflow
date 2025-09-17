@@ -1433,7 +1433,7 @@ void    RichardsJacobianEval(
         // unlike overland flow BCs, the module for this BC is called before
         // the loop. this sets the values for the derivatives of the fluxes,
         // which are not needed for computations further ahead like is the case
-        // with overland flow BCs. therefore, we make use of this loop to set 
+        // with overland flow BCs. therefore, we make use of this loop to set
         // the derivatives already.
 
         // the derivative of this BC is already symmetric, so no need for
@@ -1487,13 +1487,13 @@ void    RichardsJacobianEval(
                                   double south_der = 0.0;
                                   double *op; ),
                            CellSetup(
-      { 
+      {
         im = SubmatrixEltIndex(J_sub, i, j, k);
         ibot_c = SubvectorEltIndex(bottom_sub, i, j, 0);
-        ibot_w = SubvectorEltIndex(bottom_sub, i-1, j, 0);
-        ibot_e = SubvectorEltIndex(bottom_sub, i+1, j, 0);
-        ibot_s = SubvectorEltIndex(bottom_sub, i, j-1, 0);
-        ibot_n = SubvectorEltIndex(bottom_sub, i, j+1, 0);
+        ibot_w = SubvectorEltIndex(bottom_sub, i - 1, j, 0);
+        ibot_e = SubvectorEltIndex(bottom_sub, i + 1, j, 0);
+        ibot_s = SubvectorEltIndex(bottom_sub, i, j - 1, 0);
+        ibot_n = SubvectorEltIndex(bottom_sub, i, j + 1, 0);
 
         Sy_v = ProblemDataDeepAquiferSpecificYield(problem_data);
         Sy_sub = VectorSubvector(Sy_v, is);
@@ -1510,18 +1510,18 @@ void    RichardsJacobianEval(
                            FACE(RightFace, { op = ep; }),
                            FACE(DownFace, { op = sop; }),
                            FACE(UpFace, { op = np; }),
-                           FACE(BackFace, 
-      { 
+                           FACE(BackFace,
+      {
         op = lp;
-      
+
         // add storage term derivatives' contribution to diagonal
         q_storage_der = dxdy * Sy[ibot_c];
         // add divergence term derivatives' contribution to diagonal
         q_divergence_der = dtdy_over_dx * (ke_der[ibot_c] - kw_der[ibot_c]) + dtdx_over_dy * (kn_der[ibot_c] - ks_der[ibot_c]);
         // add divergence term derivatives' contribution to adjacents
-        west_der  =  dtdy_over_dx * ke_der[ibot_w];
-        east_der  = -dtdy_over_dx * kw_der[ibot_e];
-        south_der =  dtdx_over_dy * kn_der[ibot_s];
+        west_der = dtdy_over_dx * ke_der[ibot_w];
+        east_der = -dtdy_over_dx * kw_der[ibot_e];
+        south_der = dtdx_over_dy * kn_der[ibot_s];
         north_der = -dtdx_over_dy * ks_der[ibot_n];
       }),
                            FACE(FrontFace, { op = up; }),
@@ -1532,10 +1532,10 @@ void    RichardsJacobianEval(
         // add storage and divergence term derivatives' contribution to diagonal
         PlusEquals(cp[im], q_storage_der - q_divergence_der);
         // add divergence term derivatives' contribution to adjacents
-        PlusEquals(wp[im],  use_off_diagonals * west_der);
-        PlusEquals(ep[im],  use_off_diagonals * east_der);
+        PlusEquals(wp[im], use_off_diagonals * west_der);
+        PlusEquals(ep[im], use_off_diagonals * east_der);
         PlusEquals(sop[im], use_off_diagonals * south_der);
-        PlusEquals(np[im],  use_off_diagonals * north_der);
+        PlusEquals(np[im], use_off_diagonals * north_der);
       }),
                            AfterAllCells(DoNothing)
                            ); /* End DeepAquiferBC */

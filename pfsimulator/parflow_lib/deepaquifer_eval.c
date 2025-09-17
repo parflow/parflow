@@ -135,7 +135,7 @@ void DeepAquiferEval(ProblemData *problem_data,
        *  |lft|mid|rgt|  j
        *  +---+---+---+
        *      |lwr|     j-1
-       *      +---+     
+       *      +---+
        */
 
       // get indices of bottom cell in current and adjacent cells
@@ -410,11 +410,11 @@ void SetDeepAquiferPermeability(ProblemData *problem_data)
       InitVectorAll(permeability, 0.0);
 
       GrGeomSolid *gr_solid = ProblemDataGrDomain(problem_data);
-      // Since SetDeepAquiferPermeability is being called from 
+      // Since SetDeepAquiferPermeability is being called from
       // BCPressurePackageInvoke, which is the last module to be called from
       // SetProblemData, the permeabilities have already been set up.
       // Therefore, we can just copy the values from the bottom layer
-      // without needing to worry if the permeability_z vector has been 
+      // without needing to worry if the permeability_z vector has been
       // initialized.
       Vector *permeability_z = ProblemDataPermeabilityZ(problem_data);
       // add when available:
@@ -431,7 +431,7 @@ void SetDeepAquiferPermeability(ProblemData *problem_data)
       {
         Subgrid *grid3d_subgrid = SubgridArraySubgrid(grid3d_subgrids, is);
         Subgrid *grid2d_subgrid = SubgridArraySubgrid(grid2d_subgrids, is);
-      
+
         Subvector *permz_sub = VectorSubvector(permeability_z, is);
         Subvector *aquifer_perm_sub = VectorSubvector(permeability, is);
         // Subvector *bottom_sub = VectorSubvector(bottom, is);
@@ -453,10 +453,11 @@ void SetDeepAquiferPermeability(ProblemData *problem_data)
         // double *bottom_dat = SubvectorData(bottom_sub);
 
         int i = 0, j = 0, k = 0;
+
         GrGeomInLoop(i, j, k,
-                    gr_solid, grid3d_r,
-                    grid3d_ix, grid3d_iy, grid3d_iz,
-                    grid3d_nx, grid3d_ny, grid3d_nz,
+                     gr_solid, grid3d_r,
+                     grid3d_ix, grid3d_iy, grid3d_iz,
+                     grid3d_nx, grid3d_ny, grid3d_nz,
         {
           int index2d = SubvectorEltIndex(aquifer_perm_sub, i, j, grid2d_iz);
           // replace with bottom index when available
