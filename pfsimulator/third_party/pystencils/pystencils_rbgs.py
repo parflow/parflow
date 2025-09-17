@@ -1,8 +1,7 @@
-from field_factory import FieldFactory
-
 from pystencils import TypedSymbol
 from pystencils import DynamicType
 
+from field_factory import FieldFactory
 from pystencils_codegen import *
 
 with SourceFileGenerator() as sfg:
@@ -10,19 +9,19 @@ with SourceFileGenerator() as sfg:
 
     # iteration space
 
-    nx = TypedSymbol("size_x", DynamicType.INDEX_TYPE)
-    ny = TypedSymbol("size_y", DynamicType.INDEX_TYPE)
-    nz = TypedSymbol("size_z", DynamicType.INDEX_TYPE)
+    nx = TypedSymbol("_size_x", DynamicType.INDEX_TYPE)
+    ny = TypedSymbol("_size_y", DynamicType.INDEX_TYPE)
+    nz = TypedSymbol("_size_z", DynamicType.INDEX_TYPE)
 
     # field strides
 
-    m_sx = TypedSymbol("stride_mx", DynamicType.INDEX_TYPE)
-    m_sy = TypedSymbol("stride_my", DynamicType.INDEX_TYPE)
-    m_sz = TypedSymbol("stride_mz", DynamicType.INDEX_TYPE)
+    m_sx = TypedSymbol("_stride_mx", DynamicType.INDEX_TYPE)
+    m_sy = TypedSymbol("_stride_my", DynamicType.INDEX_TYPE)
+    m_sz = TypedSymbol("_stride_mz", DynamicType.INDEX_TYPE)
 
-    v_sx = TypedSymbol("stride_vx", DynamicType.INDEX_TYPE)
-    v_sy = TypedSymbol("stride_vy", DynamicType.INDEX_TYPE)
-    v_sz = TypedSymbol("stride_vz", DynamicType.INDEX_TYPE)
+    v_sx = TypedSymbol("_stride_vx", DynamicType.INDEX_TYPE)
+    v_sy = TypedSymbol("_stride_vy", DynamicType.INDEX_TYPE)
+    v_sz = TypedSymbol("_stride_vz", DynamicType.INDEX_TYPE)
 
     # field declarations
 
@@ -49,10 +48,10 @@ with SourceFileGenerator() as sfg:
     )
 
     ## regular 7pt kernel
-    stencil_convolution = sum([xi.center() * ai.center() for xi, ai in zip(x, A)])
+    stencil_convolution = sum([xi.center() * ai.center() for xi, ai in zip(x[1:], A[1:])])
     create_kernel_func(
         sfg,
-        ps.Assignment(x[0].center(), b.center() - stencil_convolution / A[0].center()),
+        ps.Assignment(x[0].center(), (b.center() - stencil_convolution) / A[0].center()),
         "RBGS_7PtKernel",
         allow_vect=False,
     )

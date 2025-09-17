@@ -767,7 +767,7 @@ void    InitVector(
 
     vp = SubvectorElt(v_sub, ix, iy, iz);
 
-#ifdef PARFLOW_HAVE_PYSTENCILS
+#if 0 //#ifdef PARFLOW_HAVE_PYSTENCILS
     PyCodegen_VConstInit(vp,
                          nx, ny, nz,
                          1, nx_v, nx_v * ny_v,
@@ -815,14 +815,16 @@ void    InitVectorAll(
     ny_v = SubvectorNY(v_sub);
     nz_v = SubvectorNZ(v_sub);
 
-    vp = SubvectorData(v_sub);
+#if 0 //#ifdef PARFLOW_HAVE_PYSTENCILS
+    vp = SubvectorElt(v_sub, ix_v, iy_v, iz_v);
 
-#ifdef PARFLOW_HAVE_PYSTENCILS
     PyCodegen_VConstInit(vp,
                          nx_v, ny_v, nz_v,
                          1, nx_v, nx_v * ny_v,
                          value);
 #else
+    vp = SubvectorData(v_sub);
+
     iv = 0;
     BoxLoopI1(i, j, k, ix_v, iy_v, iz_v, nx_v, ny_v, nz_v,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,

@@ -203,7 +203,12 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
   add_library(pfsimulator ${SRC_FILES_ARCH} ${SRC_FILES_CONST})
 
   if ( ${PARFLOW_HAVE_CUDA} )
-    target_link_libraries(pfsimulator nvToolsExt)
+    if (${CUDAToolkit_VERSION} VERSION_LESS "10")
+      target_link_libraries (pfsimulator CUDA::nvToolsExt)
+    else()
+      # nvtx3 was introduced in cuda 10 and replaces nvToolsExt in cuda 12.9
+      target_link_libraries (pfsimulator CUDA::nvtx3)
+    endif()
     target_include_directories(pfsimulator PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
   endif ( ${PARFLOW_HAVE_CUDA} )
 
