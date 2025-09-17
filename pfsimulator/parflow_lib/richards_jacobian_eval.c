@@ -279,7 +279,7 @@ void    RichardsJacobianEval(
   double      *permxp, *permyp, *permzp;
   double      *cp, *wp, *ep, *sop, *np, *lp, *up, *ss;
 
-  double      *cp_c, *wp_c, *ep_c, *sop_c, *np_c, *top_dat, *bottom_dat;  //DOK
+  double      *cp_c, *wp_c, *ep_c, *sop_c, *np_c, *top_dat;  //DOK
 
   int i, j, k, r, is;
   int ix, iy, iz;
@@ -1036,7 +1036,6 @@ void    RichardsJacobianEval(
     knns_der = SubvectorData(knns_sub);
     ksns_der = SubvectorData(ksns_sub);
 
-    bottom_dat = SubvectorData(bottom_sub);
     pp = SubvectorData(p_sub);
     sp = SubvectorData(s_sub);
     ddp = SubvectorData(dd_sub);
