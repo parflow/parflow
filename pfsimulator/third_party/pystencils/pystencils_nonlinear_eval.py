@@ -1,10 +1,13 @@
 import sympy as sp
 
 from pystencils import Kernel
+from pystencils import TypedSymbol
+from pystencils import DynamicType
 from pystencils.codegen.properties import FieldBasePtr, FieldStride, FieldShape
 from pystencils.types import PsPointerType, PsCustomType
 from pystencils.types.quick import Fp, SInt
 
+from field_factory import FieldFactory
 from pystencils_codegen import *
 
 
@@ -18,11 +21,9 @@ def create_kernel_wrapper(kernel: Kernel):
 
     fieldnames = []
     fetch_subvectors = []
-    fetch_sizes = []
 
     kernel_symbols = []
 
-    fieldstrides = []
     for param in kernel.parameters:
         if param.wrapped.get_properties(FieldBasePtr):
             fieldname = param.name
@@ -35,19 +36,26 @@ def create_kernel_wrapper(kernel: Kernel):
             fetch_subvectors += [
                 f"double* {fieldname} = SubvectorElt({fieldname_sub}, PV_ixl, PV_iyl, PV_izl);\n"
             ]
-
-            nx, ny, nz = f"nx_{fieldname}", f"ny_{fieldname}", f"nz_{fieldname}"
-            fetch_sizes += [f"const int {nx} = SubvectorNX({fieldname_sub});\n"]
-            fetch_sizes += [f"const int {ny} = SubvectorNY({fieldname_sub});\n"]
-            fetch_sizes += [f"const int {nz} = SubvectorNZ({fieldname_sub});\n"]
-
-            fieldstrides += ["1", f"{nx}", f"{nx} * {ny}"]
         elif not (
             param.wrapped.get_properties(FieldStride)
             or param.wrapped.get_properties(FieldShape)
         ):
             params += [param]
             kernel_symbols += [param.name]
+
+        # fetch common field sizes and assemble field strides
+        fetch_sizes = []
+        fieldstrides = []
+
+        # all fields except 'pop' use same strides as 'f' field in replaced kernels -> omit duplicates
+        for fieldname in ("_data_fp",) + (("_data_pop",) if any(p.name == "_data_pop" for p in kernel.parameters) else ()):
+            fieldname_sub = f"{fieldname}_sub"
+            nx, ny, nz = f"nx_{fieldname}", f"ny_{fieldname}", f"nz_{fieldname}"
+
+            fetch_sizes += [f"const int {nx} = SubvectorNX({fieldname_sub});\n"]
+            fetch_sizes += [f"const int {ny} = SubvectorNY({fieldname_sub});\n"]
+
+            fieldstrides += ["1", f"{nx}", f"{nx} * {ny}"]
 
     sfg.include("parflow.h")
 
@@ -114,12 +122,32 @@ with SourceFileGenerator() as sfg:
     del_x_slope = 1.0
     del_y_slope = 1.0
 
-    # fields
+    # iteration space
 
-    z_mult_dat, dp, odp, sp, pp, opp, osp, pop, fp, ss, et = ps.fields(
-        f"z_mult_dat, dp, odp, sp, pp, opp, osp, pop, fp, ss, et: {default_dtype}[3D]",
-        layout="fzyx",
-    )
+    nx = TypedSymbol("_size_x", DynamicType.INDEX_TYPE)
+    ny = TypedSymbol("_size_y", DynamicType.INDEX_TYPE)
+    nz = TypedSymbol("_size_z", DynamicType.INDEX_TYPE)
+
+    # field strides
+
+    f_sx = TypedSymbol("_stride_f_x", DynamicType.INDEX_TYPE)
+    f_sy = TypedSymbol("_stride_f_y", DynamicType.INDEX_TYPE)
+    f_sz = TypedSymbol("_stride_f_z", DynamicType.INDEX_TYPE)
+
+    po_sx = TypedSymbol("_stride_po_x", DynamicType.INDEX_TYPE)
+    po_sy = TypedSymbol("_stride_po_y", DynamicType.INDEX_TYPE)
+    po_sz = TypedSymbol("_stride_po_z", DynamicType.INDEX_TYPE)
+
+    f_ff = FieldFactory((nx, ny, nz), (f_sx, f_sy, f_sz))
+    po_ff = FieldFactory((nx, ny, nz), (po_sx, po_sy, po_sz))
+
+    # field declarations
+
+    z_mult_dat, dp, odp, sp, pp, opp, osp, fp, ss, et = [f_ff.create_new(name) for name in
+                                                         ["z_mult_dat", "dp", "odp", "sp", "pp", "opp", "osp", "fp",
+                                                          "ss", "et"]]
+
+    pop = po_ff.create_new("pop")
 
     # kernels
 

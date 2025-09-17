@@ -455,7 +455,9 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
     BeginTiming(FluxSourceTerms);
+
     PyCodegen_Flux_AddSourceTerms_wrapper(gr_domain, r, ix, iy, iz, nx, ny, nz, et_sub, f_sub, s_sub, z_mult_sub, dt, vol);
+
     EndTiming(FluxSourceTerms);
 #else
     BeginTiming(FluxSourceTerms);
