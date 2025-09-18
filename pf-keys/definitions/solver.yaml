@@ -14,15 +14,19 @@ Solver:
 
   __value__:
     help: >
-      [Type: string] ParFlow can operate using a number of different solvers. Two of these solvers, IMPES
-      (running in single-phase, fully-saturated mode, not multiphase) and RICHARDS (running in variably-saturated mode, not
-      multiphase, with the options of land surface processes and coupled overland flow) are detailed below. This is
-      a brief summary of solver settings used to simulate under three sets of conditions, fully-saturated, variably saturated
-      and variably-saturated with overland flow. To simulate fully saturated, steady-state conditions set
-      the solver to IMPES. This is also the default solver in ParFlow, so if no solver is specified, the code solves using IMPES.
-      To simulate variably-saturated, transient conditions, using Richards’ equation, variably/fully saturated,
-      transient with compressible storage set the solver to RICHARDS. This is also the
-      solver used to simulate surface flow or coupled surface-subsurface flow.
+      [Type: string] ParFlow can operate using a number of different solvers. 
+      Two of these solvers, IMPES (running in single-phase, fully-saturated
+      mode, not multiphase) and RICHARDS (running in variably-saturated mode,
+      not multiphase, with the options of land surface processes and coupled
+      overland flow) are detailed below. This is a brief summary of solver
+      settings used to simulate under three sets of conditions, fully-saturated,
+      variably saturated and variably-saturated with overland flow. To simulate
+      fully saturated, steady-state conditions set the solver to IMPES. This is
+      also the default solver in ParFlow, so if no solver is specified, the code
+      solves using IMPES. To simulate variably-saturated, transient conditions,
+      using Richards’ equation, variably/fully saturated, transient with
+      compressible storage set the solver to RICHARDS. This is also the solver
+      used to simulate surface flow or coupled surface-subsurface flow.
     default: Impes
     domains:
       EnumDomain:
@@ -108,12 +112,12 @@ Solver:
 
     CLMDumpInterval:
       help: >
-        [Type: int] This key specifies how often output from the CLM is written. This key is in integer multipliers of the CLM timestep.
+        [Type: double] This key specifies how often output from the CLM is written. This key is in integer multipliers of the CLM timestep if negative if positive it is run time steps in real units.
         Note that CLM must be compiled and linked at runtime for this option to be active.
       default: 1
       domains:
         IntValue:
-          min_value: 1
+          min_value: -100000
         RequiresModule: CLM
 
     CLMFileDir:
@@ -1804,6 +1808,14 @@ Solver:
     domains:
       BoolDomain:
 
+  PrintBottom:
+    help: >
+      [Type: boolean/string] Key used to control writing of one PFB files for the bottom of the domain.  'BottomZIndex' is a NX * NY
+      file with the Z index of the bottom of the domain. A value of -1 indicates an (i,j) column does not intersect the domain.
+    default: False
+    domains:
+      BoolDomain:
+
   # missing from manual
   PrintSlopes:
     help: >
@@ -2448,6 +2460,15 @@ Solver:
     domains:
       BoolDomain:
       RequiresModule: SILO
+  
+    WriteSiloBottom:
+    help: >
+      [Type: boolean/string] Key used to control writing of one Silo file for the bottom of the domain. 'BottomZIndex' is a NX * NY
+      file with the Z index of the bottom of the domain. A value of -1 indicates an (i,j) column does not intersect the domain.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
 
   WriteSiloPMPIOConcentration:
     help: >
@@ -2633,6 +2654,174 @@ Solver:
     domains:
       BoolDomain:
       RequiresModule: SILO
+
+  # PDI outputs
+  WritePDISubsurfData:
+    help: >
+      [Type: boolean/string] This key is used to specify exposing of the
+      subsurface data, Permeability and Porosity to PDI library. The data is
+      exposed after it is generated and before the main time stepping loop - only
+      once during the run. The data is subsequently managed by the PDI
+      plugin according to the specification tree defined in conf.yaml.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: PDI
+
+  WritePDIMannings:
+    help: >
+      [Type: boolean/string] This key is used to specify exposing of Manning’s
+      roughness data to PDI library. The data exposure is controlled by values
+      in the timing information section and is subsequently managed by the PDI
+      plugin according to the specification tree defined in conf.yaml.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: PDI
+
+  WritePDISlopes:
+    help: >
+      [Type: boolean/string] This key is used to turn on exposure of x and y
+      slope data to PDI library. The data exposure is controlled by values
+      in the timing information section and is subsequently managed by the PDI
+      plugin according to the specification tree defined in conf.yaml.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: PDI
+  
+  WritePDIPressure:
+    help: >
+      [Type: boolean/string] This key is used to specify exposure of pressure
+      data to PDI library. The data exposure is controlled by values
+      in the timing information section and is subsequently managed by the PDI
+      plugin according to the specification tree defined in conf.yaml.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: PDI
+
+  WritePDISpecificStorage:
+    help: >
+      [Type: boolean/string] This key is used to specify exposure of specific
+      storage data to PDI library. The data exposure is controlled by values
+      in the timing information section and is subsequently managed by the PDI
+      plugin according to the specification tree defined in conf.yaml.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: PDI
+  
+  WritePDIVelocities:
+    help: >
+      [Type: boolean/string] This key is used to turn on exposure of x,y,and
+      z velocity data to PDI library. The data exposure is controlled by values
+      in the timing information section and is subsequently managed by the PDI
+      plugin according to the specification tree defined in conf.yaml.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: PDI
+  
+  WritePDISaturation:
+    help: >
+      [Type: boolean/string] This key is used to specify exposre of the saturation
+      data to PDI library. The data exposure is controlled by values
+      in the timing information section and is subsequently managed by the PDI
+      plugin according to the specification tree defined in conf.yaml.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: PDI
+
+  WritePDIMask:
+    help: >
+      [Type: boolean/string] This key is used to specify exposure of mask data
+      to PDI library. The mask contains values equal to one for active cells and
+      zero for inactive cells. The data exposure is controlled by values in the
+      timing information section and is subsequently managed by the PDI plugin
+      according to the specification tree defined in conf.yaml.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: PDI
+
+  WritePDIDZMultiplier:
+    help: >
+      [Type: boolean/string] This key is used to specifiy the exposure of DZ
+      multipliers to PDI library.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: PDI
+
+  WritePDIEvapTransSum:
+    help: >
+      [Type: boolean/string] This key is used to specify exposure of evaporation
+      and rainfall flux data to PDI libraary, cumulative amount. This data comes
+      from either clm or from external calls to ParFlow such as WRF. This data is
+      in units of [L3]. The data exposure is controlled by values in the timing
+      information section and is subsequently managed by the PDI plugin according
+      to the specification tree defined in conf.yaml.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: PDI
+
+  WritePDIEvapTrans:
+    help: >
+      [Type: boolean/string] This key is used to specify exposure of the
+      evaporation and rainfall flux data to PDI library. This data comes from
+      either clm or from external calls to ParFlow such as WRF. This data is in
+      units of [L3T-1]. The data exposure is controlled by values in the timing
+      information section and is subsequently managed by the PDI plugin according
+      to the specification tree defined in conf.yaml.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: PDI
+
+  WritePDIOverlandSum:
+    help: >
+      [Type: boolean/string] This key is used to specify calculation and exposure
+      of the total overland outflow from the domain PDI library as a running
+      cumulative amount. This is integrated along all domain boundaries and is
+      calculated any location that slopes at the edge of the domain point outward.
+      This data is in units of [L3]. The data exposure is controlled by values
+      in the timing information section and is subsequently managed by the PDI
+      plugin according to the specification tree defined in conf.yaml.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: PDI
+
+  WritePDIOverlandBCFlux:
+    help: >
+      [Type: boolean/string] This key is used to specify the expousre of
+      overland bc flux to PDI library.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: PDI
+
+  WritePDIWells:
+    help: > 
+      [Type: boolean/string] This key is used to specify the expousre of wells
+      data to PDI library.
+    default: False
+    domains:
+        BoolDomain:
+        RequiresModule: PDI
+
+  WritePDIConcentration:
+    help: >
+      [Type: boolean/string] This key is used to specify the exposure of
+      concentration data to PDI library. The data exposure is controlled
+      by values in the timing information section.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: PDI
 
 # SILO options
 SILO: # typo in documentation
