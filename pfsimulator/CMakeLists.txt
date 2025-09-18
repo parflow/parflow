@@ -8,10 +8,11 @@ string(APPEND CMAKE_C_FLAGS " ${PARFLOW_ETRACE_COMPILE_FLAGS}")
 string(APPEND CMAKE_CXX_FLAGS " ${PARFLOW_ETRACE_COMPILE_FLAGS}")
 
 add_subdirectory (amps)
-add_subdirectory (kinsol)
 
-if (${PARFLOW_HAVE_SUNDIALS})
-  add_subdirectory (parflow_lib)
+if (NOT ${PARFLOW_HAVE_SUNDIALS})
+  add_subdirectory (kinsol)
 endif ()
+
+add_subdirectory (parflow_lib)
 add_subdirectory (parflow_exe)
 add_subdirectory (third_party)
