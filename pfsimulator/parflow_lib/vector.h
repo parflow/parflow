@@ -88,6 +88,8 @@ typedef struct _Vector {
   SubgridArray  *data_space;    /* Description of Vector data */
 
   int size;                     /* Total number of coefficients */
+  
+  int num_ghost;		/* Number of ghost cells */
 
   /* Information on how to update boundary */
   CommPkg *comm_pkg[NumUpdateModes];
@@ -150,7 +152,9 @@ typedef struct _VectorUpdateCommHandle {
 #define VectorSize(vector)          ((vector)->size)
 #define VectorCommPkg(vector, mode) ((vector)->comm_pkg[mode])
 
-#define SizeOfVector(vector)  ((vector)->data_size)
+#define SizeOfVector(vector)        ((vector)->data_size)
+#define VectorNumGhost(vector)      ((vector)->num_ghost)
+#define VectorType(vector)      ((vector)->type)
 
 #endif
 
