@@ -68,9 +68,14 @@
 #include "parflow.h"
 
 #include <string.h>
+#include "llnltyps.h"
 
-#define ZERO 0.0
-#define ONE  1.0
+#if defined (PARFLOW_HAVE_SUNDIALS)
+#include "sundials/sundials_types.h"
+#endif
+
+#define ZERO RCONST(0.0)
+#define ONE  RCONST(1.0)
 
 /* Kinsol API is in C */
 #ifdef __cplusplus
@@ -1365,6 +1370,171 @@ int PFVInvTest(
     return(TRUE);
   }
 }
+
+#if defined (PARFLOW_HAVE_SUNDIALS)
+/* Constraint test functions required by Sundials if using constraints.
+ * Adapted from SUNDIALS nvector -DOK 
+*/
+bool PFVConstrMask(
+             Vector *x,
+             Vector *y,
+             Vector *z)
+{
+  Grid       *grid = VectorGrid(x);
+  Subgrid    *subgrid;
+
+  Subvector  *x_sub;
+  Subvector  *y_sub;
+  Subvector  *z_sub;
+
+  const double * __restrict__ xp;
+  const double * __restrict__ yp;
+  double * __restrict__ zp;
+
+  int ix, iy, iz;
+  int nx, ny, nz;
+  int nx_x, ny_x, nz_x;
+  int nx_y, ny_y, nz_y;
+  int nx_z, ny_z, nz_z;
+
+  int sg, i, j, k, i_x, i_y, i_z;
+  double temp;
+  bool   test;
+
+  grid = VectorGrid(x);
+  ForSubgridI(sg, GridSubgrids(grid))
+  {
+    subgrid = GridSubgrid(grid, sg);
+
+    z_sub = VectorSubvector(z, sg);
+    x_sub = VectorSubvector(x, sg);
+    y_sub = VectorSubvector(y, sg);
+
+    ix = SubgridIX(subgrid);
+    iy = SubgridIY(subgrid);
+    iz = SubgridIZ(subgrid);
+
+    nx = SubgridNX(subgrid);
+    ny = SubgridNY(subgrid);
+    nz = SubgridNZ(subgrid);
+
+    nx_x = SubvectorNX(x_sub);
+    ny_x = SubvectorNY(x_sub);
+    nz_x = SubvectorNZ(x_sub);
+
+    nx_y = SubvectorNX(y_sub);
+    ny_y = SubvectorNY(y_sub);
+    nz_y = SubvectorNZ(y_sub);
+
+    nx_z = SubvectorNX(z_sub);
+    ny_z = SubvectorNY(z_sub);
+    nz_z = SubvectorNZ(z_sub);
+
+    zp = SubvectorElt(z_sub, ix, iy, iz);
+    xp = SubvectorElt(x_sub, ix, iy, iz);
+    yp = SubvectorElt(y_sub, ix, iy, iz);
+
+    i_x = 0;
+    i_y = 0;
+    i_z = 0;
+    BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_y, nx_y, ny_y, nz_y, 1, 1, 1,
+              i_z, nx_z, ny_z, nz_z, 1, 1, 1,
+    {
+      zp[i_z] = ZERO;
+      test = (fabs(xp[i_x]) > RCONST(1.5) && yp[i_y] * xp[i_x] <= ZERO) ||
+             (fabs(xp[i_x]) > RCONST(0.5) && yp[i_y] * xp[i_x] < ZERO);
+      
+      if (test) { temp = zp[i_z] = ONE; }
+    });
+  }
+  IncFLOPCount(VectorSize(x));
+  
+  /* Return false if any constraint is violated */
+  return (temp == ONE) ? false : true;
+}
+
+/* minimum of quotients.
+ * Adapted from SUNDIALS nvector - DOK
+*/
+double PFVMinQuotient(
+            Vector *x,
+            Vector *z)
+{
+  Grid       *grid = VectorGrid(x);
+  Subgrid    *subgrid;
+
+  Subvector  *x_sub;
+  Subvector  *z_sub;
+
+  const double * __restrict__ xp;
+  double * __restrict__ zp;
+
+  int ix, iy, iz;
+  int nx, ny, nz;
+  int nx_x, ny_x, nz_x;
+  int nx_z, ny_z, nz_z;
+
+  int sg, i, j, k, i_x, i_z;
+  bool test = true;
+  double min_val = SUN_BIG_REAL;
+  
+  amps_Invoice result_invoice;
+
+  ForSubgridI(sg, GridSubgrids(grid))
+  {
+    subgrid = GridSubgrid(grid, sg);
+
+    z_sub = VectorSubvector(z, sg);
+    x_sub = VectorSubvector(x, sg);
+
+    ix = SubgridIX(subgrid);
+    iy = SubgridIY(subgrid);
+    iz = SubgridIZ(subgrid);
+
+    nx = SubgridNX(subgrid);
+    ny = SubgridNY(subgrid);
+    nz = SubgridNZ(subgrid);
+
+    nx_x = SubvectorNX(x_sub);
+    ny_x = SubvectorNY(x_sub);
+    nz_x = SubvectorNZ(x_sub);
+
+    nx_z = SubvectorNX(z_sub);
+    ny_z = SubvectorNY(z_sub);
+    nz_z = SubvectorNZ(z_sub);
+
+    zp = SubvectorElt(z_sub, ix, iy, iz);
+    xp = SubvectorElt(x_sub, ix, iy, iz);
+
+    i_x = 0;
+    i_z = 0;
+    BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_z, nx_z, ny_z, nz_z, 1, 1, 1,
+    {
+      if (zp[i_z] == ZERO) {continue;}
+      else
+      {
+        if (!test) { min_val = MIN(min_val, xp[i_x] / zp[i_z]); }
+        else
+        {
+          min_val = xp[i_x] / zp[i_z];
+          test = false;
+        }
+      }
+      
+    });
+  }
+  
+  result_invoice = amps_NewInvoice("%d", min_val);
+  amps_AllReduce(amps_CommWorld, result_invoice, amps_Min);
+  amps_FreeInvoice(result_invoice);
+  
+  return (min_val);
+}
+#endif
 
 
 /***************** Private Helper Functions **********************/
