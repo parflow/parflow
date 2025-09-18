@@ -28,6 +28,9 @@
 
 #include "parflow.h"
 #include "kinsol_dependences.h"
+#include "sundials/sundials_context.h"
+#include "pf_n_vector.h"
+#include "kinsol/kinsol.h"
 
 /*--------------------------------------------------------------------------
  * Structures
@@ -80,6 +83,11 @@ typedef struct {
   KINMem kin_mem;
   FILE     *kinsol_file;
   SysFn feval;
+
+/* SUNDIALS context object */  
+#ifdef PARFLOW_HAVE_SUNDIALS
+  SUNContext sunctx;
+#endif  
 } InstanceXtra;
 
 
@@ -337,6 +345,12 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
 
   int i;
 
+#ifdef PARFLOW_HAVE_SUNDIALS
+  /* Sundials context and tmp vector for memory allocation */
+  SUNContext sunctx;
+  PF_N_Vector tmp;
+#endif  
+
   if (PFModuleInstanceXtra(this_module) == NULL)
     instance_xtra = ctalloc(InstanceXtra, 1);
   else
@@ -402,10 +416,19 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
     else
       kinsol_file = NULL;
     instance_xtra->kinsol_file = kinsol_file;
-
-    /* Initialize KINSol memory */
+#ifdef PARFLOW_HAVE_SUNDIALS
+    /* Create the SUNDIALS context that all SUNDIALS objects require */
+    /* This needs to be created once? So perhaps should be created elsewhere upstream */
+    SUNContext_Create(amps_CommWorld, &sunctx);
+    
+    /* Initialize KINSol memory and allocate KINSol vectors */
+    kin_mem = KINCreate(sunctx);
+    tmp = PF_NVNew(sunctx)
+    KINInit(kin_mem, KINSolFunctionEval, tmp);
+#else
+    /* Initialize KINSol memory and allocate KINSol vectors*/
     kin_mem = (KINMem)KINMalloc(neq, kinsol_file, NULL);
-
+#endif
     /* Initialize the gmres linear solver in KINSol */
     KINSpgmr((void*)kin_mem,           /* Memory allocated above */
              krylov_dimension,         /* Max. Krylov dimension */
