@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,pf_dz_mult,istep_pf,dt,time,           &
+subroutine clm_lsm(pressure,saturation,evap_trans,top,bottom,porosity,pf_dz_mult,istep_pf,dt,time,           &
 start_time,pdx,pdy,pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,nz_rz,ip,npp,npq,npr,gnx,gny,rank,sw_pf,lw_pf,    &
 prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf,lai_pf,sai_pf,z0m_pf,displa_pf,                               &
 slope_x_pf,slope_y_pf,                                                                                 &
@@ -55,7 +55,7 @@ clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak)
 
   ! basic indices, counters
   integer  :: t                                   ! tile space counter
-  integer  :: l,ll                                   ! layer counter 
+  integer  :: l,ll                                ! layer counter 
   integer  :: r,c                                 ! row,column indices
   integer  :: ierr                                ! error output 
 
@@ -65,7 +65,8 @@ clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak)
   real(r8) :: pressure((nx+2)*(ny+2)*(nz+2))     ! pressure head, from parflow on grid w/ ghost nodes for current proc
   real(r8) :: saturation((nx+2)*(ny+2)*(nz+2))   ! saturation from parflow, on grid w/ ghost nodes for current proc
   real(r8) :: evap_trans((nx+2)*(ny+2)*(nz+2))   ! ET flux from CLM to ParFlow on grid w/ ghost nodes for current proc
-  real(r8) :: topo((nx+2)*(ny+2)*(nz+2))         ! mask from ParFlow 0 for inactive, 1 for active, on grid w/ ghost nodes for current proc
+  real(r8) :: top((nx+2)*(ny+2)*(3))             ! top Z index from ParFlow, -1 for inactive, on grid w/ ghost nodes for current proc
+  real(r8) :: bottom((nx+2)*(ny+2)*(3))          ! bottom Z index from ParFlow, -1 for inactive, on grid w/ ghost nodes for current proc
   real(r8) :: porosity((nx+2)*(ny+2)*(nz+2))     ! porosity from ParFlow, on grid w/ ghost nodes for current proc
   real(r8) :: pf_dz_mult((nx+2)*(ny+2)*(nz+2))   ! dz multiplier from ParFlow on PF grid w/ ghost nodes for current proc
   real(r8) :: dt                                 ! parflow dt in parflow time units not CLM time units
@@ -151,7 +152,6 @@ clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak)
   integer  :: bj,bl                              ! indices for local looping !BH
 
   integer  :: j_incr,k_incr                      ! increment for j and k to convert 1D vector to 3D i,j,k array
-  integer, allocatable :: counter(:,:) 
   real(r8) :: total
   character*100 :: RI
   real(r8) :: u         ! Tempoary UNDEF Variable
@@ -205,7 +205,6 @@ clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak)
   end if ! CLM log
 
      !=== Allocate Memory for Grid Module
-     allocate( counter(nx,ny) )
      allocate (grid(drv%nc,drv%nr),stat=ierr) ; call drv_astp(ierr) 
      do r=1,drv%nr                              ! rows
         do c=1,drv%nc                           ! columns
@@ -323,43 +322,34 @@ clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak)
         !=== Initialize the CLM topography mask  @RMM  moved up from loop below
         !    This is two components:
         !    1) a x-y mask of 0 o 1 for active inactive and
-     !    2) a z/k mask that takes three values
-     !      (1)= top of LS/PF domain
-     !      (2)= top-nlevsoi and
-     !      (3)= the bottom of the LS/PF domain.
-     if (clm_write_logs==1) write(999,*) "Initialize the CLM topography mask"
+        !    2) a z/k mask that takes three values
+        !      (1)= top of LS/PF domain
+        !      (2)= top-nlevsoi and
+        !      (3)= the bottom of the LS/PF domain.
+        if (clm_write_logs==1 .and. t==1) write(999,*) "Initialize the CLM topography mask"
 
-     i=tile(t)%col
-     j=tile(t)%row
-     counter(i,j) = 0
-     clm(t)%topo_mask(3) = 1
+        i=tile(t)%col
+        j=tile(t)%row
+        clm(t)%topo_mask(3) = 1
 
-     do k = nz, 1, -1 ! PF loop over z
-        l = 1+i + (nx+2)*(j) + (nx+2)*(ny+2)*(k)
-        if (topo(l) > 0) then
-           counter(i,j) = counter(i,j) + 1
-           if (counter(i,j) == 1) then
-              clm(t)%topo_mask(1) = k
-              clm(t)%planar_mask = 1
-           end if
+        l = 1+i + j_incr*(j) + k_incr
+        if (top(l) > 0) then
+           clm(t)%topo_mask(1) = 1+top(l)
+           clm(t)%topo_mask(3) = 1+bottom(l)
+           clm(t)%planar_mask = 1
         endif
+        clm(t)%topo_mask(2) = clm(t)%topo_mask(1)-nlevsoi
 
-        if (topo(l) == 0 .and. topo(l+k_incr) > 0) clm(t)%topo_mask(3) = k+1
+        ! set clm watsat, tksatu from PF porosity
+        do k = 1, nlevsoi ! loop over clm soil layers (1->nlevsoi)
+           ! convert clm space to parflow space, note that PF space has ghost nodes
+           l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
+           ! put ParFlow porosity in a temp variable passed to clm_ini
+           pf_porosity(k)       = porosity(l)
+           !print*, 'k=',k,'l=',l,'porosity=',porosity(l),'pf_poro=',pf_porosity(k)
 
-     enddo ! k
-
-     clm(t)%topo_mask(2) = clm(t)%topo_mask(1)-nlevsoi
-
-     ! set clm watsat, tksatu from PF porosity
-     do k = 1, nlevsoi ! loop over clm soil layers (1->nlevsoi)
-        ! convert clm space to parflow space, note that PF space has ghost nodes
-        l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
-        ! put ParFlow porosity in a temp variable passed to clm_ini
-        pf_porosity(k)       = porosity(l)
-        !print*, 'k=',k,'l=',l,'porosity=',porosity(l),'pf_poro=',pf_porosity(k)
-
-        !clm(t)%tksatu(k)       = clm(t)%tkmg(k)*0.57**clm(t)%watsat(k)
-     end do !k
+           !clm(t)%tksatu(k)       = clm(t)%tkmg(k)*0.57**clm(t)%watsat(k)
+        end do !k
 
         call drv_clmini (drv, grid, pf_porosity,tile(t), clm(t), istep_pf) !Initialize CLM Variables
      enddo ! t
