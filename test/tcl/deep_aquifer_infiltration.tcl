@@ -1,4 +1,9 @@
-#  This runs the infiltration experiment using the GroundwaterFlowBC.
+#
+# This test is part of a series of tests for the DeepAquiferBC
+# Here, we test a flat domain with no flow on the sides.
+# The bottom is the DeepAquiferBC and on the top there is some
+# water infiltration and evaporation.
+#
 
 #
 # Import the ParFlow TCL package
@@ -306,12 +311,9 @@ pfundist $runname
 #
 source pftest.tcl
 
-set sig_digits 4
+set sig_digits 6
 
 set passed 1
-
-# use abs value test to prevent machine precision effects
-set abs_value 1e-12
 
 foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008" {
     if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits ../correct_output/$runname] {
