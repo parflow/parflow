@@ -377,8 +377,9 @@ if (${PARFLOW_ENABLE_SUNDIALS} OR DEFINED SUNDIALS_ROOT)
   if (${SUNDIALS_FOUND})
     set(PARFLOW_HAVE_SUNDIALS "yes")
     set(HAVE_SUNDIALS ${PARFLOW_HAVE_SUNDIALS})
-    message (STATUS "Found SUNDIALS : ${SUNDIALS_INCLUDE_DIR} ${SUNDIALS_LIBRARIES}")
   endif (${SUNDIALS_FOUND})
+else ()
+    message (STATUS "Found KINSOL: embedded")
 endif (${PARFLOW_ENABLE_SUNDIALS} OR DEFINED SUNDIALS_ROOT)
 
 #-----------------------------------------------------------------------------

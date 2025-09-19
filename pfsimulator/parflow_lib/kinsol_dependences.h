@@ -26,7 +26,17 @@
 *  USA
 **********************************************************************EHEADER*/
 
+#ifdef PARFLOW_HAVE_SUNDIALS
+
+//#include "kinsol/kinsol.h"
+//#include "sundials/sundials_core.h"
+
+#else
+
+// Using the embedded version of kinsol
 #include "../kinsol/kinsol.h"
 #include "../kinsol/iterativ.h"
 #include "../kinsol/kinspgmr.h"
 #include "../kinsol/spgmr.h"
+
+#endif

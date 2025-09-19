@@ -9,7 +9,7 @@ string(APPEND CMAKE_CXX_FLAGS " ${PARFLOW_ETRACE_COMPILE_FLAGS}")
 
 add_subdirectory (amps)
 
-if (NOT ${PARFLOW_HAVE_SUNDIALS})
+if (NOT PARFLOW_HAVE_SUNDIALS)
   add_subdirectory (kinsol)
 endif ()
 
