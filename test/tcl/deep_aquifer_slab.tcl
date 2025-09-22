@@ -1,4 +1,9 @@
-#  This runs the infiltration experiment using the GroundwaterFlowBC.
+#
+# This test is part of a series of tests for the DeepAquiferBC
+# Here, we test a sloped slab domain with no flow on the sides
+# and on the top. The bottom is the DeepAquiferBC. Water should
+# flow from the effect of gravity.
+#
 
 #
 # Import the ParFlow TCL package

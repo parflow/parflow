@@ -461,13 +461,13 @@ Patch:
           help: >
             [Type: string] This key specifies the type of the DeepAquifer 
             parameter: "Constant" will set the parameter to a constant value,
-            while "FileName" will set the parameter to values read from a 
+            while "PFBFile" will set the parameter to values read from a 
             file. 
           domains:
             EnumDomain:
               enum_list:
                 - Constant
-                - FileName
+                - PFBFile
 
         Value:
           help: >
@@ -490,9 +490,7 @@ Patch:
         Type:
           help: >
             [Type: string] This key specifies the type of the DeepAquifer 
-            parameter: "Constant" will set the parameter to a constant value,
-            while "FileName" will set the parameter to values read from a 
-            file. 
+            parameter: "Constant" will set the parameter to a constant value.
           domains:
             EnumDomain:
               enum_list:
@@ -512,13 +510,13 @@ Patch:
           help: >
             [Type: string] This key specifies the type of the DeepAquifer 
             parameter: "Constant" will set the parameter to a constant value,
-            while "FileName" will set the parameter to values read from a 
+            while "PFBFile" will set the parameter to values read from a 
             file. 
           domains:
             EnumDomain:
               enum_list:
                 - Constant
-                - FileName
+                - PFBFile
 
         Value:
           help: >
@@ -543,14 +541,14 @@ Patch:
           help: >
             [Type: string] This key specifies the type of the DeepAquifer 
             parameter: "Constant" will set the parameter to a constant value,
-            while "FileName" will set the parameter to values read from a 
+            while "PFBFile" will set the parameter to values read from a 
             file. "SameAsBottomLayer" will set the parameter to the permeability
             in the z direction of the bottom layer of the domain.
           domains:
             EnumDomain:
               enum_list:
                 - Constant
-                - FileName
+                - PFBFile
                 - SameAsBottomLayer
 
         Value:

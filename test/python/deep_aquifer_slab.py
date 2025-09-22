@@ -1,8 +1,8 @@
 #
 # This test is part of a series of tests for the DeepAquiferBC
-# Here, we test a flat domain with no flow on the sides.
-# The bottom is the DeepAquiferBC and on the top there is some
-# water infiltration and evaporation.
+# Here, we test a sloped slab domain with no flow on the sides
+# and on the top. The bottom is the DeepAquiferBC. Water should
+# flow from the effect of gravity.
 #
 
 #
@@ -11,10 +11,14 @@
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path, rm
 from parflow.tools.compare import pf_test_file, pf_test_file_with_abs
+from parflow.tools.io import write_pfb
 import sys, argparse
+import numpy as np
 
-run_name = "deep_aquifer_infiltration"
+run_name = "deep_aquifer_slab"
 test = Run(run_name, __file__)
+new_output_dir_name = get_absolute_path(f"test_output/{run_name}")
+mkdir(new_output_dir_name)
 
 test.FileVersion = 4
 
@@ -36,13 +40,13 @@ test.ComputationalGrid.Lower.X = 0.0
 test.ComputationalGrid.Lower.Y = 0.0
 test.ComputationalGrid.Lower.Z = 0.0
 
-test.ComputationalGrid.DX = 4.0
-test.ComputationalGrid.DY = 4.0
-test.ComputationalGrid.DZ = 0.25
+test.ComputationalGrid.DX = 2.0
+test.ComputationalGrid.DY = 2.0
+test.ComputationalGrid.DZ = 0.5
 
-test.ComputationalGrid.NX = 24
-test.ComputationalGrid.NY = 24
-test.ComputationalGrid.NZ = 40
+test.ComputationalGrid.NX = 25
+test.ComputationalGrid.NY = 25
+test.ComputationalGrid.NZ = 20
 
 #---------------------------------------------------------
 # The Names of the GeomInputs
@@ -67,8 +71,8 @@ test.Geom.domain.Lower.X = 0.0
 test.Geom.domain.Lower.Y = 0.0
 test.Geom.domain.Lower.Z = 0.0
 
-test.Geom.domain.Upper.X = 96.0
-test.Geom.domain.Upper.Y = 96.0
+test.Geom.domain.Upper.X = 50.0
+test.Geom.domain.Upper.Y = 50.0
 test.Geom.domain.Upper.Z = 10.0
 
 test.Geom.domain.Patches = "left right front back bottom top"
@@ -96,24 +100,70 @@ test.Geom.background.Upper.Z = 99999999.0
 test.TimingInfo.BaseUnit = 1.0
 test.TimingInfo.StartCount = 0
 test.TimingInfo.StartTime = 0.0
-test.TimingInfo.StopTime = 48.0
-test.TimingInfo.DumpInterval = 6
+test.TimingInfo.StopTime = 24.0
+test.TimingInfo.DumpInterval = -3
 test.TimeStep.Type = "Constant"
-test.TimeStep.Value = 6.0
+test.TimeStep.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
-test.Cycle.Names = "constant rainfall"
+test.Cycle.Names = "constant"
 
 test.Cycle.constant.Names = "alltime"
 test.Cycle.constant.alltime.Length = 1
 test.Cycle.constant.Repeat = -1
 
-test.Cycle.rainfall.Names = "rain sunny"
-test.Cycle.rainfall.rain.Length = 8
-test.Cycle.rainfall.sunny.Length = 40
-test.Cycle.rainfall.Repeat = -1
+#-----------------------------------------------------------------------------
+# Create DeepAquifer Files
+#-----------------------------------------------------------------------------
+
+permeability = f"{new_output_dir_name}/deep_aquifer_permeability.pfb"
+data = np.full((1, 25, 25), 0.01836)
+
+permeability_pfb = write_pfb(
+    get_absolute_path(permeability),
+    data,
+    p=1, q=1, r=1,
+    x=0.0, y=0.0, z=0.0,
+    dx=2, dy=2, dz=0.5
+  )
+
+test.dist(permeability)
+
+#-----------------------------------------------------------------------------
+
+specific_yield = f"{new_output_dir_name}/deep_aquifer_specific_yield.pfb"
+data = np.full((1, 25, 25), 0.1)
+
+specific_yield_pfb = write_pfb(
+    get_absolute_path(specific_yield),
+    data,
+    p=1, q=1, r=1,
+    x=0.0, y=0.0, z=0.0,
+    dx=2, dy=2, dz=0.5
+  )
+
+test.dist(specific_yield)
+
+#-----------------------------------------------------------------------------
+
+elevations = f"{new_output_dir_name}/deep_aquifer_elevations.pfb"
+data = np.full((1, 25, 25), 0.0)
+
+for j in range(25):
+  for i in range(25):
+    data[0,j,i] = 0.8 * (i+1/2) + 0.6 * (j+1/2)
+
+elevations_pfb = write_pfb(
+    get_absolute_path(elevations),
+    data,
+    p=1, q=1, r=1,
+    x=0.0, y=0.0, z=0.0,
+    dx=2, dy=2, dz=0.5
+  )
+
+test.dist(elevations)
 
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
@@ -136,28 +186,28 @@ test.Patch.back.BCPressure.Type = "FluxConst"
 test.Patch.back.BCPressure.Cycle = "constant"
 test.Patch.back.BCPressure.alltime.Value = 0.0
 
+# input files for DeepAquifer created above
 test.Patch.bottom.BCPressure.Type = "DeepAquifer"
 test.Patch.bottom.BCPressure.Cycle = "constant"
-test.Patch.BCPressure.DeepAquifer.SpecificYield.Type = "Constant"
-test.Patch.BCPressure.DeepAquifer.SpecificYield.Value = 0.1
+test.Patch.BCPressure.DeepAquifer.SpecificYield.Type = "PFBFile"
+test.Patch.BCPressure.DeepAquifer.SpecificYield.FileName = specific_yield
 test.Patch.BCPressure.DeepAquifer.AquiferDepth.Type = "Constant"
 test.Patch.BCPressure.DeepAquifer.AquiferDepth.Value = 90.0
-test.Patch.BCPressure.DeepAquifer.Permeability.Type = "Constant"
-test.Patch.BCPressure.DeepAquifer.Permeability.Value = 0.01836
-test.Patch.BCPressure.DeepAquifer.Elevations.Type = "Constant"
-test.Patch.BCPressure.DeepAquifer.Elevations.Value = 0.0
+test.Patch.BCPressure.DeepAquifer.Permeability.Type = "PFBFile"
+test.Patch.BCPressure.DeepAquifer.Permeability.FileName = permeability
+test.Patch.BCPressure.DeepAquifer.Elevations.Type = "PFBFile"
+test.Patch.BCPressure.DeepAquifer.Elevations.FileName = elevations
 
 test.Patch.top.BCPressure.Type = "FluxConst"
-test.Patch.top.BCPressure.Cycle = "rainfall"
-test.Patch.top.BCPressure.rain.Value = -0.075
-test.Patch.top.BCPressure.sunny.Value = 0.02
+test.Patch.top.BCPressure.Cycle = "constant"
+test.Patch.top.BCPressure.alltime.Value = 0.0
 
 #---------------------------------------------------------
 # Initial conditions: water pressure
 #---------------------------------------------------------
 test.ICPressure.Type = "HydroStaticPatch"
 test.ICPressure.GeomNames = "domain"
-test.Geom.domain.ICPressure.Value = -2.5
+test.Geom.domain.ICPressure.Value = -5
 test.Geom.domain.ICPressure.RefGeom = "domain"
 test.Geom.domain.ICPressure.RefPatch = "top"
 
@@ -186,8 +236,8 @@ test.Perm.TensorType = "TensorByGeom"
 
 test.Geom.Perm.TensorByGeom.Names = "domain background"
 
-test.Geom.domain.Perm.TensorValX = 1.0
-test.Geom.domain.Perm.TensorValY = 1.0
+test.Geom.domain.Perm.TensorValX = 0.0
+test.Geom.domain.Perm.TensorValY = 0.0
 test.Geom.domain.Perm.TensorValZ = 1.0
 
 test.Geom.background.Perm.Type = "Constant"
@@ -288,7 +338,7 @@ test.KnownSolution = "NoKnownSolution"
 test.Solver = "Richards"
 test.Solver.MaxIter = 100000
 
-test.Solver.Nonlinear.MaxIter = 1000
+test.Solver.Nonlinear.MaxIter = 250
 test.Solver.Nonlinear.ResidualTol = 1e-8
 test.Solver.Nonlinear.EtaChoice = "EtaConstant"
 test.Solver.Nonlinear.EtaValue = 1e-12
@@ -309,9 +359,7 @@ test.Solver.PrintMask = False
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-new_output_dir_name = get_absolute_path(f"test_output/{run_name}")
 correct_output_dir_name = get_absolute_path(f"../correct_output/{run_name}")
-mkdir(new_output_dir_name)
 test.run(working_directory=new_output_dir_name, undist=True)
 
 #
