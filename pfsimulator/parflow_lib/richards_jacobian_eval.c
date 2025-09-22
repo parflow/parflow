@@ -236,7 +236,7 @@ void    RichardsJacobianEval(
   Vector      *permeability_z = ProblemDataPermeabilityZ(problem_data);
   Vector      *sstorage = ProblemDataSpecificStorage(problem_data);           //sk
   Vector      *top = ProblemDataIndexOfDomainTop(problem_data);               //DOK
-  Vector      *bottom = top; // while bottom index is not available, use top index to determine edge cells
+  Vector      *bottom = ProblemDataIndexOfDomainBottom(problem_data);
   Vector      *slope_x = ProblemDataTSlopeX(problem_data);                //DOK
 
   /* Overland flow variables */  //DOK

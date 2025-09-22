@@ -68,9 +68,7 @@ void DeepAquiferEval(ProblemData *problem_data,
 {
   Vector *permeability = ProblemDataDeepAquiferPermeability(problem_data);
   Vector *elevation = ProblemDataDeepAquiferElevation(problem_data);
-  // while bottom index is not available, use top index to determine edge cells
-  Vector *top = ProblemDataIndexOfDomainTop(problem_data);
-  Vector *bottom = top;
+  Vector *bottom = ProblemDataIndexOfDomainBottom(problem_data);
 
   Subvector *p_sub = VectorSubvector(pressure, isubgrid);
   Subvector *Ks_sub = VectorSubvector(permeability, isubgrid);
@@ -164,11 +162,10 @@ void DeepAquiferEval(ProblemData *problem_data,
       ibot_upr = is_upr_edge ? ibot_mid : ibot_upr;
 
       // get indices of adjacent cells in 3d grid
-      // for now, use k because other bottom indexes are not available
-      ip_lft = is_lft_edge ? ip_mid : SubvectorEltIndex(p_sub, i - 1, j, k); // , k_lft);
-      ip_rgt = is_rgt_edge ? ip_mid : SubvectorEltIndex(p_sub, i + 1, j, k); // , k_rgt);
-      ip_lwr = is_lwr_edge ? ip_mid : SubvectorEltIndex(p_sub, i, j - 1, k); // , k_lwr);
-      ip_upr = is_upr_edge ? ip_mid : SubvectorEltIndex(p_sub, i, j + 1, k); // , k_upr);
+      ip_lft = is_lft_edge ? ip_mid : SubvectorEltIndex(p_sub, i - 1, j, k_lft);
+      ip_rgt = is_rgt_edge ? ip_mid : SubvectorEltIndex(p_sub, i + 1, j, k_rgt);
+      ip_lwr = is_lwr_edge ? ip_mid : SubvectorEltIndex(p_sub, i, j - 1, k_lwr);
+      ip_upr = is_upr_edge ? ip_mid : SubvectorEltIndex(p_sub, i, j + 1, k_upr);
 
       // compute pressure head in adjacent cells:
       // because Ad is constant, it cancels out in head differences
@@ -417,8 +414,7 @@ void SetDeepAquiferPermeability(ProblemData *problem_data)
       // without needing to worry if the permeability_z vector has been
       // initialized.
       Vector *permeability_z = ProblemDataPermeabilityZ(problem_data);
-      // add when available:
-      // Vector *bottom = ProblemDataIndexOfDomainBottom(problem_data);
+      Vector *bottom = ProblemDataIndexOfDomainBottom(problem_data);
 
       Grid         *grid3d = VectorGrid(permeability_z);
       SubgridArray *grid3d_subgrids = GridSubgrids(grid3d);
@@ -434,7 +430,7 @@ void SetDeepAquiferPermeability(ProblemData *problem_data)
 
         Subvector *permz_sub = VectorSubvector(permeability_z, is);
         Subvector *aquifer_perm_sub = VectorSubvector(permeability, is);
-        // Subvector *bottom_sub = VectorSubvector(bottom, is);
+        Subvector *bottom_sub = VectorSubvector(bottom, is);
 
         int grid3d_ix = SubgridIX(grid3d_subgrid);
         int grid3d_iy = SubgridIY(grid3d_subgrid);
@@ -450,7 +446,7 @@ void SetDeepAquiferPermeability(ProblemData *problem_data)
 
         double *aquifer_perm_dat = SubvectorData(aquifer_perm_sub);
         double *permzp = SubvectorData(permz_sub);
-        // double *bottom_dat = SubvectorData(bottom_sub);
+        double *bottom_dat = SubvectorData(bottom_sub);
 
         int i = 0, j = 0, k = 0;
 
@@ -460,8 +456,9 @@ void SetDeepAquiferPermeability(ProblemData *problem_data)
                      grid3d_nx, grid3d_ny, grid3d_nz,
         {
           int index2d = SubvectorEltIndex(aquifer_perm_sub, i, j, grid2d_iz);
-          // replace with bottom index when available
-          int index3d = SubvectorEltIndex(permz_sub, i, j, grid2d_iz);
+          int k_bottom = rint(bottom_dat[index2d]);
+          k_bottom = (k_bottom < 0) ? 0 : k_bottom;
+          int index3d = SubvectorEltIndex(permz_sub, i, j, k_bottom);
 
           aquifer_perm_dat[index2d] = permzp[index3d];
         });
