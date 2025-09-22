@@ -16,10 +16,11 @@ pfset FileVersion 4
 
 set p [lindex $argv 0]
 set q [lindex $argv 1]
+set r [lindex $argv 2]
 
 pfset Process.Topology.P $p
 pfset Process.Topology.Q $q
-pfset Process.Topology.R  1
+pfset Process.Topology.R $r
 
 #---------------------------------------------------------
 # Computational Grid
@@ -325,7 +326,7 @@ foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008" {
 }
 
 if $passed {
-    puts "default_single : PASSED"
+    puts "${runname} : PASSED"
 } {
-    puts "default_single : FAILED"
+    puts "${runname} : FAILED"
 }
