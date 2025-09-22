@@ -38,7 +38,7 @@ jobs:
         module purge
         module load cudatoolkit/12.6
         module load openmpi/cuda-12.6/gcc/4.1.6
-        git clone --branch main --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git
+        git clone --depth 1 -b v25.08.00 --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git 
         cd rmm
         mkdir build && cd build
         cmake .. -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/depend/rmm -DBUILD_TESTS=OFF
@@ -52,7 +52,7 @@ jobs:
         module purge
         module load cudatoolkit/12.6
         module load openmpi/cuda-12.6/gcc/4.1.6
-        git clone --recursive https://github.com/LLNL/Umpire.git
+        git clone --depth 1 -b v2025.03.1 --recursive https://github.com/LLNL/Umpire.git
         module list
         cd Umpire
         mkdir build && cd build
