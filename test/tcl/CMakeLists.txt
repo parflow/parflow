@@ -14,6 +14,7 @@ set(TESTS
   richards_hydrostatic_equalibrium.tcl
   LW_surface_press.tcl
   deep_aquifer_infiltration.tcl
+  deep_aquifer_slab.tcl
 )
 
 if(${PARFLOW_HAVE_HYPRE})
@@ -88,6 +89,7 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
   list(APPEND PARALLEL_3DTOPO_TESTS
     default_single.tcl
     deep_aquifer_infiltration.tcl
+    deep_aquifer_slab.tcl
   )
 
   if(${PARFLOW_HAVE_HYPRE})
