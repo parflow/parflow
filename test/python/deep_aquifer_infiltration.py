@@ -320,7 +320,7 @@ test.run(working_directory=new_output_dir_name, undist=True)
 passed = True
 
 test_files = ["press", "satur"]
-for i in range(5):
+for i in range(9):
     for test_file in test_files:
         timestep = str(i).rjust(5, "0")
         filename = f"/{run_name}.out.{test_file}.{timestep}.pfb"

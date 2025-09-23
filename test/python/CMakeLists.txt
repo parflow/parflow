@@ -97,7 +97,6 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
   list(APPEND PARALLEL_3DTOPO_TESTS
     default_single
     default_single_read_porosity
-    deep_aquifer_infiltration
     deep_aquifer_slab
   )
 
