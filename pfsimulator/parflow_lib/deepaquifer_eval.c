@@ -373,7 +373,7 @@ int DeepAquiferEvalSizeOfTempData()
 void SetDeepAquiferPermeability(ProblemData *problem_data)
 {
   Vector *permeability = ProblemDataDeepAquiferPermeability(problem_data);
-  NameArray switch_na = NA_NewNameArray("Constant PFBFile SameAsBottomLayer");
+  NameArray switch_na = NA_NewNameArray("Constant PFBFile NCFile SameAsBottomLayer");
   char key[IDB_MAX_KEY_LEN];
 
   sprintf(key, "Patch.BCPressure.DeepAquifer.Permeability.Type");
@@ -402,7 +402,21 @@ void SetDeepAquiferPermeability(ProblemData *problem_data)
       break;
     }
 
-    case 2: // SameAsBottomLayer
+    case 2: // NCFile
+    {
+      sprintf(key, "Patch.BCPressure.DeepAquifer.Permeability.FileName");
+      char *filename = GetString(key);
+      int time_step = 0;
+      int dimensionality = 2;
+      ReadPFNC(filename, permeability, "permeability", time_step, dimensionality);
+
+      VectorUpdateCommHandle *handle = InitVectorUpdate(permeability, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
+
+      break;
+    }
+
+    case 3: // SameAsBottomLayer
     {
       InitVectorAll(permeability, 0.0);
 
@@ -487,7 +501,7 @@ void SetDeepAquiferPermeability(ProblemData *problem_data)
 void SetDeepAquiferSpecificYield(ProblemData *problem_data)
 {
   Vector *specific_yield = ProblemDataDeepAquiferSpecificYield(problem_data);
-  NameArray switch_na = NA_NewNameArray("Constant PFBFile");
+  NameArray switch_na = NA_NewNameArray("Constant PFBFile NCFile");
   char key[IDB_MAX_KEY_LEN];
 
   sprintf(key, "Patch.BCPressure.DeepAquifer.SpecificYield.Type");
@@ -509,6 +523,20 @@ void SetDeepAquiferSpecificYield(ProblemData *problem_data)
       sprintf(key, "Patch.BCPressure.DeepAquifer.SpecificYield.FileName");
       char *filename = GetString(key);
       ReadPFBinary(filename, specific_yield);
+
+      VectorUpdateCommHandle *handle = InitVectorUpdate(specific_yield, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
+
+      break;
+    }
+
+    case 2: // NCFile
+    {
+      sprintf(key, "Patch.BCPressure.DeepAquifer.SpecificYield.FileName");
+      char *filename = GetString(key);
+      int time_step = 0;
+      int dimensionality = 2;
+      ReadPFNC(filename, specific_yield, "specific_yield", time_step, dimensionality);
 
       VectorUpdateCommHandle *handle = InitVectorUpdate(specific_yield, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
@@ -566,7 +594,7 @@ void SetDeepAquiferAquiferDepth(ProblemData *problem_data)
 void SetDeepAquiferElevation(ProblemData *problem_data)
 {
   Vector *elevation = ProblemDataDeepAquiferElevation(problem_data);
-  NameArray switch_na = NA_NewNameArray("Constant PFBFile");
+  NameArray switch_na = NA_NewNameArray("Constant PFBFile NCFile");
   char key[IDB_MAX_KEY_LEN];
 
   sprintf(key, "Patch.BCPressure.DeepAquifer.Elevations.Type");
@@ -588,6 +616,20 @@ void SetDeepAquiferElevation(ProblemData *problem_data)
       sprintf(key, "Patch.BCPressure.DeepAquifer.Elevations.FileName");
       char *filename = GetString(key);
       ReadPFBinary(filename, elevation);
+
+      VectorUpdateCommHandle *handle = InitVectorUpdate(elevation, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
+
+      break;
+    }
+
+    case 2: // NCFile
+    {
+      sprintf(key, "Patch.BCPressure.DeepAquifer.Elevations.FileName");
+      char *filename = GetString(key);
+      int time_step = 0;
+      int dimensionality = 2;
+      ReadPFNC(filename, elevation, "elevations", time_step, dimensionality);
 
       VectorUpdateCommHandle *handle = InitVectorUpdate(elevation, VectorUpdateAll);
       FinalizeVectorUpdate(handle);

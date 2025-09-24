@@ -462,12 +462,14 @@ Patch:
             [Type: string] This key specifies the type of the DeepAquifer 
             parameter: "Constant" will set the parameter to a constant value,
             while "PFBFile" will set the parameter to values read from a 
-            file. 
+            file and "NCFile" will set the parameter to values read from a
+            NetCDF file. 
           domains:
             EnumDomain:
               enum_list:
                 - Constant
                 - PFBFile
+                - NCFile
 
         Value:
           help: >
@@ -511,12 +513,14 @@ Patch:
             [Type: string] This key specifies the type of the DeepAquifer 
             parameter: "Constant" will set the parameter to a constant value,
             while "PFBFile" will set the parameter to values read from a 
-            file. 
+            file and "NCFile" will set the parameter to values read from a
+            NetCDF file.
           domains:
             EnumDomain:
               enum_list:
                 - Constant
                 - PFBFile
+                - NCFile
 
         Value:
           help: >
@@ -542,13 +546,15 @@ Patch:
             [Type: string] This key specifies the type of the DeepAquifer 
             parameter: "Constant" will set the parameter to a constant value,
             while "PFBFile" will set the parameter to values read from a 
-            file. "SameAsBottomLayer" will set the parameter to the permeability
-            in the z direction of the bottom layer of the domain.
+            file and "NCFile" will set the parameter to values read from a
+            NetCDF file. "SameAsBottomLayer" will set the parameter to the
+            permeability in the z direction of the bottom layer of the domain.
           domains:
             EnumDomain:
               enum_list:
                 - Constant
                 - PFBFile
+                - NCFile
                 - SameAsBottomLayer
 
         Value:
