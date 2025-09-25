@@ -35,7 +35,6 @@
 #define _VECTOR_HEADER
 
 #include "grid.h"
-#include "n_vector.h"
 
 #ifdef HAVE_SAMRAI
 #include "SAMRAI/xfer/RefineAlgorithm.h"
@@ -106,8 +105,9 @@ typedef struct _Vector {
 #endif
 } Vector;
 
-
+#ifndef PARFLOW_HAVE_SUNDIALS
 typedef Vector *N_Vector;
+#endif
 
 typedef struct _VectorUpdateCommHandle {
   Vector *vector;
