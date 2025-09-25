@@ -297,11 +297,20 @@ typedef int (*NonlinSolverInvoke) (Vector *pressure, Vector *density, Vector *ol
 typedef PFModule *(*NonlinSolverInitInstanceXtraInvoke) (Problem *problem, Grid *grid, ProblemData *problem_data, double *temp_data);
 
 /* kinsol_nonlin_solver.c */
+#if defined (PARFLOW_HAVE_SUNDIALS)
+#include "kinsol/kinsol.h"
+int KINSolInitPC(N_Vector  pf_n_pressure, N_Vector  pf_n_uscale, N_Vector  pf_n_fval, N_Vector  pf_n_fscale, void *    current_state);
+int KINSolCallPC(N_Vector  pf_n_pressure, N_Vector  pf_n_uscale, N_Vector  pf_n_fval, N_Vector  pf_n_fscale, N_Vector  pf_n_vtem, void *    current_state);
+void PrintFinalStats(FILE *out_file);
+int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, Vector *saturation, Vector *old_saturation, double t, double dt, ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity);
+PFModule *KinsolNonlinSolverInitInstanceXtra(Problem *problem, Grid *grid, ProblemData *problem_data, double *temp_data);
+#else
 int KINSolInitPC(int neq, N_Vector pressure, N_Vector uscale, N_Vector fval, N_Vector fscale, N_Vector vtemp1, N_Vector vtemp2, void *nl_function, double uround, long int *nfePtr, void *current_state);
 int KINSolCallPC(int neq, N_Vector pressure, N_Vector uscale, N_Vector fval, N_Vector fscale, N_Vector vtem, N_Vector ftem, void *nl_function, double uround, long int *nfePtr, void *current_state);
 void PrintFinalStats(FILE *out_file, long int *integer_outputs_now, long int *integer_outputs_total);
 int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, Vector *saturation, Vector *old_saturation, double t, double dt, ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity);
 PFModule *KinsolNonlinSolverInitInstanceXtra(Problem *problem, Grid *grid, ProblemData *problem_data, double *temp_data);
+#endif
 void KinsolNonlinSolverFreeInstanceXtra(void);
 PFModule *KinsolNonlinSolverNewPublicXtra(void);
 void KinsolNonlinSolverFreePublicXtra(void);
@@ -425,6 +434,7 @@ void MGSemiRestrict(Matrix *A_f, Vector *r_f, Vector *r_c, Matrix *P, SubregionA
 ComputePkg *NewMGSemiRestrictComputePkg(Grid *grid, Stencil *stencil, int sx, int sy, int sz, int c_index, int f_index);
 
 /* n_vector.c */
+#ifndef PARFLOW_HAVE_SUNDIALS
 void SetPf2KinsolData(Grid *grid, int num_ghost);
 void N_VPrint(N_Vector x);
 void FreeTempVector(Vector *vector);
@@ -440,7 +450,7 @@ void N_VFree(N_Vector x);
 #ifdef __cplusplus
 }
 #endif
-
+#endif
 /* new_endpts.c */
 void NewEndpts(double *alpha, double *beta, double *pp, int *size_ptr, int n, double *a_ptr, double *b_ptr, double *cond_ptr, double ereps);
 
@@ -448,7 +458,12 @@ typedef void (*NlFunctionEvalInvoke) (Vector *pressure, Vector *fval, ProblemDat
 typedef PFModule *(*NlFunctionEvalInitInstanceXtraInvoke) (Problem *problem, Grid *grid, double *temp_data);
 
 /* nl_function_eval.c */
+#if defined (PARFLOW_HAVE_SUNDIALS)
+#include "kinsol/kinsol.h"
+int KINSolFunctionEval(N_Vector pressure, N_Vector fval, void *current_state);
+#else
 void KINSolFunctionEval(int size, N_Vector pressure, N_Vector fval, void *current_state);
+#endif
 void NlFunctionEval(Vector *pressure, Vector *fval, ProblemData *problem_data, Vector *saturation, Vector *old_saturation, Vector *density, Vector *old_density, double dt, double time, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity);
 PFModule *NlFunctionEvalInitInstanceXtra(Problem *problem, Grid *grid, double *temp_data);
 void NlFunctionEvalFreeInstanceXtra(void);
@@ -1080,7 +1095,12 @@ typedef void (*RichardsJacobianEvalInvoke) (Vector *pressure, Vector *old_pressu
 typedef PFModule *(*RichardsJacobianEvalInitInstanceXtraInvoke) (Problem *problem, Grid *grid, ProblemData *problem_data, double *temp_data, int symmetric_jac);
 typedef PFModule *(*RichardsJacobianEvalNewPublicXtraInvoke) (char *name);
 /* richards_jacobian_eval.c */
+#if defined (PARFLOW_HAVE_SUNDIALS)
+#include "kinsol/kinsol.h"
+int KINSolMatVec(N_Vector pf_n_x, N_Vector pf_n_y, N_Vector pf_n_pressure, int *recompute, void *current_state);
+#else
 int KINSolMatVec(void *current_state, N_Vector x, N_Vector y, int *recompute, N_Vector pressure);
+#endif
 void RichardsJacobianEval(Vector *pressure, Vector *old_pressure, Matrix **ptr_to_J, Matrix **ptr_to_JC, Vector *saturation, Vector *density, ProblemData *problem_data, double dt, double time, int symm_part);
 PFModule *RichardsJacobianEvalInitInstanceXtra(Problem *problem, Grid *grid, ProblemData *problem_data, double *temp_data, int symmetric_jac);
 void RichardsJacobianEvalFreeInstanceXtra(void);
