@@ -29,47 +29,112 @@
 #define _PF_N_VECTOR_HEADER
 
 #include "vector.h"
+#include "llnltyps.h"
+
+#define ZERO RCONST(0.0)
+#define ONE  RCONST(1.0)
 
 #if defined (PARFLOW_HAVE_SUNDIALS)
-//#include "/usr/gapps/thcs/apps/toss_4_x86_64_ib/sundials/7.4.0/include/sundials/sundials_context.h"
+#include "sundials/sundials_core.h"
+//#include "kinsol/kinsol.h"
 //#include "kinsol_dependences.h"
 
-typedef struct PF_N_Vector_Content_struct {
-    Vector *PF_vector;
- } *PF_N_Vector_Content;
+/* Content field for SUNDIALS' N_Vector object. 
+ * We could use Vector * directly without this 
+ * wrapper struct. - DOK
+*/
+struct PF_N_Vector_Content_struct {
+    Vector *data;
+    bool   owns_data;
+ };
 
-typedef struct PF_N_Vector_Ops_struct {
+/* forward reference for pointers to structs */
+typedef struct PF_N_Vector_Content_struct* PF_N_Vector_Content;
+//typedef struct PF_N_Vector_Ops_struct* PF_N_Vector_Ops;
+//typedef struct PF_N_Vector_struct* PF_N_Vector;
+
+#if 0
+struct PF_N_Vector_Ops_struct {
     /* Constructors and destructors */
-    Vector (*nvclone)(Vector);
-    void (*nvdestroy)(Vector);
+    PF_N_Vector (*nvclone)(PF_N_Vector);
+    void (*nvdestroy)(PF_N_Vector);
     /* standard vector operations */
-    void (*nvlinearsum)(double a, Vector *x, double b,
-                                  Vector *y, Vector *z);
-    void (*nvconst)(double c, Vector *z);
-    void (*nvprod)(Vector *x, Vector *y, Vector *z);
-    void (*nvdiv)(Vector *x, Vector *y, Vector *z);
-    void (*nvscale)(double c, Vector *x, Vector *z);
-    void (*nvabs)(Vector *x, Vector *z);
-    void (*nvinv)(Vector *x, Vector *z);
-    void (*nvaddconst)(Vector *x, double b, Vector *z);
-    double (*nvdotprod)(Vector *x, Vector *y);
-    double (*nvmaxnorm)(Vector *x);
-    double (*nvwrmsnorm)(Vector *x, Vector *w);
-    double (*nvwrmsnormmask)(Vector *x, Vector *w, Vector *id);
-    double (*nvmin)(Vector *x);
-    double (*nvwl2norm)(Vector *x, Vector *w);
-    double (*nvl1norm)(Vector *x);
-    void (*nvcompare)(double c, Vector *x, Vector *z);
-    int (*nvinvtest)(Vector *x, Vector *z);
-    int (*nvconstrmask)(Vector *c, Vector *x, Vector *m);
-    double (*nvminquotient)(Vector *num, Vector *denom);
-} *PF_N_Vector_Ops;
+    void (*nvlinearsum)(double a, PF_N_Vector *x, double b,
+                                  PF_N_Vector *y, PF_N_Vector *z);
+    void (*nvconst)(double c, PF_N_Vector *z);
+    void (*nvprod)(PF_N_Vector *x, PF_N_Vector *y, PF_N_Vector *z);
+    void (*nvdiv)(PF_N_Vector *x, PF_N_Vector *y, PF_N_Vector *z);
+    void (*nvscale)(double c, PF_N_Vector *x, PF_N_Vector *z);
+    void (*nvabs)(PF_N_Vector *x, PF_N_Vector *z);
+    void (*nvinv)(PF_N_Vector *x, PF_N_Vector *z);
+    void (*nvaddconst)(PF_N_Vector *x, double b, PF_N_Vector *z);
+    double (*nvdotprod)(PF_N_Vector *x, PF_N_Vector *y);
+    double (*nvmaxnorm)(PF_N_Vector *x);
+    double (*nvwrmsnorm)(PF_N_Vector *x, PF_N_Vector *w);
+    double (*nvwrmsnormmask)(PF_N_Vector *x, PF_N_Vector *w, PF_N_Vector *id);
+    double (*nvmin)(PF_N_Vector *x);
+    double (*nvwl2norm)(PF_N_Vector *x, PF_N_Vector *w);
+    double (*nvl1norm)(PF_N_Vector *x);
+    void (*nvcompare)(double c, PF_N_Vector *x, PF_N_Vector *z);
+    int (*nvinvtest)(PF_N_Vector *x, PF_N_Vector *z);
+    int (*nvconstrmask)(PF_N_Vector *c, PF_N_Vector *x, PF_N_Vector *m);
+    double (*nvminquotient)(PF_N_Vector *num, PF_N_Vector *denom);
+};
 
-typedef struct PF_N_Vector_struct {
-    PF_N_Vector_Content data;
+struct PF_N_Vector_struct {
+    PF_N_Vector_Content content;
     PF_N_Vector_Ops     ops;
     SUNContext 		sunctx;
-} *PF_N_Vector;
+};
+
+/* PF_N_Vector Accessor Macros */
+#define PF_N_VectorContent(vector)  	((vector)->content)
+#define PF_N_VectorData(vector)  	((vector)->content->data)
+#endif
+/* N_Vector Accessor Macros */
+/* Macros to interact with SUNDIALS N_Vector */
+#define N_VectorContent(n_vector)		((PF_N_Vector_Content)((n_vector)->content))
+#define N_VectorData(n_vector)			(N_VectorContent(n_vector)->data)
+#define N_VectorOwnsData(n_vector)		(N_VectorContent(n_vector)->owns_data)
+
+
+
+
+/* N_Vector.c protos for External SUNDIALS */
+#ifdef __cplusplus
+extern "C" {
+#endif
+N_Vector PF_NVNewEmpty(SUNContext sunctx);
+N_Vector PF_NVNew(SUNContext sunctx, Grid *grid, int num_ghost);
+N_Vector PF_NVNewFromVector(SUNContext sunctx, Vector *data);
+N_Vector PF_NVClone(N_Vector v);
+void PF_NVDestroy(N_Vector v);
+int PF_NVGetLength(N_Vector v);
+
+void PFVLinearSumFcn(double a, N_Vector x, double b, N_Vector y, N_Vector z);
+void PFVConstInitFcn(double c, N_Vector z);
+void PFVProdFcn(N_Vector x, N_Vector y, N_Vector z);
+void PFVDivFcn(N_Vector x, N_Vector y, N_Vector z);
+void PFVScaleFcn(double c, N_Vector x, N_Vector z);
+void PFVAbsFcn(N_Vector x, N_Vector z);
+void PFVInvFcn(N_Vector x, N_Vector z);
+void PFVAddConstFcn(N_Vector x, double b, N_Vector z);
+double PFVDotProdFcn(N_Vector x, N_Vector y);
+double PFVMaxNormFcn(N_Vector x);
+double PFVWrmsNormFcn(N_Vector x, N_Vector w);
+double PFVWL2NormFcn(N_Vector x, N_Vector w);
+double PFVL1NormFcn(N_Vector x);
+double PFVMinFcn(N_Vector x);
+double PFVMaxFcn(N_Vector x);
+int PFVConstrProdPosFcn(N_Vector c, N_Vector x);
+void PFVCompareFcn(double c, N_Vector x, N_Vector z);
+int PFVInvTestFcn(N_Vector x, N_Vector z);
+double PFVMinQuotientFcn(N_Vector xvec, N_Vector zvec);
+bool PFVConstrMaskFcn(N_Vector xvec, N_Vector yvec, N_Vector zvec);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 #endif

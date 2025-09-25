@@ -53,6 +53,7 @@ set (SRC_FILES_CONST advect.F
   permeability_face.c
   perturb_lb.c
   pf_hypre.c
+  pf_n_vector.c
   pf_pfmg.c
   pf_pfmg_octree.c
   pf_smg.c
