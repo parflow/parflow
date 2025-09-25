@@ -1520,8 +1520,8 @@ void cplparflowlclxyedg_(int *   sg,
                          float * localy,
                          int *   ierror);
 
-void ComputeTop(Problem *    problem,
-                ProblemData *problem_data);
+void ComputeTopAndBottom(Problem *    problem,
+                         ProblemData *problem_data);
 
 void ComputePatchTop(Problem *    problem,
                      ProblemData *problem_data);

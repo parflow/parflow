@@ -10,7 +10,7 @@ set (SRC_FILES_CONST advect.F
   communication.c
   computation.c
   compute_maximums.c
-  compute_top.c
+  compute_top_and_bottom.c
   compute_patch_top.c
   compute_total_concentration.c
   constantRF.c
