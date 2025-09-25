@@ -28,9 +28,6 @@
 
 #include "parflow.h"
 #include "kinsol_dependences.h"
-#include "sundials/sundials_context.h"
-#include "pf_n_vector.h"
-#include "kinsol/kinsol.h"
 
 /*--------------------------------------------------------------------------
  * Structures
@@ -57,9 +54,15 @@ typedef struct {
   PFModule *nl_function_eval;
   PFModule *richards_jacobian_eval;
 
+#if defined (PARFLOW_HAVE_SUNDIALS)
+  KINLsJacTimesVecFn matvec;
+  KINLsPrecSetupFn pcinit;
+  KINLsPrecSolveFn pcsolve;
+#else
   KINSpgmruserAtimesFn matvec;
   KINSpgmrPrecondFn pcinit;
   KINSpgmrPrecondSolveFn pcsolve;
+#endif
 } PublicXtra;
 
 typedef struct {
@@ -67,27 +70,52 @@ typedef struct {
   PFModule  *nl_function_eval;
   PFModule  *richards_jacobian_eval;
 
-  Vector   *uscale;
-  Vector   *fscale;
-
   Matrix   *jacobian_matrix;
   Matrix   *jacobian_matrix_C;
 
+  State    *current_state;
+  FILE     *kinsol_file;
+  
+#ifdef PARFLOW_HAVE_SUNDIALS
+/* SUNDIALS context object */  
+  SUNContext sunctx;
+/* SUNDIALS uses (void *) for Kinsol memory block */
+  void * kin_mem;
+/* function eval */
+  KINSysFn feval;
+  
+/* output statistics variables - current and total statistics */
+  long int num_nonlin_iters, tot_nonlin_iters;
+  long int num_lin_iters, tot_lin_iters;
+  long int num_fevals, tot_fevals;
+  long int num_pc_setups, tot_pc_setups;
+  long int num_pc_solves, tot_pc_solves;
+  long int num_lin_conv_fails, tot_lin_conv_fails;
+  long int num_beta_cond_fails, tot_beta_cond_fails;
+  long int num_backtracks, tot_backtracks; 
+  
+/* N_Vector objects for kinsol */
+  N_Vector  uscale;
+  N_Vector  fscale; 
+/* N_Vector for pressure variable.
+ * This acts as a container for Parflow's Vector pointer 
+ * for the pressure variable.
+ */
+  N_Vector  pf_n_pressure;
+#else
   long int integer_outputs[OPT_SIZE];
 
   long int int_optional_input[OPT_SIZE];
   double real_optional_input[OPT_SIZE];
 
-  State    *current_state;
-
   KINMem kin_mem;
-  FILE     *kinsol_file;
   SysFn feval;
 
-/* SUNDIALS context object */  
-#ifdef PARFLOW_HAVE_SUNDIALS
-  SUNContext sunctx;
+  Vector   *uscale;
+  Vector   *fscale;
+  
 #endif  
+
 } InstanceXtra;
 
 
@@ -98,6 +126,19 @@ typedef struct {
 /*--------------------------------------------------------------------------
  * KINSolInitPC
  *--------------------------------------------------------------------------*/
+#if defined (PARFLOW_HAVE_SUNDIALS)
+int  KINSolInitPC(
+                  N_Vector  pf_n_pressure,
+                  N_Vector  pf_n_uscale,
+                  N_Vector  pf_n_fval,
+                  N_Vector  pf_n_fscale,
+                  void *    current_state)
+{
+  Vector      *pressure = N_VectorData(pf_n_pressure);
+  (void)pf_n_uscale;
+  (void)pf_n_fval;
+  (void)pf_n_fscale;
+#else
 int  KINSolInitPC(
                   int       neq,
                   N_Vector  pressure,
@@ -111,14 +152,6 @@ int  KINSolInitPC(
                   long int *nfePtr,
                   void *    current_state)
 {
-  PFModule    *precond = StatePrecond(((State*)current_state));
-  ProblemData *problem_data = StateProblemData(((State*)current_state));
-  Vector      *saturation = StateSaturation(((State*)current_state));
-  Vector      *density = StateDensity(((State*)current_state));
-  Vector      *old_pressure = StateOldPressure(((State*)current_state));
-  double dt = StateDt(((State*)current_state));
-  double time = StateTime(((State*)current_state));
-
   (void)neq;
   (void)uscale;
   (void)fval;
@@ -128,6 +161,15 @@ int  KINSolInitPC(
   (void)nl_function;
   (void)uround;
   (void)nfePtr;
+#endif
+
+  PFModule    *precond = StatePrecond(((State*)current_state));
+  ProblemData *problem_data = StateProblemData(((State*)current_state));
+  Vector      *saturation = StateSaturation(((State*)current_state));
+  Vector      *density = StateDensity(((State*)current_state));
+  Vector      *old_pressure = StateOldPressure(((State*)current_state));
+  double dt = StateDt(((State*)current_state));
+  double time = StateTime(((State*)current_state));
 
   /* The preconditioner module initialized here is the KinsolPC module
    * itself */
@@ -140,7 +182,24 @@ int  KINSolInitPC(
 
 /*--------------------------------------------------------------------------
  * KINSolCallPC
+ * This is actually doing an in-place precon solve. Are all the other arguments
+ * needed? - DOK
  *--------------------------------------------------------------------------*/
+#if defined (PARFLOW_HAVE_SUNDIALS) 
+int   KINSolCallPC(
+                   N_Vector  pf_n_pressure,
+                   N_Vector  pf_n_uscale,
+                   N_Vector  pf_n_fval,
+                   N_Vector  pf_n_fscale,
+                   N_Vector  pf_n_vtem,
+                   void *    current_state)
+{
+  (void)pf_n_pressure;
+  (void)pf_n_uscale;    
+  (void)pf_n_fval;
+  (void)pf_n_fscale;
+  Vector      *vtem = N_VectorData(pf_n_vtem);
+#else
 int   KINSolCallPC(
                    int       neq,
                    N_Vector  pressure,
@@ -154,8 +213,6 @@ int   KINSolCallPC(
                    long int *nfePtr,
                    void *    current_state)
 {
-  PFModule *precond = StatePrecond((State*)current_state);
-
   (void)neq;
   (void)pressure;
   (void)uscale;
@@ -166,6 +223,9 @@ int   KINSolCallPC(
   (void)uround;
   (void)nfePtr;
 
+#endif
+  PFModule *precond = StatePrecond((State*)current_state);
+
   /* The preconditioner module invoked here is the KinsolPC module
    * itself */
 
@@ -174,6 +234,33 @@ int   KINSolCallPC(
   return(0);
 }
 
+#if defined (PARFLOW_HAVE_SUNDIALS)
+void PrintFinalStats(FILE *    out_file)
+{
+  InstanceXtra *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(ThisPFModule);
+  
+  fprintf(out_file, "\n-------------------------------------------------- \n");
+  fprintf(out_file, "                    Iteration             Total\n");
+  fprintf(out_file, "Nonlin. Its.:           %5ld             %5ld\n",
+          instance_xtra->num_nonlin_iters, instance_xtra->tot_nonlin_iters);
+  fprintf(out_file, "Lin. Its.:              %5ld             %5ld\n",
+          instance_xtra->num_lin_iters, instance_xtra->tot_lin_iters);
+  fprintf(out_file, "Func. Evals.:           %5ld             %5ld\n",
+          instance_xtra->num_fevals, instance_xtra->tot_fevals);
+  fprintf(out_file, "PC Evals.:              %5ld             %5ld\n",
+          instance_xtra->num_pc_setups, instance_xtra->tot_pc_setups);
+  fprintf(out_file, "PC Solves:              %5ld             %5ld\n",
+          instance_xtra->num_pc_solves, instance_xtra->tot_pc_solves);
+  fprintf(out_file, "Lin. Conv. Fails:       %5ld             %5ld\n",
+          instance_xtra->num_lin_conv_fails, instance_xtra->tot_lin_conv_fails);
+  fprintf(out_file, "Beta Cond. Fails:       %5ld             %5ld\n",
+          instance_xtra->num_beta_cond_fails, instance_xtra->num_beta_cond_fails);
+  fprintf(out_file, "Backtracks:             %5ld             %5ld\n",
+          instance_xtra->num_backtracks, instance_xtra->tot_backtracks);
+  fprintf(out_file, "-------------------------------------------------- \n");
+  fflush(out_file);
+}
+#else
 void PrintFinalStats(
                      FILE *    out_file,
                      long int *integer_outputs_now,
@@ -200,7 +287,7 @@ void PrintFinalStats(
   fprintf(out_file, "-------------------------------------------------- \n");
   fflush(out_file);
 }
-
+#endif
 /*--------------------------------------------------------------------------
  * KinsolNonlinSolver
  *--------------------------------------------------------------------------*/
@@ -214,9 +301,6 @@ int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, V
   Matrix       *jacobian_matrix = (instance_xtra->jacobian_matrix);
   Matrix       *jacobian_matrix_C = (instance_xtra->jacobian_matrix_C);
 
-  Vector       *uscale = (instance_xtra->uscale);
-  Vector       *fscale = (instance_xtra->fscale);
-
   PFModule  *nl_function_eval = instance_xtra->nl_function_eval;
   PFModule  *richards_jacobian_eval = instance_xtra->richards_jacobian_eval;
   PFModule  *precond = instance_xtra->precond;
@@ -229,13 +313,33 @@ int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, V
   double residual_tol = (public_xtra->residual_tol);
   double step_tol = (public_xtra->step_tol);
 
+#ifdef PARFLOW_HAVE_SUNDIALS
+  N_Vector       uscale = (instance_xtra->uscale);
+  N_Vector       fscale = (instance_xtra->fscale);
+  
+/* SUNDIALS context object */  
+  SUNContext sunctx = (instance_xtra->sunctx);
+/* SUNDIALS uses (void *) for Kinsol memory block */
+  void * kin_mem = (instance_xtra->kin_mem);
+/* function eval */
+  KINSysFn feval = (instance_xtra->feval);
+  
+/* N_Vector for pressure variable */
+  N_Vector  pf_n_pressure = (instance_xtra->pf_n_pressure);
+  
+#else
+  Vector       *uscale = (instance_xtra->uscale);
+  Vector       *fscale = (instance_xtra->fscale);
+  
   SysFn feval = (instance_xtra->feval);
   KINMem kin_mem = (instance_xtra->kin_mem);
-  FILE         *kinsol_file = (instance_xtra->kinsol_file);
 
   long int     *integer_outputs = (instance_xtra->integer_outputs);
   long int     *iopt = (instance_xtra->int_optional_input);
   double       *ropt = (instance_xtra->real_optional_input);
+#endif  
+
+  FILE         *kinsol_file = (instance_xtra->kinsol_file);
 
   int ret = 0;
 
@@ -263,6 +367,49 @@ int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, V
 
   BeginTiming(public_xtra->time_index);
 
+#if defined (PARFLOW_HAVE_SUNDIALS)
+/* Attach parflow Vector to N_Vector object */
+  N_VectorData(pf_n_pressure) = pressure;
+
+/* Call KINSol */        
+  ret = KINSol(kin_mem,          	     /* Memory allocated above */
+               pf_n_pressure,      /* Initial guess @ this was "pressure before" */
+               globalization,                /* NonLin. solver strategy. Here we use Newton with globalization */
+               uscale,             /* Scalings for the variable */
+               fscale              /* Scalings for the function */
+               );
+
+  EndTiming(public_xtra->time_index);
+
+/* update statistics */
+  KINGetNumNonlinSolvIters(kin_mem, &(instance_xtra->num_nonlin_iters));
+  KINGetNumLinIters(kin_mem, &(instance_xtra->num_lin_iters));
+  KINGetNumFuncEvals(kin_mem, &(instance_xtra->num_fevals));
+  KINGetNumPrecEvals(kin_mem, &(instance_xtra->num_pc_setups));
+  KINGetNumPrecSolves(kin_mem, &(instance_xtra->num_pc_solves));
+  KINGetNumLinConvFails(kin_mem, &(instance_xtra->num_lin_conv_fails));
+  KINGetNumBetaCondFails(kin_mem, &(instance_xtra->num_beta_cond_fails));
+  KINGetNumBacktrackOps(kin_mem, &(instance_xtra->num_backtracks));
+  
+/* running totals */
+  instance_xtra->tot_nonlin_iters += instance_xtra->num_nonlin_iters;
+  instance_xtra->tot_lin_iters += instance_xtra->num_lin_iters;
+  instance_xtra->tot_fevals += instance_xtra->num_fevals;
+  instance_xtra->tot_pc_setups += instance_xtra->num_pc_setups;
+  instance_xtra->tot_pc_solves += instance_xtra->num_pc_solves;
+  instance_xtra->tot_lin_conv_fails += instance_xtra->num_lin_conv_fails;
+  instance_xtra->tot_beta_cond_fails += instance_xtra->num_beta_cond_fails;
+  instance_xtra->tot_backtracks += instance_xtra->num_backtracks;
+
+  if (!amps_Rank(amps_CommWorld))
+    PrintFinalStats(kinsol_file);
+
+  if (ret == KIN_SUCCESS || ret == KIN_INITIAL_GUESS_OK)
+  {
+    ret = 0;
+  }
+
+#else
   ret = KINSol((void*)kin_mem,          /* Memory allocated above */
                neq,                     /* Dummy variable here */
                pressure,                /* Initial guess @ this was "pressure before" */
@@ -297,6 +444,7 @@ int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, V
   {
     ret = 0;
   }
+#endif
 
   return(ret);
 }
@@ -322,34 +470,44 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
   int print_flag = public_xtra->print_flag;
   int eta_choice = public_xtra->eta_choice;
 
-  long int     *iopt;
-  double       *ropt;
-
   double eta_value = public_xtra->eta_value;
   double eta_alpha = public_xtra->eta_alpha;
   double eta_gamma = public_xtra->eta_gamma;
   double derivative_epsilon = public_xtra->derivative_epsilon;
 
+  State        *current_state;
+  
+#ifdef PARFLOW_HAVE_SUNDIALS
+  N_Vector       fscale;
+  N_Vector       uscale;
+  N_Vector	 pf_n_pressure;
+    
+  KINLsJacTimesVecFn matvec = public_xtra->matvec;
+  KINLsPrecSetupFn pcinit = public_xtra->pcinit;
+  KINLsPrecSolveFn pcsolve = public_xtra->pcsolve;
+  /* Sundials context and pointer to memory */
+  SUNContext sunctx;
+  void *kin_mem;  
+#else
+
+  long int     *iopt;
+  double       *ropt;
+
   Vector       *fscale;
   Vector       *uscale;
-
-  State        *current_state;
 
   KINSpgmruserAtimesFn matvec = public_xtra->matvec;
   KINSpgmrPrecondFn pcinit = public_xtra->pcinit;
   KINSpgmrPrecondSolveFn pcsolve = public_xtra->pcsolve;
-
+  
+  /* pointer to memory */
   KINMem kin_mem;
+#endif
+
   FILE                  *kinsol_file;
   char filename[1024];
 
   int i;
-
-#ifdef PARFLOW_HAVE_SUNDIALS
-  /* Sundials context and tmp vector for memory allocation */
-  SUNContext sunctx;
-  PF_N_Vector tmp;
-#endif  
 
   if (PFModuleInstanceXtra(this_module) == NULL)
     instance_xtra = ctalloc(InstanceXtra, 1);
@@ -406,29 +564,81 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
   {
     current_state = ctalloc(State, 1);
 
-    /* Set up the grid data for the kinsol stuff */
-    SetPf2KinsolData(grid, 1);
-
     /* Initialize KINSol parameters */
-    sprintf(filename, "%s.%s", GlobalsOutFileName, "kinsol.log");
-    if (!amps_Rank(amps_CommWorld))
-      kinsol_file = fopen(filename, "w");
-    else
-      kinsol_file = NULL;
-    instance_xtra->kinsol_file = kinsol_file;
 #ifdef PARFLOW_HAVE_SUNDIALS
     /* Create the SUNDIALS context that all SUNDIALS objects require */
     /* This needs to be created once? So perhaps should be created elsewhere upstream */
     SUNContext_Create(amps_CommWorld, &sunctx);
     
+    /* Initialize empty N_Vector container for pressure variable */
+    pf_n_pressure = PF_NVNewEmpty(sunctx);
+    instance_xtra->pf_n_pressure = pf_n_pressure;
+    
     /* Initialize KINSol memory and allocate KINSol vectors */
+    /* Initialize scaling vectors now, so we can use as template to initialize kinsol */    
+    uscale = PF_NVNew(sunctx, grid, 1);
+    InitVectorAll(N_VectorData(uscale), 1.0);
+    instance_xtra->uscale = uscale;
+    
+    fscale = PF_NVNew(sunctx, grid, 1);
+    InitVectorAll(N_VectorData(fscale), 1.0);
+    instance_xtra->fscale = fscale;
+
+    /* Create KINSol memory */
     kin_mem = KINCreate(sunctx);
-    tmp = PF_NVNew(sunctx)
-    KINInit(kin_mem, KINSolFunctionEval, tmp);
+    /* Initialize KINSol memory. Use uscale as N_Vector template */
+    KINInit(kin_mem, KINSolFunctionEval, uscale);
+    
+    /* Set KINSol options */
+    /* set user data for problem function */
+    KINSetUserData(kin_mem, current_state);
+    /* Max. number of nonlinear iterations */
+    KINSetNumMaxIters(kin_mem, max_iter);
+    /* No initial call to the preconditioner setup */
+    KINSetNoInitSetup(kin_mem, 0); /* same as default */
+    /* Max nonlin. iterations without PC setup - default is 10 */
+    KINSetMaxSetupCalls(kin_mem, 1);
+    /* method for computing eta */
+    KINSetEtaForm(kin_mem, eta_choice);
+    KINSetEtaConstValue(kin_mem, eta_value);
+    KINSetEtaParams(kin_mem, eta_gamma, eta_alpha);
+    /* Max. scaled length of Newton step. Set to 0.0 to use default */
+    KINSetMaxNewtonStep(kin_mem, 0.0);
+    /* Relative error in Jacobian Approximation by difference quotient */
+    KINSetRelErrFunc(kin_mem, derivative_epsilon);
+    /* Flag to constrain residual tolerance.
+     * Lower bound on epsilon - default is 0 == false == constrain 
+    */
+    KINSetNoMinEps(kin_mem, 0);
+    /* NL function norm stopping tolerance. set to 0.0 for default */
+    KINSetFuncNormTol(kin_mem, 0.0);
+    
+    /* Create SUNDIALS linear solver object for kinsol */
+    SUNLinearSolver LS = SUNLinSol_SPGMR(uscale, SUN_PREC_RIGHT, krylov_dimension, sunctx);
+    SUNLinSol_SPGMRSetMaxRestarts(LS, max_restarts);
+    /* Attach linear solver to KINSol */
+    KINSetLinearSolver(kin_mem, LS, NULL);
+    KINSetPreconditioner(kin_mem, pcinit, pcsolve);
+    KINSetJacTimesVecFn(kin_mem, matvec);
+
+    /* Initialize total statistics counts*/
+    instance_xtra->tot_nonlin_iters = 0;
+    instance_xtra->tot_lin_iters = 0;
+    instance_xtra->tot_fevals = 0;
+    instance_xtra->tot_pc_setups = 0;
+    instance_xtra->tot_pc_solves = 0;
+    instance_xtra->tot_lin_conv_fails = 0;
+    instance_xtra->tot_beta_cond_fails = 0;
+    instance_xtra->tot_backtracks = 0;
+
+    instance_xtra->sunctx = sunctx;
+    instance_xtra->kin_mem = kin_mem;    
 #else
+    /* Set up the grid data for the kinsol stuff */
+    SetPf2KinsolData(grid, 1);
     /* Initialize KINSol memory and allocate KINSol vectors*/
     kin_mem = (KINMem)KINMalloc(neq, kinsol_file, NULL);
-#endif
+
     /* Initialize the gmres linear solver in KINSol */
     KINSpgmr((void*)kin_mem,           /* Memory allocated above */
              krylov_dimension,         /* Max. Krylov dimension */
@@ -480,11 +690,20 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
     InitVectorAll(fscale, 1.0);
     instance_xtra->fscale = fscale;
 
-    instance_xtra->feval = KINSolFunctionEval;
     instance_xtra->kin_mem = kin_mem;
+#endif
+    
+    /* kinsol log file */
+    sprintf(filename, "%s.%s", GlobalsOutFileName, "kinsol.log");
+    if (!amps_Rank(amps_CommWorld))
+      kinsol_file = fopen(filename, "w");
+    else
+      kinsol_file = NULL;
+    instance_xtra->kinsol_file = kinsol_file;
+
+    instance_xtra->feval = KINSolFunctionEval;
     instance_xtra->current_state = current_state;
   }
-
 
   PFModuleInstanceXtra(this_module) = instance_xtra;
   return this_module;
@@ -500,7 +719,6 @@ void  KinsolNonlinSolverFreeInstanceXtra()
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
-
   if (instance_xtra)
   {
     PFModuleFreeInstance((instance_xtra->nl_function_eval));
@@ -513,16 +731,22 @@ void  KinsolNonlinSolverFreeInstanceXtra()
       PFModuleFreeInstance((instance_xtra->precond));
     }
 
+#if defined (PARFLOW_HAVE_SUNDIALS)
+    PF_NVDestroy(instance_xtra->uscale);
+    PF_NVDestroy(instance_xtra->fscale);
+    PF_NVDestroy(instance_xtra->pf_n_pressure);    
+    
+#else
     FreeVector(instance_xtra->uscale);
     FreeVector(instance_xtra->fscale);
-
+#endif
     tfree(instance_xtra->current_state);
-
-    KINFree((instance_xtra->kin_mem));
 
     if (instance_xtra->kinsol_file)
       fclose((instance_xtra->kinsol_file));
 
+    KINFree((instance_xtra->kin_mem));
+    
     tfree(instance_xtra);
   }
 }
@@ -577,7 +801,11 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
   {
     case 0:
     {
+#if defined (PARFLOW_HAVE_SUNDIALS)
+      public_xtra->eta_choice = KIN_ETACONSTANT;
+#else
       public_xtra->eta_choice = ETACONSTANT;
+#endif      
       public_xtra->eta_value
         = GetDoubleDefault("Solver.Nonlinear.EtaValue", 1e-4);
       public_xtra->eta_alpha = 0.0;
@@ -587,7 +815,12 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
 
     case 1:
     {
+#if defined (PARFLOW_HAVE_SUNDIALS)
+      public_xtra->eta_choice = KIN_ETACHOICE1;
+#else
       public_xtra->eta_choice = ETACHOICE1;
+#endif   
+
       public_xtra->eta_alpha = 0.0;
       public_xtra->eta_gamma = 0.0;
       break;
@@ -595,7 +828,11 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
 
     case 2:
     {
+#if defined (PARFLOW_HAVE_SUNDIALS)
+      public_xtra->eta_choice = KIN_ETACHOICE2;
+#else
       public_xtra->eta_choice = ETACHOICE2;
+#endif 
       public_xtra->eta_alpha
         = GetDoubleDefault("Solver.Nonlinear.EtaAlpha", 2.0);
       public_xtra->eta_gamma
@@ -647,13 +884,21 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
   {
     case 0:
     {
+#if defined (PARFLOW_HAVE_SUNDIALS)
+      (public_xtra->globalization) = KIN_NONE;
+#else
       (public_xtra->globalization) = INEXACT_NEWTON;
+#endif
       break;
     }
 
     case 1:
     {
+#if defined (PARFLOW_HAVE_SUNDIALS)
+      (public_xtra->globalization) = KIN_LINESEARCH;
+#else
       (public_xtra->globalization) = LINESEARCH;
+#endif
       break;
     }
 
@@ -680,8 +925,13 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
                                                    KinsolPCNewPublicXtraInvoke,
                                                    KinsolPC,
                                                    (key, switch_name));
+#if defined (PARFLOW_HAVE_SUNDIALS)
+    (public_xtra->pcinit) = KINSolInitPC;
+    (public_xtra->pcsolve) = KINSolCallPC;
+#else
     (public_xtra->pcinit) = (KINSpgmrPrecondFn)KINSolInitPC;
     (public_xtra->pcsolve) = (KINSpgmrPrecondSolveFn)KINSolCallPC;
+#endif    
   }
   else
   {

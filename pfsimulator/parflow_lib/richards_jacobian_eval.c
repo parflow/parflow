@@ -133,7 +133,19 @@ int jacobian_stencil_shape_C[5][3] = { { 0, 0, 0 },
 
 /*  This routine provides the interface between KINSOL and ParFlow
  *  for richards' equation jacobian evaluations and matrix-vector multiplies.*/
-
+#if defined (PARFLOW_HAVE_SUNDIALS)
+#include "kinsol/kinsol.h"
+int       KINSolMatVec(
+                       N_Vector pf_n_x,
+                       N_Vector pf_n_y,
+                       N_Vector pf_n_pressure,
+                       int *    recompute,
+                       void *   current_state)
+{
+  Vector      *x = N_VectorData(pf_n_x);
+  Vector      *y = N_VectorData(pf_n_y);  
+  Vector      *pressure = N_VectorData(pf_n_pressure);
+#else
 int       KINSolMatVec(
                        void *   current_state,
                        N_Vector x,
@@ -141,6 +153,7 @@ int       KINSolMatVec(
                        int *    recompute,
                        N_Vector pressure)
 {
+#endif
   PFModule    *richards_jacobian_eval = StateJacEval(((State*)current_state));
   Matrix      *J = StateJac(((State*)current_state));
   Matrix      *JC = StateJacC(((State*)current_state));
