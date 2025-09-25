@@ -63,6 +63,8 @@ typedef struct {
   double SpinupDampP2; // NBE
   int tfgupwind;  // RMM
   int using_MGSemi;  // RMM
+  int seepage_patch_one;  //RMM added two optional seepage face BCs
+  int seepage_patch_two;
 } PublicXtra;
 
 typedef struct {
@@ -250,18 +252,22 @@ void    RichardsJacobianEval(
   Subvector   *x_ssl_sub, *y_ssl_sub;    //@RMM
   double      *x_ssl_dat = NULL, *y_ssl_dat = NULL;     //@RMM
 
-  /* @RMM variable dz multiplier */
+  /* RMM variable dz multiplier */
   Vector      *z_mult = ProblemDataZmult(problem_data);              //@RMM
   Subvector   *z_mult_sub;    //@RMM
   double      *z_mult_dat;    //@RMM
 
-  /* @RMM Flow Barrier / Boundary values */
+  /* RMM Flow Barrier / Boundary values */
   Vector      *FBx = ProblemDataFBx(problem_data);
   Vector      *FBy = ProblemDataFBy(problem_data);
   Vector      *FBz = ProblemDataFBz(problem_data);
   Subvector   *FBx_sub, *FBy_sub, *FBz_sub;    //@RMM
   double      *FBx_dat, *FBy_dat, *FBz_dat;     //@RMM
 
+/* RMM Top patch indicator for multiple  combined overland BC */
+  Vector      *patch = ProblemDataPatchIndexOfDomainTop(problem_data);
+  Subvector   *patch_sub;
+  double      *patch_dat;
   Subgrid     *subgrid;
 
   Subvector   *p_sub, *d_sub, *s_sub, *po_sub, *rp_sub, *ss_sub;
@@ -1497,6 +1503,8 @@ void    RichardsJacobianEval(
       kens_sub = VectorSubvector(KEns, is);
       knns_sub = VectorSubvector(KNns, is);
       ksns_sub = VectorSubvector(KSns, is);
+      /* RMM added to provide patch access */
+      patch_sub = VectorSubvector(patch, is);
 
       top_sub = VectorSubvector(top, is);
       sx_sub = VectorSubvector(slope_x, is);
@@ -1541,13 +1549,14 @@ void    RichardsJacobianEval(
       ksns_der = SubvectorData(ksns_sub);
 
       top_dat = SubvectorData(top_sub);
+      patch_dat = SubvectorData(patch_sub);
 
       ForBCStructNumPatches(ipatch, bc_struct)
       {
         ForPatchCellsPerFace(OverlandKinematicBC,
                              BeforeAllCells(DoNothing),
                              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                             Locals(int io, io1, itop, ip, im, k1; ),
+                             Locals(int io, io1, itop, ip, im, iitmp, ione, itwo, k1; ),
                              CellSetup(DoNothing),
                              FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
                              FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
@@ -1609,12 +1618,26 @@ void    RichardsJacobianEval(
             }
           }
 
+          iitmp = (int)patch_dat[io1];
+          ione = public_xtra->seepage_patch_one;
+          itwo = public_xtra->seepage_patch_two;
+
           /* Now add overland contributions to JC */
           if ((pp[ip]) > 0.0)
           {
-            /*diagonal term */
-            cp_c[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
-                        + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+            /* RMM, switch seepage face on optionally for two surface patches */
+            if (iitmp == ione || iitmp == itwo)
+            {
+              cp_c[io] += (vol / dz) * (1.0 + 0.0);  // + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+              //           + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+              // printf("Seepage face on: Current Patch %d, seepage one %d, %d (%d,%d,%d)\n",(int)patch_dat[io], public_xtra->seepage_patch_one, io, i,j,k);
+            }
+            else
+            {
+              /*regular overland diagonal term */
+              cp_c[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                          + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+            }
           }
 
           /*west term */
@@ -1879,6 +1902,8 @@ void    RichardsJacobianEval(
       kens_sub = VectorSubvector(KEns, is);
       knns_sub = VectorSubvector(KNns, is);
       ksns_sub = VectorSubvector(KSns, is);
+      /* RMM added to provide patch access */
+      patch_sub = VectorSubvector(patch, is);
 
       top_sub = VectorSubvector(top, is);
       sx_sub = VectorSubvector(slope_x, is);
@@ -1916,13 +1941,14 @@ void    RichardsJacobianEval(
       ksns_der = SubvectorData(ksns_sub);
 
       top_dat = SubvectorData(top_sub);
+      patch_dat = SubvectorData(patch_sub);
 
       ForBCStructNumPatches(ipatch, bc_struct)
       {
         ForPatchCellsPerFace(OverlandKinematicBC,
                              BeforeAllCells(DoNothing),
                              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                             Locals(int io1, ip, im; ),
+                             Locals(int io1, ip, itop, im, iitmp, ione, itwo; ),
                              CellSetup(DoNothing),
                              FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
                              FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
@@ -1931,17 +1957,31 @@ void    RichardsJacobianEval(
         {
           /* Loop over boundary patches to build J matrix. */
           io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+          itop = SubvectorEltIndex(top_sub, i, j, 0);
 
           /* Update J */
           ip = SubvectorEltIndex(p_sub, i, j, k);
           im = SubmatrixEltIndex(J_sub, i, j, k);
 
+          iitmp = (int)patch_dat[itop];
+          ione = public_xtra->seepage_patch_one;
+          itwo = public_xtra->seepage_patch_two;
+
           /* Now add overland contributions to J similar to JC above */
           if ((pp[ip]) > 0.0)
           {
-            /*diagonal term */
-            cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
-                      + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+            /* RMM, switch seepage face on optionally for two surface patches */
+            if (iitmp == ione || iitmp == itwo)
+            {
+              cp[im] += dt * (vol / dz) * (1.0 + 0.0); // + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+              //  + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+            }
+            else
+            {
+              /*diagonal term */
+              cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                        + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+            }
           }
 
           /*west term */
@@ -2345,6 +2385,12 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   public_xtra->SpinupDampP1 = GetDoubleDefault(key, 0.0);
   sprintf(key, "OverlandSpinupDampP2");
   public_xtra->SpinupDampP2 = GetDoubleDefault(key, 0.0);    // NBE
+
+  sprintf(key, "Solver.OverlandKinematic.SeepageOne");
+  public_xtra->seepage_patch_one = GetDoubleDefault(key, -999);
+  sprintf(key, "Solver.OverlandKinematic.SeepageTwo");
+  public_xtra->seepage_patch_two = GetDoubleDefault(key, -999);
+
 
 /* get preconditioner to check for MGSemi to use custom overland flow formulation*/
   precond_switch_na = NA_NewNameArray("NoPC MGSemi SMG PFMG PFMGOctree");
