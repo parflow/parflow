@@ -373,7 +373,7 @@ endif (${PARFLOW_ENABLE_SZLIB} OR DEFINED SZLIB_ROOT)
 #-----------------------------------------------------------------------------
 option(PARFLOW_ENABLE_SUNDIALS "Build with SUNDIALS" "OFF")
 if (${PARFLOW_ENABLE_SUNDIALS} OR DEFINED SUNDIALS_ROOT)
-  find_package(SUNDIALS COMPONENTS sundials_cvode sundials_kinsol)
+  find_package(SUNDIALS COMPONENTS sundials_cvode sundials_kinsol sundials_core sundials_sunlinsolspgmr)
   if (${SUNDIALS_FOUND})
     set(PARFLOW_HAVE_SUNDIALS "yes")
     set(HAVE_SUNDIALS ${PARFLOW_HAVE_SUNDIALS})
