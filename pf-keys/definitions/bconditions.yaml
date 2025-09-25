@@ -254,7 +254,7 @@ Patch:
         help: >
           [Type: string] This key specifies the type of boundary condition data given for patch patch_name. Possible values for this key
           are DirEquilRefPatch, DirEquilPLinear, FluxConst, FluxVolumetric, PressureFile, FluxFile, OverlandFlow,
-          OverlandFlowPFB, SeepageFace, OverlandKinematic, OverlandDiffusive and ExactSolution.
+          OverlandFlowPFB, SeepageFace, OverlandKinematic, OverlandDiffusive, DeepAquifer and ExactSolution.
           The choice DirEquilRefPatch specifies that the pressure on the specified patch will be in hydrostatic equilibrium
           with a constant reference pressure given on a reference patch. The choice DirEquilPLinear specifies that the pressure
           on the specified patch will be in hydrostatic equilibrium with pressure given along a piecewise line at elevation
@@ -277,8 +277,12 @@ Patch:
           The choice ExactSolution specifies that an exact known solution is to be applied as a Dirichlet boundary condition
           on the respective patch. Note that this does not change according to any cycle. Instead, time dependence is handled
           by evaluating at the time the boundary condition value is desired. The solution is specified by using a predefined
-          function (choices are described below). The choice DeepAquifer introduces an interaction with an aquifer
-          in the bottom of the domain. NOTE: These last seven types of boundary condition input is for Richards’
+          function (choices are described below). The choice DeepAquifer
+          turns on groundwater interactions with a deep aquifer. For this
+          boundary condition, the user must define the thickness of the
+          aquifer, its specific yield, the permeability of the aquifer (which
+          is assumed to be isotropic in X and Y) and the elevations on each
+          cell, detailed below. NOTE: These last seven types of boundary condition input is for Richards’
           equation cases only!
         domains:
           EnumDomain:
