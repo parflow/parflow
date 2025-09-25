@@ -62,6 +62,10 @@ if(${PARFLOW_HAVE_SILO})
 endif()
 
 if(${PARFLOW_HAVE_NETCDF})
+  list(APPEND TESTS
+    deep_aquifer_slab_netcdf.tcl
+  )
+
   if(${PARFLOW_HAVE_HYPRE})
     #This test is failing on several platforms
     list(APPEND TESTS
@@ -88,6 +92,9 @@ list(APPEND PARALLEL_2DTOPO_TESTS "")
 if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
   list(APPEND PARALLEL_3DTOPO_TESTS
     default_single.tcl
+  )
+
+  list(APPEND PARALLEL_2DTOPO_TESTS
     deep_aquifer_slab.tcl
   )
 
@@ -131,7 +138,7 @@ foreach(inputfile ${PARALLEL_3DTOPO_TESTS})
 endforeach()
 
 foreach(inputfile ${PARALLEL_2DTOPO_TESTS})
-  foreach(processor_topology "1 2 1" "2 1 1" "1 4 1" "4 1 1")
+  foreach(processor_topology "1 2 1" "2 1 1" "1 4 1" "4 1 1" "2 2 1")
     pf_add_parallel_test(${inputfile} ${processor_topology})
   endforeach()
 endforeach()

@@ -27,6 +27,7 @@
 **********************************************************************EHEADER*/
 
 #include "parflow.h"
+#include "parflow_netcdf.h"
 
 typedef void PublicXtra;
 
