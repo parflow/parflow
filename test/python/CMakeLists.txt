@@ -70,6 +70,10 @@ if(${PARFLOW_HAVE_SILO})
 endif()
 
 if(${PARFLOW_HAVE_NETCDF})
+  list(APPEND TESTS
+    deep_aquifer_slab_netcdf
+  )
+
   if(${PARFLOW_HAVE_HYPRE})
     #This test is failing on several platforms
     list(APPEND TESTS
@@ -97,6 +101,9 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
   list(APPEND PARALLEL_3DTOPO_TESTS
     default_single
     default_single_read_porosity
+  )
+
+  list(APPEND PARALLEL_2DTOPO_TESTS
     deep_aquifer_slab
   )
 
@@ -142,6 +149,7 @@ foreach(inputfile ${PARALLEL_2DTOPO_TESTS})
   pf_add_py_parallel_test(${inputfile} 2 1 1)
   pf_add_py_parallel_test(${inputfile} 1 4 1)
   pf_add_py_parallel_test(${inputfile} 4 1 1)
+  pf_add_py_parallel_test(${inputfile} 2 2 1)
 
 endforeach()
 
