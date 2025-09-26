@@ -36,8 +36,6 @@
 
 #if defined (PARFLOW_HAVE_SUNDIALS)
 #include "sundials/sundials_core.h"
-//#include "kinsol/kinsol.h"
-//#include "kinsol_dependences.h"
 
 /* Content field for SUNDIALS' N_Vector object. 
  * We could use Vector * directly without this 
@@ -50,55 +48,12 @@ struct PF_N_Vector_Content_struct {
 
 /* forward reference for pointers to structs */
 typedef struct PF_N_Vector_Content_struct* PF_N_Vector_Content;
-//typedef struct PF_N_Vector_Ops_struct* PF_N_Vector_Ops;
-//typedef struct PF_N_Vector_struct* PF_N_Vector;
 
-#if 0
-struct PF_N_Vector_Ops_struct {
-    /* Constructors and destructors */
-    PF_N_Vector (*nvclone)(PF_N_Vector);
-    void (*nvdestroy)(PF_N_Vector);
-    /* standard vector operations */
-    void (*nvlinearsum)(double a, PF_N_Vector *x, double b,
-                                  PF_N_Vector *y, PF_N_Vector *z);
-    void (*nvconst)(double c, PF_N_Vector *z);
-    void (*nvprod)(PF_N_Vector *x, PF_N_Vector *y, PF_N_Vector *z);
-    void (*nvdiv)(PF_N_Vector *x, PF_N_Vector *y, PF_N_Vector *z);
-    void (*nvscale)(double c, PF_N_Vector *x, PF_N_Vector *z);
-    void (*nvabs)(PF_N_Vector *x, PF_N_Vector *z);
-    void (*nvinv)(PF_N_Vector *x, PF_N_Vector *z);
-    void (*nvaddconst)(PF_N_Vector *x, double b, PF_N_Vector *z);
-    double (*nvdotprod)(PF_N_Vector *x, PF_N_Vector *y);
-    double (*nvmaxnorm)(PF_N_Vector *x);
-    double (*nvwrmsnorm)(PF_N_Vector *x, PF_N_Vector *w);
-    double (*nvwrmsnormmask)(PF_N_Vector *x, PF_N_Vector *w, PF_N_Vector *id);
-    double (*nvmin)(PF_N_Vector *x);
-    double (*nvwl2norm)(PF_N_Vector *x, PF_N_Vector *w);
-    double (*nvl1norm)(PF_N_Vector *x);
-    void (*nvcompare)(double c, PF_N_Vector *x, PF_N_Vector *z);
-    int (*nvinvtest)(PF_N_Vector *x, PF_N_Vector *z);
-    int (*nvconstrmask)(PF_N_Vector *c, PF_N_Vector *x, PF_N_Vector *m);
-    double (*nvminquotient)(PF_N_Vector *num, PF_N_Vector *denom);
-};
-
-struct PF_N_Vector_struct {
-    PF_N_Vector_Content content;
-    PF_N_Vector_Ops     ops;
-    SUNContext 		sunctx;
-};
-
-/* PF_N_Vector Accessor Macros */
-#define PF_N_VectorContent(vector)  	((vector)->content)
-#define PF_N_VectorData(vector)  	((vector)->content->data)
-#endif
 /* N_Vector Accessor Macros */
 /* Macros to interact with SUNDIALS N_Vector */
 #define N_VectorContent(n_vector)		((PF_N_Vector_Content)((n_vector)->content))
 #define N_VectorData(n_vector)			(N_VectorContent(n_vector)->data)
 #define N_VectorOwnsData(n_vector)		(N_VectorContent(n_vector)->owns_data)
-
-
-
 
 /* N_Vector.c protos for External SUNDIALS */
 #ifdef __cplusplus

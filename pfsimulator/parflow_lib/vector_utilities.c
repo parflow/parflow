@@ -69,8 +69,8 @@
 
 #include <string.h>
 
-#define ZERO RCONST(0.0)
-#define ONE  RCONST(1.0)
+#define ZERO 0.0
+#define ONE  1.0
 
 /* Kinsol API is in C */
 #ifdef __cplusplus
