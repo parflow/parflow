@@ -76,7 +76,7 @@ typedef struct {
   State    *current_state;
   FILE     *kinsol_file;
   
-#ifdef PARFLOW_HAVE_SUNDIALS
+#if defined (PARFLOW_HAVE_SUNDIALS)
 /* SUNDIALS context object */  
   SUNContext sunctx;
 /* SUNDIALS uses (void *) for Kinsol memory block */
@@ -313,7 +313,7 @@ int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, V
   double residual_tol = (public_xtra->residual_tol);
   double step_tol = (public_xtra->step_tol);
 
-#ifdef PARFLOW_HAVE_SUNDIALS
+#if defined (PARFLOW_HAVE_SUNDIALS)
   N_Vector       uscale = (instance_xtra->uscale);
   N_Vector       fscale = (instance_xtra->fscale);
   
@@ -477,7 +477,7 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
 
   State        *current_state;
   
-#ifdef PARFLOW_HAVE_SUNDIALS
+#if defined (PARFLOW_HAVE_SUNDIALS)
   N_Vector       fscale;
   N_Vector       uscale;
   N_Vector	 pf_n_pressure;
@@ -565,7 +565,16 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
     current_state = ctalloc(State, 1);
 
     /* Initialize KINSol parameters */
-#ifdef PARFLOW_HAVE_SUNDIALS
+    
+    /* kinsol log file */
+    sprintf(filename, "%s.%s", GlobalsOutFileName, "kinsol.log");
+    if (!amps_Rank(amps_CommWorld))
+      kinsol_file = fopen(filename, "w");
+    else
+      kinsol_file = NULL;
+    instance_xtra->kinsol_file = kinsol_file;
+        
+#if defined (PARFLOW_HAVE_SUNDIALS)
     /* Create the SUNDIALS context that all SUNDIALS objects require */
     /* This needs to be created once? So perhaps should be created elsewhere upstream */
     SUNContext_Create(amps_CommWorld, &sunctx);
@@ -692,14 +701,6 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
 
     instance_xtra->kin_mem = kin_mem;
 #endif
-    
-    /* kinsol log file */
-    sprintf(filename, "%s.%s", GlobalsOutFileName, "kinsol.log");
-    if (!amps_Rank(amps_CommWorld))
-      kinsol_file = fopen(filename, "w");
-    else
-      kinsol_file = NULL;
-    instance_xtra->kinsol_file = kinsol_file;
 
     instance_xtra->feval = KINSolFunctionEval;
     instance_xtra->current_state = current_state;
