@@ -553,7 +553,7 @@ if(NOT HAVE_ACOS)
     set(MATH_LIBRARY m)
     message(STATUS "Linking with libm math library")
   else()
-    message(FATAL_ERROR "acos function not found")
+    message(STATUS "acos function not found in libm math library")
   endif()
 endif()
 
