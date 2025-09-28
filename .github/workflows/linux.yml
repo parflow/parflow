@@ -25,7 +25,7 @@ jobs:
            cache-parflow-style-hit: ${{steps.cache-parflow-style-dependencies.outputs.cache-hit}}
          with:
            path: "~/depend"
-           key: cache-check-style-${{ secrets.CACHE_VERSION }}
+           key: cache-check-style-${{ hashfiles('**/.github/workflows/linux.yml') }}
 
        - name: Directory Setup
          run: |
@@ -56,13 +56,13 @@ jobs:
            CACHE_HIT: ${{steps.cache-parflow-style-dependencies.outputs.cache-hit}}
          run: |
             if [[ "$CACHE_HIT" != 'true' ]]; then
-              echo "cache-check-style-${{ secrets.CACHE_VERSION }}" > $HOME/depend/cache-key
+              echo "cache-check-style-${{ hashfiles('**/.github/workflows/linux.yml') }}" > $HOME/depend/cache-key
               curl -L -o uncrustify-0.79.0.tar.gz https://github.com/uncrustify/uncrustify/archive/uncrustify-0.79.0.tar.gz
               tar -xf uncrustify-0.79.0.tar.gz
               cd uncrustify-uncrustify-0.79.0
               mkdir build
               cd build
-              cmake -DCMAKE_INSTALL_PREFIX=/usr/local ..
+              cmake -DCMAKE_INSTALL_PREFIX=${PARFLOW_DEP_DIR} ..
               make
               sudo make -j 2 install
               cd ../..
@@ -77,7 +77,7 @@ jobs:
                echo "Installing"
                mkdir -p $HOME/depend/{include,lib}
                cd $HOME/depend
-               echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ secrets.CACHE_VERSION }}" > $HOME/depend/cache-key
+               echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ hashfiles('**/.github/workflows/linux.yml') }}" > $HOME/depend/cache-key
                wget -nv --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-x86_64.tar.gz
                tar -xf cmake-3.25.1-linux-x86_64.tar.gz
                $HOME/depend/cmake-3.25.1-linux-x86_64/bin/cmake --version
@@ -274,10 +274,6 @@ jobs:
         sudo apt-get -qq update
         sudo apt -qq install python3 python3-venv
 
-    # Cache dependencies so don't have to rebuild on each test.
-    # Can flush caches by resetting the CACHE_VERSION secret on GitHub
-    # settings for the project (using date-timestamp for secret).
-
     - name: Cache dependencies
       uses: actions/cache@v4
       id: cache-parflow-dependencies
@@ -286,7 +282,7 @@ jobs:
         cache-parflow-hit: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       with:
         path: "~/depend"
-        key: cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ matrix.config.memory_manager }}-${{ matrix.config.pdi }}-${{ secrets.CACHE_VERSION }}
+        key: cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ matrix.config.memory_manager }}-${{ matrix.config.pdi }}-${{ hashfiles('**/.github/workflows/linux.yml') }}
 
     - name: Directory Setup
       run: |
@@ -331,7 +327,7 @@ jobs:
        if [[ "$CACHE_HIT" != 'true' ]]; then
           echo "Installing CMake v3.26.5"
           cd $HOME/depend
-          echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ secrets.CACHE_VERSION }}" > $HOME/depend/cache-key
+          echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ hashfiles('**/.github/workflows/linux.yml') }}" > $HOME/depend/cache-key
           wget -nv --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.26.5/cmake-3.26.5-linux-x86_64.tar.gz
           tar -xf cmake-3.26.5-linux-x86_64.tar.gz
           $HOME/depend/cmake-3.26.5-linux-x86_64/bin/cmake --version
@@ -367,7 +363,7 @@ jobs:
       if: (matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos') && matrix.config.memory_manager == 'rmm'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          git clone --branch main --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git
+          git clone --depth 1 -b v25.08.00 --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git
           cd rmm
           mkdir build
           cd build
@@ -383,7 +379,7 @@ jobs:
       if: (matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos') && matrix.config.memory_manager == 'umpire'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          git clone -b v2025.03.1 --recursive https://github.com/LLNL/Umpire.git
+          git clone --depth 1 -b v2025.03.1 --single-branch --recursive https://github.com/LLNL/Umpire.git
           cd Umpire
           cmake -S . -B build                                             \
                      -DCMAKE_CXX_COMPILER=mpicxx                        \
