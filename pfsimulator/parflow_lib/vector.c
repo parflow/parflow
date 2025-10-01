@@ -46,6 +46,10 @@ static int samrai_vector_ids[5][2048];
 
 #endif
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+#include "pystencils_vector_utilities.h"
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -763,12 +767,19 @@ void    InitVector(
 
     vp = SubvectorElt(v_sub, ix, iy, iz);
 
+#if 0 //#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VConstInit(vp,
+                         nx, ny, nz,
+                         1, nx_v, nx_v * ny_v,
+                         value);
+#else
     iv = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       vp[iv] = value;
     });
+#endif
   }
 }
 
@@ -804,6 +815,14 @@ void    InitVectorAll(
     ny_v = SubvectorNY(v_sub);
     nz_v = SubvectorNZ(v_sub);
 
+#if 0 //#ifdef PARFLOW_HAVE_PYSTENCILS
+    vp = SubvectorElt(v_sub, ix_v, iy_v, iz_v);
+
+    PyCodegen_VConstInit(vp,
+                         nx_v, ny_v, nz_v,
+                         1, nx_v, nx_v * ny_v,
+                         value);
+#else
     vp = SubvectorData(v_sub);
 
     iv = 0;
@@ -812,6 +831,7 @@ void    InitVectorAll(
     {
       vp[iv] = value;
     });
+#endif
   }
 
 #ifdef SHMEM_OBJECTS

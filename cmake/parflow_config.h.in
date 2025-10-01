@@ -68,11 +68,12 @@
 
 #cmakedefine PARFLOW_HAVE_KOKKOS
 
+#cmakedefine PARFLOW_HAVE_PYSTENCILS
 
 #cmakedefine PARFLOW_HAVE_RMM
 
-/* 
-is not defined here because because it is only set 
+/*
+is not defined here because because it is only set
    for the compilation of parflow_exe, parflow_lib, and kinsol sources. 
    RMM must be initialized before it is used, so, for example, 
    the amps tests would fail if used across all compiles.              */

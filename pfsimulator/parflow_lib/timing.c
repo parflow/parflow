@@ -62,6 +62,10 @@ void  NewTiming()
   RegisterTiming("Clustering");
   RegisterTiming("Netcdf I/O");
   RegisterTiming("PDI I/O");
+  RegisterTiming("Flux Base");
+  RegisterTiming("Flux Compressible Storage");
+  RegisterTiming("Flux Source Terms");
+  RegisterTiming("Vector dot product");
 #ifdef VECTOR_UPDATE_TIMING
   RegisterTiming("VectorUpdate");
 #endif

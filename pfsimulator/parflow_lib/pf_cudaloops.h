@@ -669,9 +669,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
             };                                                                                                                                     \
                                                                                                                                                    \
             decltype(rslt) * ptr_rslt = (decltype(rslt)*)_talloc_device(sizeof(decltype(rslt)));                                                   \
-            MemPrefetchDeviceToHost_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);                                                                     \
-            *ptr_rslt = rslt;                                                                                                                      \
-            MemPrefetchHostToDevice_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);                                                                     \
+            cudaMemset(ptr_rslt, rslt, sizeof(decltype(rslt)));                                                                                    \
                                                                                                                                                    \
             typedef function_traits < decltype(lambda_body) > traits;                                                                              \
             DotKernel < traits::result_type > << < grid, block >> > (lambda_body,                                                                  \
@@ -722,9 +720,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
             };                                                                                                                                     \
                                                                                                                                                    \
             decltype(rslt) * ptr_rslt = (decltype(rslt)*)_talloc_device(sizeof(decltype(rslt)));                                                   \
-            MemPrefetchDeviceToHost_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);                                                                     \
-            *ptr_rslt = rslt;                                                                                                                      \
-            MemPrefetchHostToDevice_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);                                                                     \
+            cudaMemset(ptr_rslt, rslt, sizeof(decltype(rslt)));                                                                                    \
                                                                                                                                                    \
             typedef function_traits < decltype(lambda_body) > traits;                                                                              \
             DotKernel < traits::result_type > << < grid, block >> > (lambda_body,                                                                  \

@@ -31,6 +31,10 @@
 
 #include "parflow.h"
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+#include "pystencils_vector_utilities.h"
+#endif
+
 void     Axpy(
               double  alpha,
               Vector *x,
@@ -73,12 +77,20 @@ void     Axpy(
     yp = SubvectorElt(y_sub, ix, iy, iz);
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VAxpy(xp, yp,
+                    nx, ny, nz,
+                    1, nx_v, nx_v * ny_v,
+                    1, nx_v, nx_v * ny_v,
+                    alpha);
+#else
     iv = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       yp[iv] += alpha * xp[iv];
     });
+#endif
   }
 
   IncFLOPCount(2 * VectorSize(x));
