@@ -17,6 +17,7 @@ set(TESTS
   overland_tiltedV_MGSemiTest
   deep_aquifer_infiltration
   deep_aquifer_slab
+  deep_aquifer_vcatch
 )
 
 if(${PARFLOW_HAVE_HYPRE})
@@ -105,6 +106,7 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
 
   list(APPEND PARALLEL_2DTOPO_TESTS
     deep_aquifer_slab
+    deep_aquifer_vcatch
   )
 
   if(${PARFLOW_HAVE_HYPRE})
