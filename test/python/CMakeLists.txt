@@ -19,6 +19,7 @@ set(TESTS
   deep_aquifer_slab
   deep_aquifer_vcatch
   deep_aquifer_vcatch_kin
+  deep_aquifer_vcatch_diff
 )
 
 if(${PARFLOW_HAVE_HYPRE})

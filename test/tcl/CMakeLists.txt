@@ -17,6 +17,7 @@ set(TESTS
   deep_aquifer_slab.tcl
   deep_aquifer_vcatch.tcl
   deep_aquifer_vcatch_kin.tcl
+  deep_aquifer_vcatch_diff.tcl
 )
 
 if(${PARFLOW_HAVE_HYPRE})
