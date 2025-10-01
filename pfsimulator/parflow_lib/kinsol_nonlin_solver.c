@@ -235,30 +235,31 @@ int   KINSolCallPC(
 }
 
 #if defined (PARFLOW_HAVE_SUNDIALS)
-void PrintFinalStats(FILE *    out_file)
+static void PrintFinalStats(FILE *    out_file, InstanceXtra *instance_xtra)
 {
-  InstanceXtra *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(ThisPFModule);
-  
-  fprintf(out_file, "\n-------------------------------------------------- \n");
-  fprintf(out_file, "                    Iteration             Total\n");
-  fprintf(out_file, "Nonlin. Its.:           %5ld             %5ld\n",
-          instance_xtra->num_nonlin_iters, instance_xtra->tot_nonlin_iters);
-  fprintf(out_file, "Lin. Its.:              %5ld             %5ld\n",
-          instance_xtra->num_lin_iters, instance_xtra->tot_lin_iters);
-  fprintf(out_file, "Func. Evals.:           %5ld             %5ld\n",
-          instance_xtra->num_fevals, instance_xtra->tot_fevals);
-  fprintf(out_file, "PC Evals.:              %5ld             %5ld\n",
-          instance_xtra->num_pc_setups, instance_xtra->tot_pc_setups);
-  fprintf(out_file, "PC Solves:              %5ld             %5ld\n",
-          instance_xtra->num_pc_solves, instance_xtra->tot_pc_solves);
-  fprintf(out_file, "Lin. Conv. Fails:       %5ld             %5ld\n",
-          instance_xtra->num_lin_conv_fails, instance_xtra->tot_lin_conv_fails);
-  fprintf(out_file, "Beta Cond. Fails:       %5ld             %5ld\n",
-          instance_xtra->num_beta_cond_fails, instance_xtra->num_beta_cond_fails);
-  fprintf(out_file, "Backtracks:             %5ld             %5ld\n",
-          instance_xtra->num_backtracks, instance_xtra->tot_backtracks);
-  fprintf(out_file, "-------------------------------------------------- \n");
-  fflush(out_file);
+  if(instance_xtra)
+  {
+    fprintf(out_file, "\n-------------------------------------------------- \n");
+    fprintf(out_file, "                    Iteration             Total\n");
+    fprintf(out_file, "Nonlin. Its.:           %5ld             %5ld\n",
+            instance_xtra->num_nonlin_iters, instance_xtra->tot_nonlin_iters);          
+    fprintf(out_file, "Lin. Its.:              %5ld             %5ld\n",
+            instance_xtra->num_lin_iters, instance_xtra->tot_lin_iters);
+    fprintf(out_file, "Func. Evals.:           %5ld             %5ld\n",
+            instance_xtra->num_fevals, instance_xtra->tot_fevals);
+    fprintf(out_file, "PC Evals.:              %5ld             %5ld\n",
+            instance_xtra->num_pc_setups, instance_xtra->tot_pc_setups);
+    fprintf(out_file, "PC Solves:              %5ld             %5ld\n",
+            instance_xtra->num_pc_solves, instance_xtra->tot_pc_solves);
+    fprintf(out_file, "Lin. Conv. Fails:       %5ld             %5ld\n",
+            instance_xtra->num_lin_conv_fails, instance_xtra->tot_lin_conv_fails);
+    fprintf(out_file, "Beta Cond. Fails:       %5ld             %5ld\n",
+            instance_xtra->num_beta_cond_fails, instance_xtra->num_beta_cond_fails);
+    fprintf(out_file, "Backtracks:             %5ld             %5ld\n",
+            instance_xtra->num_backtracks, instance_xtra->tot_backtracks);          
+    fprintf(out_file, "-------------------------------------------------- \n");
+    fflush(out_file);
+  }
 }
 #else
 void PrintFinalStats(
@@ -402,7 +403,7 @@ int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, V
   instance_xtra->tot_backtracks += instance_xtra->num_backtracks;
 
   if (!amps_Rank(amps_CommWorld))
-    PrintFinalStats(kinsol_file);
+    PrintFinalStats(kinsol_file, instance_xtra);
 
   if (ret == KIN_SUCCESS || ret == KIN_INITIAL_GUESS_OK)
   {
@@ -736,17 +737,20 @@ void  KinsolNonlinSolverFreeInstanceXtra()
     PF_NVDestroy(instance_xtra->uscale);
     PF_NVDestroy(instance_xtra->fscale);
     PF_NVDestroy(instance_xtra->pf_n_pressure);    
-    
+
+    /* free kinsol memory */
+    KINFree(&(instance_xtra->kin_mem));
 #else
     FreeVector(instance_xtra->uscale);
     FreeVector(instance_xtra->fscale);
+    
+    /* free kinsol memory */
+    KINFree((instance_xtra->kin_mem));
 #endif
     tfree(instance_xtra->current_state);
-
+    
     if (instance_xtra->kinsol_file)
       fclose((instance_xtra->kinsol_file));
-
-    KINFree((instance_xtra->kin_mem));
     
     tfree(instance_xtra);
   }

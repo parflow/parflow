@@ -27,6 +27,10 @@
 **********************************************************************EHEADER*/
 
 #include "parflow.h"
+#include "llnltyps.h"
+
+#define ZERO 0.0
+#define ONE  1.0
 
 #if defined (PARFLOW_HAVE_SUNDIALS)
 #ifdef __cplusplus
@@ -43,6 +47,10 @@ N_Vector PF_NVNewEmpty(SUNContext sunctx)
   v = N_VNewEmpty(sunctx);
 
   /* set function pointers for ops */
+  v->ops->nvclone	 = PF_NVClone;
+  v->ops->nvdestroy	 = PF_NVDestroy;
+  v->ops->nvgetlength    = PF_NVGetLength;
+  
   v->ops->nvlinearsum    = PFVLinearSumFcn;
   v->ops->nvconst        = PFVConstInitFcn;
   v->ops->nvprod         = PFVProdFcn;
@@ -109,7 +117,10 @@ N_Vector PF_NVNewFromVector(SUNContext sunctx, Vector *data)
   return(v);
 }
 
-/* Clone vector from v */
+/* Clone (shallow copy) vector from v. 
+ * Note: Data from v is not copied to w, just the memory is allocated.
+ *       Sundials calls N_VScale to copy between N_Vectors.
+*/
 N_Vector PF_NVClone(N_Vector v)
 {
   N_Vector w  = NULL;
@@ -120,13 +131,10 @@ N_Vector PF_NVClone(N_Vector v)
   /* Create vector object w from v. */
   w = PF_NVNewEmpty(v->sunctx);
   wdata = NewVectorType(VectorGrid(vdata), nc, VectorNumGhost(vdata), VectorType(vdata));
-  /* Copy vector data from v to w */
-  PFVCopy(vdata, wdata);
   
   /* assign wdata to w and return*/
   N_VectorData(w) = wdata;
   N_VectorOwnsData(w) = true;
-    
   return(w);
 }
 
@@ -161,7 +169,7 @@ void PF_NVDestroy(N_Vector v)
 }
 
 /* Return global length of N_Vector */
-int PF_NVGetLength(N_Vector v)
+long int PF_NVGetLength(N_Vector v)
 {
   return VectorSize(N_VectorData(v));
 }
