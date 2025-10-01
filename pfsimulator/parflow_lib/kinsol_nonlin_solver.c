@@ -83,6 +83,9 @@ typedef struct {
   void * kin_mem;
 /* function eval */
   KINSysFn feval;
+
+/* Linear Solver */
+  SUNLinearSolver LS;  
   
 /* output statistics variables - current and total statistics */
   long int num_nonlin_iters, tot_nonlin_iters;
@@ -486,9 +489,10 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
   KINLsJacTimesVecFn matvec = public_xtra->matvec;
   KINLsPrecSetupFn pcinit = public_xtra->pcinit;
   KINLsPrecSolveFn pcsolve = public_xtra->pcsolve;
-  /* Sundials context and pointer to memory */
+  /* Sundials context, pointer to memory and linear solver */
   SUNContext sunctx;
   void *kin_mem;  
+  SUNLinearSolver LS;
 #else
 
   long int     *iopt;
@@ -624,7 +628,7 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
     KINSetFuncNormTol(kin_mem, 0.0);
     
     /* Create SUNDIALS linear solver object for kinsol */
-    SUNLinearSolver LS = SUNLinSol_SPGMR(uscale, SUN_PREC_RIGHT, krylov_dimension, sunctx);
+    LS = SUNLinSol_SPGMR(uscale, SUN_PREC_RIGHT, krylov_dimension, sunctx);
     SUNLinSol_SPGMRSetMaxRestarts(LS, max_restarts);
     /* Attach linear solver to KINSol */
     KINSetLinearSolver(kin_mem, LS, NULL);
@@ -642,7 +646,8 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
     instance_xtra->tot_backtracks = 0;
 
     instance_xtra->sunctx = sunctx;
-    instance_xtra->kin_mem = kin_mem;    
+    instance_xtra->kin_mem = kin_mem;  
+    instance_xtra->LS = LS;  
 #else
     /* Set up the grid data for the kinsol stuff */
     SetPf2KinsolData(grid, 1);
@@ -738,8 +743,10 @@ void  KinsolNonlinSolverFreeInstanceXtra()
     PF_NVDestroy(instance_xtra->fscale);
     PF_NVDestroy(instance_xtra->pf_n_pressure);    
 
-    /* free kinsol memory */
+    /* free SUNDIALS context, memory and linear solver */
     KINFree(&(instance_xtra->kin_mem));
+    SUNLinSolFree((instance_xtra->LS));
+    SUNContext_Free(&(instance_xtra->sunctx));
 #else
     FreeVector(instance_xtra->uscale);
     FreeVector(instance_xtra->fscale);
