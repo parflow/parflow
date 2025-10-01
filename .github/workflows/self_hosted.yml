@@ -1,0 +1,92 @@
+name: GPU CI Tests
+
+on: [push, pull_request]
+
+jobs:
+  test-gpu:
+    # only run GPU test if in parflow project
+    if: github.repository == 'parflow/parflow'
+    name: ${{ matrix.config.name }}
+    runs-on: self-hosted
+    strategy:
+      matrix:
+        config:
+#          - {
+#              name: "Self-Hosted CUDA/RMM",
+#              memory_manager: "rmm"
+#            }
+          - {
+              name: "Self-Hosted CUDA/Umpire",
+              memory_manager: "umpire"
+            }
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Directory Setup
+      run: |
+        mkdir -p ${{ github.workspace }}/install ${{ github.workspace }}/depend/{include,lib,lib64,bin}
+        echo "PARFLOW_DIR=${{ github.workspace }}/install" >> $GITHUB_ENV
+        echo "PARFLOW_DEP_DIR=${{ github.workspace }}/depend" >> $GITHUB_ENV
+        echo "LD_LIBRARY_PATH=${{ github.workspace }}/depend/lib:${{ github.workspace }}/depend/lib64:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+        echo "${{ github.workspace }}/depend/bin" >> $GITHUB_PATH
+        echo "${{ github.workspace }}/install/bin" >> $GITHUB_PATH
+
+    - name: Install RMM
+      if: matrix.config.memory_manager == 'rmm'
+      run: |
+        module purge
+        module load cudatoolkit/12.6
+        module load openmpi/cuda-12.6/gcc/4.1.6
+        git clone --depth 1 -b v25.08.00 --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git 
+        cd rmm
+        mkdir build && cd build
+        cmake .. -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/depend/rmm -DBUILD_TESTS=OFF
+        make -j
+        make install
+        echo "RMM_FLAGS=-Drmm_ROOT=$GITHUB_WORKSPACE/depend/rmm" >> $GITHUB_ENV
+
+    - name: Install Umpire
+      if: matrix.config.memory_manager == 'umpire'
+      run: |
+        module purge
+        module load cudatoolkit/12.6
+        module load openmpi/cuda-12.6/gcc/4.1.6
+        git clone --depth 1 -b v2025.03.1 --recursive https://github.com/LLNL/Umpire.git
+        module list
+        cd Umpire
+        mkdir build && cd build
+        cmake .. -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/depend/Umpire -DENABLE_CUDA=On
+        make -j
+        make install
+        echo "UMPIRE_FLAGS=-Dumpire_ROOT=$GITHUB_WORKSPACE/depend/Umpire" >> $GITHUB_ENV
+
+    - name: Configure ParFlow
+      run: |
+        module purge
+        module load anaconda3/2024.6
+        module load cudatoolkit/12.6
+        module load openmpi/cuda-12.6/gcc/4.1.6
+        cmake -Bbuild                                   \
+          -DCMAKE_BUILD_TYPE=Release                     \
+          -DPARFLOW_ENABLE_TIMING=TRUE                    \
+          -DPARFLOW_AMPS_LAYER=mpi1                        \
+          -DPARFLOW_ACCELERATOR_BACKEND=cuda                \
+          -DCMAKE_C_FLAGS=-lcuda                             \
+          -DPARFLOW_AMPS_SEQUENTIAL_IO=TRUE                   \
+          -DPARFLOW_HAVE_CLM=ON                                \
+          -DPARFLOW_ENABLE_PYTHON=TRUE                          \
+          -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install \
+          -DCMAKE_CUDA_ARCHITECTURES=90                           \
+          $RMM_FLAGS $UMPIRE_FLAGS
+
+    - name: Build ParFlow
+      run: |
+        cd build
+        make
+        make install
+
+    - name: Run ParFlow Tests (GPU)
+      run: |
+        cd build
+        ctest --output-on-failure
