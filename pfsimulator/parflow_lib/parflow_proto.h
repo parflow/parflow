@@ -914,6 +914,7 @@ void SetDeepAquiferPermeability(ProblemData *problem_data);
 void SetDeepAquiferSpecificYield(ProblemData *problem_data);
 void SetDeepAquiferAquiferDepth(ProblemData *problem_data);
 void SetDeepAquiferElevation(ProblemData *problem_data);
+void DeepAquiferCheckPermeabilityTensorValues();
 
 /* problem_ic_phase_satur.c */
 typedef void (*ICPhaseSaturInvoke) (Vector *ic_phase_satur, int phase, ProblemData *problem_data);

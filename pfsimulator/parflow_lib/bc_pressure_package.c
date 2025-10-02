@@ -450,6 +450,7 @@ void         BCPressurePackage(
               SetDeepAquiferSpecificYield(problem_data);
               SetDeepAquiferAquiferDepth(problem_data);
               SetDeepAquiferElevation(problem_data);
+              DeepAquiferCheckPermeabilityTensorValues();
               (data->is_initialized) = TRUE;
             }
 

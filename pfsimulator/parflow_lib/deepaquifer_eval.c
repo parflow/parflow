@@ -647,3 +647,49 @@ void SetDeepAquiferElevation(ProblemData *problem_data)
 
   return;
 }
+
+/*--------------------------------------------------------------------------
+ * DeepAquiferCheckPermeabilityTensorValues
+ *--------------------------------------------------------------------------*/
+
+void DeepAquiferCheckPermeabilityTensorValues()
+{
+  /* This method throws out an error if the user hasn't set
+   * the X and Y components of the tensor to zero. */
+
+  NameArray type_na = NA_NewNameArray("TensorByGeom TensorByFile");
+  char *switch_name = GetString("Perm.TensorType");
+  int tensor_type = NA_NameToIndexExitOnError(type_na, switch_name, "TensorByGeom TensorByFile");
+
+  // Only TensorByGeom is supported for this boundary condition
+  if (tensor_type != 0)
+  {
+    InputError("Error: DeepAquifer boundary condition only supports "
+               "setting the key <Perm.TensorType> to \"TensorByGeom\".%s%s\n", "", "");
+  }
+
+  char *geometry_names = GetString("Geom.Perm.TensorByGeom.Names");
+  NameArray geometry_na = NA_NewNameArray(geometry_names);
+  int Ngeometries = NA_Sizeof(geometry_na);
+
+  char key[IDB_MAX_KEY_LEN];
+  for (int i = 0; i < Ngeometries; ++i)
+  {
+    char *geom_name = NA_IndexToName(geometry_na, i);
+
+    sprintf(key, "Geom.%s.Perm.TensorValX", geom_name);
+    double tensor_x = GetDouble(key);
+
+    sprintf(key, "Geom.%s.Perm.TensorValY", geom_name);
+    double tensor_y = GetDouble(key);
+
+    if (fabs(tensor_x) + fabs(tensor_y) > 1e-14)
+    {
+      InputError("Error: To use DeepAquifer boundary condition, the keys "
+                 "<Geom.%s.Perm.TensorValX> and <Geom.%s.Perm.TensorValY> must "
+                 "be set to 0.\n", geom_name, geom_name);
+    }
+  }
+
+  return;
+}
