@@ -3689,36 +3689,6 @@ name of the input file.
 
       <runname>.Patch.bottom.BCPressure.DeepAquifer.Elevations.FileName = "file.pfb"  ## Python syntax
 
-Example Script:
-
-.. container:: list
-
-   ::
-
-
-      #---------------------------------------------------------
-      # Initial conditions: water pressure [m]
-      #---------------------------------------------------------
-      # Using a patch is great when you are not using a box domain
-      # If using a box domain HydroStaticDepth is fine
-      # If your RefPatch is z-lower (bottom of domain), the pressure is positive.
-      # If your RefPatch is z-upper (top of domain), the pressure is negative.
-      ### Set water table to be at the bottom of the domain, the top layer is initially dry
-      pfset ICPressure.Type				      "HydroStaticPatch"
-      pfset ICPressure.GeomNames		         "domain"
-      pfset Geom.domain.ICPressure.Value	   2.2
-
-      pfset Geom.domain.ICPressure.RefGeom	"domain"
-      pfset Geom.domain.ICPressure.RefPatch	z-lower
-
-      ### Using a .pfb to initialize
-      pfset ICPressure.Type                  "PFBFile"
-      pfset ICPressure.GeomNames		         "domain"
-      pfset Geom.domain.ICPressure.FileName	"press.00090.pfb"
-
-      pfset Geom.domain.ICPressure.RefGeom	"domain"
-      pfset Geom.domain.ICPressure.RefPatch	"z-upper"
-
 .. _`Boundary Conditions: Saturation`:
 
 Boundary Conditions: Saturation
@@ -3995,6 +3965,36 @@ domain. It is assumed that *geom_name* is “domain” for this key.
    ::
 
       pfset Geom.domain.ICPressure.FileName  "ic_pressure.pfb"
+
+Example Script:
+
+.. container:: list
+
+   ::
+
+
+      #---------------------------------------------------------
+      # Initial conditions: water pressure [m]
+      #---------------------------------------------------------
+      # Using a patch is great when you are not using a box domain
+      # If using a box domain HydroStaticDepth is fine
+      # If your RefPatch is z-lower (bottom of domain), the pressure is positive.
+      # If your RefPatch is z-upper (top of domain), the pressure is negative.
+      ### Set water table to be at the bottom of the domain, the top layer is initially dry
+      pfset ICPressure.Type				      "HydroStaticPatch"
+      pfset ICPressure.GeomNames		         "domain"
+      pfset Geom.domain.ICPressure.Value	   2.2
+
+      pfset Geom.domain.ICPressure.RefGeom	"domain"
+      pfset Geom.domain.ICPressure.RefPatch	z-lower
+
+      ### Using a .pfb to initialize
+      pfset ICPressure.Type                  "PFBFile"
+      pfset ICPressure.GeomNames		         "domain"
+      pfset Geom.domain.ICPressure.FileName	"press.00090.pfb"
+
+      pfset Geom.domain.ICPressure.RefGeom	"domain"
+      pfset Geom.domain.ICPressure.RefPatch	"z-upper"
 
 .. _`Initial Conditions: Phase Concentrations`:
 
