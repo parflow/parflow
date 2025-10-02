@@ -408,8 +408,8 @@ bool PFVConstrMaskFcn(
   int nx_z, ny_z, nz_z;
 
   int sg, i, j, k, i_x, i_y, i_z;
-  double temp;
-  bool   test;
+  double temp = ZERO;
+  bool   test = false;
 
   grid = VectorGrid(x);
   ForSubgridI(sg, GridSubgrids(grid))
