@@ -3278,7 +3278,7 @@ specifies the type of boundary condition data given for patch
 *patch_name*. Possible values for this key are **DirEquilRefPatch,
 DirEquilPLinear, FluxConst, FluxVolumetric, PressureFile, FluxFile,
 OverlandFow, OverlandFlowPFB, SeepageFace, OverlandKinematic,
-OverlandDiffusive** and **ExactSolution**. The choice
+OverlandDiffusive, DeepAquifer** and **ExactSolution**. The choice
 **DirEquilRefPatch** specifies that the pressure on the specified patch
 will be in hydrostatic equilibrium with a constant reference pressure
 given on a reference patch. The choice **DirEquilPLinear** specifies
@@ -3319,8 +3319,13 @@ solution is to be applied as a Dirichlet boundary condition on the
 respective patch. Note that this does not change according to any cycle.
 Instead, time dependence is handled by evaluating at the time the
 boundary condition value is desired. The solution is specified by using
-a predefined function (choices are described below). NOTE: These last
-six types of boundary condition input is for *Richards’ equation cases
+a predefined function (choices are described below). The choice **DeepAquifer**
+turns on groundwater interactions with a deep aquifer as described in
+:cite:t:`Rahman2018` and :ref:`Deep Aquifer`. For this boundary condition,
+the user must define the thickness of the aquifer, its specific yield, the
+permeability of the aquifer (which is assumed to be isotropic in X and Y) and
+the elevations on each cell, detailed below. NOTE: These last
+seven types of boundary condition input is for *Richards’ equation cases
 only!*
 
 .. container:: list
@@ -3515,6 +3520,174 @@ The choices for this key correspond to pressures as follows.
 
 **XYZTPlus1PermTensor**: 
    :math:`p = xyzt + 1`
+
+*string*
+**Patch.BCPressure.DeepAquifer.Permeability.Type**
+no default
+This key is required when the **DeepAquifer** boundary condition is chosen.
+It sets the values for the permeability of the deep aquifer, which is assumed
+to be isotropic in the horizontal directions (X and Y).
+Possible values for this key are **Constant, PFBFile, NCFile** and 
+**SameAsBottomLayer**. The choice **Constant** will set the parameter to a
+constant value; **PFBFile** will set the parameter to values read from a
+ParFlow 2D binary file; **NCFile** will set the parameter to values read
+from a NetCDF file; and **SameAsBottomLayer** will set the parameter to the
+permeability in the z-direction of the bottom layer of the domain. For this
+last option, no further input is required for this parameter.
+
+.. container:: list
+   ::
+
+      pfset Patch.bottom.BCPressure.DeepAquifer.Permeability.Type  "Constant"       ## TCL syntax
+
+      <runname>.Patch.bottom.BCPressure.DeepAquifer.Permeability.Type = "Constant"  ## Python syntax
+
+*double*
+**Patch.BCPressure.DeepAquifer.Permeability.Value**
+no default
+When the **DeepAquifer** boundary condition is chosen and the permeability type
+is set to **Constant**, this key will set the permeability to the constant
+value provided by the user.
+
+.. container:: list
+   ::
+
+      pfset Patch.bottom.BCPressure.DeepAquifer.Permeability.Value  0.01836       ## TCL syntax
+
+      <runname>.Patch.bottom.BCPressure.DeepAquifer.Permeability.Value = 0.01836  ## Python syntax
+
+*string*
+**Patch.BCPressure.DeepAquifer.Permeability.FileName**
+no default
+When the **DeepAquifer** boundary condition is chosen and the permeability type
+is set to **PFBFile** or **NCFile**, this key provides ParFlow with the name of
+the input file.
+
+.. container:: list
+   ::
+
+      pfset Patch.bottom.BCPressure.DeepAquifer.Permeability.FileName  "file.pfb"       ## TCL syntax
+
+      <runname>.Patch.bottom.BCPressure.DeepAquifer.Permeability.FileName = "file.pfb"  ## Python syntax
+
+*string*
+**Patch.BCPressure.DeepAquifer.SpecificYield.Type**
+no default
+This key is required when the **DeepAquifer** boundary condition is chosen.
+It sets the values for the specific yield of the deep aquifer.
+Possible values for this key are **Constant, PFBFile** and **NCFile**.
+The choice **Constant** will set the parameter to a constant value, while
+**PFBFile** will set the parameter to values read from a ParFlow 2D binary file
+and **NCFile** will set the parameter to values read from a NetCDF file.
+
+.. container:: list
+   ::
+
+      pfset Patch.bottom.BCPressure.DeepAquifer.SpecificYield.Type  "PFBFile"       ## TCL syntax
+
+      <runname>.Patch.bottom.BCPressure.DeepAquifer.SpecificYield.Type = "PFBfile"  ## Python syntax
+
+*double*
+**Patch.BCPressure.DeepAquifer.SpecificYield.Value**
+no default
+When the **DeepAquifer** boundary condition is chosen and the specific yield
+type is set to **Constant**, this key will set the specific yield to the
+constant value provided by the user.
+
+.. container:: list
+   ::
+
+      pfset Patch.bottom.BCPressure.DeepAquifer.SpecificYield.Value  0.1       ## TCL syntax
+
+      <runname>.Patch.bottom.BCPressure.DeepAquifer.SpecificYield.Value = 0.1  ## Python syntax
+
+*string*
+**Patch.BCPressure.DeepAquifer.SpecificYield.FileName**
+no default
+When the **DeepAquifer** boundary condition is chosen and the specific yield
+type is set to **PFBFile** or **NCFile**, this key provides ParFlow with the
+name of the input file.
+
+.. container:: list
+   ::
+
+      pfset Patch.bottom.BCPressure.DeepAquifer.SpecificYield.FileName  "file.pfb"       ## TCL syntax
+
+      <runname>.Patch.bottom.BCPressure.DeepAquifer.SpecificYield.FileName = "file.pfb"  ## Python syntax
+
+*string*
+**Patch.BCPressure.DeepAquifer.AquiferDepth.Type**
+no default
+This key is required when the **DeepAquifer** boundary condition is chosen.
+It sets the values for the depth (i.e. thickness) of the deep aquifer.
+The only possible value for this key is **Constant**.
+The choice **Constant** will set the parameter to a constant value.
+
+.. container:: list
+   ::
+
+      pfset Patch.bottom.BCPressure.DeepAquifer.AquiferDepth.Type  "PFBFile"       ## TCL syntax
+
+      <runname>.Patch.bottom.BCPressure.DeepAquifer.AquiferDepth.Type = "PFBfile"  ## Python syntax
+
+*double*
+**Patch.BCPressure.DeepAquifer.AquiferDepth.Value**
+no default
+When the **DeepAquifer** boundary condition is chosen and the aquifer depth
+type is set to **Constant**, this key will set the aquifer depth to the
+constant value provided by the user.
+
+.. container:: list
+   ::
+
+      pfset Patch.bottom.BCPressure.DeepAquifer.AquiferDepth.Value  90.0       ## TCL syntax
+
+      <runname>.Patch.bottom.BCPressure.DeepAquifer.AquiferDepth.Value = 90.0  ## Python syntax
+
+*string*
+**Patch.BCPressure.DeepAquifer.Elevations.Type**
+no default
+This key is required when the **DeepAquifer** boundary condition is chosen.
+It sets the values for the elevations of the deep aquifer.
+Possible values for this key are **Constant, PFBFile** and **NCFile**.
+The choice **Constant** will set the parameter to a constant value, while
+**PFBFile** will set the parameter to values read from a ParFlow 2D binary file
+and **NCFile** will set the parameter to values read from a NetCDF file.
+
+.. container:: list
+   ::
+
+      pfset Patch.bottom.BCPressure.DeepAquifer.Elevations.Type  "PFBFile"       ## TCL syntax
+
+      <runname>.Patch.bottom.BCPressure.DeepAquifer.Elevations.Type = "PFBfile"  ## Python syntax
+
+*double*
+**Patch.BCPressure.DeepAquifer.Elevations.Value**
+no default
+When the **DeepAquifer** boundary condition is chosen and the elevations
+type is set to **Constant**, this key will set the elevations to the
+constant value provided by the user.
+
+.. container:: list
+   ::
+
+      pfset Patch.bottom.BCPressure.DeepAquifer.Elevations.Value  0.1       ## TCL syntax
+
+      <runname>.Patch.bottom.BCPressure.DeepAquifer.Elevations.Value = 0.1  ## Python syntax
+
+*string*
+**Patch.BCPressure.DeepAquifer.Elevations.FileName**
+no default
+When the **DeepAquifer** boundary condition is chosen and the elevations
+type is set to **PFBFile** or **NCFile**, this key provides ParFlow with the
+name of the input file.
+
+.. container:: list
+   ::
+
+      pfset Patch.bottom.BCPressure.DeepAquifer.Elevations.FileName  "file.pfb"       ## TCL syntax
+
+      <runname>.Patch.bottom.BCPressure.DeepAquifer.Elevations.FileName = "file.pfb"  ## Python syntax
 
 .. _`Boundary Conditions: Saturation`:
 
