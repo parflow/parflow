@@ -625,7 +625,12 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
     */
     KINSetNoMinEps(kin_mem, 0);
     /* NL function norm stopping tolerance. set to 0.0 for default */
-    KINSetFuncNormTol(kin_mem, 0.0);
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // SGS HACKING changed this setting; residual_tol was not being used.
+    // SGS WARNING is not super confident this is the correct setting.
+    // KINSetFuncNormTol(kin_mem, 0.0);
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    KINSetFuncNormTol(kin_mem, public_xtra->residual_tol);
     
     /* Create SUNDIALS linear solver object for kinsol */
     LS = SUNLinSol_SPGMR(uscale, SUN_PREC_RIGHT, krylov_dimension, sunctx);
