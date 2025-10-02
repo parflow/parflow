@@ -40,7 +40,7 @@ pfset ComputationalGrid.NZ   20
 #---------------------------------------------------------
 # The Names of the GeomInputs
 #---------------------------------------------------------
-pfset GeomInput.Names   "domain_input background_input"
+pfset GeomInput.Names   "domain_input"
 
 #---------------------------------------------------------
 # Domain Geometry Input
@@ -65,23 +65,6 @@ pfset Geom.domain.Upper.Y   50.0
 pfset Geom.domain.Upper.Z   10.0
 
 pfset Geom.domain.Patches   "left right front back bottom top"
-
-#---------------------------------------------------------
-# Background Geometry Input
-#---------------------------------------------------------
-pfset GeomInput.background_input.InputType   "Box"
-pfset GeomInput.background_input.GeomName   "background"
-
-#---------------------------------------------------------
-# Background Geometry
-#---------------------------------------------------------
-pfset Geom.background.Lower.X   -99999999.0
-pfset Geom.background.Lower.Y   -99999999.0
-pfset Geom.background.Lower.Z   -99999999.0
-
-pfset Geom.background.Upper.X   99999999.0
-pfset Geom.background.Upper.Y   99999999.0
-pfset Geom.background.Upper.Z   99999999.0
 
 #-----------------------------------------------------------------------------
 # Setup timing info
@@ -230,25 +213,18 @@ pfset Geom.domain.Porosity.Value   0.49
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
-pfset Geom.Perm.Names   "domain background"
+pfset Geom.Perm.Names   "domain"
 pfset Geom.domain.Perm.Type   "Constant"
 # Value for Silt soil in m/hour
 pfset Geom.domain.Perm.Value   0.05
 
 pfset Perm.TensorType   "TensorByGeom"
 
-pfset Geom.Perm.TensorByGeom.Names   "domain background"
+pfset Geom.Perm.TensorByGeom.Names   "domain"
 
 pfset Geom.domain.Perm.TensorValX   0.0
 pfset Geom.domain.Perm.TensorValY   0.0
 pfset Geom.domain.Perm.TensorValZ   1.0
-
-pfset Geom.background.Perm.Type   "Constant"
-pfset Geom.background.Perm.Value   1.0
-
-pfset Geom.background.Perm.TensorValX   1.0
-pfset Geom.background.Perm.TensorValY   1.0
-pfset Geom.background.Perm.TensorValZ   1.0
 
 #-----------------------------------------------------------------------------
 # Phases
@@ -342,7 +318,7 @@ pfset Solver   "Richards"
 pfset Solver.MaxIter   100000
 
 pfset Solver.Nonlinear.MaxIter   250
-pfset Solver.Nonlinear.ResidualTol   1e-8
+pfset Solver.Nonlinear.ResidualTol   1e-10
 pfset Solver.Nonlinear.EtaChoice   "EtaConstant"
 pfset Solver.Nonlinear.EtaValue   1e-12
 pfset Solver.Nonlinear.UseJacobian   True

@@ -52,7 +52,7 @@ test.ComputationalGrid.NZ = 20
 # ---------------------------------------------------------
 # The Names of the GeomInputs
 # ---------------------------------------------------------
-test.GeomInput.Names = "domain_input background_input"
+test.GeomInput.Names = "domain_input"
 
 # ---------------------------------------------------------
 # Domain Geometry Input
@@ -77,23 +77,6 @@ test.Geom.domain.Upper.Y = 50.0
 test.Geom.domain.Upper.Z = 10.0
 
 test.Geom.domain.Patches = "left right front back bottom top"
-
-# ---------------------------------------------------------
-# Background Geometry Input
-# ---------------------------------------------------------
-test.GeomInput.background_input.InputType = "Box"
-test.GeomInput.background_input.GeomName = "background"
-
-# ---------------------------------------------------------
-# Background Geometry
-# ---------------------------------------------------------
-test.Geom.background.Lower.X = -99999999.0
-test.Geom.background.Lower.Y = -99999999.0
-test.Geom.background.Lower.Z = -99999999.0
-
-test.Geom.background.Upper.X = 99999999.0
-test.Geom.background.Upper.Y = 99999999.0
-test.Geom.background.Upper.Z = 99999999.0
 
 # -----------------------------------------------------------------------------
 # Setup timing info
@@ -173,30 +156,23 @@ test.Gravity = 1.0
 test.Geom.Porosity.GeomNames = "domain"
 test.Geom.domain.Porosity.Type = "Constant"
 # Value for Silt soil
-test.Geom.domain.Porosity.Value = 0.489
+test.Geom.domain.Porosity.Value = 0.49
 
 # -----------------------------------------------------------------------------
 # Perm
 # -----------------------------------------------------------------------------
-test.Geom.Perm.Names = "domain background"
+test.Geom.Perm.Names = "domain"
 test.Geom.domain.Perm.Type = "Constant"
 # Value for Silt soil in m/hour
-test.Geom.domain.Perm.Value = 0.01836
+test.Geom.domain.Perm.Value = 0.02
 
 test.Perm.TensorType = "TensorByGeom"
 
-test.Geom.Perm.TensorByGeom.Names = "domain background"
+test.Geom.Perm.TensorByGeom.Names = "domain"
 
 test.Geom.domain.Perm.TensorValX = 0.0
 test.Geom.domain.Perm.TensorValY = 0.0
 test.Geom.domain.Perm.TensorValZ = 1.0
-
-test.Geom.background.Perm.Type = "Constant"
-test.Geom.background.Perm.Value = 1.0
-
-test.Geom.background.Perm.TensorValX = 1.0
-test.Geom.background.Perm.TensorValY = 1.0
-test.Geom.background.Perm.TensorValZ = 1.0
 
 # -----------------------------------------------------------------------------
 # Phases
@@ -221,9 +197,9 @@ test.PhaseSources.water.Geom.domain.Value = 0.0
 # ---------------------------------------------------------
 test.Phase.Saturation.Type = "VanGenuchten"
 test.Phase.Saturation.GeomNames = "domain"
-test.Geom.domain.Saturation.Alpha = 0.657658
-test.Geom.domain.Saturation.N = 2.678804
-test.Geom.domain.Saturation.SRes = 0.102249
+test.Geom.domain.Saturation.Alpha = 0.65
+test.Geom.domain.Saturation.N = 2.00
+test.Geom.domain.Saturation.SRes = 0.10
 test.Geom.domain.Saturation.SSat = 1.0
 
 
@@ -232,8 +208,8 @@ test.Geom.domain.Saturation.SSat = 1.0
 # -----------------------------------------------------------------------------
 test.Phase.RelPerm.Type = "VanGenuchten"
 test.Phase.RelPerm.GeomNames = "domain"
-test.Geom.domain.RelPerm.Alpha = 0.657658
-test.Geom.domain.RelPerm.N = 2.678804
+test.Geom.domain.RelPerm.Alpha = 0.65
+test.Geom.domain.RelPerm.N = 2.00
 
 # ---------------------------------------------------------
 # Mannings coefficient

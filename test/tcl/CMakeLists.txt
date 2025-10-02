@@ -100,6 +100,8 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
   list(APPEND PARALLEL_2DTOPO_TESTS
     deep_aquifer_slab.tcl
     deep_aquifer_vcatch.tcl
+    deep_aquifer_vcatch_kin.tcl
+    deep_aquifer_vcatch_diff.tcl
   )
 
   if(${PARFLOW_HAVE_HYPRE})

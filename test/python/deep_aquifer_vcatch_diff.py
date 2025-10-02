@@ -51,7 +51,7 @@ test.ComputationalGrid.NZ = 20
 # ---------------------------------------------------------
 # The Names of the GeomInputs
 # ---------------------------------------------------------
-test.GeomInput.Names = "domain_input background_input"
+test.GeomInput.Names = "domain_input"
 
 # ---------------------------------------------------------
 # Domain Geometry Input
@@ -77,23 +77,6 @@ test.Geom.domain.Upper.Z = 10.0
 
 test.Geom.domain.Patches = "left right front back bottom top"
 
-# ---------------------------------------------------------
-# Background Geometry Input
-# ---------------------------------------------------------
-test.GeomInput.background_input.InputType = "Box"
-test.GeomInput.background_input.GeomName = "background"
-
-# ---------------------------------------------------------
-# Background Geometry
-# ---------------------------------------------------------
-test.Geom.background.Lower.X = -99999999.0
-test.Geom.background.Lower.Y = -99999999.0
-test.Geom.background.Lower.Z = -99999999.0
-
-test.Geom.background.Upper.X = 99999999.0
-test.Geom.background.Upper.Y = 99999999.0
-test.Geom.background.Upper.Z = 99999999.0
-
 # -----------------------------------------------------------------------------
 # Setup timing info
 # -----------------------------------------------------------------------------
@@ -116,7 +99,7 @@ test.Cycle.constant.Repeat = -1
 
 test.Cycle.rainfall.Names = "rain sunny"
 test.Cycle.rainfall.rain.Length = 1
-test.Cycle.rainfall.sunny.Length = 2
+test.Cycle.rainfall.sunny.Length = 3
 test.Cycle.rainfall.Repeat = -1
 
 # -----------------------------------------------------------------------------
@@ -260,25 +243,18 @@ test.Geom.domain.Porosity.Value = 0.49
 # -----------------------------------------------------------------------------
 # Perm
 # -----------------------------------------------------------------------------
-test.Geom.Perm.Names = "domain background"
+test.Geom.Perm.Names = "domain"
 test.Geom.domain.Perm.Type = "Constant"
 # Value for Silt soil in m/hour
 test.Geom.domain.Perm.Value = 0.05
 
 test.Perm.TensorType = "TensorByGeom"
 
-test.Geom.Perm.TensorByGeom.Names = "domain background"
+test.Geom.Perm.TensorByGeom.Names = "domain"
 
 test.Geom.domain.Perm.TensorValX = 0.0
 test.Geom.domain.Perm.TensorValY = 0.0
 test.Geom.domain.Perm.TensorValZ = 1.0
-
-test.Geom.background.Perm.Type = "Constant"
-test.Geom.background.Perm.Value = 1.0
-
-test.Geom.background.Perm.TensorValX = 1.0
-test.Geom.background.Perm.TensorValY = 1.0
-test.Geom.background.Perm.TensorValZ = 1.0
 
 # -----------------------------------------------------------------------------
 # Phases
@@ -372,9 +348,9 @@ test.Solver = "Richards"
 test.Solver.MaxIter = 100000
 
 test.Solver.Nonlinear.MaxIter = 250
-test.Solver.Nonlinear.ResidualTol = 1e-8
+test.Solver.Nonlinear.ResidualTol = 1e-12
 test.Solver.Nonlinear.EtaChoice = "EtaConstant"
-test.Solver.Nonlinear.EtaValue = 1e-12
+test.Solver.Nonlinear.EtaValue = 1e-14
 test.Solver.Nonlinear.UseJacobian = True
 test.Solver.Nonlinear.StepTol = 1e-16
 

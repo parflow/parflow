@@ -40,7 +40,7 @@ pfset ComputationalGrid.NZ        20
 #---------------------------------------------------------
 # The Names of the GeomInputs
 #---------------------------------------------------------
-pfset GeomInput.Names "domain_input background_input"
+pfset GeomInput.Names "domain_input"
 
 #---------------------------------------------------------
 # Domain Geometry Input
@@ -65,23 +65,6 @@ pfset Geom.domain.Upper.Y         50.0
 pfset Geom.domain.Upper.Z         10.0
 
 pfset Geom.domain.Patches "left right front back bottom top"
-
-#---------------------------------------------------------
-# Background Geometry Input
-#---------------------------------------------------------
-pfset GeomInput.background_input.InputType         Box
-pfset GeomInput.background_input.GeomName          background
-
-#---------------------------------------------------------
-# Background Geometry
-#---------------------------------------------------------
-pfset Geom.background.Lower.X -99999999.0
-pfset Geom.background.Lower.Y -99999999.0
-pfset Geom.background.Lower.Z -99999999.0
-
-pfset Geom.background.Upper.X  99999999.0
-pfset Geom.background.Upper.Y  99999999.0
-pfset Geom.background.Upper.Z  99999999.0
 
 #-----------------------------------------------------------------------------
 # Setup timing info
@@ -113,7 +96,7 @@ set data [open $datafile w]
 puts $data "25 25 1"
 for { set jj 0 } { $jj < 25 } { incr jj } {
   for { set ii 0 } { $ii < 25 } { incr ii } {
-    puts $data 0.01836
+    puts $data 0.02
   }
 }
 close $data
@@ -213,30 +196,23 @@ pfset Gravity  1.0
 pfset Geom.Porosity.GeomNames       "domain"
 pfset Geom.domain.Porosity.Type     Constant
 # Value for Silt soil
-pfset Geom.domain.Porosity.Value    0.489
+pfset Geom.domain.Porosity.Value    0.49
 
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
-pfset Geom.Perm.Names               "domain background"
+pfset Geom.Perm.Names               "domain"
 pfset Geom.domain.Perm.Type         Constant
 # Value for Silt soil in m/hour
-pfset Geom.domain.Perm.Value        0.01836
+pfset Geom.domain.Perm.Value        0.02
 
 pfset Perm.TensorType               TensorByGeom
 
-pfset Geom.Perm.TensorByGeom.Names  "domain background"
+pfset Geom.Perm.TensorByGeom.Names  "domain"
 
 pfset Geom.domain.Perm.TensorValX  0.0
 pfset Geom.domain.Perm.TensorValY  0.0
 pfset Geom.domain.Perm.TensorValZ  1.0
-
-pfset Geom.background.Perm.Type     Constant
-pfset Geom.background.Perm.Value    1.0
-
-pfset Geom.background.Perm.TensorValX  1.0
-pfset Geom.background.Perm.TensorValY  1.0
-pfset Geom.background.Perm.TensorValZ  1.0
 
 #-----------------------------------------------------------------------------
 # Phases
@@ -261,9 +237,9 @@ pfset PhaseSources.water.Geom.domain.Value   0.0
 #---------------------------------------------------------
 pfset Phase.Saturation.Type            VanGenuchten
 pfset Phase.Saturation.GeomNames       domain
-pfset Geom.domain.Saturation.Alpha     0.657658
-pfset Geom.domain.Saturation.N         2.678804
-pfset Geom.domain.Saturation.SRes      0.102249
+pfset Geom.domain.Saturation.Alpha     0.65
+pfset Geom.domain.Saturation.N         2.00
+pfset Geom.domain.Saturation.SRes      0.10
 pfset Geom.domain.Saturation.SSat      1.0
 
 
@@ -272,8 +248,8 @@ pfset Geom.domain.Saturation.SSat      1.0
 #-----------------------------------------------------------------------------
 pfset Phase.RelPerm.Type               VanGenuchten
 pfset Phase.RelPerm.GeomNames          domain
-pfset Geom.domain.RelPerm.Alpha        0.657658
-pfset Geom.domain.RelPerm.N            2.678804
+pfset Geom.domain.RelPerm.Alpha        0.65
+pfset Geom.domain.RelPerm.N            2.00
 
 #---------------------------------------------------------
 # Mannings coefficient
