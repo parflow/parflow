@@ -312,21 +312,17 @@ int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, V
   State        *current_state = (instance_xtra->current_state);
 
   int globalization = (public_xtra->globalization);
-  int neq = (public_xtra->neq);
-
-  double residual_tol = (public_xtra->residual_tol);
-  double step_tol = (public_xtra->step_tol);
 
 #if defined (PARFLOW_HAVE_SUNDIALS)
   N_Vector       uscale = (instance_xtra->uscale);
   N_Vector       fscale = (instance_xtra->fscale);
   
 /* SUNDIALS context object */  
-  SUNContext sunctx = (instance_xtra->sunctx);
+  //SUNContext sunctx = (instance_xtra->sunctx);
 /* SUNDIALS uses (void *) for Kinsol memory block */
   void * kin_mem = (instance_xtra->kin_mem);
 /* function eval */
-  KINSysFn feval = (instance_xtra->feval);
+  //KINSysFn feval = (instance_xtra->feval);
   
 /* N_Vector for pressure variable */
   N_Vector  pf_n_pressure = (instance_xtra->pf_n_pressure);
@@ -334,6 +330,11 @@ int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, V
 #else
   Vector       *uscale = (instance_xtra->uscale);
   Vector       *fscale = (instance_xtra->fscale);
+  
+  int neq = (public_xtra->neq);
+
+  double residual_tol = (public_xtra->residual_tol);
+  double step_tol = (public_xtra->step_tol);
   
   SysFn feval = (instance_xtra->feval);
   KINMem kin_mem = (instance_xtra->kin_mem);
@@ -467,11 +468,9 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
   InstanceXtra  *instance_xtra;
 
-  int neq = public_xtra->neq;
   int max_restarts = public_xtra->max_restarts;
   int krylov_dimension = public_xtra->krylov_dimension;
   int max_iter = public_xtra->max_iter;
-  int print_flag = public_xtra->print_flag;
   int eta_choice = public_xtra->eta_choice;
 
   double eta_value = public_xtra->eta_value;
@@ -494,6 +493,8 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
   void *kin_mem;  
   SUNLinearSolver LS;
 #else
+  int neq = public_xtra->neq;
+  int print_flag = public_xtra->print_flag;
 
   long int     *iopt;
   double       *ropt;
@@ -511,8 +512,6 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
 
   FILE                  *kinsol_file;
   char filename[1024];
-
-  int i;
 
   if (PFModuleInstanceXtra(this_module) == NULL)
     instance_xtra = ctalloc(InstanceXtra, 1);
@@ -631,6 +630,11 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
     // KINSetFuncNormTol(kin_mem, 0.0);
     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     KINSetFuncNormTol(kin_mem, public_xtra->residual_tol);
+
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // SGS WARNING Have key for step_tol but this was not being used, is SCALED the same
+    // as old StepTol?
+    KINSetScaledStepTol(kin_mem, public_xtra->step_tol);
     
     /* Create SUNDIALS linear solver object for kinsol */
     LS = SUNLinSol_SPGMR(uscale, SUN_PREC_RIGHT, krylov_dimension, sunctx);
@@ -698,7 +702,7 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
       ropt[ETAGAMMA] = eta_gamma;
 
     /* Initialize iteration counts */
-    for (i = 0; i < OPT_SIZE; i++)
+    for (int i = 0; i < OPT_SIZE; i++)
       instance_xtra->integer_outputs[i] = 0;
 
     /* Scaling vectors*/
