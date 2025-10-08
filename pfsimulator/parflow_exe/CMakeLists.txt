@@ -27,7 +27,7 @@ if( ${PARFLOW_HAVE_CLM} )
 endif( ${PARFLOW_HAVE_CLM} )
 
 if (${PARFLOW_HAVE_HYPRE})
-  target_link_libraries (parflow ${HYPRE_LIBRARIES})
+  target_link_libraries (parflow Hypre::Hypre)
 endif (${PARFLOW_HAVE_HYPRE})
 
 if (${PARFLOW_HAVE_MPI})
@@ -39,6 +39,12 @@ endif (${PARFLOW_HAVE_MPI})
 if (${PARFLOW_HAVE_SILO})
   target_link_libraries (parflow ${SILO_LIBRARIES})
 endif (${PARFLOW_HAVE_SILO})
+
+if (${PARFLOW_HAVE_PDI})
+  target_link_libraries (parflow ${PDI_LIBRARIES})
+  target_link_libraries (parflow ${PARACONF_LIBRARIES})
+  target_link_libraries(parflow ${SPDLOG_LIBRARIES})
+endif (${PARFLOW_HAVE_PDI})
 
 if (${PARFLOW_HAVE_NETCDF})
   target_link_libraries (parflow NetCDF::NetCDF)

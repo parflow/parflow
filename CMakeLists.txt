@@ -47,6 +47,7 @@ set_property(CACHE PARFLOW_ACCELERATOR_BACKEND PROPERTY STRINGS none cuda kokkos
 if(PARFLOW_ACCELERATOR_BACKEND STREQUAL "none")
 elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
   set(PARFLOW_HAVE_CUDA "yes")
+
   if(NOT DEFINED KOKKOS_ROOT)
     # Initialize CUDA
     include(CheckLanguage)
@@ -56,10 +57,10 @@ elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
       set(CMAKE_CUDA_STANDARD 14)
       set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-extended-lambda")
       if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_70,code=sm_70")
-	if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER 11)
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_70,code=sm_70")
+        if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER 11)
           set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_80,code=sm_80")
-	endif(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER 11)
+        endif(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER 11)
       endif(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
       set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -G --ptxas-options=-v")
       set(CMAKE_CUDA_HOST_COMPILER mpicxx)
@@ -203,17 +204,10 @@ endif ()
 
 # OAS3
 if (${PARFLOW_AMPS_LAYER} STREQUAL "oas3")
-  find_package(OASIS)
+  find_package(OASIS REQUIRED)
   if (OASIS_FOUND)
-    find_package(NetCDF-Fortran)
-    if (NetCDF-Fortran_FOUND)
-      set (PARFLOW_HAVE_OAS3 "yes")
-      set (HAVE_OAS3 ${PARFLOW_HAVE_OAS3})
-    else (NetCDF-Fortran_FOUND)
-      message(FATAL_ERROR "ERROR: NetCDF-Fortran is required when compiling with PARFLOW_AMPS_LAYER=oas3 (check NETCDF_Fortran_ROOT variable)")
-    endif (NetCDF-Fortran_FOUND)
-  else (OASIS_FOUND)
-    message(FATAL_ERROR "ERROR: OASIS is required when compiling with PARFLOW_AMPS_LAYER=oas3 (check OAS3_ROOT variable)")
+    set (PARFLOW_HAVE_OAS3 "yes")
+    set (HAVE_OAS3 ${PARFLOW_HAVE_OAS3})
   endif (OASIS_FOUND)
 endif (${PARFLOW_AMPS_LAYER} STREQUAL "oas3")
 
@@ -230,6 +224,30 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
     set(PARFLOW_HAVE_MPI "yes")
     set(HAVE_MPI ${PARFLOW_HAVE_MPI})
     message(STATUS "Found MPIEXEC: ${MPIEXEC}")    
+
+    # Need to pass MPI include header to nvcc to avoid missing <mpi.h> error at amps.h.
+    if (${PARFLOW_HAVE_CUDA})
+      if (MPI_C_INCLUDE_DIRS)
+        # Construct the compiler string for the include directories.
+        foreach(dir ${MPI_C_INCLUDE_DIRS})
+          string(APPEND CUDA_MPI_INCLUDES "-I${dir} ")
+        endforeach()
+      else()
+        # Guess MPI include dir from MPI_HOME (if it exists)
+        # https://gitlab.kitware.com/cmake/cmake/-/blob/master/Modules/FindMPI.cmake?ref_type=heads#L120
+        if(DEFINED CACHE{MPI_HOME})
+          set(CUDA_MPI_INCLUDES -I${MPI_HOME}/include)
+       elseif(DEFINED ENV{MPI_HOME})
+          set(CUDA_MPI_INCLUDES -I$ENV{MPI_HOME}/include)
+        endif()
+      endif()
+
+      if(CUDA_MPI_INCLUDES)
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} ${CUDA_MPI_INCLUDES}")
+      else()
+        message(WARNING "MPI include dir not found. This might cause compile problems when building CUDA sources with MPI headers.")
+      endif()
+    endif()
   endif (${MPI_C_FOUND})
 
 endif ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
@@ -292,6 +310,21 @@ if (${PARFLOW_ENABLE_HDF5} OR DEFINED HDF5_ROOT)
     set(HAVE_HDF5 ${PARFLOW_HAVE_HDF5})
   endif (${HDF5_FOUND})
 endif (${PARFLOW_ENABLE_HDF5} OR DEFINED HDF5_ROOT)
+
+#-----------------------------------------------------------------------------
+# PDI
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_PDI False CACHE BOOL "Build with PDI")
+if (${PARFLOW_ENABLE_PDI} OR DEFINED PDI_ROOT)
+  find_package(PDI)
+  if (${PDI_FOUND})
+    set(PARFLOW_HAVE_PDI "yes")
+    # Additional dependencies required when PDI is enabled.
+    # These libraries must be found to ensure proper functionality.
+    find_package(PARACONF REQUIRED)
+    find_package(SPDLOG REQUIRED)
+  endif (${PDI_FOUND})
+endif (${PARFLOW_ENABLE_PDI} OR DEFINED PDI_ROOT)
 
 #-----------------------------------------------------------------------------
 # Hypre
@@ -557,7 +590,7 @@ include_directories ("${PROJECT_BINARY_DIR}/include")
 
 option(PARFLOW_ENABLE_PYTHON "Build python module for running ParFlow" "FALSE")
 if (PARFLOW_ENABLE_PYTHON)
-  find_package(Python3 3.6 QUIET REQUIRED COMPONENTS Interpreter)
+  find_package(Python3 3.7 QUIET REQUIRED COMPONENTS Interpreter)
   set(PARFLOW_PYTHON_DEPENDS)
   set(PARFLOW_HAVE_PYTHON)
   set(PARFLOW_PYTHON "${CMAKE_INSTALL_PREFIX}/py-env/bin/python3")

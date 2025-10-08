@@ -81,6 +81,7 @@ typedef struct {
   int print_mannings;           /* print mannings? */
   int print_specific_storage;   /* print spec storage? */
   int print_top;                /* print top? */
+  int print_bottom;             /* print bottom? */
   int print_velocities;         /* print velocities? */
   int print_satur;              /* print saturations? */
   int print_mask;               /* print mask? */
@@ -92,6 +93,25 @@ typedef struct {
   int print_evaptrans_sum;      /* print evaptrans_sum? */
   int print_overland_sum;       /* print overland_sum? */
   int print_overland_bc_flux;   /* print overland outflow boundary condition flux? */
+
+  int write_pdi_subsurf_data;     /* write subsurf via PDI */
+  int write_pdi_press;            /* write pressure via PDI */
+  int write_pdi_slopes;           /* write slopes via PDI */
+  int write_pdi_mannings;         /* write mannings via PDI */
+  int write_pdi_specific_storage; /* write specific storage via PDI */
+  int write_pdi_top;              /* write top via PDI */
+  int write_pdi_bottom;           /* write bottom via PDI */
+  int write_pdi_velocities;       /* write velocities via PDI */
+  int write_pdi_satur;            /* write saturation via PDI */
+  int write_pdi_mask;             /* write mask via PDI */
+  //int write_pdi_concen;         /* write concentration via PDI */
+  //int write_pdi_wells;          /* write wells via PDI */
+  int write_pdi_dzmult;           /* write dzmult via PDI */
+  int write_pdi_evaptrans;        /* write evaptrans via PDI */
+  int write_pdi_evaptrans_sum;    /* write evaptrans_sum via PDI */
+  int write_pdi_overland_sum;     /* write overland_sum via PDI */
+  int write_pdi_overland_bc_flux; /* write overland_bc_flux via PDI */
+
   int write_silo_subsurf_data;  /* write permeability/porosity? */
   int write_silo_press;         /* write pressures? */
   int write_silo_velocities;    /* write velocities? */
@@ -104,6 +124,7 @@ typedef struct {
   int write_silo_mannings;      /* write mannings? */
   int write_silo_specific_storage;      /* write specific storage? */
   int write_silo_top;           /* write top? */
+  int write_silo_bottom;           /* write bottom? */
   int write_silo_overland_sum;  /* write sum of overland outflow? */
   int write_silo_overland_bc_flux;      /* write overland outflow boundary condition flux? */
   int write_silo_dzmult;        /* write dz multiplier */
@@ -461,7 +482,7 @@ SetupRichards(PFModule * this_module)
 
   /* Do turning bands (and other stuff maybe) */
   PFModuleInvokeType(SetProblemDataInvoke, set_problem_data, (problem_data));
-  ComputeTop(problem, problem_data);
+  ComputeTopAndBottom(problem, problem_data);
 
   if (public_xtra->print_top || public_xtra->write_silo_top)
   {
@@ -538,6 +559,30 @@ SetupRichards(PFModule * this_module)
                            storage_filenames);
   }
 
+  /* Write subsurface data */
+  if (public_xtra->write_pdi_subsurf_data)
+  {
+    strcpy(file_postfix, "perm_x");
+    WritePDI(file_prefix, file_postfix, 0,
+             ProblemDataPermeabilityX(problem_data), 0, 0);
+
+    strcpy(file_postfix, "perm_y");
+    WritePDI(file_prefix, file_postfix, 0,
+             ProblemDataPermeabilityY(problem_data), 0, 0);
+
+    strcpy(file_postfix, "perm_z");
+    WritePDI(file_prefix, file_postfix, 0,
+             ProblemDataPermeabilityZ(problem_data), 0, 0);
+
+    strcpy(file_postfix, "porosity");
+    WritePDI(file_prefix, file_postfix, 0,
+             ProblemDataPorosity(problem_data), 0, 0);
+
+    // IMF -- added specific storage to subsurface bundle
+    strcpy(file_postfix, "specific_storage");
+    WritePDI(file_prefix, file_postfix, 0,
+             ProblemDataSpecificStorage(problem_data), 0, 0);
+  }
 
   if (public_xtra->write_silo_subsurf_data)
   {
@@ -617,6 +662,17 @@ SetupRichards(PFModule * this_module)
                            slope_filenames);
   }
 
+  if (public_xtra->write_pdi_slopes)
+  {
+    strcpy(file_postfix, "slope_x");
+    WritePDI(file_prefix, file_postfix, 0,
+             ProblemDataTSlopeX(problem_data), 0, 0);
+
+    strcpy(file_postfix, "slope_y");
+    WritePDI(file_prefix, file_postfix, 0,
+             ProblemDataTSlopeY(problem_data), 0, 0);
+  }
+
   if (public_xtra->print_channelwidth)
   {
     strcpy(file_postfix, "wc_x");
@@ -676,6 +732,13 @@ SetupRichards(PFModule * this_module)
                            mannings_filenames);
   }
 
+  if (public_xtra->write_pdi_mannings)
+  {
+    strcpy(file_postfix, "mannings");
+    WritePDI(file_prefix, file_postfix, 0,
+             ProblemDataMannings(problem_data), 0, 0);
+  }
+
   if (public_xtra->write_silo_mannings)
   {
     strcpy(file_postfix, "");
@@ -704,6 +767,12 @@ SetupRichards(PFModule * this_module)
                            js_inputs, file_prefix, "dz multiplier", NULL, "cell", "subsurface",
                            sizeof(dzmult_filenames) / sizeof(dzmult_filenames[0]),
                            dzmult_filenames);
+  }
+
+  if (public_xtra->write_pdi_dzmult)
+  {
+    strcpy(file_postfix, "dz_mult");
+    WritePDI(file_prefix, file_postfix, 0, instance_xtra->dz_mult, 0, 0);
   }
 
   if (public_xtra->write_silo_dzmult)
@@ -744,6 +813,16 @@ SetupRichards(PFModule * this_module)
     }
   }
 
+  // IMF --
+  // Lumped specific storage w/ subsurf bundle,
+  // Left keys for individual printing for backward compatibility
+  if (public_xtra->write_pdi_specific_storage)
+  {
+    strcpy(file_postfix, "specific_storage");
+    WritePDI(file_prefix, file_postfix, 0,
+             ProblemDataSpecificStorage(problem_data), 0, 0);
+  }
+
   if (public_xtra->write_silo_specific_storage)
   {
     strcpy(file_postfix, "");
@@ -761,6 +840,22 @@ SetupRichards(PFModule * this_module)
     WritePFBinary(file_prefix, file_postfix, ProblemDataPatchIndexOfDomainTop(problem_data));
   }
 
+  if (public_xtra->print_bottom)
+  {
+    strcpy(file_postfix, "bottom_zindex");
+    WritePFBinary(file_prefix, file_postfix, ProblemDataIndexOfDomainBottom(problem_data));
+  }
+
+  if (public_xtra->write_pdi_top)
+  {
+    printf("WritePDITop -- not yet implemented\n");
+  }
+
+  if (public_xtra->write_pdi_bottom)
+  {
+    printf("WritePDIBottom -- not yet implemented\n");
+  }
+
   if (public_xtra->write_silo_top)
   {
     strcpy(file_postfix, "");
@@ -770,6 +865,14 @@ SetupRichards(PFModule * this_module)
     strcpy(file_type, "top_patch");
     WriteSilo(file_prefix, file_type, file_postfix, ProblemDataPatchIndexOfDomainTop(problem_data),
               t, 0, "TopPatch");
+  }
+
+  if (public_xtra->write_silo_bottom)
+  {
+    strcpy(file_postfix, "");
+    strcpy(file_type, "bottom_zindex");
+    WriteSilo(file_prefix, file_type, file_postfix, ProblemDataIndexOfDomainBottom(problem_data),
+              t, 0, "BottomZIndex");
   }
 
   if (!amps_Rank(amps_CommWorld))
@@ -845,6 +948,7 @@ SetupRichards(PFModule * this_module)
 
     if (public_xtra->write_silo_overland_sum
         || public_xtra->print_overland_sum
+        || public_xtra->write_pdi_overland_sum
         || public_xtra->write_silopmpio_overland_sum
         || public_xtra->write_netcdf_overland_sum)
     {
@@ -1299,6 +1403,13 @@ SetupRichards(PFModule * this_module)
                                 press_filenames);
       }
 
+      if (public_xtra->write_pdi_press)
+      {
+        sprintf(file_postfix, "press.%05d", instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number, instance_xtra->pressure, 0, 0);
+        any_file_dumped = 1;
+      }
+
       if (public_xtra->write_silo_press)
       {
         sprintf(file_postfix, "%05d", instance_xtra->file_number);
@@ -1345,6 +1456,14 @@ SetupRichards(PFModule * this_module)
                                 js_outputs, file_prefix, t, 0, "saturation", NULL, "cell", "subsurface",
                                 sizeof(satur_filenames) / sizeof(satur_filenames[0]),
                                 satur_filenames);
+      }
+
+      if (public_xtra->write_pdi_satur)
+      {
+        sprintf(file_postfix, "satur.%05d", instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                 instance_xtra->saturation, 0, 0);
+        any_file_dumped = 1;
       }
 
       if (public_xtra->write_silo_satur)
@@ -1444,55 +1563,6 @@ SetupRichards(PFModule * this_module)
         WritePFNC(file_prefix, nc_postfix, t, instance_xtra->dz_mult,
                   public_xtra->numVarTimeVariant, "DZ_Multiplier", 3, true,
                   public_xtra->numVarIni);
-        any_file_dumped = 1;
-      }
-
-      /*-----------------------------------------------------------------
-       * Print out mask?
-       *-----------------------------------------------------------------*/
-
-      if (public_xtra->print_mask)
-      {
-        strcpy(file_postfix, "mask");
-        WritePFBinary(file_prefix, file_postfix, instance_xtra->mask);
-        any_file_dumped = 1;
-
-        static const char* mask_filenames[] = {
-          "mask"
-        };
-        MetadataAddStaticField(
-                               js_inputs, file_prefix, "mask", NULL, "cell", "subsurface",
-                               sizeof(mask_filenames) / sizeof(mask_filenames[0]),
-                               mask_filenames);
-      }
-
-      if (public_xtra->write_netcdf_mask)
-      {
-        sprintf(nc_postfix, "%05d", instance_xtra->file_number);
-        WritePFNC(file_prefix, nc_postfix, t, instance_xtra->mask,
-                  public_xtra->numVarTimeVariant, "mask", 3, true,
-                  public_xtra->numVarIni);
-        any_file_dumped = 1;
-      }
-
-
-      if (public_xtra->write_silo_mask)
-      {
-        strcpy(file_postfix, "");
-        strcpy(file_type, "mask");
-        WriteSilo(file_prefix, file_type, file_postfix,
-                  instance_xtra->mask, t, instance_xtra->file_number,
-                  "Mask");
-        any_file_dumped = 1;
-      }
-
-      if (public_xtra->write_silopmpio_mask)
-      {
-        strcpy(file_postfix, "");
-        strcpy(file_type, "mask");
-        WriteSiloPMPIO(file_prefix, file_type, file_postfix,
-                       instance_xtra->mask, t, instance_xtra->file_number,
-                       "Mask");
         any_file_dumped = 1;
       }
 
@@ -1622,6 +1692,71 @@ SetupRichards(PFModule * this_module)
       }
     }
 
+    if (public_xtra->write_pdi_velocities)
+    {
+      sprintf(file_postfix, "velx.%05d", instance_xtra->file_number);
+      WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+               instance_xtra->x_velocity, 0, 0);
+
+      sprintf(file_postfix, "vely.%05d", instance_xtra->file_number);
+      WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+               instance_xtra->y_velocity, 0, 0);
+
+      sprintf(file_postfix, "velz.%05d", instance_xtra->file_number);
+      WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+               instance_xtra->z_velocity, 0, 0);
+
+      any_file_dumped = 1;
+    }
+
+    /*-----------------------------------------------------------------
+     * Print out mask?
+     *-----------------------------------------------------------------*/
+    if (public_xtra->print_mask)
+    {
+      strcpy(file_postfix, "mask");
+      WritePFBinary(file_prefix, file_postfix, instance_xtra->mask);
+      any_file_dumped = 1;
+
+      static const char* mask_filenames[] = {
+        "mask"
+      };
+      MetadataAddStaticField(
+                             js_inputs, file_prefix, "mask", NULL, "cell", "subsurface",
+                             sizeof(mask_filenames) / sizeof(mask_filenames[0]),
+                             mask_filenames);
+    }
+
+    if (public_xtra->write_netcdf_mask)
+    {
+      sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+      WritePFNC(file_prefix, nc_postfix, t, instance_xtra->mask,
+                public_xtra->numVarTimeVariant, "mask", 3, true,
+                public_xtra->numVarIni);
+      any_file_dumped = 1;
+    }
+
+
+    if (public_xtra->write_silo_mask)
+    {
+      strcpy(file_postfix, "");
+      strcpy(file_type, "mask");
+      WriteSilo(file_prefix, file_type, file_postfix,
+                instance_xtra->mask, t, instance_xtra->file_number,
+                "Mask");
+      any_file_dumped = 1;
+    }
+
+    if (public_xtra->write_silopmpio_mask)
+    {
+      strcpy(file_postfix, "");
+      strcpy(file_type, "mask");
+      WriteSiloPMPIO(file_prefix, file_type, file_postfix,
+                     instance_xtra->mask, t, instance_xtra->file_number,
+                     "Mask");
+      any_file_dumped = 1;
+    }
+
     /*-----------------------------------------------------------------
      * Log this step
      *-----------------------------------------------------------------*/
@@ -1715,8 +1850,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 #ifdef HAVE_CLM
   Grid *grid = (instance_xtra->grid);
   Subgrid *subgrid;
-  Subvector *p_sub, *s_sub, *et_sub, *m_sub, *po_sub, *dz_sub;
-  double *pp, *sp, *et, *ms, *po_dat, *dz_dat;
+  Subvector *p_sub, *s_sub, *et_sub, *po_sub, *dz_sub;
+  double *pp, *sp, *et, *po_dat, *dz_dat;
 
   /* IMF: For CLM met forcing (local to AdvanceRichards) */
   int istep;                    // IMF: counter for clm output times
@@ -2334,11 +2469,19 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         int soi_z;
         int x, y, z;
 
+        Vector *top = ProblemDataIndexOfDomainTop(problem_data);
+        Vector *bot = ProblemDataIndexOfDomainBottom(problem_data);
+        Subvector *top_sub;
+        Subvector *bot_sub;
+        double *top_dat;
+        double *bot_dat;
+
         subgrid = GridSubgrid(grid, is);
         p_sub = VectorSubvector(instance_xtra->pressure, is);
         s_sub = VectorSubvector(instance_xtra->saturation, is);
         et_sub = VectorSubvector(evap_trans, is);
-        m_sub = VectorSubvector(instance_xtra->mask, is);
+        top_sub = VectorSubvector(top, is);
+        bot_sub = VectorSubvector(bot, is);
         po_sub = VectorSubvector(porosity, is);
         dz_sub = VectorSubvector(instance_xtra->dz_mult, is);
 
@@ -2415,7 +2558,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         sp = SubvectorData(s_sub);
         pp = SubvectorData(p_sub);
         et = SubvectorData(et_sub);
-        ms = SubvectorData(m_sub);
+        top_dat = SubvectorData(top_sub);
+        bot_dat = SubvectorData(bot_sub);
         po_dat = SubvectorData(po_sub);
         dz_dat = SubvectorData(dz_sub);
 
@@ -2545,8 +2689,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           {
             /*BH: added vegetation forcings and associated option (clm_forc_veg) */
             clm_file_dir_length = strlen(public_xtra->clm_file_dir);
-            CALL_CLM_LSM(pp, sp, et, ms, po_dat, dz_dat, istep, cdt, t,
-                         start_time, dx, dy, dz, ix, iy, nx, ny, nz,
+            CALL_CLM_LSM(pp, sp, et, top_dat, bot_dat, po_dat, dz_dat, istep,
+                         cdt, t, start_time, dx, dy, dz, ix, iy, nx, ny, nz,
                          nx_f, ny_f, nz_f, nz_rz, ip, p, q, r, gnx,
                          gny, rank, sw_data, lw_data, prcp_data,
                          tas_data, u_data, v_data, patm_data,
@@ -3358,6 +3502,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
      **************************************************************/
     if (public_xtra->write_silo_evaptrans_sum
         || public_xtra->print_evaptrans_sum
+        || public_xtra->write_pdi_evaptrans_sum
         || public_xtra->write_netcdf_evaptrans_sum)
     {
       EvapTransSum(problem_data, dt, evap_trans_sum, evap_trans);
@@ -3368,6 +3513,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
      **************************************************************/
     if (public_xtra->write_silo_overland_sum
         || public_xtra->print_overland_sum
+        || public_xtra->write_pdi_overland_sum
         || public_xtra->write_netcdf_overland_sum)
     {
       OverlandSum(problem_data,
@@ -3411,6 +3557,15 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         MetadataAddDynamicField(
                                 js_outputs, file_prefix, t, instance_xtra->file_number,
                                 "pressure", "m", "cell", "subsurface", 0, NULL);
+      }
+
+      if (public_xtra->write_pdi_press)
+      {
+        sprintf(file_postfix, "press.%05d",
+                instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                 instance_xtra->pressure, 0, 0);
+        any_file_dumped = 1;
       }
 
       if (public_xtra->write_silo_press)
@@ -3472,6 +3627,21 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         any_file_dumped = 1;
       }
 
+      if (public_xtra->write_pdi_velocities)        //jjb
+      {
+        sprintf(file_postfix, "velx.%05d", instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                 instance_xtra->x_velocity, 0, 0);
+
+        sprintf(file_postfix, "vely.%05d", instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                 instance_xtra->y_velocity, 0, 0);
+
+        sprintf(file_postfix, "velz.%05d", instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                 instance_xtra->z_velocity, 0, 0);
+        any_file_dumped = 1;
+      }
 
       if (public_xtra->print_satur)
       {
@@ -3485,6 +3655,15 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         MetadataAddDynamicField(
                                 js_outputs, file_prefix, t, instance_xtra->file_number,
                                 "saturation", "1/m", "cell", "subsurface", 0, NULL);
+      }
+
+      if (public_xtra->write_pdi_satur)
+      {
+        sprintf(file_postfix, "satur.%05d",
+                instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                 instance_xtra->saturation, 0, 0);
+        any_file_dumped = 1;
       }
 
       if (public_xtra->write_silo_satur)
@@ -3533,6 +3712,13 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
          */
       }
 
+      if (public_xtra->write_pdi_evaptrans)
+      {
+        sprintf(file_postfix, "evaptrans.%05d",
+                instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number, evap_trans, 0, 0);
+        any_file_dumped = 1;
+      }
 
       if (public_xtra->write_silo_evaptrans)
       {
@@ -3565,6 +3751,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
       if (public_xtra->print_evaptrans_sum
           || public_xtra->write_silo_evaptrans_sum
+          || public_xtra->write_pdi_evaptrans_sum
           || public_xtra->write_netcdf_evaptrans_sum)
       {
         if (public_xtra->write_netcdf_evaptrans_sum)
@@ -3581,6 +3768,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           sprintf(file_postfix, "evaptranssum.%05d",
                   instance_xtra->file_number);
           WritePFBinary(file_prefix, file_postfix, evap_trans_sum);
+          any_file_dumped = 1;
+        }
+
+        if (public_xtra->write_pdi_evaptrans_sum)
+        {
+          sprintf(file_postfix, "evaptranssum.%05d",
+                  instance_xtra->file_number);
+          WritePDI(file_prefix, file_postfix, instance_xtra->file_number, evap_trans_sum, 0, 0);
           any_file_dumped = 1;
         }
 
@@ -3610,6 +3805,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       }
 
       if (public_xtra->print_overland_sum
+          || public_xtra->write_pdi_overland_sum
           || public_xtra->write_silo_overland_sum
           || public_xtra->write_netcdf_overland_sum)
       {
@@ -3627,6 +3823,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           sprintf(file_postfix, "overlandsum.%05d",
                   instance_xtra->file_number);
           WritePFBinary(file_prefix, file_postfix, overland_sum);
+          any_file_dumped = 1;
+        }
+
+        if (public_xtra->write_pdi_overland_sum)
+        {
+          sprintf(file_postfix, "overlandsum.%05d",
+                  instance_xtra->file_number);
+          WritePDI(file_prefix, file_postfix, instance_xtra->file_number, overland_sum, 0, 0);
           any_file_dumped = 1;
         }
 
@@ -3668,6 +3872,15 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
          * js_outputs, file_prefix, t, instance_xtra->file_number,
          * "overland bc flux", "m", "cell", "subsurface", 0, NULL);
          */
+      }
+
+      if (public_xtra->write_pdi_overland_bc_flux)
+      {
+        sprintf(file_postfix, "overland_bc_flux.%05d",
+                instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                 instance_xtra->ovrl_bc_flx, 0, 0);
+        any_file_dumped = 1;
       }
 
       if (public_xtra->write_netcdf_overland_bc_flux)
@@ -4239,6 +4452,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       any_file_dumped = 1;
     }
 
+    if (public_xtra->write_pdi_satur)
+    {
+      sprintf(file_postfix, "satur.%05d", instance_xtra->file_number);
+      WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+               instance_xtra->saturation, 0, 0);
+      any_file_dumped = 1;
+    }
+
     if (public_xtra->write_silo_satur)
     {
       sprintf(file_postfix, "%05d", instance_xtra->file_number);
@@ -4257,6 +4478,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       any_file_dumped = 1;
     }
 
+    if (public_xtra->write_pdi_evaptrans)
+    {
+      sprintf(file_postfix, "evaptrans.%05d",
+              instance_xtra->file_number);
+      WritePDI(file_prefix, file_postfix, instance_xtra->file_number, evap_trans, 0, 0);
+      any_file_dumped = 1;
+    }
+
     if (public_xtra->write_silo_evaptrans)
     {
       sprintf(file_postfix, "%05d", instance_xtra->file_number);
@@ -4267,6 +4496,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     }
 
     if (public_xtra->print_evaptrans_sum
+        || public_xtra->write_pdi_evaptrans_sum
         || public_xtra->write_silo_evaptrans_sum)
     {
       if (public_xtra->print_evaptrans_sum)
@@ -4274,6 +4504,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         sprintf(file_postfix, "evaptranssum.%05d",
                 instance_xtra->file_number);
         WritePFBinary(file_prefix, file_postfix, evap_trans_sum);
+        any_file_dumped = 1;
+      }
+
+      if (public_xtra->write_pdi_evaptrans_sum)
+      {
+        sprintf(file_postfix, "evaptranssum.%05d",
+                instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number, evap_trans_sum, 0, 0);
         any_file_dumped = 1;
       }
 
@@ -4291,6 +4529,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     }
 
     if (public_xtra->print_overland_sum
+        || public_xtra->write_pdi_overland_sum
         || public_xtra->write_silo_overland_sum)
     {
       if (public_xtra->print_overland_sum)
@@ -4298,6 +4537,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         sprintf(file_postfix, "overlandsum.%05d",
                 instance_xtra->file_number);
         WritePFBinary(file_prefix, file_postfix, overland_sum);
+        any_file_dumped = 1;
+      }
+
+      if (public_xtra->write_pdi_overland_sum)
+      {
+        sprintf(file_postfix, "overlandsum.%05d",
+                instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number, overland_sum, 0, 0);
         any_file_dumped = 1;
       }
 
@@ -4320,6 +4567,15 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
               instance_xtra->file_number);
       WritePFBinary(file_prefix, file_postfix,
                     instance_xtra->ovrl_bc_flx);
+      any_file_dumped = 1;
+    }
+
+    if (public_xtra->write_pdi_overland_bc_flux)
+    {
+      sprintf(file_postfix, "overland_bc_flux.%05d",
+              instance_xtra->file_number);
+      WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+               instance_xtra->ovrl_bc_flx, 0, 0);
       any_file_dumped = 1;
     }
 
@@ -5523,6 +5779,11 @@ SolverRichardsNewPublicXtra(char *name)
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_top = switch_value;
 
+  sprintf(key, "%s.PrintBottom", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->print_bottom = switch_value;
+
   sprintf(key, "%s.PrintPressure", name);
   switch_name = GetStringDefault(key, "True");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
@@ -5598,7 +5859,150 @@ SolverRichardsNewPublicXtra(char *name)
   }
 #endif
 
+  /* PDI file writing control */
+
+  sprintf(key, "%s.WritePDISubsurfData", name);
+  switch_name = GetStringDefault(key, "True");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_subsurf_data = switch_value;
+
+  sprintf(key, "%s.WritePDIMannings", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_mannings = switch_value;
+
+  sprintf(key, "%s.WritePDISlopes", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_slopes = switch_value;
+
+  sprintf(key, "%s.WritePDIPressure", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_press = switch_value;
+
+  sprintf(key, "%s.WritePDISpecificStorage", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_specific_storage = switch_value;
+
+  sprintf(key, "%s.WritePDIVelocities", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_velocities = switch_value;
+
+  sprintf(key, "%s.WritePDISaturation", name);
+  switch_name = GetStringDefault(key, "True");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_satur = switch_value;
+
+  sprintf(key, "%s.WritePDIMask", name);
+  switch_name = GetStringDefault(key, "True");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_mask = switch_value;
+
+  // sprintf(key, "%s.WritePDIConcentration", name);
+  // switch_name = GetStringDefault(key, "True");
+  // switch_value = NA_NameToIndex(switch_na, switch_name);
+  // if (switch_value < 0)
+  // {
+  //   InputError("Error: invalid print switch value <%s> for key <%s>\n",
+  //              switch_name, key);
+  // }
+  // public_xtra->write_pdi_concen = switch_value;
+
+  sprintf(key, "%s.WritePDIDZMultiplier", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_dzmult = switch_value;
+
+  sprintf(key, "%s.WritePDIEvapTrans", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_evaptrans = switch_value;
+
+  sprintf(key, "%s.WritePDIEvapTransSum", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_evaptrans_sum = switch_value;
+
+  sprintf(key, "%s.WritePDIOverlandSum", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_overland_sum = switch_value;
+
+  sprintf(key, "%s.WritePDIOverlandBCFlux", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_overland_bc_flux = switch_value;
+
   /* Silo file writing control */
+
   sprintf(key, "%s.WriteSiloSubsurfData", name);
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
@@ -5846,6 +6250,10 @@ SolverRichardsNewPublicXtra(char *name)
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_top = switch_value;
 
+  sprintf(key, "%s.WriteSiloBottom", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->write_silo_bottom = switch_value;
 
   /* Initialize silo if necessary */
   if (public_xtra->write_silo_subsurf_data ||
@@ -5860,6 +6268,7 @@ SolverRichardsNewPublicXtra(char *name)
       public_xtra->write_silo_mannings ||
       public_xtra->write_silo_mask ||
       public_xtra->write_silo_top ||
+      public_xtra->write_silo_bottom ||
       public_xtra->write_silo_overland_sum ||
       public_xtra->write_silo_overland_bc_flux ||
       public_xtra->write_silo_dzmult || public_xtra->write_silo_CLM)

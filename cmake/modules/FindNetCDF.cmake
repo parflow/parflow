@@ -50,18 +50,32 @@ else()
   #
   set(SEARCH_STRATEGY "NETCDF_DIR (Strategy 3)")
 
+  # Do NOT look in system paths if user specifies a NETCDF_DIR location, system
+  # paths are searched first so find_path will not find user NETCDF if system
+  # one is present using the default search order.
   find_path(NETCDF_INCLUDE_DIRS
     NAMES netcdf.h
     DOC "netcdf include directories"
+    NO_CMAKE_SYSTEM_PATH
     PATHS "${NETCDF_DIR}/include")
   mark_as_advanced(NETCDF_INCLUDE_DIRS)
+
+  if(NOT NETCDF_INCLUDE_DIRS)
+    message(FATAL_ERROR "NetCDF header netcdf.h not found in ${NETCDF_DIR}/include; could not find NetCDF install")
+  endif ()
 
   find_library(NETCDF_LIBRARIES
     NAMES netcdf
     DOC "netcdf library"
+    NO_CMAKE_SYSTEM_PATH
     PATHS "${NETCDF_DIR}/lib"
     HINTS "${NETCDF_INCLUDE_DIRS}/../lib")
   mark_as_advanced(NETCDF_LIBRARIES)
+
+  if(NOT NETCDF_LIBRARIES)
+    message(FATAL_ERROR "NetCDF library not found in ${NETCDF_DIR}/lib; could not find NetCDF install")
+  endif ()
+
 endif ()
 
 #
