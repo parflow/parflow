@@ -3125,10 +3125,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         double flux_total = 0.0;
 
         Subvector *p_sub, *s_sub, *et_sub, *po_sub, *dz_sub, *vz_sub, *vx_sub, *vy_sub;
-        Subvector *slope_x_sub, *slope_y_sub, *mann_sub;
         Subvector *qx_sub, *qy_sub;
         double *pp, *sp, *et, *po_dat, *dz_dat, *vz, *vx, *vy;
-        double *sx_dat, *sy_dat, *mann_dat;
         double *qx_dat, *qy_dat;
 
         Subgrid *subgrid;
@@ -3145,10 +3143,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           vx_sub = VectorSubvector(instance_xtra->x_velocity, is);
           vy_sub = VectorSubvector(instance_xtra->y_velocity, is);
           vz_sub = VectorSubvector(instance_xtra->z_velocity, is);
-
-          slope_x_sub = VectorSubvector(ProblemDataTSlopeX(problem_data), is);
-          slope_y_sub = VectorSubvector(ProblemDataTSlopeY(problem_data), is);
-          mann_sub = VectorSubvector(ProblemDataMannings(problem_data), is);
 
           qx_sub = VectorSubvector(instance_xtra->q_overlnd_x, is);
           qy_sub = VectorSubvector(instance_xtra->q_overlnd_y, is);
@@ -3176,10 +3170,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           vx = SubvectorData(vx_sub);
           vy = SubvectorData(vy_sub);
           vz = SubvectorData(vz_sub);
-
-          sx_dat = SubvectorData(slope_x_sub);
-          sy_dat = SubvectorData(slope_y_sub);
-          mann_dat = SubvectorData(mann_sub);
 
           qx_dat = SubvectorData(qx_sub);
           qy_dat = SubvectorData(qy_sub);
@@ -3239,10 +3229,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                     amps_Printf("SP: Cell vol: %3.6e vol_max: %3.6e flux_in: %3.6e  Flux Darcy: %3.6e Flux Surface: %3.6e Flux Total: %3.6e \n", vol, vol_max, flux_in, flux_darcy, flux_surface_lateral, flux_total);
                     amps_Printf("SP: Cell Pressure: %3.6e Pred Pressure: %3.6e I: %d J: %d  Time: %12.4e \n", pp[ip], press_pred, i, j, t);
                     amps_Printf("SP: vx_r: %3.6e vx_l: %3.6e vy_r: %3.6e vy_l: %3.6e vz_l: %3.6e  I: %d J: %d K: %d \n", vx[vxi], vx[vxi_im1], vy[vyi], vy[vyi_jm1], vz[vzi_km1], i, j, k);
-                    amps_Printf("SP: vx_surf_r: %3.6e vx_surf_l: %3.6e vy_surf_r: %3.6e vy_surf_l: %3.6e  \n", vx[vxi_p1], vx[vxi_im1_p1], vy[vyi_p1], vy[vyi_jm1_p1]);
-                    //amps_Printf("SP: qx_east: %3.6e qx_west: %3.6e qy_north: %3.6e qy_south: %3.6e  \n", qx_east, qx_west, qy_north, qy_south);
-                    //amps_Printf("SP: Manning: %3.6e Sf_x: %3.6e Sf_y: %3.6e Sf_mag: %3.6e  \n", manning, Sf_x, Sf_y, Sf_mag);
-                    //amps_Printf("SP: Press_x_east: %3.6e Press_x_west: %3.6e Press_y_north: %3.6e Press_y_south: %3.6e  \n", Press_x_east, Press_x_west, Press_y_north, Press_y_south);
                   }
                   pp[ip] = press_pred;
                 }
