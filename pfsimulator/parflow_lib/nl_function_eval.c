@@ -91,7 +91,7 @@ void     KINSolFunctionEval(
   Vector       *x_velocity = StateXvel(((State*)current_state));
   Vector       *y_velocity = StateYvel(((State*)current_state));
   Vector       *z_velocity = StateZvel(((State*)current_state));
-  
+
   Vector       *q_overlnd_x = StateQxOverland(((State*)current_state));
   Vector       *q_overlnd_y = StateQyOverland(((State*)current_state));
 

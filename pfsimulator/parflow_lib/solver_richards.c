@@ -3130,7 +3130,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         double *pp, *sp, *et, *po_dat, *dz_dat, *vz, *vx, *vy;
         double *sx_dat, *sy_dat, *mann_dat;
         double *qx_dat, *qy_dat;
-        double qx_east, qx_west, qy_north, qy_south;
 
         Subgrid *subgrid;
         Grid *grid = VectorGrid(evap_trans_sum);
@@ -3146,11 +3145,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           vx_sub = VectorSubvector(instance_xtra->x_velocity, is);
           vy_sub = VectorSubvector(instance_xtra->y_velocity, is);
           vz_sub = VectorSubvector(instance_xtra->z_velocity, is);
-          
+
           slope_x_sub = VectorSubvector(ProblemDataTSlopeX(problem_data), is);
           slope_y_sub = VectorSubvector(ProblemDataTSlopeY(problem_data), is);
           mann_sub = VectorSubvector(ProblemDataMannings(problem_data), is);
-          
+
           qx_sub = VectorSubvector(instance_xtra->q_overlnd_x, is);
           qy_sub = VectorSubvector(instance_xtra->q_overlnd_y, is);
 
@@ -3177,11 +3176,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           vx = SubvectorData(vx_sub);
           vy = SubvectorData(vy_sub);
           vz = SubvectorData(vz_sub);
-          
+
           sx_dat = SubvectorData(slope_x_sub);
           sy_dat = SubvectorData(slope_y_sub);
           mann_dat = SubvectorData(mann_sub);
-          
+
           qx_dat = SubvectorData(qx_sub);
           qy_dat = SubvectorData(qy_sub);
 
@@ -3189,67 +3188,42 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
           {
             ip = SubvectorEltIndex(p_sub, i, j, k);
-            int ip_east = SubvectorEltIndex(p_sub, i+1, j, k);
-            int ip_west = SubvectorEltIndex(p_sub, i-1, j, k);
-            int ip_north = SubvectorEltIndex(p_sub, i, j+1, k);
-            int ip_south = SubvectorEltIndex(p_sub, i, j-1, k);
             int vxi = SubvectorEltIndex(vx_sub, i + 1, j, k);
             int vyi = SubvectorEltIndex(vy_sub, i, j + 1, k);
             int vxi_im1 = SubvectorEltIndex(vx_sub, i, j, k);
             int vyi_jm1 = SubvectorEltIndex(vy_sub, i, j, k);
             int vzi_km1 = SubvectorEltIndex(vz_sub, i, j, k);
 
-            int vxi_p1 = SubvectorEltIndex(vx_sub, i + 1, j, k + 1);
-            int vyi_p1 = SubvectorEltIndex(vy_sub, i, j + 1, k + 1);
-            int vxi_im1_p1 = SubvectorEltIndex(vx_sub, i, j, k + 1);
-            int vyi_jm1_p1 = SubvectorEltIndex(vy_sub, i, j, k + 1);
-
             if (k == (nz - 1))
             {
               vol = dx * dy * dz * dz_dat[ip] * po_dat[ip] * sp[ip];
               flux_in = dx * dy * dz * dz_dat[ip] * et[ip] * dt;
               vol_max = dx * dy * dz * dz_dat[ip] * po_dat[ip];
-              
+
               flux_surface_lateral = 0.0;
-              qx_east = 0.0;
-              qx_west = 0.0;
-              qy_north = 0.0;
-              qy_south = 0.0;
 
               flux_darcy = vz[vzi_km1] * dx * dy * dt + (-vx[vxi] + vx[vxi_im1]) * dy * dz * dz_dat[ip] * dt + (-vy[vyi] + vy[vyi_jm1]) * dx * dz * dz_dat[ip] * dt;
-              
-              const double ov_epsilon = 1.0e-5;
-              int io = SubvectorEltIndex(slope_x_sub, i, j, 0);
-              double Sf_x = sx_dat[io];
-              double Sf_y = sy_dat[io];
-              double Sf_mag = sqrt(Sf_x*Sf_x + Sf_y*Sf_y);
-              if (Sf_mag < ov_epsilon) Sf_mag = ov_epsilon;
-              double manning = mann_dat[io];
-              double Press_x_east = 0.0;
-              double Press_x_west = 0.0;
-              double Press_y_north = 0.0;
-              double Press_y_south = 0.0;
-              
+
               if (public_xtra->surface_lateral_flows == 1)
               {
                 int io_q = SubvectorEltIndex(qx_sub, i, j, 0);
                 int io_q_west = SubvectorEltIndex(qx_sub, i-1, j, 0);
                 int io_q_south = SubvectorEltIndex(qy_sub, i, j-1, 0);
-                
+
                 double qx_current = qx_dat[io_q];
                 double qx_west = (i > 0) ? qx_dat[io_q_west] : 0.0;
                 double qy_current = qy_dat[io_q];
                 double qy_south = (j > 0) ? qy_dat[io_q_south] : 0.0;
-                
+
                 flux_surface_lateral = dt * ((qx_current - qx_west) * dy + (qy_current - qy_south) * dx);
                 flux_total = flux_in + flux_darcy + flux_surface_lateral;
-          
+
               }
               else
               {
                 flux_total = flux_in + flux_darcy;
               }
-              
+
               press_pred = (flux_total - (vol_max - vol)) / (dx * dy * po_dat[ip]);
               if (flux_total > (vol_max - vol))
               {

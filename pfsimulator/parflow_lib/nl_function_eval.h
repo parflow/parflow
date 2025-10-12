@@ -56,7 +56,7 @@ typedef struct {
   Vector       *x_velocity;  //jjb
   Vector       *y_velocity;  //jjb
   Vector       *z_velocity;  //jjb
-  
+
   Vector       *q_overlnd_x;
   Vector       *q_overlnd_y;
 } State;
