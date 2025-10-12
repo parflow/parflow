@@ -111,6 +111,24 @@ NetCDF:
       BoolDomain:
       RequiresModule: NETCDF
 
+  WriteQxOverland:
+    help: >
+      [Type: boolean/string] This key sets x-direction overland flow (qx_overland) to be written in NetCDF4 file.
+      The values represent x-direction surface flow velocity (ke_) in m/hr at cell centers.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: NETCDF
+
+  WriteQyOverland:
+    help: >
+      [Type: boolean/string] This key sets y-direction overland flow (qy_overland) to be written in NetCDF4 file.
+      The values represent y-direction surface flow velocity (kn_) in m/hr at cell centers.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: NETCDF
+
   Chunking:
     help: >
       [Type: boolean/string] This key sets chunking for each time varying 3-D variable in NetCDF4 file.

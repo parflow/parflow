@@ -91,13 +91,17 @@ void     KINSolFunctionEval(
   Vector       *x_velocity = StateXvel(((State*)current_state));
   Vector       *y_velocity = StateYvel(((State*)current_state));
   Vector       *z_velocity = StateZvel(((State*)current_state));
+  
+  Vector       *q_overlnd_x = StateQxOverland(((State*)current_state));
+  Vector       *q_overlnd_y = StateQyOverland(((State*)current_state));
 
   (void)size;
 
   PFModuleInvokeType(NlFunctionEvalInvoke, nl_function_eval,
                      (pressure, fval, problem_data, saturation, old_saturation,
                       density, old_density, dt, time, old_pressure, evap_trans,
-                      ovrl_bc_flx, x_velocity, y_velocity, z_velocity));
+                      ovrl_bc_flx, x_velocity, y_velocity, z_velocity,
+                      q_overlnd_x, q_overlnd_y));
 
   return;
 }
@@ -121,7 +125,9 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                     Vector *     ovrl_bc_flx, /*sk overland flow boundary fluxes*/
                     Vector *     x_velocity, /* velocity vectors jjb */
                     Vector *     y_velocity,
-                    Vector *     z_velocity)
+                    Vector *     z_velocity,
+                    Vector *     q_overlnd_x,
+                    Vector *     q_overlnd_y)
 {
   PUSH_NVTX("NlFunctionEval", 0)
 
@@ -148,7 +154,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
   /* Overland flow variables */  //sk
   Vector      *KW, *KE, *KN, *KS;
-  Vector      *qx, *qy;
   Subvector   *kw_sub, *ke_sub, *kn_sub, *ks_sub, *qx_sub, *qy_sub;
   Subvector   *x_sl_sub;
   // Subvector *y_sl_sub;
@@ -241,8 +246,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   KE = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   KN = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   KS = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
-  qx = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
-  qy = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
 
   /* Calculate pressure dependent properties: density and saturation */
 
@@ -613,7 +616,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     /* @RMM added to provide variable dz */
     z_mult_dat = SubvectorData(z_mult_sub);
 
-    qx_sub = VectorSubvector(qx, is);
+    qx_sub = VectorSubvector(q_overlnd_x, is);
 
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
@@ -806,8 +809,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     ke_sub = VectorSubvector(KE, is);
     kn_sub = VectorSubvector(KN, is);
     ks_sub = VectorSubvector(KS, is);
-    qx_sub = VectorSubvector(qx, is);
-    qy_sub = VectorSubvector(qy, is);
+    qx_sub = VectorSubvector(q_overlnd_x, is);
+    qy_sub = VectorSubvector(q_overlnd_y, is);
     x_sl_sub = VectorSubvector(x_sl, is);
     // y_sl_sub = VectorSubvector(y_sl, is);
     // mann_sub = VectorSubvector(man, is);
@@ -1551,6 +1554,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                          rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
                 / viscosity;
         u_new = h;
+        qx_[io] = ke_[io];
+        qy_[io] = kn_[io];
 
         /* Add overland contribs */
         q_overlnd = 0.0;
@@ -1882,6 +1887,12 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                          rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
                 / viscosity;
         u_new = h;
+        //int vxi = SubvectorEltIndex(vx_sub, i + 1, j, k+1);
+        //int vyi = SubvectorEltIndex(vy_sub, i, j + 1, k+1);
+        //vx[vxi] = ke_[io];
+        //vy[vyi] = kn_[io];
+        qx_[io] = ke_[io];
+        qy_[io] = kn_[io];
 
         q_overlnd = 0.0;
         q_overlnd = vol
@@ -2109,7 +2120,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                          rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
                 / viscosity;
         u_new = h;
-
+        qx_[io] = ke_[io];
+        qy_[io] = kn_[io];
 
         q_overlnd = 0.0;
         q_overlnd = vol
@@ -2197,8 +2209,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   FreeVector(KE);
   FreeVector(KN);
   FreeVector(KS);
-  FreeVector(qx);
-  FreeVector(qy);
 
   POP_NVTX
 
