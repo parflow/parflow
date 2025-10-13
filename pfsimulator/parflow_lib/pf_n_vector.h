@@ -35,18 +35,18 @@
 
 /* Content field for SUNDIALS' N_Vector object */
 struct PF_N_Vector_Content_struct {
-    Vector *data;
-    bool   owns_data;
- };
+  Vector *data;
+  bool owns_data;
+};
 
 /* forward reference for pointers to structs */
 typedef struct PF_N_Vector_Content_struct* PF_N_Vector_Content;
 
 /* N_Vector Accessor Macros */
 /* Macros to interact with SUNDIALS N_Vector */
-#define N_VectorContent(n_vector)		((PF_N_Vector_Content)((n_vector)->content))
-#define N_VectorData(n_vector)			(N_VectorContent(n_vector)->data)
-#define N_VectorOwnsData(n_vector)		(N_VectorContent(n_vector)->owns_data)
+#define N_VectorContent(n_vector)               ((PF_N_Vector_Content)((n_vector)->content))
+#define N_VectorData(n_vector)                  (N_VectorContent(n_vector)->data)
+#define N_VectorOwnsData(n_vector)              (N_VectorContent(n_vector)->owns_data)
 
 #endif
 #endif

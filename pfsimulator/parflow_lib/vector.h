@@ -87,8 +87,8 @@ typedef struct _Vector {
   SubgridArray  *data_space;    /* Description of Vector data */
 
   int size;                     /* Total number of coefficients */
-  
-  int num_ghost;		/* Number of ghost cells */
+
+  int num_ghost;                /* Number of ghost cells */
 
   /* Information on how to update boundary */
   CommPkg *comm_pkg[NumUpdateModes];

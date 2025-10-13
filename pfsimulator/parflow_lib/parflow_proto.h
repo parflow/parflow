@@ -298,8 +298,8 @@ typedef PFModule *(*NonlinSolverInitInstanceXtraInvoke) (Problem *problem, Grid 
 
 /* kinsol_nonlin_solver.c */
 #if defined (PARFLOW_HAVE_SUNDIALS)
-int KINSolInitPC(N_Vector  pf_n_pressure, N_Vector  pf_n_uscale, N_Vector  pf_n_fval, N_Vector  pf_n_fscale, void *    current_state);
-int KINSolCallPC(N_Vector  pf_n_pressure, N_Vector  pf_n_uscale, N_Vector  pf_n_fval, N_Vector  pf_n_fscale, N_Vector  pf_n_vtem, void *    current_state);
+int KINSolInitPC(N_Vector pf_n_pressure, N_Vector pf_n_uscale, N_Vector pf_n_fval, N_Vector pf_n_fscale, void *    current_state);
+int KINSolCallPC(N_Vector pf_n_pressure, N_Vector pf_n_uscale, N_Vector pf_n_fval, N_Vector pf_n_fscale, N_Vector pf_n_vtem, void *    current_state);
 int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, Vector *saturation, Vector *old_saturation, double t, double dt, ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity);
 PFModule *KinsolNonlinSolverInitInstanceXtra(Problem *problem, Grid *grid, ProblemData *problem_data, double *temp_data);
 #else

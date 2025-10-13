@@ -143,7 +143,7 @@ int       KINSolMatVec(
                        void *   current_state)
 {
   Vector      *x = N_VectorData(pf_n_x);
-  Vector      *y = N_VectorData(pf_n_y);  
+  Vector      *y = N_VectorData(pf_n_y);
   Vector      *pressure = N_VectorData(pf_n_pressure);
 #else
 int       KINSolMatVec(

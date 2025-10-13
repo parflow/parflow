@@ -67,21 +67,21 @@ typedef struct {
 #define Mean(a, b)            ArithmeticMean(a, b)
 
 /*  This routine provides the interface between KINSOL and ParFlow
- *  for function evaluations.  
- *  This should probably be implemented in kinsol_nonlin_solver.c 
+ *  for function evaluations.
+ *  This should probably be implemented in kinsol_nonlin_solver.c
  *  since all we need for this call is already there - DOK
  */
 
 #if defined (PARFLOW_HAVE_SUNDIALS)
 #include "kinsol/kinsol.h"
 int     KINSolFunctionEval(
-                            N_Vector pf_n_pressure,
-                            N_Vector pf_n_fval,
-                            void *   current_state)  
+                           N_Vector pf_n_pressure,
+                           N_Vector pf_n_fval,
+                           void *   current_state)
 {
   Vector      *pressure = N_VectorData(pf_n_pressure);
-  Vector      *fval = N_VectorData(pf_n_fval); 
-  
+  Vector      *fval = N_VectorData(pf_n_fval);
+
   PFModule  *nl_function_eval = StateFunc(((State*)current_state));
   ProblemData *problem_data = StateProblemData(((State*)current_state));
   Vector      *old_pressure = StateOldPressure(((State*)current_state));
@@ -104,7 +104,7 @@ int     KINSolFunctionEval(
                       density, old_density, dt, time, old_pressure, evap_trans,
                       ovrl_bc_flx, x_velocity, y_velocity, z_velocity));
 
-  return (0);
+  return(0);
 }
 #else
 void     KINSolFunctionEval(
