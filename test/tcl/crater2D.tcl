@@ -449,7 +449,8 @@ pfset KnownSolution                                    NoKnownSolution
 pfset Solver                                             Richards
 pfset Solver.MaxIter                                     10000
 
-pfset Solver.Nonlinear.MaxIter                           100
+#pfset Solver.Nonlinear.MaxIter                           100
+pfset Solver.Nonlinear.MaxIter                           15
 pfset Solver.Nonlinear.ResidualTol                       1e-9
 pfset Solver.Nonlinear.StepTol                           1e-9
 pfset Solver.Nonlinear.UseJacobian                       True
@@ -545,6 +546,8 @@ set runname "crater2D_walker2"
 puts "Running with Walker2"
 
 pfset Solver.Nonlinear.EtaChoice                         Walker2
+# Default EtaGamma yields differences between the embedded Kinsol and current external Sundials library.
+pfset Solver.Nonlinear.EtaGamma                          0.100000
 
 pfrun $runname
 pfundist $runname
