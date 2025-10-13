@@ -5551,6 +5551,16 @@ help with slope errors and issues and provides some diagnostic information.  The
       <runname>.Solver.SurfacePredictor.PrintValue  = "True"    ## Python syntax
 
 
+*logical* **Solver.SurfacePredictor.LateralFlows** False This key enables the use of overland flow lateral fluxes (qx_overland and qy_overland) in the surface predictor water balance calculation. When enabled, the predictor uses these surface flow values in addition to the subsurface fluxes to compute lateral flux divergence at the land surface. This improves the surface predictor's ability to estimate when ponding will occur by accounting for lateral redistribution of surface water.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.SurfacePredictor.LateralFlows        True        ## TCL syntax
+      <runname>.Solver.SurfacePredictor.LateralFlows  = "True"    ## Python syntax
+
+
 *logical* **Solver.EvapTransFile** False This key specifies specifies
 that the Flux terms for Richards’ equation are read in from a ParFlow 3D binary
 file. This file has [T^-1] units corresponding to the flux value(s) divided by

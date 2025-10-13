@@ -1651,6 +1651,13 @@ Solver:
       domains:
         BoolDomain:
 
+    LateralFlows:
+      help: >
+        [Type: boolean/string] This key enables the use of overland flow lateral fluxes (qx_overland and qy_overland) in the surface predictor water balance calculation. When enabled, the predictor uses actual surface flow values instead of subsurface velocities to compute lateral flux divergence at the land surface.
+      default: False
+      domains:
+        BoolDomain:
+
   OverlandDiffusive:
     __doc__: >
       Setting epsilon value for the diffusive overland flow formulation.
