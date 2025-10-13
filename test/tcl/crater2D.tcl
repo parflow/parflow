@@ -452,9 +452,11 @@ pfset Solver.MaxIter                                     10000
 pfset Solver.Nonlinear.MaxIter                           15
 pfset Solver.Nonlinear.ResidualTol                       1e-9
 pfset Solver.Nonlinear.StepTol                           1e-9
-pfset Solver.Nonlinear.EtaValue                          1e-5
 pfset Solver.Nonlinear.UseJacobian                       True
 pfset Solver.Nonlinear.DerivativeEpsilon                 1e-7
+
+pfset Solver.Nonlinear.EtaChoice                         EtaConstant
+pfset Solver.Nonlinear.EtaValue                          1e-5
 
 pfset Solver.Linear.KrylovDimension                      25
 pfset Solver.Linear.MaxRestarts                          2

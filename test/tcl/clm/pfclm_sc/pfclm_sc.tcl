@@ -289,8 +289,8 @@ pfset Solver.MaxIter 9000
 
 pfset Solver.Nonlinear.MaxIter           100
 pfset Solver.Nonlinear.ResidualTol       1e-5
-pfset Solver.Nonlinear.EtaChoice          "Walker1"
-pfset Solver.Nonlinear.EtaValue          0.01
+pfset Solver.Nonlinear.EtaChoice         EtaConstant
+pfset Solver.Nonlinear.EtaValue          1e-5
 pfset Solver.Nonlinear.UseJacobian       False
 pfset Solver.Nonlinear.DerivativeEpsilon 1e-12
 pfset Solver.Nonlinear.StepTol           1e-30
