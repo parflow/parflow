@@ -1554,8 +1554,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                          rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
                 / viscosity;
         u_new = h;
-        qx_[io] = ke_[io];
-        qy_[io] = kn_[io];
+        //qx_[io] = ke_[io];
+        //qy_[io] = kn_[io];
 
         /* Add overland contribs */
         q_overlnd = 0.0;
@@ -1887,12 +1887,9 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                          rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
                 / viscosity;
         u_new = h;
-        //int vxi = SubvectorEltIndex(vx_sub, i + 1, j, k+1);
-        //int vyi = SubvectorEltIndex(vy_sub, i, j + 1, k+1);
-        //vx[vxi] = ke_[io];
-        //vy[vyi] = kn_[io];
-        qx_[io] = ke_[io];
-        qy_[io] = kn_[io];
+
+        //qx_[io] = ke_[io];
+        //qy_[io] = kn_[io];
 
         q_overlnd = 0.0;
         q_overlnd = vol
@@ -2120,8 +2117,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                          rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
                 / viscosity;
         u_new = h;
-        qx_[io] = ke_[io];
-        qy_[io] = kn_[io];
+        //qx_[io] = ke_[io];
+        //qy_[io] = kn_[io];
 
         q_overlnd = 0.0;
         q_overlnd = vol
