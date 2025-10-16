@@ -11,6 +11,7 @@ from parflow.tools.compare import pf_test_file
 # Run and Unload the ParFlow output files
 # -----------------------------------------------------------------------------
 
+
 def run_check_output(runner, run_name):
 
     dir_name = get_absolute_path(f"test_output/{run_name}")
@@ -29,9 +30,9 @@ def run_check_output(runner, run_name):
     for test_file in test_files:
         filename = f"/{run_name}.out.{test_file}.pfb"
         if not pf_test_file(
-                new_output_dir_name + filename,
-                correct_output_dir_name + filename,
-                f"Max difference in {test_file}",
+            new_output_dir_name + filename,
+            correct_output_dir_name + filename,
+            f"Max difference in {test_file}",
         ):
             passed = False
 
@@ -39,20 +40,21 @@ def run_check_output(runner, run_name):
         timestep = str(i).rjust(5, "0")
         filename = f"/{run_name}.out.press.{timestep}.pfb"
         if not pf_test_file(
-                new_output_dir_name + filename,
-                correct_output_dir_name + filename,
-                f"Max difference in Pressure for timestep {timestep}",
+            new_output_dir_name + filename,
+            correct_output_dir_name + filename,
+            f"Max difference in Pressure for timestep {timestep}",
         ):
             passed = False
             filename = f"/{run_name}.out.satur.{timestep}.pfb"
         if not pf_test_file(
-                new_output_dir_name + filename,
-                correct_output_dir_name + filename,
-                f"Max difference in Saturation for timestep {timestep}",
+            new_output_dir_name + filename,
+            correct_output_dir_name + filename,
+            f"Max difference in Saturation for timestep {timestep}",
         ):
             passed = False
 
     return passed
+
 
 def create_runner(run_name, etachoice):
 
@@ -522,7 +524,7 @@ def create_runner(run_name, etachoice):
         case "Walker2":
             crater.Solver.Nonlinear.EtaChoice = "Walker2"
             # Default EtaGamma yields differences between the embedded Kinsol and current external Sundials library.
-            crater.Solver.Nonlinear.EtaGamma =0.100000
+            crater.Solver.Nonlinear.EtaGamma = 0.100000
         case _:
             print(f"Crater2D : FAILED")
             sys.exit(1)
@@ -532,34 +534,34 @@ def create_runner(run_name, etachoice):
 
 passed = True
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # EtaConstant
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 run_name = "crater2D_etaconstant"
 
 print(f"Running with EtaConstant")
 
-runner=create_runner(run_name, "EtaConstant")
+runner = create_runner(run_name, "EtaConstant")
 passed = passed and run_check_output(runner, run_name)
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Walker1
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 run_name = "crater2D_walker1"
 
 print(f"Running with Walker1")
 
-runner=create_runner(run_name, "Walker1")
+runner = create_runner(run_name, "Walker1")
 passed = passed and run_check_output(runner, run_name)
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Walker2
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 run_name = "crater2D_walker2"
 
 print(f"Running with Walker2")
 
-runner=create_runner(run_name, "Walker2")
+runner = create_runner(run_name, "Walker2")
 passed = passed and run_check_output(runner, run_name)
 
 if passed:
