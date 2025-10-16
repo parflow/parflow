@@ -3197,8 +3197,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
               if (public_xtra->surface_lateral_flows == 1)
               {
                 int io_q = SubvectorEltIndex(qx_sub, i, j, 0);
-                int io_q_west = SubvectorEltIndex(qx_sub, i-1, j, 0);
-                int io_q_south = SubvectorEltIndex(qy_sub, i, j-1, 0);
+                int io_q_west = SubvectorEltIndex(qx_sub, i - 1, j, 0);
+                int io_q_south = SubvectorEltIndex(qy_sub, i, j - 1, 0);
 
                 double qx_current = qx_dat[io_q];
                 double qx_west = (i > 0) ? qx_dat[io_q_west] : 0.0;
@@ -3207,7 +3207,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
                 flux_surface_lateral = dt * ((qx_current - qx_west) * dy + (qy_current - qy_south) * dx);
                 flux_total = flux_in + flux_darcy + flux_surface_lateral;
-
               }
               else
               {
