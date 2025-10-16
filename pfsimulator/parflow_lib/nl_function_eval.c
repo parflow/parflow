@@ -92,12 +92,16 @@ void     KINSolFunctionEval(
   Vector       *y_velocity = StateYvel(((State*)current_state));
   Vector       *z_velocity = StateZvel(((State*)current_state));
 
+  Vector       *q_overlnd_x = StateQxOverland(((State*)current_state));
+  Vector       *q_overlnd_y = StateQyOverland(((State*)current_state));
+
   (void)size;
 
   PFModuleInvokeType(NlFunctionEvalInvoke, nl_function_eval,
                      (pressure, fval, problem_data, saturation, old_saturation,
                       density, old_density, dt, time, old_pressure, evap_trans,
-                      ovrl_bc_flx, x_velocity, y_velocity, z_velocity));
+                      ovrl_bc_flx, x_velocity, y_velocity, z_velocity,
+                      q_overlnd_x, q_overlnd_y));
 
   return;
 }
@@ -121,7 +125,9 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                     Vector *     ovrl_bc_flx, /*sk overland flow boundary fluxes*/
                     Vector *     x_velocity, /* velocity vectors jjb */
                     Vector *     y_velocity,
-                    Vector *     z_velocity)
+                    Vector *     z_velocity,
+                    Vector *     q_overlnd_x,
+                    Vector *     q_overlnd_y)
 {
   PUSH_NVTX("NlFunctionEval", 0)
 
@@ -150,10 +156,12 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   Vector      *KW, *KE, *KN, *KS;
   Vector      *qx, *qy;
   Subvector   *kw_sub, *ke_sub, *kn_sub, *ks_sub, *qx_sub, *qy_sub;
+  Subvector   *q_overlnd_x_sub, *q_overlnd_y_sub;
   Subvector   *x_sl_sub;
   // Subvector *y_sl_sub;
   // Subvector *mann_sub;
   double      *kw_, *ke_, *kn_, *ks_, *qx_, *qy_;
+  double      *q_overlnd_x_, *q_overlnd_y_;
 
   Vector      *porosity = ProblemDataPorosity(problem_data);
   Vector      *permeability_x = ProblemDataPermeabilityX(problem_data);
@@ -613,7 +621,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     /* @RMM added to provide variable dz */
     z_mult_dat = SubvectorData(z_mult_sub);
 
-    qx_sub = VectorSubvector(qx, is);
+    qx_sub = VectorSubvector(q_overlnd_x, is);
 
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
@@ -808,6 +816,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     ks_sub = VectorSubvector(KS, is);
     qx_sub = VectorSubvector(qx, is);
     qy_sub = VectorSubvector(qy, is);
+    q_overlnd_x_sub = VectorSubvector(q_overlnd_x, is);
+    q_overlnd_y_sub = VectorSubvector(q_overlnd_y, is);
     x_sl_sub = VectorSubvector(x_sl, is);
     // y_sl_sub = VectorSubvector(y_sl, is);
     // mann_sub = VectorSubvector(man, is);
@@ -859,6 +869,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     ks_ = SubvectorData(ks_sub);
     qx_ = SubvectorData(qx_sub);
     qy_ = SubvectorData(qy_sub);
+    q_overlnd_x_ = SubvectorData(q_overlnd_x_sub);
+    q_overlnd_y_ = SubvectorData(q_overlnd_y_sub);
     // x_sl_dat = SubvectorData(x_sl_sub);
     // y_sl_dat = SubvectorData(y_sl_sub);
     // mann_dat = SubvectorData(mann_sub);
@@ -1551,6 +1563,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                          rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
                 / viscosity;
         u_new = h;
+        q_overlnd_x_[io] = ke_[io];
+        q_overlnd_y_[io] = kn_[io];
 
         /* Add overland contribs */
         q_overlnd = 0.0;
@@ -1883,6 +1897,9 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                 / viscosity;
         u_new = h;
 
+        q_overlnd_x_[io] = ke_[io];
+        q_overlnd_y_[io] = kn_[io];
+
         q_overlnd = 0.0;
         q_overlnd = vol
                     * (pfmax(pp[ip], 0.0) - pfmax(opp[ip], 0.0)) / dz +
@@ -2109,7 +2126,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                          rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
                 / viscosity;
         u_new = h;
-
+        q_overlnd_x_[io] = ke_[io];
+        q_overlnd_y_[io] = kn_[io];
 
         q_overlnd = 0.0;
         q_overlnd = vol
