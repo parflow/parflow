@@ -11,7 +11,8 @@ from parflow.tools.fs import mkdir, get_absolute_path
 from parflow.tools.io import read_pfb
 from parflow.tools.hydrology import calculate_overland_fluxes
 
-def create_tiltedv_rotated_run(flow_method='OverlandFlow'):
+
+def create_tiltedv_rotated_run(flow_method="OverlandFlow"):
     """Create a TiltedV run configuration rotated 90 degrees"""
     overland = Run("overland_flux_validation_rotated", __file__)
 
@@ -238,8 +239,8 @@ def create_tiltedv_rotated_run(flow_method='OverlandFlow'):
     overland.TopoSlopesY.GeomNames = "left right channel"
     overland.TopoSlopesY.Geom.left.Value = -0.01
     overland.TopoSlopesY.Geom.right.Value = 0.01
-    
-    if flow_method == 'OverlandFlow':
+
+    if flow_method == "OverlandFlow":
         overland.TopoSlopesY.Geom.channel.Value = 0.00
     else:
         overland.TopoSlopesY.Geom.channel.Value = 0.01
@@ -253,7 +254,7 @@ def create_tiltedv_rotated_run(flow_method='OverlandFlow'):
 def validate_fluxes(output_dir, run_name, flow_method, dx, dy, dt, timestep=5):
     """
     Validate qx_overland and qy_overland outputs against independent calculation
-    
+
     Parameters:
     -----------
     output_dir : str
@@ -268,18 +269,18 @@ def validate_fluxes(output_dir, run_name, flow_method, dx, dy, dt, timestep=5):
         Timestep (hours)
     timestep : int
         Which timestep to validate
-    
+
     Returns:
     --------
     bool : True if validation passes
     """
-    
+
     print(f"\n{'='*60}")
     print(f"Validating {flow_method} ROTATED GEOMETRY - Timestep {timestep}")
     print(f"{'='*60}\n")
-    
+
     timestep_str = str(timestep).rjust(5, "0")
-    
+
     press_file = f"{output_dir}/{run_name}.out.press.{timestep_str}.pfb"
     qx_file = f"{output_dir}/{run_name}.out.qx_overland.{timestep_str}.pfb"
     qy_file = f"{output_dir}/{run_name}.out.qy_overland.{timestep_str}.pfb"
@@ -287,7 +288,7 @@ def validate_fluxes(output_dir, run_name, flow_method, dx, dy, dt, timestep=5):
     slope_y_file = f"{output_dir}/{run_name}.out.slope_y.pfb"
     mannings_file = f"{output_dir}/{run_name}.out.mannings.pfb"
     mask_file = f"{output_dir}/{run_name}.out.mask.pfb"
-    
+
     pressure = read_pfb(press_file)
     qx_pf = read_pfb(qx_file)
     qy_pf = read_pfb(qy_file)
@@ -295,19 +296,19 @@ def validate_fluxes(output_dir, run_name, flow_method, dx, dy, dt, timestep=5):
     slope_y = read_pfb(slope_y_file)
     mannings = read_pfb(mannings_file)
     mask = read_pfb(mask_file)
-    
+
     print(f"Loaded ParFlow outputs:")
     print(f"  Pressure shape: {pressure.shape}")
     print(f"  qx_overland shape: {qx_pf.shape}")
     print(f"  qy_overland shape: {qy_pf.shape}")
-    
+
     if len(qx_pf.shape) == 3:
         qx_pf_2d = qx_pf[0, :, :] * dy
         qy_pf_2d = qy_pf[0, :, :] * dx
     else:
         qx_pf_2d = qx_pf * dy
         qy_pf_2d = qy_pf * dx
-    
+
     if len(slope_x.shape) == 3:
         slope_x_2d = slope_x[0, :, :]
         slope_y_2d = slope_y[0, :, :]
@@ -316,7 +317,7 @@ def validate_fluxes(output_dir, run_name, flow_method, dx, dy, dt, timestep=5):
         slope_x_2d = slope_x
         slope_y_2d = slope_y
         mannings_2d = mannings
-    
+
     print(f"\nCalculating independent fluxes using ParFlow hydrology tools...")
     qx_calc, qy_calc = calculate_overland_fluxes(
         pressure,
@@ -327,13 +328,13 @@ def validate_fluxes(output_dir, run_name, flow_method, dx, dy, dt, timestep=5):
         dy,
         flow_method=flow_method,
         epsilon=1e-5,
-        mask=mask
+        mask=mask,
     )
-    
+
     print(f"  Raw calculated qx shape: {qx_calc.shape}")
     print(f"  Raw calculated qy shape: {qy_calc.shape}")
-    
-    if flow_method == 'OverlandFlow':
+
+    if flow_method == "OverlandFlow":
         if len(qx_calc.shape) == 3:
             qx_calc_2d = qx_calc[0, :, :-1]
             qy_calc_2d = qy_calc[0, :-1, :]
@@ -347,60 +348,80 @@ def validate_fluxes(output_dir, run_name, flow_method, dx, dy, dt, timestep=5):
         else:
             qx_calc_2d = qx_calc[:, 1:]
             qy_calc_2d = qy_calc[1:, :]
-    
+
     print(f"  Subset qx shape: {qx_calc_2d.shape}")
     print(f"  Subset qy shape: {qy_calc_2d.shape}")
     print(f"  ParFlow qx shape: {qx_pf_2d.shape}")
     print(f"  ParFlow qy shape: {qy_pf_2d.shape}")
-    
+
     print(f"\n{'='*60}")
     print(f"Comparing ParFlow outputs vs Independent calculation")
     print(f"{'='*60}")
-    
+
     print(f"\nX-Direction Fluxes (qx):")
-    print(f"  ParFlow:    min={qx_pf_2d.min():.6e}, max={qx_pf_2d.max():.6e}, mean={qx_pf_2d.mean():.6e}")
-    print(f"  Calculated: min={qx_calc_2d.min():.6e}, max={qx_calc_2d.max():.6e}, mean={qx_calc_2d.mean():.6e}")
-    
+    print(
+        f"  ParFlow:    min={qx_pf_2d.min():.6e}, max={qx_pf_2d.max():.6e}, mean={qx_pf_2d.mean():.6e}"
+    )
+    print(
+        f"  Calculated: min={qx_calc_2d.min():.6e}, max={qx_calc_2d.max():.6e}, mean={qx_calc_2d.mean():.6e}"
+    )
+
     print(f"\nY-Direction Fluxes (qy):")
-    print(f"  ParFlow:    min={qy_pf_2d.min():.6e}, max={qy_pf_2d.max():.6e}, mean={qy_pf_2d.mean():.6e}")
-    print(f"  Calculated: min={qy_calc_2d.min():.6e}, max={qy_calc_2d.max():.6e}, mean={qy_calc_2d.mean():.6e}")
-    
+    print(
+        f"  ParFlow:    min={qy_pf_2d.min():.6e}, max={qy_pf_2d.max():.6e}, mean={qy_pf_2d.mean():.6e}"
+    )
+    print(
+        f"  Calculated: min={qy_calc_2d.min():.6e}, max={qy_calc_2d.max():.6e}, mean={qy_calc_2d.mean():.6e}"
+    )
+
     diff_x = qx_pf_2d - qx_calc_2d
     diff_y = qy_pf_2d - qy_calc_2d
-    
+
     print(f"\nDifferences (ParFlow - Calculated):")
-    print(f"  X: min={diff_x.min():.6e}, max={diff_x.max():.6e}, mean={diff_x.mean():.6e}, std={diff_x.std():.6e}")
-    print(f"  Y: min={diff_y.min():.6e}, max={diff_y.max():.6e}, mean={diff_y.mean():.6e}, std={diff_y.std():.6e}")
-    
+    print(
+        f"  X: min={diff_x.min():.6e}, max={diff_x.max():.6e}, mean={diff_x.mean():.6e}, std={diff_x.std():.6e}"
+    )
+    print(
+        f"  Y: min={diff_y.min():.6e}, max={diff_y.max():.6e}, mean={diff_y.mean():.6e}, std={diff_y.std():.6e}"
+    )
+
     threshold = 1e-10
     mask_x = np.abs(qx_calc_2d) > threshold
     mask_y = np.abs(qy_calc_2d) > threshold
-    
+
     print(f"\nRelative errors (where |flux| > {threshold}):")
-    
+
     if mask_x.sum() > 0:
         rel_err_x = np.abs(diff_x[mask_x] / qx_calc_2d[mask_x])
-        print(f"  X: mean={rel_err_x.mean()*100:.6f}%, max={rel_err_x.max()*100:.6f}%, median={np.median(rel_err_x)*100:.6f}%")
-        print(f"     ({mask_x.sum()} cells, {100*mask_x.sum()/mask_x.size:.1f}% of domain)")
+        print(
+            f"  X: mean={rel_err_x.mean()*100:.6f}%, max={rel_err_x.max()*100:.6f}%, median={np.median(rel_err_x)*100:.6f}%"
+        )
+        print(
+            f"     ({mask_x.sum()} cells, {100*mask_x.sum()/mask_x.size:.1f}% of domain)"
+        )
     else:
         print(f"  X: No significant fluxes")
-    
+
     if mask_y.sum() > 0:
         rel_err_y = np.abs(diff_y[mask_y] / qy_calc_2d[mask_y])
-        print(f"  Y: mean={rel_err_y.mean()*100:.6f}%, max={rel_err_y.max()*100:.6f}%, median={np.median(rel_err_y)*100:.6f}%")
-        print(f"     ({mask_y.sum()} cells, {100*mask_y.sum()/mask_y.size:.1f}% of domain)")
+        print(
+            f"  Y: mean={rel_err_y.mean()*100:.6f}%, max={rel_err_y.max()*100:.6f}%, median={np.median(rel_err_y)*100:.6f}%"
+        )
+        print(
+            f"     ({mask_y.sum()} cells, {100*mask_y.sum()/mask_y.size:.1f}% of domain)"
+        )
     else:
         print(f"  Y: No significant fluxes")
-    
+
     qx_match = np.allclose(qx_pf_2d, qx_calc_2d, rtol=1e-5, atol=1e-10)
     qy_match = np.allclose(qy_pf_2d, qy_calc_2d, rtol=1e-5, atol=1e-10)
-    
+
     print(f"\n{'='*60}")
     print(f"VALIDATION RESULT")
     print(f"{'='*60}")
     print(f"qx_overland matches: {qx_match}")
     print(f"qy_overland matches: {qy_match}")
-    
+
     if qx_match and qy_match:
         print(f"\n✓ SUCCESS: {flow_method} flux outputs are correct!")
         return True
@@ -417,14 +438,14 @@ if __name__ == "__main__":
     dx = 10.0
     dy = 10.0
     dt = 0.05
-    
+
     # Only test OverlandFlow with rotated geometry
     test_configs = [
-        ('OverlandFlow', 'FluxValidation_OverlandFlow_Rotated'),
+        ("OverlandFlow", "FluxValidation_OverlandFlow_Rotated"),
     ]
-    
+
     all_passed = True
-    
+
     for flow_method, run_name in test_configs:
         print(f"\n{'#'*60}")
         print(f"Testing {flow_method} - ROTATED GEOMETRY")
@@ -435,17 +456,17 @@ if __name__ == "__main__":
         print(f"  - X-slope: +0.01 (uniform)")
         print(f"\nThis tests if PFTools Y-direction has same issue as X-direction")
         print(f"in the original geometry.\n")
-        
+
         overland = create_tiltedv_rotated_run(flow_method=flow_method)
         overland.set_name(run_name)
-        
+
         output_dir = get_absolute_path(f"test_output/{run_name}")
         mkdir(output_dir)
-        
+
         print(f"\nRunning ParFlow simulation...")
         overland.run(working_directory=output_dir)
         print(f"Simulation complete")
-        
+
         passed = validate_fluxes(
             output_dir=output_dir,
             run_name=run_name,
@@ -453,16 +474,16 @@ if __name__ == "__main__":
             dx=dx,
             dy=dy,
             dt=dt,
-            timestep=5
+            timestep=5,
         )
-        
+
         if not passed:
             all_passed = False
-    
+
     print(f"\n{'#'*60}")
     print(f"FINAL RESULT - ROTATED GEOMETRY TEST")
     print(f"{'#'*60}")
-    
+
     if all_passed:
         print("\n✓ ALL TESTS PASSED")
         print("PFTools calculation matches ParFlow in rotated geometry")
