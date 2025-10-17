@@ -1675,6 +1675,16 @@ Solver:
         DoubleValue:
           min_value: 0.0
 
+    SeepageOne:
+      help: >
+        [Type: double] This key sets a patch value for a mixed seepage face boundary condition.
+      default: -999
+
+    SeepageTwo:
+      help: >
+        [Type: double] This key sets a patch value for a mixed seepage face boundary condition.
+      default: -999
+
   # missing from manual
   PolyDegree:
     help: >
