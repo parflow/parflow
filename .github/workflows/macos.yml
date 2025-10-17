@@ -3,7 +3,7 @@ name: MacOS CI Tests
 #
 # Notes
 # Currently using GCC for the build rather than Clang
-# Python 3.12 used rather than more current available versions since Numba library does not work with later versions
+# Python 3.13 used rather than more current available versions since Numba library does not work with later versions
 
 on: [push, pull_request]
 
@@ -28,11 +28,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-# Oct 17 2025 Python 3.12 is the default and no longer named python3.12.  Leaving this here
-# since we will likely need to specify Python again in the future.  This was needed due to Numba issues.
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.12' 
+        python-version: '3.13' 
     - uses: fortran-lang/setup-fortran@v1
       with:
         compiler: gcc
@@ -70,7 +68,7 @@ jobs:
         echo "$HOME/depend/bin" >> $GITHUB_PATH
         export LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/lib64:${PARFLOW_DEP_DIR}/lib:${LD_LIBRARY_PATH}
         echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
-        export PARFLOW_PYTHON3=/opt/homebrew/bin/python3
+        export PARFLOW_PYTHON3=/opt/homebrew/bin/python3.13
         echo "PARFLOW_PYTHON3=${PARFLOW_PYTHON3}" >> $GITHUB_ENV
         echo "Python version:"
         $PARFLOW_PYTHON3 --version
