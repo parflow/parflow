@@ -268,8 +268,8 @@ tfgo.Solver.MaxIter = 2500
 
 tfgo.Solver.Nonlinear.MaxIter = 300
 tfgo.Solver.Nonlinear.ResidualTol = 1e-6
-tfgo.Solver.Nonlinear.EtaChoice = "Walker1"
-tfgo.Solver.Nonlinear.EtaValue = 0.001
+tfgo.Solver.Nonlinear.EtaChoice = "EtaConstant"
+tfgo.Solver.Nonlinear.EtaValue = 1e-5
 tfgo.Solver.Nonlinear.UseJacobian = False
 tfgo.Solver.Nonlinear.DerivativeEpsilon = 1e-12
 tfgo.Solver.Nonlinear.StepTol = 1e-20

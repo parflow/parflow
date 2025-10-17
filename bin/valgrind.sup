@@ -200,6 +200,14 @@
 }
 
 {
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:__intel_sse2_strncmp
+   ...
+   fun:MPIDI_CH3I_set_affinity
+}
+
+{
    Clone
    Memcheck:Leak
    ...

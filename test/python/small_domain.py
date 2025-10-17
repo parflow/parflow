@@ -304,9 +304,10 @@ small_domain.KnownSolution = "NoKnownSolution"
 small_domain.Solver = "Richards"
 small_domain.Solver.MaxIter = 10000
 
-small_domain.Solver.Nonlinear.MaxIter = 15
+small_domain.Solver.Nonlinear.MaxIter = 20
 small_domain.Solver.Nonlinear.ResidualTol = 1e-9
 small_domain.Solver.Nonlinear.StepTol = 1e-9
+small_domain.Solver.Nonlinear.EtaChoice = "EtaConstant"
 small_domain.Solver.Nonlinear.EtaValue = 1e-5
 small_domain.Solver.Nonlinear.UseJacobian = True
 small_domain.Solver.Nonlinear.DerivativeEpsilon = 1e-7

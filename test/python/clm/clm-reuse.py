@@ -301,7 +301,6 @@ clm.Solver.MaxIter = 90000
 clm.Solver.Nonlinear.MaxIter = 100
 clm.Solver.Nonlinear.ResidualTol = 1e-5
 clm.Solver.Nonlinear.EtaChoice = "Walker1"
-clm.Solver.Nonlinear.EtaValue = 0.01
 clm.Solver.Nonlinear.UseJacobian = True
 clm.Solver.Nonlinear.DerivativeEpsilon = 1e-12
 clm.Solver.Nonlinear.StepTol = 1e-30

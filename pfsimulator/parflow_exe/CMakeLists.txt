@@ -30,6 +30,10 @@ if (${PARFLOW_HAVE_HYPRE})
   target_link_libraries (parflow Hypre::Hypre)
 endif (${PARFLOW_HAVE_HYPRE})
 
+if (${PARFLOW_HAVE_SUNDIALS})
+  target_link_libraries (parflow ${SUNDIALS_LIBRARIES})
+endif (${PARFLOW_HAVE_SUNDIALS})
+
 if (${PARFLOW_HAVE_MPI})
   # In CMake 3.13 this could be target_link_options
   target_link_libraries(parflow ${MPI_LINK_FLAGS})
