@@ -37,6 +37,8 @@
 extern "C" {
 #endif
 
+/* Methods required for SUNDIALS N vectors */
+
 /* Create new vector */
 N_Vector PF_NVNewEmpty(SUNContext sunctx)
 {

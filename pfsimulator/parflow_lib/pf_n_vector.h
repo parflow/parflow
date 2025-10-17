@@ -33,7 +33,7 @@
 #if defined (PARFLOW_HAVE_SUNDIALS)
 #include "sundials/sundials_core.h"
 
-/* Content field for SUNDIALS' N_Vector object */
+/* Content field for the ParFlow SUNDIALS' N_Vector object */
 struct PF_N_Vector_Content_struct {
   Vector *data;
   bool owns_data;

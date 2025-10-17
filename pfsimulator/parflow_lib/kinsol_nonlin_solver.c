@@ -315,14 +315,10 @@ int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, V
   N_Vector uscale = (instance_xtra->uscale);
   N_Vector fscale = (instance_xtra->fscale);
 
-/* SUNDIALS context object */
-  //SUNContext sunctx = (instance_xtra->sunctx);
-/* SUNDIALS uses (void *) for Kinsol memory block */
+  /* SUNDIALS context object */
   void * kin_mem = (instance_xtra->kin_mem);
-/* function eval */
-//KINSysFn feval = (instance_xtra->feval);
 
-/* N_Vector for pressure variable */
+  /* N_Vector for pressure variable */
   N_Vector pf_n_pressure = (instance_xtra->pf_n_pressure);
 #else
   Vector       *uscale = (instance_xtra->uscale);
@@ -370,10 +366,10 @@ int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, V
   BeginTiming(public_xtra->time_index);
 
 #if defined (PARFLOW_HAVE_SUNDIALS)
-/* Attach parflow Vector to N_Vector object */
+  /* Attach parflow Vector to N_Vector object */
   N_VectorData(pf_n_pressure) = pressure;
 
-/* Call KINSol */
+  /* Call KINSol */
   ret = KINSol(kin_mem,                      /* Memory allocated above */
                pf_n_pressure,      /* Initial guess @ this was "pressure before" */
                globalization,                /* NonLin. solver strategy. Here we use Newton with globalization */
@@ -383,7 +379,7 @@ int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, V
 
   EndTiming(public_xtra->time_index);
 
-/* update statistics */
+  /* update statistics */
   KINGetNumNonlinSolvIters(kin_mem, &(instance_xtra->num_nonlin_iters));
   KINGetNumLinIters(kin_mem, &(instance_xtra->num_lin_iters));
   KINGetNumFuncEvals(kin_mem, &(instance_xtra->num_fevals));
@@ -393,7 +389,7 @@ int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, V
   KINGetNumBetaCondFails(kin_mem, &(instance_xtra->num_beta_cond_fails));
   KINGetNumBacktrackOps(kin_mem, &(instance_xtra->num_backtracks));
 
-/* running totals */
+  /* running totals */
   instance_xtra->tot_nonlin_iters += instance_xtra->num_nonlin_iters;
   instance_xtra->tot_lin_iters += instance_xtra->num_lin_iters;
   instance_xtra->tot_fevals += instance_xtra->num_fevals;
@@ -621,16 +617,8 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
      */
     KINSetNoMinEps(kin_mem, 0);
     /* NL function norm stopping tolerance. set to 0.0 for default */
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // SGS HACKING changed this setting; residual_tol was not being used.
-    // SGS WARNING is not super confident this is the correct setting.
-    // KINSetFuncNormTol(kin_mem, 0.0);
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     KINSetFuncNormTol(kin_mem, public_xtra->residual_tol);
 
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // SGS WARNING Have key for step_tol but this was not being used, is SCALED the same
-    // as old StepTol?
     KINSetScaledStepTol(kin_mem, public_xtra->step_tol);
 
     /* Create SUNDIALS linear solver object for kinsol */

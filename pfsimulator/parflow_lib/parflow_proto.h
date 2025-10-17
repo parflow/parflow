@@ -433,7 +433,7 @@ void MGSemiRestrict(Matrix *A_f, Vector *r_f, Vector *r_c, Matrix *P, SubregionA
 ComputePkg *NewMGSemiRestrictComputePkg(Grid *grid, Stencil *stencil, int sx, int sy, int sz, int c_index, int f_index);
 
 #if defined (PARFLOW_HAVE_SUNDIALS)
-/* N_Vector.c protos for External SUNDIALS */
+/* N_Vector.c protos for External SUNDIALS, SUNDIALS is compiled with C */
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -469,11 +469,13 @@ bool PFVConstrMaskFcn(N_Vector xvec, N_Vector yvec, N_Vector zvec);
 }
 #endif
 
-#else
+#else /* if sundials */
+
 /* n_vector.c for internal kinsol */
 void SetPf2KinsolData(Grid *grid, int num_ghost);
 void N_VPrint(N_Vector x);
-/* Kinsol API is in C. */
+
+/* Embedded Kinsol API is C. */
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -484,7 +486,8 @@ void N_VFree(N_Vector x);
 #ifdef __cplusplus
 }
 #endif
-#endif
+#endif /* if embedded kinsol */
+
 /* new_endpts.c */
 void NewEndpts(double *alpha, double *beta, double *pp, int *size_ptr, int n, double *a_ptr, double *b_ptr, double *cond_ptr, double ereps);
 

@@ -291,7 +291,6 @@ if (${PARFLOW_HAVE_HYPRE})
   target_link_libraries (pfsimulator Hypre::Hypre)
 endif (${PARFLOW_HAVE_HYPRE})
 
-
 if (${PARFLOW_HAVE_MPI})
   target_include_directories (pfsimulator PUBLIC "${MPI_C_INCLUDE_PATH}")
   target_link_libraries (pfsimulator ${MPI_LIBRARIES})
