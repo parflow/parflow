@@ -55,6 +55,15 @@ typedef struct {
   PFModule     *overlandflow_module;  //DOK
   PFModule     *overlandflow_module_diff;  //@RMM
   PFModule     *overlandflow_module_kin;
+
+  // Overland flow variables
+  int using_overland_flow;
+  Vector       *KW;
+  Vector       *KE;
+  Vector       *KN;
+  Vector       *KS;
+  Vector       *qx;
+  Vector       *qy;
 } InstanceXtra;
 
 /*---------------------------------------------------------------------
@@ -147,8 +156,12 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   Vector      *source = saturation;
 
   /* Overland flow variables */  //sk
-  Vector      *KW, *KE, *KN, *KS;
-  Vector      *qx, *qy;
+  Vector      *KW = (instance_xtra->KW);
+  Vector      *KE = (instance_xtra->KE);
+  Vector      *KN = (instance_xtra->KN);
+  Vector      *KS = (instance_xtra->KS);
+  Vector      *qx = (instance_xtra->qx);
+  Vector      *qy = (instance_xtra->qy);
   Subvector   *kw_sub, *ke_sub, *kn_sub, *ks_sub, *qx_sub, *qy_sub;
   Subvector   *x_sl_sub;
   // Subvector *y_sl_sub;
@@ -225,6 +238,16 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   /* Initialize function values to zero. */
   PFVConstInit(0.0, fval);
 
+  if ((instance_xtra->using_overland_flow) == TRUE)
+  {
+    InitVectorAll(KW, 0.0);
+    InitVectorAll(KE, 0.0);
+    InitVectorAll(KN, 0.0);
+    InitVectorAll(KS, 0.0);
+    InitVectorAll(qx, 0.0);
+    InitVectorAll(qy, 0.0);
+  }
+
   /* diffusive test here, this is NOT PF style and should be
    * re-done putting keys in BC Pressure Package and adding to the
    * datastructure for overlandflowBC */
@@ -236,13 +259,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   /* Pass pressure values to neighbors.  */
   handle = InitVectorUpdate(pressure, VectorUpdateAll);
   FinalizeVectorUpdate(handle);
-
-  KW = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
-  KE = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
-  KN = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
-  KS = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
-  qx = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
-  qy = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
 
   /* Calculate pressure dependent properties: density and saturation */
 
@@ -613,8 +629,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     /* @RMM added to provide variable dz */
     z_mult_dat = SubvectorData(z_mult_sub);
 
-    qx_sub = VectorSubvector(qx, is);
-
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
       int ip = SubvectorEltIndex(p_sub, i, j, k);
@@ -802,15 +816,28 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     y_ssl_sub = VectorSubvector(y_ssl, is);
 
     // sk Overland flow
-    kw_sub = VectorSubvector(KW, is);
-    ke_sub = VectorSubvector(KE, is);
-    kn_sub = VectorSubvector(KN, is);
-    ks_sub = VectorSubvector(KS, is);
-    qx_sub = VectorSubvector(qx, is);
-    qy_sub = VectorSubvector(qy, is);
+    if ((instance_xtra->using_overland_flow) == TRUE)
+    {
+      kw_sub = VectorSubvector(KW, is);
+      ke_sub = VectorSubvector(KE, is);
+      kn_sub = VectorSubvector(KN, is);
+      ks_sub = VectorSubvector(KS, is);
+      qx_sub = VectorSubvector(qx, is);
+      qy_sub = VectorSubvector(qy, is);
+
+      kw_ = SubvectorData(kw_sub);
+      ke_ = SubvectorData(ke_sub);
+      kn_ = SubvectorData(kn_sub);
+      ks_ = SubvectorData(ks_sub);
+      qx_ = SubvectorData(qx_sub);
+      qy_ = SubvectorData(qy_sub);
+    }
     x_sl_sub = VectorSubvector(x_sl, is);
     // y_sl_sub = VectorSubvector(y_sl, is);
     // mann_sub = VectorSubvector(man, is);
+    // x_sl_dat = SubvectorData(x_sl_sub);
+    // y_sl_dat = SubvectorData(y_sl_sub);
+    // mann_dat = SubvectorData(mann_sub);
 
     dx = SubgridDX(subgrid);
     dy = SubgridDY(subgrid);
@@ -852,16 +879,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     vx = SubvectorData(vx_sub);
     vy = SubvectorData(vy_sub);
     vz = SubvectorData(vz_sub);
-
-    kw_ = SubvectorData(kw_sub);
-    ke_ = SubvectorData(ke_sub);
-    kn_ = SubvectorData(kn_sub);
-    ks_ = SubvectorData(ks_sub);
-    qx_ = SubvectorData(qx_sub);
-    qy_ = SubvectorData(qy_sub);
-    // x_sl_dat = SubvectorData(x_sl_sub);
-    // y_sl_dat = SubvectorData(y_sl_sub);
-    // mann_dat = SubvectorData(mann_sub);
 
     pp = SubvectorData(p_sub);
     opp = SubvectorData(op_sub);
@@ -1352,15 +1369,11 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
         {
           /*  @RMM this is modified to be kinematic wave routing, with a new module for diffusive wave
            * routing added */
-          double *dummy1 = NULL;
-          double *dummy2 = NULL;
-          double *dummy3 = NULL;
-          double *dummy4 = NULL;
           PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
                              (grid, is, bc_struct, ipatch,
                               problem_data, pressure, old_pressure,
                               ke_, kw_, kn_, ks_,
-                              dummy1, dummy2, dummy3, dummy4,
+                              NULL, NULL, NULL, NULL,
                               qx_, qy_, CALCFCN));
         }
       }),
@@ -1685,14 +1698,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       {
 /*  @RMM this is modified to be kinematic wave routing, with a new module for diffusive wave
  * routing added */
-        double *dummy1 = NULL;
-        double *dummy2 = NULL;
-        double *dummy3 = NULL;
-        double *dummy4 = NULL;
         PFModuleInvokeType(OverlandFlowEvalKinInvoke, overlandflow_module_kin,
                            (grid, is, bc_struct, ipatch, problem_data, pressure,
                             ke_, kw_, kn_, ks_,
-                            dummy1, dummy2, dummy3, dummy4,
+                            NULL, NULL, NULL, NULL,
                             qx_, qy_, CALCFCN));
       }),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
@@ -1911,15 +1920,11 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       {
         /*  @RMM this is a new module for diffusive wave
          */
-        double *dummy1 = NULL;
-        double *dummy2 = NULL;
-        double *dummy3 = NULL;
-        double *dummy4 = NULL;
         PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
                            (grid, is, bc_struct, ipatch,
                             problem_data, pressure, old_pressure,
                             ke_, kw_, kn_, ks_,
-                            dummy1, dummy2, dummy3, dummy4,
+                            NULL, NULL, NULL, NULL,
                             qx_, qy_, CALCFCN));
       }),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
@@ -2193,13 +2198,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
   EndTiming(public_xtra->time_index);
 
-  FreeVector(KW);
-  FreeVector(KE);
-  FreeVector(KN);
-  FreeVector(KS);
-  FreeVector(qx);
-  FreeVector(qy);
-
   POP_NVTX
 
   return;
@@ -2212,6 +2210,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
 PFModule    *NlFunctionEvalInitInstanceXtra(Problem *problem,
                                             Grid *   grid,
+                                            Grid *   grid2d,
                                             double * temp_data)
 
 {
@@ -2254,6 +2253,26 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem *problem,
       PFModuleNewInstance(ProblemOverlandFlowEvalDiff(problem), ());   //@RMM
     (instance_xtra->overlandflow_module_kin) =
       PFModuleNewInstance(ProblemOverlandFlowEvalKin(problem), ());
+
+    (instance_xtra->using_overland_flow) = BCPressurePackageUsingOverlandFlow(problem);
+    if ((instance_xtra->using_overland_flow) == TRUE)
+    {
+      (instance_xtra->KW) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->KE) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->KN) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->KS) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->qx) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->qy) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+    }
+    else
+    {
+      (instance_xtra->KW) = NULL;
+      (instance_xtra->KE) = NULL;
+      (instance_xtra->KN) = NULL;
+      (instance_xtra->KS) = NULL;
+      (instance_xtra->qx) = NULL;
+      (instance_xtra->qy) = NULL;
+    }
   }
   else
   {
@@ -2290,15 +2309,25 @@ void  NlFunctionEvalFreeInstanceXtra()
 
   if (instance_xtra)
   {
-    PFModuleFreeInstance(instance_xtra->density_module);
-    PFModuleFreeInstance(instance_xtra->saturation_module);
-    PFModuleFreeInstance(instance_xtra->rel_perm_module);
-    PFModuleFreeInstance(instance_xtra->phase_source);
-    PFModuleFreeInstance(instance_xtra->bc_pressure);
-    PFModuleFreeInstance(instance_xtra->bc_internal);
-    PFModuleFreeInstance(instance_xtra->overlandflow_module);     //DOK
-    PFModuleFreeInstance(instance_xtra->overlandflow_module_diff);      //@RMM
+    if ((instance_xtra->using_overland_flow) == TRUE)
+    {
+      FreeVector(instance_xtra->qy);
+      FreeVector(instance_xtra->qx);
+      FreeVector(instance_xtra->KS);
+      FreeVector(instance_xtra->KN);
+      FreeVector(instance_xtra->KE);
+      FreeVector(instance_xtra->KW);
+    }
+
     PFModuleFreeInstance(instance_xtra->overlandflow_module_kin);
+    PFModuleFreeInstance(instance_xtra->overlandflow_module_diff);      //@RMM
+    PFModuleFreeInstance(instance_xtra->overlandflow_module);     //DOK
+    PFModuleFreeInstance(instance_xtra->bc_internal);
+    PFModuleFreeInstance(instance_xtra->bc_pressure);
+    PFModuleFreeInstance(instance_xtra->phase_source);
+    PFModuleFreeInstance(instance_xtra->rel_perm_module);
+    PFModuleFreeInstance(instance_xtra->saturation_module);
+    PFModuleFreeInstance(instance_xtra->density_module);
 
     tfree(instance_xtra);
   }
