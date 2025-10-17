@@ -72,8 +72,8 @@ jobs:
         echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
         export PARFLOW_PYTHON3=/opt/homebrew/bin/python3
         echo "PARFLOW_PYTHON3=${PARFLOW_PYTHON3}" >> $GITHUB_ENV
-	echo "Python version:"
-	$PARFLOW_PYTHON3 --version
+        echo "Python version:"
+        $PARFLOW_PYTHON3 --version
 
     - name: CMake Install
       if: matrix.config.os != 'macos-14'
