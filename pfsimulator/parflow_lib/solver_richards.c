@@ -2734,7 +2734,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           case 2:
           {
             /*C. Yang*/
-            printf("%f %f %f \n", cdt, t, start_time);
             clm_file_dir_length = strlen(public_xtra->clm_file_dir);
             CALL_CoLM_LSM(pp, sp, et, ms, po_dat, dz_dat, istep,
                          cdt, t, start_time, dx, dy, dz, ix, iy, nx, ny, nz,

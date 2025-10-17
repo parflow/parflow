@@ -53,11 +53,10 @@ subroutine drv_readvegtf_colm (grid, nx, ny, ix, iy, gnx, gny, rank)
 
   !nchp = drv%nch
   write(RI,*)rank
-print *, 'sok00'
+
   !=== Read in Vegetation Data
   !open(2,file=trim(adjustl(drv%vegtf))//'.'//trim(adjustl(RI)),form='formatted',action='read')
   open(2,file=trim(adjustl('CoLM_readin.dat')),form='formatted',action='read')
-print *, 'sok01'
   !read(2,*)  !skip header
   !read(2,*)  !skip header
 !  print*, 
