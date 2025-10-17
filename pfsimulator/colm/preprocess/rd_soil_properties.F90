@@ -38,7 +38,7 @@ SUBROUTINE rd_soil_properties(grid,nx,ny,planar_mask,numpatch)
 ! Nan Wei,  12/2022: output more parameters for BGC parts
 ! ----------------------------------------------------------------------
 use MOD_Precision
-use drv_gridmodule 
+use drv_gridmodule_colm
 use MOD_Vars_TimeInvariants
 use MOD_Vars_Global, only : zi_soi
 IMPLICIT NONE

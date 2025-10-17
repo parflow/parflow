@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-subroutine pf_getforce (nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf, &
+subroutine pf_getforce_colm (nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf, &
   patm_pf,qatm_pf,lai_pf,sai_pf,z0m_pf,displa_pf,clm_forc_veg, &
   numpatch,planar_mask,idate)
 
@@ -192,4 +192,4 @@ subroutine pf_getforce (nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf, &
         !endif
     enddo
 
-end subroutine pf_getforce
+end subroutine pf_getforce_colm

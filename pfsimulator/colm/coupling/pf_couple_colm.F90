@@ -1,5 +1,5 @@
 !subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,nz,j_incr,k_incr,ip,istep_pf)
-subroutine pf_couple(evap_trans,saturation,pressure,porosity,pf_dz_mult,pdz,nx,ny,nz,j_incr,k_incr,numpatch, &
+subroutine pf_couple_colm(evap_trans,saturation,pressure,porosity,pf_dz_mult,pdz,nx,ny,nz,j_incr,k_incr,numpatch, &
    topo_mask,planar_mask,deltim,begwatb)
 
   !use drv_module          ! 1-D Land Model Driver variables
@@ -116,5 +116,5 @@ subroutine pf_couple(evap_trans,saturation,pressure,porosity,pf_dz_mult,pdz,nx,n
 
    !print *,"Error (%):", error/begwatb
 
-end subroutine pf_couple
+end subroutine pf_couple_colm
 

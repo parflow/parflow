@@ -114,7 +114,7 @@ SUBROUTINE CoLM_LSM(pressure,saturation,evap_trans,topo,porosity,pf_dz_mult,iste
    USE MOD_HistWriteBack
 #endif
 
-   use drv_gridmodule      ! Grid-space variables
+   use drv_gridmodule_colm      ! Grid-space variables
 
    IMPLICIT NONE
 
@@ -554,7 +554,7 @@ if (time == start_time_pf) then !initialization
 
       allocate (grid(nx,ny)) 
 
-      call drv_readvegtf (grid, nx, ny, ix, iy, gnx, gny, rank)
+      call drv_readvegtf_colm (grid, nx, ny, ix, iy, gnx, gny, rank)
       !call drv_g2clm (grid,nx,ny,planar_mask,numpatch)
       call rd_soil_properties(grid,nx,ny,planar_mask,numpatch)
 
@@ -617,7 +617,7 @@ endif
 
       !TIMELOOP : DO WHILE (itstamp < etstamp)
 
-         call pfreadout(saturation,pressure,nx,ny,nz,j_incr,k_incr,numpatch,topo_mask,planar_mask)
+         call pfreadout_colm(saturation,pressure,nx,ny,nz,j_incr,k_incr,numpatch,topo_mask,planar_mask)
 
          CALL julian2monthday (jdate(1), jdate(2), month_p, mday_p)
 
@@ -638,7 +638,7 @@ endif
          ! Read in the meteorological forcing
          ! ----------------------------------------------------------------------
          ! CALL read_forcing (jdate, dir_forcing)
-         call pf_getforce (nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf, &
+         call pf_getforce_colm (nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf, &
          patm_pf,qatm_pf,lai_pf,sai_pf,z0m_pf,displa_pf,clm_forc_veg, &
          numpatch,planar_mask,jdate)
 
@@ -901,7 +901,7 @@ endif
             endif
          enddo
 
-         call pf_couple(evap_trans,saturation,pressure,porosity,pf_dz_mult,pdz,nx,ny,nz, &
+         call pf_couple_colm(evap_trans,saturation,pressure,porosity,pf_dz_mult,pdz,nx,ny,nz, &
             j_incr,k_incr,numpatch,topo_mask,planar_mask,deltim,begwatb)
 
       !ENDDO TIMELOOP

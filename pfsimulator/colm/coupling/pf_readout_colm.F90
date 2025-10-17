@@ -1,5 +1,5 @@
 !subroutine pfreadout(clm,drv,tile,saturation,pressure,rank,ix,iy,nx,ny,nz, j_incr,k_incr,ip)
-subroutine pfreadout(saturation,pressure,nx,ny,nz,j_incr,k_incr,numpatch,topo_mask,planar_mask)
+subroutine pfreadout_colm(saturation,pressure,nx,ny,nz,j_incr,k_incr,numpatch,topo_mask,planar_mask)
 
   !use drv_module          ! 1-D Land Model Driver variables
   !!use dfport
@@ -40,4 +40,4 @@ subroutine pfreadout(saturation,pressure,nx,ny,nz,j_incr,k_incr,numpatch,topo_ma
         endif
     end do !t
 
-end subroutine pfreadout
+end subroutine pfreadout_colm

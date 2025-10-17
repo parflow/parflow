@@ -65,11 +65,11 @@ set (SRC_FILES
   ./main/CoLMDRIVER.F90                              
   ./main/CoLMMAIN.F90                                
   ./main/CoLM.F90
-  ./coupling/pf_readout.F90
-  ./coupling/pf_couple.F90
-  ./coupling/pf_getforce.F90
-  ./coupling/drv_gridmodule.F90
-  ./coupling/drv_readvegtf.F90
+  ./coupling/pf_readout_colm.F90
+  ./coupling/pf_couple_colm.F90
+  ./coupling/pf_getforce_colm.F90
+  ./coupling/drv_gridmodule_colm.F90
+  ./coupling/drv_readvegtf_colm.F90
   ./preprocess/rd_soil_properties.F90
   ./preprocess/rawdata_soil_solids_fractions.F90
   ./preprocess/rawdata_soil_thermal_parameters.F90

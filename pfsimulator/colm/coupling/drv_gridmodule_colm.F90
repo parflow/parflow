@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-module drv_gridmodule 
+module drv_gridmodule_colm 
 
 !=========================================================================
 !
@@ -58,7 +58,7 @@ module drv_gridmodule
 
   end type griddec
 
-end module drv_gridmodule
+end module drv_gridmodule_colm
 
 
 

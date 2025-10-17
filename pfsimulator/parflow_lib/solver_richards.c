@@ -1850,8 +1850,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 #ifdef HAVE_CLM
   Grid *grid = (instance_xtra->grid);
   Subgrid *subgrid;
-  Subvector *p_sub, *s_sub, *et_sub, *po_sub, *dz_sub;
-  double *pp, *sp, *et, *po_dat, *dz_dat;
+  Subvector *p_sub, *s_sub, *et_sub, *m_sub, *po_sub, *dz_sub;
+  double *pp, *sp, *et, *ms, *po_dat, *dz_dat;
 
   /* IMF: For CLM met forcing (local to AdvanceRichards) */
   int istep;                    // IMF: counter for clm output times
@@ -2480,6 +2480,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         p_sub = VectorSubvector(instance_xtra->pressure, is);
         s_sub = VectorSubvector(instance_xtra->saturation, is);
         et_sub = VectorSubvector(evap_trans, is);
+        m_sub = VectorSubvector(instance_xtra->mask, is);
         top_sub = VectorSubvector(top, is);
         bot_sub = VectorSubvector(bot, is);
         po_sub = VectorSubvector(porosity, is);
@@ -2558,6 +2559,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         sp = SubvectorData(s_sub);
         pp = SubvectorData(p_sub);
         et = SubvectorData(et_sub);
+        ms = SubvectorData(m_sub);
         top_dat = SubvectorData(top_sub);
         bot_dat = SubvectorData(bot_sub);
         po_dat = SubvectorData(po_sub);
@@ -2732,8 +2734,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           case 2:
           {
             /*C. Yang*/
+            printf("%f %f %f \n", cdt, t, start_time);
             clm_file_dir_length = strlen(public_xtra->clm_file_dir);
-            CALL_CoLM_LSM(pp, sp, et, top_dat, bot_dat, po_dat, dz_dat, istep,
+            CALL_CoLM_LSM(pp, sp, et, ms, po_dat, dz_dat, istep,
                          cdt, t, start_time, dx, dy, dz, ix, iy, nx, ny, nz,
                          nx_f, ny_f, nz_f, nz_rz, ip, p, q, r, gnx,
                          gny, rank, sw_data, lw_data, prcp_data,
@@ -2766,7 +2769,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          public_xtra->clm_irr_thresholdtype, soi_z,
                          clm_next, clm_write_logs, clm_last_rst,
                          clm_daily_rst,
-                         clm_water_stress_type,
                          public_xtra->clm_nz,
                          public_xtra->clm_nz);
 
@@ -5344,7 +5346,7 @@ SolverRichardsNewPublicXtra(char *name)
     case 2:
     {
 #ifdef HAVE_CLM
-      public_xtra->lsm = 1;
+      public_xtra->lsm = 2;
 #else
       InputError
         ("Error: <%s> used for key <%s> but this version of Parflow is compiled without CoLM\n",

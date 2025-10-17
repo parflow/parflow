@@ -1,7 +1,7 @@
 !#include <misc.h>
 
 !subroutine drv_readvegtf (drv,grid,tile,clm,nx, ny, ix, iy,gnx, gny, rank)
-subroutine drv_readvegtf (grid, nx, ny, ix, iy, gnx, gny, rank)
+subroutine drv_readvegtf_colm (grid, nx, ny, ix, iy, gnx, gny, rank)
 
   !=========================================================================
   !
@@ -25,7 +25,7 @@ subroutine drv_readvegtf (grid, nx, ny, ix, iy, gnx, gny, rank)
   !use drv_module          ! 1-D Land Model Driver variables
   !use drv_tilemodule      ! Tile-space variables
   !use clmtype             ! 1-D CLM variables
-  use drv_gridmodule      ! Grid-space variables
+  use drv_gridmodule_colm      ! Grid-space variables
   implicit none
 
   !=== Arguments ===========================================================
@@ -53,11 +53,11 @@ subroutine drv_readvegtf (grid, nx, ny, ix, iy, gnx, gny, rank)
 
   !nchp = drv%nch
   write(RI,*)rank
-
+print *, 'sok00'
   !=== Read in Vegetation Data
   !open(2,file=trim(adjustl(drv%vegtf))//'.'//trim(adjustl(RI)),form='formatted',action='read')
   open(2,file=trim(adjustl('CoLM_readin.dat')),form='formatted',action='read')
-
+print *, 'sok01'
   !read(2,*)  !skip header
   !read(2,*)  !skip header
 !  print*, 
@@ -112,11 +112,11 @@ subroutine drv_readvegtf (grid, nx, ny, ix, iy, gnx, gny, rank)
 
     enddo ! C 
   enddo ! R 
-
+print *, 'sok02'
   ! write(*,*) 'Size of Tile-Space Dimension:',nchp
   ! write(*,*) 'Actual Number of Tiles:',drv%nch,drv%nt
   ! write(*,*)
   close(2)
   return
 
-end subroutine drv_readvegtf
+end subroutine drv_readvegtf_colm
