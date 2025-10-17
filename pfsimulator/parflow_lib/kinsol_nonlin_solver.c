@@ -176,7 +176,7 @@ int  KINSolInitPC(
   /* The preconditioner module initialized here is the KinsolPC module
    * itself */
 
-  PFModuleReNewInstanceType(KinsolPCInitInstanceXtraInvoke, precond, (NULL, NULL, problem_data, NULL,
+  PFModuleReNewInstanceType(KinsolPCInitInstanceXtraInvoke, precond, (NULL, NULL, NULL, problem_data, NULL,
                                                                       pressure, old_pressure, saturation, density, dt, time));
   return(0);
 }
@@ -457,6 +457,7 @@ int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, V
 PFModule  *KinsolNonlinSolverInitInstanceXtra(
                                               Problem *    problem,
                                               Grid *       grid,
+                                              Grid *       grid2d,
                                               ProblemData *problem_data,
                                               double *     temp_data)
 {
@@ -523,20 +524,20 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
     if (public_xtra->precond != NULL)
       instance_xtra->precond =
         PFModuleNewInstanceType(KinsolPCInitInstanceXtraInvoke, public_xtra->precond,
-                                (problem, grid, problem_data, temp_data,
+                                (problem, grid, grid2d, problem_data, temp_data,
                                  NULL, NULL, NULL, NULL, 0, 0));
     else
       instance_xtra->precond = NULL;
 
     instance_xtra->nl_function_eval =
       PFModuleNewInstanceType(NlFunctionEvalInitInstanceXtraInvoke, public_xtra->nl_function_eval,
-                              (problem, grid, temp_data));
+                              (problem, grid, grid2d, temp_data));
 
     if (public_xtra->richards_jacobian_eval != NULL)
       /* Initialize instance for nonsymmetric matrix */
       instance_xtra->richards_jacobian_eval =
         PFModuleNewInstanceType(RichardsJacobianEvalInitInstanceXtraInvoke, public_xtra->richards_jacobian_eval,
-                                (problem, grid, problem_data, temp_data, 0));
+                                (problem, grid, grid2d, problem_data, temp_data, 0));
     else
       instance_xtra->richards_jacobian_eval = NULL;
   }
@@ -545,15 +546,15 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
     if (instance_xtra->precond != NULL)
       PFModuleReNewInstanceType(KinsolPCInitInstanceXtraInvoke,
                                 instance_xtra->precond,
-                                (problem, grid, problem_data, temp_data,
+                                (problem, grid, grid2d, problem_data, temp_data,
                                  NULL, NULL, NULL, NULL, 0, 0));
 
     PFModuleReNewInstanceType(NlFunctionEvalInitInstanceXtraInvoke, instance_xtra->nl_function_eval,
-                              (problem, grid, temp_data));
+                              (problem, grid, grid2d, temp_data));
 
     if (instance_xtra->richards_jacobian_eval != NULL)
       PFModuleReNewInstanceType(RichardsJacobianEvalInitInstanceXtraInvoke, instance_xtra->richards_jacobian_eval,
-                                (problem, grid, problem_data, temp_data, 0));
+                                (problem, grid, grid2d, problem_data, temp_data, 0));
   }
 
   /*-----------------------------------------------------------------------

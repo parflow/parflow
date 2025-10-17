@@ -117,11 +117,11 @@ jobs:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          URL=https://github.com/LLNL/Silo/archive/refs/tags/4.11.tar.gz
+          URL=https://github.com/LLNL/Silo/archive/refs/tags/4.11.1.tar.gz
           mkdir silo
           cd silo
           curl -L $URL | tar --strip-components=1 -xz
-          ./configure --disable-silex --disable-hzip --disable-fpzip --prefix=$PARFLOW_DEP_DIR --disable-fortran --with-readline=no
+          ./configure --disable-silex --disable-hzip --disable-fpzip --enable-shared=yes --disable-fortran --with-readline=no --prefix=$PARFLOW_DEP_DIR 
           make -j 2 install
         fi
 
