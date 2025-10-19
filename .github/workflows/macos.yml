@@ -1,9 +1,9 @@
-name: ParFlow MacOS CI Test
+name: MacOS CI Tests
 
 #
 # Notes
 # Currently using GCC for the build rather than Clang
-# Python 3.12 used rather than more current available versions since Numba library does not work with later versions
+# Python 3.13 used rather than more current available versions since Numba library does not work with later versions
 
 on: [push, pull_request]
 
@@ -27,9 +27,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.12' 
+        python-version: '3.13' 
     - uses: fortran-lang/setup-fortran@v1
       with:
         compiler: gcc
@@ -45,10 +46,6 @@ jobs:
       run: |
         brew link tcl-tk@8
 
-# Cache dependencies so don't have to rebuild on each test.
-# Can flush caches by resetting the CACHE_VERSION secret on GitHub
-# settings for the project (using date-timestamp for secret).
-
     - name: Cache dependencies
       uses: actions/cache@v4
       id: cache-parflow-dependencies
@@ -57,7 +54,7 @@ jobs:
         cache-parflow-hit: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       with:
         path: "~/depend"
-        key: cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ secrets.CACHE_VERSION }}
+        key: cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ hashfiles('**/.github/workflows/macos.yml') }}
 
     - name: Directory Setup
       run: |
@@ -71,8 +68,10 @@ jobs:
         echo "$HOME/depend/bin" >> $GITHUB_PATH
         export LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/lib64:${PARFLOW_DEP_DIR}/lib:${LD_LIBRARY_PATH}
         echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
-        export PARFLOW_PYTHON3=/opt/homebrew/bin/python3.12
+        export PARFLOW_PYTHON3=/opt/homebrew/bin/python3.13
         echo "PARFLOW_PYTHON3=${PARFLOW_PYTHON3}" >> $GITHUB_ENV
+        echo "Python version:"
+        $PARFLOW_PYTHON3 --version
 
     - name: CMake Install
       if: matrix.config.os != 'macos-14'
@@ -82,7 +81,7 @@ jobs:
        if [[ "$CACHE_HIT" != 'true' ]]; then
           echo "Installing"
           cd ~/depend
-          echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ secrets.CACHE_VERSION }}" > ~/depend/cache-key
+          echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ hashfiles('**/.github/workflows/macos.yml') }}" > ~/depend/cache-key
           wget -nv --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-x86_64.tar.gz
           tar -xf cmake-3.25.1-linux-x86_64.tar.gz
           $HOME/depend/cmake-3.25.1-linux-x86_64/bin/cmake --version
@@ -102,7 +101,7 @@ jobs:
           cd netcdf-c
           curl -L $URL | tar --strip-components=1 -xz
           CC=mpicc CPPFLAGS=-I/opt/homebrew/include LDFLAGS=-L/opt/homebrew/lib/ ./configure --prefix=$PARFLOW_DEP_DIR
-          make
+          make -j 3
           make install
           cd ..
 
@@ -111,7 +110,7 @@ jobs:
           cd netcdf-fortran
           curl -L $URL | tar --strip-components=1 -xz
           CC=mpicc FC=mpifort CPPFLAGS=-I${PARFLOW_DEP_DIR}/include LDFLAGS=-L${PARFLOW_DEP_DIR}/lib ./configure --prefix=${PARFLOW_DEP_DIR}
-          make
+          make -j 3
           make install
         fi
         echo "NETCDF_FLAGS=-DNETCDF_DIR=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_HDF5=TRUE" >> $GITHUB_ENV
@@ -121,12 +120,12 @@ jobs:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          URL=https://github.com/LLNL/Silo/archive/refs/tags/4.11.tar.gz
+          URL=https://github.com/LLNL/Silo/archive/refs/tags/4.11.1.tar.gz
           mkdir silo
           cd silo
           curl -L $URL | tar --strip-components=1 -xz
-          ./configure --disable-silex --disable-hzip --disable-fpzip --prefix=$PARFLOW_DEP_DIR --disable-fortran --with-readline=no
-          make -j 2 install
+          ./configure --disable-silex --disable-hzip --disable-fpzip --enable-shared=yes --disable-fortran --with-readline=no --prefix=$PARFLOW_DEP_DIR 
+          make -j 3 install
         fi
 
     - name: HYPRE Install
@@ -140,7 +139,7 @@ jobs:
           curl -L $URL | tar --strip-components=1 -xz
           cd src
           CC=mpicc CXX=mpic++ FC=mpif77 F77=mpif90 ./configure --prefix=$PARFLOW_DEP_DIR
-          make -j 2 install
+          make -j 3 install
         fi
 
     - name: ParFlow CMake Configure
@@ -152,7 +151,7 @@ jobs:
         CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function" -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_AMPS_LAYER=${{ matrix.config.amps_layer }} -DPARFLOW_ACCELERATOR_BACKEND=${{ matrix.config.backend }} -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_HAVE_CLM=${HAVE_CLM} -DHYPRE_ROOT=$PARFLOW_DEP_DIR -DOAS3_ROOT=$PARFLOW_DEP_DIR -DSILO_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }} $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DTCL_INCLUDE_PATH=/opt/homebrew/bin/usr/include -DTCL_LIBRARY=/opt/homebrew/lib/libtcl8.6.dylib -DTCL_TCLSH=/opt/homebrew/bin/tclsh8.6 -DPython3_EXECUTABLE=$PARFLOW_PYTHON3
 
     - name: ParFlow CMake Build
-      run: (cd build; make -j 2 VERBOSE=1 install)
+      run: (cd build; make -j 3 VERBOSE=1 install)
 
     # Can't test with GPU since have no GPU hardware on testing nodes, GPU test is build only
     - name: ParFlow CTest

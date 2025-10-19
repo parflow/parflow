@@ -10,7 +10,7 @@ import pandas as pd
 import parflow as pf
 from parflow.tools.compare import pf_test_file_with_abs
 import numpy as np
-import sys
+import sys, argparse
 
 run_name = "reservoir_mpi_test"
 sloping_slab = Run(run_name, __file__)
@@ -19,9 +19,15 @@ sloping_slab = Run(run_name, __file__)
 
 sloping_slab.FileVersion = 4
 
-sloping_slab.Process.Topology.P = 1
-sloping_slab.Process.Topology.Q = 1
-sloping_slab.Process.Topology.R = 1
+parser = argparse.ArgumentParser()
+parser.add_argument("-p", "--p", default=1)
+parser.add_argument("-q", "--q", default=1)
+parser.add_argument("-r", "--r", default=1)
+args = parser.parse_args()
+
+sloping_slab.Process.Topology.P = args.p
+sloping_slab.Process.Topology.Q = args.q
+sloping_slab.Process.Topology.R = args.r
 
 # ---------------------------------------------------------
 # Computational Grid
