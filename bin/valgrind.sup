@@ -476,43 +476,6 @@
    fun:amps_SFBCast
 }
 
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: possible
-   fun:calloc
-   obj:/usr/lib64/libibverbs.so.1.14.48.0
-   fun:nl_recvmsgs_report
-   fun:nl_recvmsgs
-   obj:/usr/lib64/libibverbs.so.1.14.48.0
-   obj:/usr/lib64/libibverbs.so.1.14.48.0
-   obj:/usr/lib64/libibverbs.so.1.14.48.0
-   fun:ibv_get_device_list
-   obj:*
-   obj:*
-   obj:*
-   fun:rdma_cm_get_hca_type
-}
-
-
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: possible
-   fun:calloc
-   obj:/usr/lib64/libmlx4.so.1.0.48.0
-   obj:/usr/lib64/libibverbs.so.1.14.48.0
-   obj:/usr/lib64/libibverbs.so.1.14.48.0
-   obj:/usr/lib64/libibverbs.so.1.14.48.0
-   fun:ibv_get_device_list
-   obj:*
-   obj:*
-   obj:*
-   fun:rdma_cm_get_hca_type
-   fun:MPIDI_CH3_Init
-   fun:MPID_Init
-}
-
 ###############################################################
 #
 # Intel F90
