@@ -19,4 +19,4 @@ pystencilssfg_generate_target_sources ( PystencilsGeneratedKernels
 )
 
 # TODO: only do on-demand
-target_compile_options ( PystencilsGeneratedKernels PRIVATE -mavx )
+target_compile_options ( PystencilsGeneratedKernels PRIVATE "-march=native" )

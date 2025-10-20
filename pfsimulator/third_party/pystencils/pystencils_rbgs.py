@@ -9,19 +9,19 @@ with SourceFileGenerator() as sfg:
 
     # iteration space
 
-    nx = TypedSymbol("_size_x", DynamicType.INDEX_TYPE)
-    ny = TypedSymbol("_size_y", DynamicType.INDEX_TYPE)
-    nz = TypedSymbol("_size_z", DynamicType.INDEX_TYPE)
+    nx = TypedSymbol("_size_0", DynamicType.INDEX_TYPE)
+    ny = TypedSymbol("_size_1", DynamicType.INDEX_TYPE)
+    nz = TypedSymbol("_size_2", DynamicType.INDEX_TYPE)
 
     # field strides
 
-    m_sx = TypedSymbol("_stride_mx", DynamicType.INDEX_TYPE)
-    m_sy = TypedSymbol("_stride_my", DynamicType.INDEX_TYPE)
-    m_sz = TypedSymbol("_stride_mz", DynamicType.INDEX_TYPE)
+    m_sx = TypedSymbol("_stride_m_0", DynamicType.INDEX_TYPE)
+    m_sy = TypedSymbol("_stride_m_1", DynamicType.INDEX_TYPE)
+    m_sz = TypedSymbol("_stride_m_2", DynamicType.INDEX_TYPE)
 
-    v_sx = TypedSymbol("_stride_vx", DynamicType.INDEX_TYPE)
-    v_sy = TypedSymbol("_stride_vy", DynamicType.INDEX_TYPE)
-    v_sz = TypedSymbol("_stride_vz", DynamicType.INDEX_TYPE)
+    v_sx = TypedSymbol("_stride_v_0", DynamicType.INDEX_TYPE)
+    v_sy = TypedSymbol("_stride_v_1", DynamicType.INDEX_TYPE)
+    v_sz = TypedSymbol("_stride_v_2", DynamicType.INDEX_TYPE)
 
     # field declarations
 

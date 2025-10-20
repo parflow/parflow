@@ -124,19 +124,19 @@ with SourceFileGenerator() as sfg:
 
     # iteration space
 
-    nx = TypedSymbol("_size_x", DynamicType.INDEX_TYPE)
-    ny = TypedSymbol("_size_y", DynamicType.INDEX_TYPE)
-    nz = TypedSymbol("_size_z", DynamicType.INDEX_TYPE)
+    nx = TypedSymbol("_size_0", DynamicType.INDEX_TYPE)
+    ny = TypedSymbol("_size_1", DynamicType.INDEX_TYPE)
+    nz = TypedSymbol("_size_2", DynamicType.INDEX_TYPE)
 
     # field strides
 
-    f_sx = TypedSymbol("_stride_f_x", DynamicType.INDEX_TYPE)
-    f_sy = TypedSymbol("_stride_f_y", DynamicType.INDEX_TYPE)
-    f_sz = TypedSymbol("_stride_f_z", DynamicType.INDEX_TYPE)
+    f_sx = TypedSymbol("_stride_f_0", DynamicType.INDEX_TYPE)
+    f_sy = TypedSymbol("_stride_f_1", DynamicType.INDEX_TYPE)
+    f_sz = TypedSymbol("_stride_f_2", DynamicType.INDEX_TYPE)
 
-    po_sx = TypedSymbol("_stride_po_x", DynamicType.INDEX_TYPE)
-    po_sy = TypedSymbol("_stride_po_y", DynamicType.INDEX_TYPE)
-    po_sz = TypedSymbol("_stride_po_z", DynamicType.INDEX_TYPE)
+    po_sx = TypedSymbol("_stride_po_0", DynamicType.INDEX_TYPE)
+    po_sy = TypedSymbol("_stride_po_1", DynamicType.INDEX_TYPE)
+    po_sz = TypedSymbol("_stride_po_2", DynamicType.INDEX_TYPE)
 
     f_ff = FieldFactory((nx, ny, nz), (f_sx, f_sy, f_sz))
     po_ff = FieldFactory((nx, ny, nz), (po_sx, po_sy, po_sz))
