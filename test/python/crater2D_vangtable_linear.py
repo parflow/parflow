@@ -494,7 +494,6 @@ crater.Solver.MaxIter = 10000
 crater.Solver.Nonlinear.MaxIter = 15
 crater.Solver.Nonlinear.ResidualTol = 1e-9
 crater.Solver.Nonlinear.StepTol = 1e-9
-crater.Solver.Nonlinear.EtaValue = 1e-5
 crater.Solver.Nonlinear.UseJacobian = True
 crater.Solver.Nonlinear.DerivativeEpsilon = 1e-7
 

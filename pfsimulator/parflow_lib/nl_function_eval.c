@@ -76,14 +76,21 @@ typedef struct {
 #define Mean(a, b)            ArithmeticMean(a, b)
 
 /*  This routine provides the interface between KINSOL and ParFlow
- *  for function evaluations.  */
+ *  for function evaluations.
+ *  This should probably be implemented in kinsol_nonlin_solver.c
+ *  since all we need for this call is already there - DOK
+ */
 
-void     KINSolFunctionEval(
-                            int      size,
-                            N_Vector pressure,
-                            N_Vector fval,
-                            void *   current_state)
+#if defined (PARFLOW_HAVE_SUNDIALS)
+#include "kinsol/kinsol.h"
+int     KINSolFunctionEval(
+                           N_Vector pf_n_pressure,
+                           N_Vector pf_n_fval,
+                           void *   current_state)
 {
+  Vector      *pressure = N_VectorData(pf_n_pressure);
+  Vector      *fval = N_VectorData(pf_n_fval);
+
   PFModule  *nl_function_eval = StateFunc(((State*)current_state));
   ProblemData *problem_data = StateProblemData(((State*)current_state));
   Vector      *old_pressure = StateOldPressure(((State*)current_state));
@@ -101,7 +108,38 @@ void     KINSolFunctionEval(
   Vector       *y_velocity = StateYvel(((State*)current_state));
   Vector       *z_velocity = StateZvel(((State*)current_state));
 
+  PFModuleInvokeType(NlFunctionEvalInvoke, nl_function_eval,
+                     (pressure, fval, problem_data, saturation, old_saturation,
+                      density, old_density, dt, time, old_pressure, evap_trans,
+                      ovrl_bc_flx, x_velocity, y_velocity, z_velocity));
+
+  return(0);
+}
+#else
+void     KINSolFunctionEval(
+                            int      size,
+                            N_Vector pressure,
+                            N_Vector fval,
+                            void *   current_state)
+{
   (void)size;
+
+  PFModule  *nl_function_eval = StateFunc(((State*)current_state));
+  ProblemData *problem_data = StateProblemData(((State*)current_state));
+  Vector      *old_pressure = StateOldPressure(((State*)current_state));
+  Vector      *saturation = StateSaturation(((State*)current_state));
+  Vector      *old_saturation = StateOldSaturation(((State*)current_state));
+  Vector      *density = StateDensity(((State*)current_state));
+  Vector      *old_density = StateOldDensity(((State*)current_state));
+  double dt = StateDt(((State*)current_state));
+  double time = StateTime(((State*)current_state));
+  Vector       *evap_trans = StateEvapTrans(((State*)current_state));
+  Vector       *ovrl_bc_flx = StateOvrlBcFlx(((State*)current_state));
+
+  /* velocity vectors jjb */
+  Vector       *x_velocity = StateXvel(((State*)current_state));
+  Vector       *y_velocity = StateYvel(((State*)current_state));
+  Vector       *z_velocity = StateZvel(((State*)current_state));
 
   PFModuleInvokeType(NlFunctionEvalInvoke, nl_function_eval,
                      (pressure, fval, problem_data, saturation, old_saturation,
@@ -110,7 +148,7 @@ void     KINSolFunctionEval(
 
   return;
 }
-
+#endif
 
 /*  This routine evaluates the nonlinear function based on the current
  *  pressure values.  This evaluation is basically an application
