@@ -80,7 +80,6 @@ void CopyParFlowVectorToHypreVector(Vector *            rhs,
 #else
       HYPRE_StructVectorSetValues(*hypre_b, index, rhs_ptr[iv]);
 #endif
-      
     });
   }
   HYPRE_StructVectorAssemble(*hypre_b);
