@@ -417,7 +417,7 @@ int main(int argc, char **argv)
   double sx = 0, sy = 0, sz = 0;
   double dz;
 
-  std::vector<Databox*> databox(inFilenames[0].size());
+  std::vector<Databox*> databox(inFilenames.size());
 
   // patch_names = GetStringDefault(key,
   // "left right front back bottom top");

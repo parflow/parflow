@@ -114,31 +114,6 @@ int line;
 #endif
 
 
-/*--------------------------------------------------------------------------
- * Exp2:
- *   Return the integer e satisfying p = 2^e, where p >= 1 is an integer.
- *   If no such integer e exists, return -1.
- *--------------------------------------------------------------------------*/
-
-int  Exp2(int p)
-{
-  int e = 0;
-
-
-  while (p > 1)
-  {
-    if (p % 2)
-      return -1;
-    else
-    {
-      e += 1;
-      p /= 2;
-    }
-  }
-
-  return e;
-}
-
 
 
 /*
@@ -367,3 +342,41 @@ void printMemoryInfo(FILE *log_file)
 #endif
 #endif
 }
+
+/*--------------------------------------------------------------------------
+ * Exp2:
+ *   Return the integer e satisfying p = 2^e, where p >= 1 is an integer.
+ *   If no such integer e exists, return -1.
+ *--------------------------------------------------------------------------*/
+
+int  Exp2(int p)
+{
+  int e = 0;
+
+
+  while (p > 1)
+  {
+    if (p % 2)
+      return -1;
+    else
+    {
+      e += 1;
+      p /= 2;
+    }
+  }
+
+  return e;
+}
+
+#ifdef PARFLOW_HAVE_SUNDIALS
+/* This method defined in the old embedded Kinsol implementation and used
+ * in ParFlow.  When linking with the SUNDIAL library this is not longer available
+ */
+double RPowerR(double base, double exponent)
+{
+  if (base <= 0.0)
+    return(0.0);
+
+  return(pow(base, exponent));
+}
+#endif

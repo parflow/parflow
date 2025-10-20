@@ -28,6 +28,8 @@
 
 #include "parflow.h"
 
+#ifndef PARFLOW_HAVE_SUNDIALS
+
 static struct {
   Grid *grid;
   int num_ghost;
@@ -119,3 +121,5 @@ void N_VPrint(
   printf("\n");
   fflush(NULL);
 }
+
+#endif
