@@ -61,6 +61,7 @@ void  NewTiming()
   RegisterTiming("PFSOL Read");
   RegisterTiming("Clustering");
   RegisterTiming("Netcdf I/O");
+  RegisterTiming("PDI I/O");
   RegisterTiming("Flux Base");
   RegisterTiming("Flux Compressible Storage");
   RegisterTiming("Flux Source Terms");

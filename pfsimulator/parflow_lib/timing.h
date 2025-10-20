@@ -50,13 +50,15 @@
 #define PFSOLReadTimingIndex  8
 #define ClusteringTimingIndex 9
 #define NetcdfTimingIndex 10
-#define FluxBase 11
-#define FluxCompressibleStorage 12
-#define FluxSourceTerms 13
-#define VDotProduct 14
+#define PDITimingIndex  11
+#define FluxBase 12
+#define FluxCompressibleStorage 13
+#define FluxSourceTerms 14
+#define VDotProduct 15
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  15
+#define VectorUpdateTimingIndex  16
 #endif
+
 
 
 #if defined(PF_TIMING)
@@ -151,6 +153,8 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
 #define InitEnd 3
 #define FinalizeStart 4
 #define FinalizeEnd 5
+#define PDIStart 6
+#define PDIEnd 7
 
 #ifdef PARFLOW_GLOBALS
 int NumEvents = 0;
