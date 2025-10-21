@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-subroutine clm_main (clm,day,gmt)
+subroutine clm_main (clm,day,gmt,clm_forc_veg)
 
   ! CLM Model/Science PHILOSOPHY:
   !   The Common Land Model (CLM) is being developed by a
@@ -170,13 +170,14 @@ subroutine clm_main (clm,day,gmt)
   ! ------------------- local ---------------------------------------
   integer j       !loop index
   real(r8) coszen !cosine of zenith angle
+  integer,intent(in)  :: clm_forc_veg
   ! -----------------------------------------------------------------
 
   ! -----------------------------------------------------------------
   ! Ecosystem dynamics: phenology, vegetation, soil carbon, snow frac
   ! -----------------------------------------------------------------
 
-  call clm_dynvegpar (clm)
+  call clm_dynvegpar (clm,clm_forc_veg)
   ! -----------------------------------------------------------------
   ! Albedos 
   ! -----------------------------------------------------------------

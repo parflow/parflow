@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-subroutine clm_dynvegpar (clm)
+subroutine clm_dynvegpar (clm,clm_forc_veg)
 
 !=========================================================================
 !
@@ -36,6 +36,7 @@ subroutine clm_dynvegpar (clm)
 
   real(r8) seasb   !temperature dependence of vegetation cover [-]
   real(r8) fb      !fraction of canopy layer covered by snow
+  integer,intent(in)  :: clm_forc_veg
 
 !=== End Variable List ===================================================
 
@@ -61,8 +62,10 @@ subroutine clm_dynvegpar (clm)
   fb=min(dble(1.) ,fb) 
   !fb = fb/(1.+fb) !- never covers grass
 
-  clm%elai = clm%tlai*(1.-fb)
-  clm%esai = clm%tsai*(1.-fb)
+  if  (clm_forc_veg == 0) then
+      clm%elai = clm%tlai*(1.-fb)
+      clm%esai = clm%tsai*(1.-fb)
+  endif
 
   if (clm%elai < 0.05) clm%elai = 0._r8
   if (clm%esai < 0.05) clm%esai = 0._r8
