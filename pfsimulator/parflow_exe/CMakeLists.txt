@@ -76,6 +76,11 @@ if (${PARFLOW_HAVE_SLURM})
   target_link_libraries (parflow ${SLURM_LIBRARIES})
 endif (${PARFLOW_HAVE_SLURM})
 
+# Link the math library if needed
+if(PARFLOW_MATH_LIBRARY)
+    target_link_libraries(parflow ${MATH_LIBRARY})
+endif()
+
 if( ${PARFLOW_ENABLE_PROFILING} )
   set_target_properties(parflow PROPERTIES LINK_FLAGS ${PARFLOW_PROFILE_OPTS})
 endif( ${PARFLOW_ENABLE_PROFILING} )

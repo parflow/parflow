@@ -440,15 +440,13 @@ CHECK_Fortran_SOURCE_COMPILES("      program main
       end" FORTRAN_77_WORKS)
 
 # Check if Fortran 90 compile works with free format
-set(SAVE_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
-set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${CMAKE_Fortran_FORMAT_FREE_FLAG}")
 CHECK_Fortran_SOURCE_COMPILES("program main
   implicit none
 
   write ( *, '(a)' ) '  Hello, world!'
 
   stop
-end" FORTRAN_F90_WORKS)
+end" FORTRAN_F90_WORKS SRC_EXT .F90)
 
 #
 # Determine syntax for writing binary file under Fortran
@@ -460,7 +458,7 @@ CHECK_Fortran_SOURCE_COMPILES("program freeform
    write(10) \"first\"
    write(10) \"second\"
    close(UNIT=10)
- end program freeform" HAVE_FC_ACCESS_STREAM)
+ end program freeform" HAVE_FC_ACCESS_STREAM SRC_EXT .F90)
 
 # Check whether the Fortran compiler supports the access="sequential" open syntax
 CHECK_Fortran_SOURCE_COMPILES("program freeform
@@ -468,12 +466,14 @@ CHECK_Fortran_SOURCE_COMPILES("program freeform
   write(10) \"first\"
   write(10) \"second\"
   close(UNIT=10)
-end program freeform" HAVE_FC_ACCESS_SEQUENTIAL)
+end program freeform" HAVE_FC_ACCESS_SEQUENTIAL SRC_EXT .F90)
 
 #
 # Set implicit none flag on Fortran compiles
 #
 include(CheckFortranCompilerFlag)
+
+set(SAVE_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
 
 set(none_test 0)
 foreach(flag "-implicitnone" "-fimplicit-none" "-u" "-Wimplicit none")
@@ -515,6 +515,7 @@ endif (${HAVE_FC_ACCESS_STREAM})
 include (TestBigEndian)
 include(CheckSymbolExists)
 include(CheckIncludeFiles)
+include(CheckFunctionExists)
 
 test_big_endian(PARFLOW_HAVE_BIG_ENDIAN)
 set(CASC_HAVE_BIGENDIAN ${PARFLOW_HAVE_BIG_ENDIAN})
@@ -533,6 +534,34 @@ endif ( ${PARFLOW_HAVE_MALLOC_H} )
 # Check for mallinfo
 check_symbol_exists(mallinfo2 malloc.h PARFLOW_HAVE_MALLINFO2)
 check_symbol_exists(mallinfo malloc.h PARFLOW_HAVE_MALLINFO)
+
+# Check if libm is required
+
+# Check if acos is available without additional libraries
+check_function_exists(acos HAVE_ACOS)
+
+if(NOT HAVE_ACOS)
+  # Save the current required libraries
+  set(CMAKE_REQUIRED_LIBRARIES_SAVE ${CMAKE_REQUIRED_LIBRARIES})
+  
+  # Try with libm
+  set(CMAKE_REQUIRED_LIBRARIES m)
+  check_function_exists(acos HAVE_ACOS_WITH_LIBM)
+  
+  # Restore the original required libraries
+  set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES_SAVE})
+  
+  if(HAVE_ACOS_WITH_LIBM)
+    set(MATH_LIBRARY m)
+    message(STATUS "Linking with libm math library")
+  else()
+    message(STATUS "acos function not found in libm math library")
+  endif()
+endif()
+
+#-----------------------------------------------------------------------------
+# Check compiling with CLM / ECLM
+#-----------------------------------------------------------------------------
 
 option(PARFLOW_HAVE_CLM "Compile with CLM" "OFF")
 
@@ -559,6 +588,7 @@ if ( ${PARFLOW_HAVE_ECLM} )
     set (HAVE_ECLM ${PARFLOW_HAVE_ECLM})
   endif (HAVE_OAS3)
 endif ( ${PARFLOW_HAVE_ECLM} )
+
 #
 # Parflow specific configuration options
 #
