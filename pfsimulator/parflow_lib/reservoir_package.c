@@ -31,6 +31,7 @@
 #include <string.h>
 #include <stdbool.h>
 
+
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
@@ -60,79 +61,8 @@ typedef struct {
  * ReservoirPackage
  *--------------------------------------------------------------------------*/
 
-// Temp solution while I get this fix checked in as part of it's own independent module that handles
-// var dz correctly. Works for all cases that I am aware of. (Ben West)
-/** @brief Calculates a subgrids total volume, accounting for variable dz. Assumes subgrid is fully
- * contained within the current rank.
- *
- * @param subgrid the subgrid we are checking
- * @param problem_data the problems problem data structure
- * @return the volume of the subgrid
- */
-double GetSubgridVolume(Subgrid *subgrid, ProblemData* problem_data)
-{
-  double dx = SubgridDX(subgrid);
-  double dy = SubgridDY(subgrid);
-  double dz = SubgridDZ(subgrid);
-  GrGeomSolid *gr_domain = problem_data->gr_domain;
-
-  double volume = 0;
-  SubgridArray   *subgrids = problem_data->dz_mult->grid->subgrids;
-  Subgrid        *tmp_subgrid;
-  int subgrid_index;
-
-  ForSubgridI(subgrid_index, subgrids)
-  {
-    tmp_subgrid = SubgridArraySubgrid(subgrids, subgrid_index);
-    Subvector *dz_mult_subvector = VectorSubvector(problem_data->dz_mult, subgrid_index);
-    double* dz_mult_data = SubvectorData(dz_mult_subvector);
-    Subgrid *intersection = IntersectSubgrids(subgrid, tmp_subgrid);
-    int nx = SubgridNX(intersection);
-    int ny = SubgridNY(intersection);
-    int nz = SubgridNZ(intersection);
-    int r = SubgridRZ(intersection);
-    int ix = SubgridIX(intersection);
-    int iy = SubgridIY(intersection);
-    int iz = SubgridIZ(intersection);
-    int i, j, k;
-    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-    {
-      int index = SubvectorEltIndex(dz_mult_subvector, i, j, k);
-      double dz_mult = dz_mult_data[index];
-      volume += dz_mult * dx * dy * dz;
-    });
-  }
-  return volume;
-};
-
-
-/** @brief Checks whether a subgrid intersects with the current ranks subgrid
- *
- * @param subgrid the subgrid we are checking
- * @param grid the problems grid
- * @return True or False corresponding to whether the subgrid intersects
- */
-bool SubgridLivesOnThisRank(Subgrid* subgrid, Grid *grid)
-{
-  int subgrid_index;
-  Subgrid* rank_subgrid, *tmp_subgrid;
-
-  ForSubgridI(subgrid_index, GridSubgrids(grid))
-  {
-    rank_subgrid = SubgridArraySubgrid(GridSubgrids(grid), subgrid_index);
-    if ((tmp_subgrid = IntersectSubgrids(rank_subgrid, subgrid)))
-    {
-      return true;
-    }
-  }
-  return false;
-}
-
 /** @brief Sets the slops at the outlet faces of a cell to 0 to stop flow.
  * Assumes an overlandkinematic boundary condition
- *
- *
- *
  * @param i the x index of the cell in question
  * @param j the y index of the cell in question
  * @return Null, but modifies the problem data x and y slopes
@@ -166,10 +96,10 @@ void StopOutletFlowAtCellOverlandKinematic(int i, int j, ProblemData* problem_da
     subgrid_y_ceiling = subgrid_y_floor + SubgridNY(subgrid) - 1;
 
     // Check all 4 faces, as long as they live on this subgrid. First the East face
-    if (i + 1 >= subgrid_x_floor && i + 1 <= subgrid_x_ceiling && j >= subgrid_y_floor && j <= subgrid_y_ceiling)
+    if (i >= subgrid_x_floor && i <= subgrid_x_ceiling && j >= subgrid_y_floor && j <= subgrid_y_ceiling)
     {
-      index_slope_x = SubvectorEltIndex(slope_x_subvector, i + 1, j, 0);
-      if (slope_x_ptr[index_slope_x] > 0)
+      index_slope_x = SubvectorEltIndex(slope_x_subvector, i, j, 0);
+      if (slope_x_ptr[index_slope_x] < 0)
       {
         slope_x_ptr[index_slope_x] = 0;
       }
@@ -185,8 +115,8 @@ void StopOutletFlowAtCellOverlandKinematic(int i, int j, ProblemData* problem_da
     }
     if (i >= subgrid_x_floor && i <= subgrid_x_ceiling && j >= subgrid_y_floor && j <= subgrid_y_ceiling)
     {
-      index_slope_x = SubvectorEltIndex(slope_x_subvector, i, j, 0);
-      if (slope_x_ptr[index_slope_x] < 0)
+      index_slope_x = SubvectorEltIndex(slope_x_subvector, i - 1, j, 0);
+      if (slope_x_ptr[index_slope_x] > 0)
       {
         slope_x_ptr[index_slope_x] = 0;
       }
@@ -342,7 +272,7 @@ void         ReservoirPackage(
       if (SubgridLivesOnThisRank(new_release_subgrid, grid))
       {
         release_cell_rank = current_mpi_rank;
-        release_subgrid_volume = GetSubgridVolume(new_release_subgrid, problem_data);
+        release_subgrid_volume = CalculateSubgridVolume(new_release_subgrid, problem_data);
       }
       //If we are multiprocessor we need to do some reductions to determine the correct ranks
       // for the reservoirs
@@ -361,7 +291,7 @@ void         ReservoirPackage(
       MPI_Comm_split(amps_CommWorld, split_color, current_mpi_rank, &new_reservoir_communicator);
 #endif
 //     edit the slopes to prevent stuff running through the reservoir
-      if (ReservoirDataOverlandFlowSolver(reservoir_data) == OVERLAND_FLOW)
+      if (public_xtra->overland_flow_solver == OVERLAND_FLOW)
       {
         StopOutletFlowAtCellOverlandFlow(intake_ix, intake_iy, problem_data, grid);
         if (ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical))
@@ -369,7 +299,7 @@ void         ReservoirPackage(
           StopOutletFlowAtCellOverlandFlow(secondary_intake_ix, secondary_intake_iy, problem_data, grid);
         }
       }
-      else if (ReservoirDataOverlandFlowSolver(reservoir_data) == OVERLAND_KINEMATIC)
+      else if (public_xtra->overland_flow_solver == OVERLAND_KINEMATIC)
       {
         StopOutletFlowAtCellOverlandKinematic(intake_ix, intake_iy, problem_data, grid);
         if (ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical))
