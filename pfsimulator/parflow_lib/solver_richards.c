@@ -989,13 +989,34 @@ SetupRichards(PFModule * this_module)
     InitVectorAll(instance_xtra->z_velocity, 0.0);
 
     /* initialize 2D surface flow vectors */
-    instance_xtra->q_overlnd_x =
-      NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
-    InitVectorAll(instance_xtra->q_overlnd_x, 0.0);
 
-    instance_xtra->q_overlnd_y =
-      NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
-    InitVectorAll(instance_xtra->q_overlnd_y, 0.0);
+    if (public_xtra->write_silo_qx_overland
+        || public_xtra->print_qx_overland
+        || public_xtra->write_pdi_qx_overland
+        || public_xtra->write_netcdf_qx_overland)
+    {
+      instance_xtra->q_overlnd_x =
+	NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      InitVectorAll(instance_xtra->q_overlnd_x, 0.0);
+    }
+    else
+    {
+      instance_xtra->q_overlnd_x = NULL;
+    }
+
+    if (public_xtra->write_silo_qy_overland
+        || public_xtra->print_qy_overland
+        || public_xtra->write_pdi_qy_overland
+        || public_xtra->write_netcdf_qy_overland)
+    {
+      instance_xtra->q_overlnd_y =
+	NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      InitVectorAll(instance_xtra->q_overlnd_y, 0.0);
+    }
+    else
+    {
+      instance_xtra->q_overlnd_y = NULL;
+    }
 
     /*sk Initialize LSM terms */
     instance_xtra->evap_trans = NewVectorType(grid, 1, 1, vector_cell_centered);
@@ -4774,26 +4795,17 @@ TeardownRichards(PFModule * this_module)
   FreeVector(instance_xtra->y_velocity);
   FreeVector(instance_xtra->z_velocity);
   FreeVector(instance_xtra->q_overlnd_x);
+
   FreeVector(instance_xtra->q_overlnd_y);
   FreeVector(instance_xtra->evap_trans);
 
-  if (instance_xtra->evap_trans_sum)
-  {
-    FreeVector(instance_xtra->evap_trans_sum);
-  }
-
-  if (instance_xtra->overland_sum)
-  {
-    FreeVector(instance_xtra->overland_sum);
-  }
+  FreeVector(instance_xtra->evap_trans_sum);
+  FreeVector(instance_xtra->overland_sum);
 
 #ifdef HAVE_CLM
   if (instance_xtra->eflx_lh_tot)
   {
-    if (instance_xtra->clm_out_grid)
-    {
-      FreeVector(instance_xtra->clm_out_grid);
-    }
+    FreeVector(instance_xtra->clm_out_grid);
 
     FreeVector(instance_xtra->eflx_lh_tot);
     FreeVector(instance_xtra->eflx_lwrad_out);
@@ -5156,7 +5168,7 @@ SolverRichardsInitInstanceXtra()
     (instance_xtra->nonlin_solver) =
       PFModuleNewInstanceType(NonlinSolverInitInstanceXtraInvoke,
                               public_xtra->nonlin_solver,
-                              (problem, grid, instance_xtra->problem_data,
+                              (problem, grid, grid2d, instance_xtra->problem_data,
                                NULL));
   }
   else
@@ -5252,7 +5264,7 @@ SolverRichardsInitInstanceXtra()
   /* renew nonlinear solver module */
   PFModuleReNewInstanceType(NonlinSolverInitInstanceXtraInvoke,
                             (instance_xtra->nonlin_solver),
-                            (NULL, NULL, instance_xtra->problem_data,
+                            (NULL, NULL, NULL, instance_xtra->problem_data,
                              temp_data));
 
   /* renew set_problem_data module */
