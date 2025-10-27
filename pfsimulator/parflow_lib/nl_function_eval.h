@@ -56,6 +56,9 @@ typedef struct {
   Vector       *x_velocity;  //jjb
   Vector       *y_velocity;  //jjb
   Vector       *z_velocity;  //jjb
+
+  Vector       *q_overlnd_x;
+  Vector       *q_overlnd_y;
 } State;
 
 
@@ -86,3 +89,5 @@ typedef struct {
 #define StateXvel(state)          ((state)->x_velocity) //jjb
 #define StateYvel(state)          ((state)->y_velocity) //jjb
 #define StateZvel(state)          ((state)->z_velocity) //jjb
+#define StateQxOverland(state)    ((state)->q_overlnd_x)
+#define StateQyOverland(state)    ((state)->q_overlnd_y)
