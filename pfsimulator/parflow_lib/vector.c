@@ -670,8 +670,7 @@ void FreeTempVector(Vector *vector)
 void     FreeVector(
                     Vector *vector)
 {
-
-  if(vector)
+  if (vector)
   {
     switch (vector->type)
     {
@@ -684,41 +683,41 @@ void     FreeVector(
       case vector_clm_topsoil:
       case vector_met:
       {
-	ParflowGridType grid_type = flow_3D_grid_type;
-	if (vector->type == vector_cell_centered_2D)
-	{
-	  grid_type = surface_2D_grid_type;
-	}
-	
-	if (!vector->boundary_fill_refine_algorithm.isNull())
-	{
-	  vector->boundary_fill_refine_algorithm.setNull();
-	  vector->boundary_fill_schedule.setNull();
-	}
-	
-	tbox::Pointer < hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation->getPatchHierarchy(grid_type));
-	tbox::Pointer < hier::PatchLevel > level(hierarchy->getPatchLevel(0));
-	
-	level->deallocatePatchData(vector->samrai_id);
-	
-	tbox::Pointer < hier::PatchDescriptor > patch_descriptor(hierarchy->getPatchDescriptor());
-	patch_descriptor->removePatchDataComponent(vector->samrai_id);
-	
-	
-	samrai_vector_ids[grid_type][vector->table_index] = 0;
-	break;
+        ParflowGridType grid_type = flow_3D_grid_type;
+        if (vector->type == vector_cell_centered_2D)
+        {
+          grid_type = surface_2D_grid_type;
+        }
+
+        if (!vector->boundary_fill_refine_algorithm.isNull())
+        {
+          vector->boundary_fill_refine_algorithm.setNull();
+          vector->boundary_fill_schedule.setNull();
+        }
+
+        tbox::Pointer < hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation->getPatchHierarchy(grid_type));
+        tbox::Pointer < hier::PatchLevel > level(hierarchy->getPatchLevel(0));
+
+        level->deallocatePatchData(vector->samrai_id);
+
+        tbox::Pointer < hier::PatchDescriptor > patch_descriptor(hierarchy->getPatchDescriptor());
+        patch_descriptor->removePatchDataComponent(vector->samrai_id);
+
+
+        samrai_vector_ids[grid_type][vector->table_index] = 0;
+        break;
       }
 #endif
       case vector_non_samrai:
       {
-	break;
+        break;
       }
-      
+
       default:
-	// SGS abort here
-	fprintf(stderr, "Invalid variable type\n");
+        // SGS abort here
+        fprintf(stderr, "Invalid variable type\n");
     }
-    
+
     FreeTempVector(vector);
   }
 }

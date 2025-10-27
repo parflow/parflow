@@ -996,7 +996,7 @@ SetupRichards(PFModule * this_module)
         || public_xtra->write_netcdf_qx_overland)
     {
       instance_xtra->q_overlnd_x =
-	NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+        NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
       InitVectorAll(instance_xtra->q_overlnd_x, 0.0);
     }
     else
@@ -1010,7 +1010,7 @@ SetupRichards(PFModule * this_module)
         || public_xtra->write_netcdf_qy_overland)
     {
       instance_xtra->q_overlnd_y =
-	NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+        NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
       InitVectorAll(instance_xtra->q_overlnd_y, 0.0);
     }
     else

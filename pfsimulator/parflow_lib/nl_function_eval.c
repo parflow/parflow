@@ -882,16 +882,16 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       qx_ = SubvectorData(qx_sub);
       qy_ = SubvectorData(qy_sub);
 
-      if(q_overlnd_x)
+      if (q_overlnd_x)
       {
-	q_overlnd_x_sub = VectorSubvector(q_overlnd_x, is);
-	q_overlnd_x_ = SubvectorData(q_overlnd_x_sub);
+        q_overlnd_x_sub = VectorSubvector(q_overlnd_x, is);
+        q_overlnd_x_ = SubvectorData(q_overlnd_x_sub);
       }
 
-      if(q_overlnd_y)
+      if (q_overlnd_y)
       {
-	q_overlnd_y_sub = VectorSubvector(q_overlnd_y, is);
-	q_overlnd_y_ = SubvectorData(q_overlnd_y_sub);
+        q_overlnd_y_sub = VectorSubvector(q_overlnd_y, is);
+        q_overlnd_y_ = SubvectorData(q_overlnd_y_sub);
       }
     }
     x_sl_sub = VectorSubvector(x_sl, is);
@@ -1627,15 +1627,15 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                 / viscosity;
         u_new = h;
 
-	if(q_overlnd_x_)
-	{
-	  q_overlnd_x_[io] = ke_[io];
-	}
+        if (q_overlnd_x_)
+        {
+          q_overlnd_x_[io] = ke_[io];
+        }
 
-	if(q_overlnd_y_)
-	{
-	  q_overlnd_y_[io] = kn_[io];
-	}
+        if (q_overlnd_y_)
+        {
+          q_overlnd_y_[io] = kn_[io];
+        }
 
         /* Add overland contribs */
         q_overlnd = 0.0;
@@ -1964,16 +1964,16 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                 / viscosity;
         u_new = h;
 
-	if(q_overlnd_x_)
-	{
-	  q_overlnd_x_[io] = ke_[io];
-	}
+        if (q_overlnd_x_)
+        {
+          q_overlnd_x_[io] = ke_[io];
+        }
 
-	if(q_overlnd_y_)
-	{
-	  q_overlnd_y_[io] = kn_[io];
-	}
-	
+        if (q_overlnd_y_)
+        {
+          q_overlnd_y_[io] = kn_[io];
+        }
+
         q_overlnd = 0.0;
         q_overlnd = vol
                     * (pfmax(pp[ip], 0.0) - pfmax(opp[ip], 0.0)) / dz +
@@ -2197,15 +2197,15 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                 / viscosity;
         u_new = h;
 
-	if(q_overlnd_x_)
-	{
-	  q_overlnd_x_[io] = ke_[io];
-	}
+        if (q_overlnd_x_)
+        {
+          q_overlnd_x_[io] = ke_[io];
+        }
 
-	if(q_overlnd_y_)
-	{
-	  q_overlnd_y_[io] = kn_[io];
-	}
+        if (q_overlnd_y_)
+        {
+          q_overlnd_y_[io] = kn_[io];
+        }
 
         q_overlnd = 0.0;
         q_overlnd = vol
