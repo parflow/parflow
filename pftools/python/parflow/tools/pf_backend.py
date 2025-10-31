@@ -1,5 +1,6 @@
 import contextlib
 import dask
+import dask.array as da
 import json
 import numpy as np
 import pandas as pd
@@ -648,9 +649,9 @@ class ParflowBackendArray(BackendArray):
         sub = delayed(_getitem_no_state)(
             self.file_or_seq, key, self.dims, self.mode, self.z_first, self.z_is
         )
-        sub = dask.array.from_delayed(sub, self.pfb_shape, dtype=np.float64)
+        sub = da.from_delayed(sub, self.pfb_shape, dtype=np.float64)
         if self.shape != sub.shape:
-            sub = dask.array.squeeze(sub, axis=self.squeeze_dims)
+            sub = da.squeeze(sub, axis=self.squeeze_dims)
         return sub
 
     def _size_from_key(self, key):
