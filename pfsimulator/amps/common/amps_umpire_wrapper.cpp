@@ -7,25 +7,75 @@
 #include "umpire/strategy/DynamicPoolList.hpp"
 
 extern "C" {
-  void amps_umpireInit() {
-    // Create a pool allocator
-    // Initial size (default: 512MB) and pool increase size (1MB) can be tuned in the constructor.
-    auto& rm = umpire::ResourceManager::getInstance();
-    auto allocator = rm.getAllocator("UM");
-    auto pooled_allocator = rm.makeAllocator<umpire::strategy::DynamicPoolList>("UM_pool", allocator);    
-  }
 
-  void* amps_umpireAlloc(std::size_t bytes) {
+void amps_umpireInit()
+{
     auto& rm = umpire::ResourceManager::getInstance();
-    auto allocator = rm.getAllocator("UM_pool");
-    return allocator.allocate(bytes);
-  }
+    std::string base_allocator_name;
 
-  void amps_umpireFree(void *p) {
-    auto& rm = umpire::ResourceManager::getInstance();
-    auto allocator = rm.getAllocator("UM_pool");
-    allocator.deallocate(p);
-  }
+#if defined(PARFLOW_HAVE_CUDA) || defined(KOKKOS_ENABLE_CUDA) 
+    // Native CUDA or Kokkos-enabled CUDA
+    base_allocator_name = "UM";
+#elif defined(KOKKOS_ENABLE_HIP) 
+    // Kokkos-enabled HIP
+    base_allocator_name = "DEVICE";
+#else
+    // CPU-only fallback
+    base_allocator_name = "HOST";
+#endif
+
+    auto base_alloc = rm.getAllocator(base_allocator_name);
+
+    // Pool parameters: initial 512 MB, grow by 4 MB
+    std::size_t initial_size  = 512ULL * 1024 * 1024;
+    std::size_t block_incr    = 4ULL * 1024 * 1024;
+
+    auto pooled_alloc =
+        rm.makeAllocator<umpire::strategy::DynamicPoolList>(
+            base_allocator_name + "_pool", base_alloc,
+            initial_size, block_incr);
+
+    std::fprintf(stderr,
+                 "[UMPIRE] Using allocator: %s_pool (base=%s)\n",
+                 base_allocator_name.c_str(),
+                 base_allocator_name.c_str());
 }
 
+void* amps_umpireAlloc(std::size_t bytes)
+{
+    auto& rm = umpire::ResourceManager::getInstance();
+    umpire::Allocator alloc;
+
+#if defined(PARFLOW_HAVE_CUDA) || defined(KOKKOS_ENABLE_CUDA) 
+    alloc = rm.getAllocator("UM_pool");
+#elif defined(KOKKOS_ENABLE_HIP)
+    alloc = rm.getAllocator("DEVICE_pool");
+#else
+    alloc = rm.getAllocator("HOST_pool");
 #endif
+
+    return alloc.allocate(bytes);
+}
+
+void amps_umpireFree(void* p)
+{
+    auto& rm = umpire::ResourceManager::getInstance();
+    umpire::Allocator alloc;
+
+#if defined(PARFLOW_HAVE_CUDA) || defined(KOKKOS_ENABLE_CUDA) 
+    alloc = rm.getAllocator("UM_pool");
+#elif defined(KOKKOS_ENABLE_HIP)
+    alloc = rm.getAllocator("DEVICE_pool");
+#else
+    alloc = rm.getAllocator("HOST_pool");
+#endif
+
+    alloc.deallocate(p);
+}
+
+} // extern "C"
+
+
+
+#endif
+
