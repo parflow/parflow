@@ -82,4 +82,7 @@ is not defined here because because it is only set
 #cmakedefine PARFLOW_HAVE_PDI
 #cmakedefine PARFLOW_HAVE_UMPIRE
 
+#cmakedefine KOKKOS_ENABLE_CUDA
+#cmakedefine KOKKOS_ENABLE_HIP
+
 #endif // PARFLOW_CONFIG_H
