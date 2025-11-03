@@ -25,20 +25,10 @@ void amps_umpireInit()
 #endif
 
     auto base_alloc = rm.getAllocator(base_allocator_name);
-
-    // Pool parameters: initial 512 MB, grow by 4 MB
-    std::size_t initial_size  = 512ULL * 1024 * 1024;
-    std::size_t block_incr    = 4ULL * 1024 * 1024;
-
     auto pooled_alloc =
         rm.makeAllocator<umpire::strategy::DynamicPoolList>(
-            base_allocator_name + "_pool", base_alloc,
-            initial_size, block_incr);
+            base_allocator_name + "_pool", base_alloc);
 
-    std::fprintf(stderr,
-                 "[UMPIRE] Using allocator: %s_pool (base=%s)\n",
-                 base_allocator_name.c_str(),
-                 base_allocator_name.c_str());
 }
 
 void* amps_umpireAlloc(std::size_t bytes)
