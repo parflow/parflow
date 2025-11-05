@@ -43,7 +43,7 @@ from numbers import Number
 import pandas as pd
 import numpy as np
 import struct
-from typing import Mapping, List, Union, Iterable
+from typing import Mapping, Union, Iterable
 import yaml
 
 from .hydrology import (
@@ -62,7 +62,7 @@ try:
 except ImportError:
     from yaml import Dumper as YAMLDumper
 
-from parflow.tools.fs import cp, rm, mkdir, exists
+from parflow.tools.fs import rm
 
 
 def read_pfsb(file_path):
@@ -357,7 +357,6 @@ def read_pfb_sequence(
         ny = np.max([stop_y - start_y, 1])
         nz = np.max([stop_z - start_z, 1])
 
-    n_seq = len(file_seq)
     if z_first:
         seq_size = (len(file_seq), nz, ny, nx)
     else:
@@ -408,7 +407,7 @@ def undist(undis_name: str):
         return
 
     if os.path.isfile(f"{undis_name}..00000"):
-        files = glob.glob(f"{undis_name}.\[0-9\]*").sort()
+        files = sorted(glob.glob(f"{undis_name}.\[0-9\]*"))
 
         rm(f"{undis_name}")
 
@@ -545,7 +544,7 @@ class ParflowBinaryReader:
         q: int = None,
         r: int = None,
         header: Mapping[str, Number] = None,
-        read_sg_info: bool = False,
+        read_sg_info: bool = True,
     ):
         self.filename = file
         self.f = open(self.filename, "rb")
@@ -559,7 +558,8 @@ class ParflowBinaryReader:
             self.header["q"] = q
             self.header["r"] = r
 
-        self.read_subgrid_info()
+        if read_sg_info:
+            self.read_subgrid_info()
 
     def close(self):
         self.f.close()
@@ -1265,9 +1265,6 @@ def load_patch_matrix_from_asc_file(file_name):
 
 
 def load_patch_matrix_from_sa_file(file_name):
-    i_size = -1
-    j_size = -1
-    k_size = -1
     with open(file_name) as f:
         i_size, j_size, k_size = map(int, f.readline().split())
 
@@ -1414,7 +1411,6 @@ def read_pfidb(file_path):
     action = "nb_lines"  # nb_lines, size, string
     size = 0
     key = ""
-    value = ""
     string_type_count = 0
     full_path = get_absolute_path(file_path)
 
