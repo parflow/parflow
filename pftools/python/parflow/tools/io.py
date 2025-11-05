@@ -544,7 +544,7 @@ class ParflowBinaryReader:
         q: int = None,
         r: int = None,
         header: Mapping[str, Number] = None,
-        read_sg_info: bool = True,
+        read_sg_info: bool = False,
     ):
         self.filename = file
         self.f = open(self.filename, "rb")
@@ -558,7 +558,9 @@ class ParflowBinaryReader:
             self.header["q"] = q
             self.header["r"] = r
 
-        if read_sg_info:
+        # Currently, compute_subgrid_info is not working correctly, so we always use read_subgrid_info.
+        # https://github.com/parflow/parflow/commit/e30312124d98467248464c99001129affd23ec31
+        if precompute_subgrid_info or read_sg_info:
             self.read_subgrid_info()
 
     def close(self):
