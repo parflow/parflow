@@ -449,13 +449,12 @@ pfset KnownSolution                                    NoKnownSolution
 pfset Solver                                             Richards
 pfset Solver.MaxIter                                     10000
 
+#pfset Solver.Nonlinear.MaxIter                           100
 pfset Solver.Nonlinear.MaxIter                           15
 pfset Solver.Nonlinear.ResidualTol                       1e-9
 pfset Solver.Nonlinear.StepTol                           1e-9
-pfset Solver.Nonlinear.EtaValue                          1e-5
 pfset Solver.Nonlinear.UseJacobian                       True
 pfset Solver.Nonlinear.DerivativeEpsilon                 1e-7
-
 pfset Solver.Linear.KrylovDimension                      25
 pfset Solver.Linear.MaxRestarts                          2
 
@@ -466,51 +465,96 @@ pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      100
 # Test Top writing
 pfset Solver.PrintTop                                    True
 
+source pftest.tcl
+#
+# Check for regressions
+#
+proc check_output {runname} {
+    global passed sig_digits
+
+    if ![pftestFile $runname.out.perm_x.pfb "$runname: Max difference in perm_x" $sig_digits] {
+	set passed 0
+    }
+    if ![pftestFile $runname.out.perm_y.pfb "$runname: Max difference in perm_y" $sig_digits] {
+	set passed 0
+    }
+    if ![pftestFile $runname.out.perm_z.pfb "$runname: Max difference in perm_z" $sig_digits] {
+	set passed 0
+    }
+    if ![pftestFile $runname.out.porosity.pfb "$runname: Max difference in porosity" $sig_digits] {
+	set passed 0
+    }
+    
+    if ![pftestFile $runname.out.top_patch.pfb "$runname: Max difference in top patch" $sig_digits] {
+	set passed 0
+    }
+    
+    if ![pftestFile $runname.out.top_zindex.pfb "$runname: Max difference in top zindex" $sig_digits] {
+	set passed 0
+    }
+    
+    foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
+	if ![pftestFile $runname.out.press.$i.pfb "$runname: Max difference in Pressure for timestep $i" $sig_digits] {
+	    set passed 0
+	}
+	if ![pftestFile $runname.out.satur.$i.pfb "$runname: Max difference in Saturation for timestep $i" $sig_digits] {
+	    set passed 0
+	}
+    }
+}
+
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-pfrun crater
-pfundist crater
 
-#
-# Tests
-#
-source pftest.tcl
 set passed 1
 
-if ![pftestFile crater.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
-    set passed 0
-}
-if ![pftestFile crater.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
-    set passed 0
-}
-if ![pftestFile crater.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
-    set passed 0
-}
-if ![pftestFile crater.out.porosity.pfb "Max difference in porosity" $sig_digits] {
-    set passed 0
-}
+#-----------------------------------------------------------------------------
+# EtaConstant
+#-----------------------------------------------------------------------------
+set runname "crater2D_etaconstant"
 
-if ![pftestFile crater.out.top_patch.pfb "Max difference in top patch" $sig_digits] {
-    set passed 0
-}
+puts "Running with EtaConstant"
 
-if ![pftestFile crater.out.top_zindex.pfb "Max difference in top zindex" $sig_digits] {
-    set passed 0
-}
+pfset Solver.Nonlinear.EtaChoice                         EtaConstant
+pfset Solver.Nonlinear.EtaValue                          1e-5
 
-foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
-    if ![pftestFile crater.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-	set passed 0
-    }
-    if ![pftestFile crater.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-	set passed 0
-    }
-}
+pfrun $runname
+pfundist $runname
+check_output $runname
 
+pfunset Solver.Nonlinear.EtaValue
+
+#-----------------------------------------------------------------------------
+# Walker1
+#-----------------------------------------------------------------------------
+set runname "crater2D_walker1"
+
+puts "Running with Walker1"
+
+pfset Solver.Nonlinear.EtaChoice                         Walker1
+
+pfrun $runname
+pfundist $runname
+check_output $runname
+
+#-----------------------------------------------------------------------------
+# Walker2
+#-----------------------------------------------------------------------------
+set runname "crater2D_walker2"
+
+puts "Running with Walker2"
+
+pfset Solver.Nonlinear.EtaChoice                         Walker2
+# Default EtaGamma yields differences between the embedded Kinsol and current external Sundials library.
+pfset Solver.Nonlinear.EtaGamma                          0.100000
+
+pfrun $runname
+pfundist $runname
+check_output $runname
 
 if $passed {
-    puts "crater2D : PASSED"
+    puts "creater2D : PASSED"
 } {
-    puts "crater2D : FAILED"
+    puts "creater2D : FAILED"
 }

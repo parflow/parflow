@@ -61,6 +61,11 @@ foreach(test ${ALL_TESTS})
 
   add_executable( ${test} ${test}.c)
   target_link_libraries(${test} amps)
+
+  # AMPS has a depency on CUDA
+  if ( ${PARFLOW_HAVE_CUDA} )
+    target_include_directories(${test} PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+  endif ( ${PARFLOW_HAVE_CUDA} )
   
   if (${PARFLOW_HAVE_MPI})
     # In CMake 3.13 this could be target_link_options

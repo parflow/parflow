@@ -3516,36 +3516,6 @@ The choices for this key correspond to pressures as follows.
 **XYZTPlus1PermTensor**: 
    :math:`p = xyzt + 1`
 
-Example Script:
-
-.. container:: list
-
-   ::
-
-
-      #---------------------------------------------------------
-      # Initial conditions: water pressure [m]
-      #---------------------------------------------------------
-      # Using a patch is great when you are not using a box domain
-      # If using a box domain HydroStaticDepth is fine
-      # If your RefPatch is z-lower (bottom of domain), the pressure is positive.
-      # If your RefPatch is z-upper (top of domain), the pressure is negative.
-      ### Set water table to be at the bottom of the domain, the top layer is initially dry
-      pfset ICPressure.Type				      "HydroStaticPatch"
-      pfset ICPressure.GeomNames		         "domain"
-      pfset Geom.domain.ICPressure.Value	   2.2
-
-      pfset Geom.domain.ICPressure.RefGeom	"domain"
-      pfset Geom.domain.ICPressure.RefPatch	z-lower
-
-      ### Using a .pfb to initialize
-      pfset ICPressure.Type                  "PFBFile"
-      pfset ICPressure.GeomNames		         "domain"
-      pfset Geom.domain.ICPressure.FileName	"press.00090.pfb"
-
-      pfset Geom.domain.ICPressure.RefGeom	"domain"
-      pfset Geom.domain.ICPressure.RefPatch	"z-upper"
-
 .. _`Boundary Conditions: Saturation`:
 
 Boundary Conditions: Saturation
@@ -3822,6 +3792,36 @@ domain. It is assumed that *geom_name* is “domain” for this key.
    ::
 
       pfset Geom.domain.ICPressure.FileName  "ic_pressure.pfb"
+
+Example Script:
+
+.. container:: list
+
+   ::
+
+
+      #---------------------------------------------------------
+      # Initial conditions: water pressure [m]
+      #---------------------------------------------------------
+      # Using a patch is great when you are not using a box domain
+      # If using a box domain HydroStaticDepth is fine
+      # If your RefPatch is z-lower (bottom of domain), the pressure is positive.
+      # If your RefPatch is z-upper (top of domain), the pressure is negative.
+      ### Set water table to be at the bottom of the domain, the top layer is initially dry
+      pfset ICPressure.Type				      "HydroStaticPatch"
+      pfset ICPressure.GeomNames		         "domain"
+      pfset Geom.domain.ICPressure.Value	   2.2
+
+      pfset Geom.domain.ICPressure.RefGeom	"domain"
+      pfset Geom.domain.ICPressure.RefPatch	z-lower
+
+      ### Using a .pfb to initialize
+      pfset ICPressure.Type                  "PFBFile"
+      pfset ICPressure.GeomNames		         "domain"
+      pfset Geom.domain.ICPressure.FileName	"press.00090.pfb"
+
+      pfset Geom.domain.ICPressure.RefGeom	"domain"
+      pfset Geom.domain.ICPressure.RefPatch	"z-upper"
 
 .. _`Initial Conditions: Phase Concentrations`:
 
@@ -4607,7 +4607,20 @@ intersect the domain.  The data is written as a ParFlow binary file.
       pfset Solver.PrintTop False                    ## TCL syntax
 
       <runname>.Solver.PrintTop = False              ## Python syntax
-      
+
+*string* **Solver.PrintBottom** False This key is used to turn on printing
+of the bottom of domain data.  'BottomZIndex' is a NX * NY file with the Z
+index of the top of the domain.  A value of -1 indicates an (i,j) column does 
+not intersect the domain.The data is written as a ParFlow binary file.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.PrintBottom False                 ## TCL syntax
+
+      <runname>.Solver.PrintBottom = False           ## Python syntax
+
 *string* **Solver.PrintWells** True This key is used to turn on
 collection and printing of the well data. The data is collected at
 intervals given by values in the timing information section. Printing
@@ -4818,12 +4831,24 @@ Patch index for the top of the domain.  A value of -1 indicates an
 
 .. container:: list
 
-
    ::
 
       pfset Solver.WriteSiloTop True                  ## TCL syntax
 
       <runname>.Solver.WriteSiloTop = True            ## Python syntax
+
+*string* **Solver.WriteSiloBottom** False Key used to control writing of
+one Silo file for the bottom of the domain.  'BottomZIndex' is a NX * NY
+file with the Z index of the bottom of the domain. A value of -1 indicates
+an (i,j) column does not intersect the domain.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WriteSiloBottom True               ## TCL syntax
+
+      <runname>.Solver.WriteSiloBottom = True         ## Python syntax
 
 *string* **Solver.WritePDISubsurfData** False This key is used to specify exposing of
       the subsurface data, Permeability and Porosity to PDI library. The data is
@@ -5913,8 +5938,11 @@ to be active.
       <runname>.Solver.CLM.CLMFileDir = "CLM_Output/"    ## Python syntax
 
 *integer* **Solver.CLM.CLMDumpInterval** 1 This key specifies how often
-output from the ``CLM`` is written. This key is in integer multipliers 
-of the ``CLM`` timestep. Note that ``CLM`` must be compiled and linked 
+output from the ``CLM`` is written. This key is the real
+time interval at which time-dependent output should be written. A value
+of **0** will produce undefined behavior. If the value is negative,
+output will be dumped out every :math:`n` time steps, where :math:`n` is
+the absolute value of the integer part of the value.  Note that ``CLM`` must be compiled and linked 
 at runtime for this option to be active.
 
 .. container:: list
@@ -6015,7 +6043,7 @@ to be active.
       pfset Solver.CLM.FieldCapacity  0.95         ## TCL syntax
       <runname>.Solver.CLM.FieldCapacity = 0.95    ## Python syntax
 
-*string* **Solver.CLM.IrrigationTypes** none This key specifies the form
+*string* **Solver.CLM.IrrigationType** none This key specifies the form
 of the irrigation in ``CLM``. The valid types for this key are **none**, 
 **Spray**, **Drip**, **Instant**.
 
@@ -6023,14 +6051,14 @@ of the irrigation in ``CLM``. The valid types for this key are **none**,
 
    ::
 
-      pfset Solver.CLM.IrrigationTypes "Drip"      ## TCL syntax
-      <runname>.Solver.CLM.IrrigationTypes "Drip"  ## Python syntax
+      pfset Solver.CLM.IrrigationType "Drip"      ## TCL syntax
+      <runname>.Solver.CLM.IrrigationType "Drip"  ## Python syntax
 
 *string* **Solver.CLM.IrrigationCycle** Constant This key specifies the
 cycle of the irrigation in ``CLM``. The valid types for this key are 
 **Constant**, **Deficit**. Note only **Constant** is currently implemented. Constant 
 cycle applies irrigation each day from IrrigationStartTime to 
-IrrigationStopTime in GMT.
+IrrigationStopTime in hours of the day (24-hour time) in GMT.
 
 .. container:: list
 
@@ -6056,8 +6084,8 @@ specifies the start time of the irrigation in ``CLM`` GMT.
 
    ::
 
-      pfset Solver.CLM.IrrigationStartTime 0800          ## TCL syntax
-      <runname>.Solver.CLM.IrrigationStartTime = 0800    ## Python syntax
+      pfset Solver.CLM.IrrigationStartTime 8.0          ## TCL syntax
+      <runname>.Solver.CLM.IrrigationStartTime = 8.0    ## Python syntax
 
 *double* **Solver.CLM.IrrigationStopTime** no default This key specifies
 the stop time of the irrigation in ``CLM`` GMT.
@@ -6066,8 +6094,8 @@ the stop time of the irrigation in ``CLM`` GMT.
 
    ::
 
-      pfset Solver.CLM.IrrigationStopTime 1200        ## TCL syntax
-      <runname>.Solver.CLM.IrrigationStopTime = 1200  ## Python syntax
+      pfset Solver.CLM.IrrigationStopTime 12.0        ## TCL syntax
+      <runname>.Solver.CLM.IrrigationStopTime = 12.0  ## Python syntax
 
 *double* **Solver.CLM.IrrigationThreshold** 0.5 This key specifies the
 threshold value for the irrigation in ``CLM``.

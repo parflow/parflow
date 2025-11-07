@@ -30,6 +30,10 @@ if (${PARFLOW_HAVE_HYPRE})
   target_link_libraries (parflow Hypre::Hypre)
 endif (${PARFLOW_HAVE_HYPRE})
 
+if (${PARFLOW_HAVE_SUNDIALS})
+  target_link_libraries (parflow ${SUNDIALS_LIBRARIES})
+endif (${PARFLOW_HAVE_SUNDIALS})
+
 if (${PARFLOW_HAVE_MPI})
   # In CMake 3.13 this could be target_link_options
   target_link_libraries(parflow ${MPI_LINK_FLAGS})
@@ -71,6 +75,11 @@ endif (${PARFLOW_HAVE_SZLIB})
 if (${PARFLOW_HAVE_SLURM})
   target_link_libraries (parflow ${SLURM_LIBRARIES})
 endif (${PARFLOW_HAVE_SLURM})
+
+# Link the math library if needed
+if(PARFLOW_MATH_LIBRARY)
+    target_link_libraries(parflow ${MATH_LIBRARY})
+endif()
 
 if( ${PARFLOW_ENABLE_PROFILING} )
   set_target_properties(parflow PROPERTIES LINK_FLAGS ${PARFLOW_PROFILE_OPTS})
