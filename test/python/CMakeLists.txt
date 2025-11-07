@@ -41,6 +41,7 @@ if(${PARFLOW_HAVE_HYPRE})
     van-genuchten-file
     overland_slopingslab_KWE
     overland_tiltedV_KWE
+    overland_tiltedV_KWE_top_patch
     overland_slopingslab_DWE
     overland_tiltedV_DWE
     overland_FlatICP
@@ -48,6 +49,7 @@ if(${PARFLOW_HAVE_HYPRE})
     richards_FBy
     richards_box_proctest
     richards_box_proctest_vardz
+    TiltedV_TopPatch
     water_balance_y
     water_balance_x
     water_balance_x.hardflow.nojac
