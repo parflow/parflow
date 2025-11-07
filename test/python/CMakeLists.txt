@@ -49,7 +49,6 @@ if(${PARFLOW_HAVE_HYPRE})
     richards_FBy
     richards_box_proctest
     richards_box_proctest_vardz
-    TiltedV_TopPatch
     water_balance_y
     water_balance_x
     water_balance_x.hardflow.nojac
