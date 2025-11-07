@@ -126,8 +126,8 @@ void    OverlandFlowEvalKin(
                                          int k1, k0x, k0y, k1x, k1y;
                                          int p1, p0x, p0y;
                                          double Sf_x, Sf_y, Sf_mag;
-                                         double Press_x, Press_y; 
-                                         double PP_ipp1, PP_ippsy, PP_ip;),
+                                         double Press_x, Press_y;
+                                         double PP_ipp1, PP_ippsy, PP_ip; ),
                                   CellSetup(DoNothing),
                                   FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
                                   FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),

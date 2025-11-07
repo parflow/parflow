@@ -62,17 +62,17 @@ def make_solid_file(
             # Place one seepage patch in the middle of the river patch
             patch[
                 int(np.floor(ny / 2)),
-                int(np.floor(nx / 2)) - 3 : int(np.floor(nx / 2)) + 4,
+                int(np.floor(nx / 2)) : int(np.floor(nx / 2)) + 1,
             ] = top_val3
         elif top_val3 is not None and top_val4 is not None:
             # Place two seepage patches at 1/3 and 2/3 along the river patch
             patch[
                 int(np.floor(ny / 2)),
-                int(np.floor(nx / 3)) - 3 : int(np.floor(nx / 3)) + 4,
+                int(np.floor(nx / 3)) : int(np.floor(nx / 3)) + 1,
             ] = top_val3
             patch[
                 int(np.floor(ny / 2)),
-                int(np.floor(2 * nx / 3)) - 3 : int(np.floor(2 * nx / 3)) + 4,
+                int(np.floor(2 * nx / 3)) : int(np.floor(2 * nx / 3)) + 1,
             ] = top_val4
     else:
         patch[:, 0 : int(np.floor(nx / 2))] = top_val1
@@ -81,17 +81,17 @@ def make_solid_file(
         if top_val3 is not None and top_val4 is None:
             # Place one seepage patch in the middle of the river patch
             patch[
-                int(np.floor(ny / 2)) - 3 : int(np.floor(ny / 2)) + 4,
+                int(np.floor(ny / 2)) : int(np.floor(ny / 2)) + 1,
                 int(np.floor(nx / 2)),
             ] = top_val3
         elif top_val3 is not None and top_val4 is not None:
             # Place two seepage patches at 1/3 and 2/3 along the river patch
             patch[
-                int(np.floor(ny / 3)) - 3 : int(np.floor(ny / 3)) + 4,
+                int(np.floor(ny / 3)) : int(np.floor(ny / 3)) + 1,
                 int(np.floor(nx / 2)),
             ] = top_val3
             patch[
-                int(np.floor(2 * ny / 3)) - 3 : int(np.floor(2 * ny / 3)) + 4,
+                int(np.floor(2 * ny / 3)) : int(np.floor(2 * ny / 3)) + 1,
                 int(np.floor(nx / 2)),
             ] = top_val4
 

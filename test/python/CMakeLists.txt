@@ -42,6 +42,7 @@ if(${PARFLOW_HAVE_HYPRE})
     overland_slopingslab_KWE
     overland_tiltedV_KWE
     overland_tiltedV_KWE_top_patch
+    overland_tiltedV_KWE_top_patch_2
     overland_slopingslab_DWE
     overland_tiltedV_DWE
     overland_FlatICP
