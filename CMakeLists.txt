@@ -127,7 +127,7 @@ if((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}))
   endif(DEFINED umpire_ROOT AND DEFINED rmm_ROOT)
   
   # Determine memory manager and print single status message
-   if(DEFINED umpire_ROOT)
+  if(DEFINED umpire_ROOT)
     find_package(umpire REQUIRED)
     set(PARFLOW_HAVE_UMPIRE "yes")
     if(PARFLOW_HAVE_CUDA)
