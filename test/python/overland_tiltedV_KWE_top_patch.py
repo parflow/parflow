@@ -273,7 +273,7 @@ overland.Geom.domain.ICPressure.RefPatch = "bottom"
 # -----------------------------------------------------------------------------
 runcheck = 1
 correct_output_dir_name = get_absolute_path("../correct_output")
-test_dir = get_absolute_path("test_output/")
+test_dir = get_absolute_path("test_output/overland_tiltedV_KWE_top_patch/")
 overland.Patch.slope.BCPressure.Type = "OverlandKinematic"
 overland.Patch.channel.BCPressure.Type = "OverlandKinematic"
 overland.Solver.PrintSlopes = True
