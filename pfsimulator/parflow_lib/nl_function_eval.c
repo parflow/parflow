@@ -41,8 +41,8 @@ typedef struct {
   double SpinupDampP1;      // NBE
   double SpinupDampP2;      // NBE
   int tfgupwind;           //@RMM added for TFG formulation switch
-  int seepage_patch_one;  //RMM added two optional seepage face BCs
-  int seepage_patch_two;
+  int *seepage_patches;
+  int num_seepage_patches;
 } PublicXtra;
 
 typedef struct {
@@ -67,6 +67,28 @@ typedef struct {
   Vector       *qx;
   Vector       *qy;
 } InstanceXtra;
+
+static int
+IsSeepagePatch(const PublicXtra *public_xtra,
+               int patch_id)
+{
+  int n;
+
+  if (public_xtra == NULL)
+  {
+    return 0;
+  }
+
+  for (n = 0; n < public_xtra->num_seepage_patches; n++)
+  {
+    if (public_xtra->seepage_patches[n] == patch_id)
+    {
+      return 1;
+    }
+  }
+
+  return 0;
+}
 
 /*---------------------------------------------------------------------
  * Define macros for function evaluation
@@ -1949,15 +1971,15 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
         u_new = h;
 
         q_overlnd = 0.0;
-        // RMM, switch seepage face on optionally for two surface patches
-        if ((int)patch_dat[io] == public_xtra->seepage_patch_one || (int)patch_dat[io] == public_xtra->seepage_patch_two)
+        // RMM, switch seepage face on optionally for specified surface patches
+        if (IsSeepagePatch(public_xtra, (int)patch_dat[io]))
         {
           q_overlnd = vol
                       * (pfmax(pp[ip], 0.0) - 0.0) / dz; //+
           //* dt* (pfmax(pp[ip], 0.0) -0.0) / dz + //RMM, why is dt multiplied by the first term?
           // dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy)
           // / dz;
-          //printf("Current Patch %d, seepage one %d, %d (%d,%d,%d)\n",(int)patch_dat[io], public_xtra->seepage_patch_one, io, i,j,k);
+          //printf("Current seepage patch %d at surface index %d (%d,%d,%d)\n",(int)patch_dat[io], io, i, j, k);
         }
         else
         {
@@ -2427,10 +2449,36 @@ PFModule   *NlFunctionEvalNewPublicXtra(char *name)
   sprintf(key, "OverlandSpinupDampP2");
   public_xtra->SpinupDampP2 = GetDoubleDefault(key, 0.0);    //NBE
 
-  sprintf(key, "Solver.OverlandKinematic.SeepageOne");
-  public_xtra->seepage_patch_one = GetIntDefault(key, -999);
-  sprintf(key, "Solver.OverlandKinematic.SeepageTwo");
-  public_xtra->seepage_patch_two = GetIntDefault(key, -999);
+  public_xtra->seepage_patches = NULL;
+  public_xtra->num_seepage_patches = 0;
+
+  sprintf(key, "Solver.OverlandKinematic.SeepagePatches");
+  {
+    char *patch_list = GetStringDefault(key, "");
+
+    if (patch_list != NULL && patch_list[0] != '\0')
+    {
+      NameArray patch_na = NA_NewNameArray(patch_list);
+      int count = NA_Sizeof(patch_na);
+
+      if (count > 0)
+      {
+        int idx;
+        public_xtra->seepage_patches = ctalloc(int, count);
+
+        for (idx = 0; idx < count; idx++)
+        {
+          char *entry = NA_IndexToName(patch_na, idx);
+          int patch_id = atoi(entry);
+          public_xtra->seepage_patches[idx] = patch_id;
+        }
+
+        public_xtra->num_seepage_patches = count;
+      }
+
+      NA_FreeNameArray(patch_na);
+    }
+  }
 
   ///* parameters for upwinding formulation for TFG */
   upwind_switch_na = NA_NewNameArray("Original UpwindSine Upwind");
@@ -2484,6 +2532,10 @@ void  NlFunctionEvalFreePublicXtra()
 
   if (public_xtra)
   {
+    if (public_xtra->seepage_patches)
+    {
+      tfree(public_xtra->seepage_patches);
+    }
     tfree(public_xtra);
   }
 }

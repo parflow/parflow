@@ -63,9 +63,32 @@ typedef struct {
   double SpinupDampP2; // NBE
   int tfgupwind;  // RMM
   int using_MGSemi;  // RMM
-  int seepage_patch_one;  //RMM added two optional seepage face BCs
-  int seepage_patch_two;
+  int *seepage_patches;
+  int num_seepage_patches;
 } PublicXtra;
+
+static int
+IsSeepagePatch(const PublicXtra *public_xtra,
+               int patch_id)
+{
+  int n;
+
+  if (public_xtra == NULL)
+  {
+    return 0;
+  }
+
+  for (n = 0; n < public_xtra->num_seepage_patches; n++)
+  {
+    if (public_xtra->seepage_patches[n] == patch_id)
+    {
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
 
 typedef struct {
   Problem      *problem;
@@ -1547,7 +1570,7 @@ void    RichardsJacobianEval(
         ForPatchCellsPerFace(OverlandKinematicBC,
                              BeforeAllCells(DoNothing),
                              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                             Locals(int io, io1, itop, ip, im, iitmp, ione, itwo, k1; ),
+                             Locals(int io, io1, itop, ip, im, iitmp, k1; ),
                              CellSetup(DoNothing),
                              FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
                              FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
@@ -1610,18 +1633,16 @@ void    RichardsJacobianEval(
           }
 
           iitmp = (int)patch_dat[io1];
-          ione = public_xtra->seepage_patch_one;
-          itwo = public_xtra->seepage_patch_two;
 
           /* Now add overland contributions to JC */
           if ((pp[ip]) > 0.0)
           {
             /* RMM, switch seepage face on optionally for two surface patches */
-            if (iitmp == ione || iitmp == itwo)
+            if (IsSeepagePatch(public_xtra, iitmp))
             {
               cp_c[io] += (vol / dz) * (1.0 + 0.0);  // + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
               //           + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
-              // printf("Seepage face on: Current Patch %d, seepage one %d, %d (%d,%d,%d)\n",(int)patch_dat[io], public_xtra->seepage_patch_one, io, i,j,k);
+              // printf("Seepage face on patch %d at surface index %d (%d,%d,%d)\n",(int)patch_dat[io], io, i, j, k);
             }
             else
             {
@@ -1942,7 +1963,7 @@ void    RichardsJacobianEval(
         ForPatchCellsPerFace(OverlandKinematicBC,
                              BeforeAllCells(DoNothing),
                              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                             Locals(int io1, ip, itop, im, iitmp, ione, itwo; ),
+                             Locals(int io1, ip, itop, im, iitmp; ),
                              CellSetup(DoNothing),
                              FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
                              FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
@@ -1958,14 +1979,11 @@ void    RichardsJacobianEval(
           im = SubmatrixEltIndex(J_sub, i, j, k);
 
           iitmp = (int)patch_dat[itop];
-          ione = public_xtra->seepage_patch_one;
-          itwo = public_xtra->seepage_patch_two;
-
           /* Now add overland contributions to J similar to JC above */
           if ((pp[ip]) > 0.0)
           {
-            /* RMM, switch seepage face on optionally for two surface patches */
-            if (iitmp == ione || iitmp == itwo)
+            /* RMM, switch seepage face on optionally for specified surface patches */
+            if (IsSeepagePatch(public_xtra, iitmp))
             {
               cp[im] += dt * (vol / dz) * (1.0 + 0.0); // + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
               //  + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
@@ -2427,11 +2445,34 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   sprintf(key, "OverlandSpinupDampP2");
   public_xtra->SpinupDampP2 = GetDoubleDefault(key, 0.0);    // NBE
 
-  sprintf(key, "Solver.OverlandKinematic.SeepageOne");
-  public_xtra->seepage_patch_one = GetDoubleDefault(key, -999);
-  sprintf(key, "Solver.OverlandKinematic.SeepageTwo");
-  public_xtra->seepage_patch_two = GetDoubleDefault(key, -999);
+  public_xtra->seepage_patches = NULL;
+  public_xtra->num_seepage_patches = 0;
 
+  sprintf(key, "Solver.OverlandKinematic.SeepagePatches");
+  {
+    char *patch_list = GetStringDefault(key, "");
+
+    if (patch_list != NULL && patch_list[0] != '\0')
+    {
+      NameArray patch_na = NA_NewNameArray(patch_list);
+      int count = NA_Sizeof(patch_na);
+
+      if (count > 0)
+      {
+        int idx;
+        public_xtra->seepage_patches = ctalloc(int, count);
+        for (idx = 0; idx < count; idx++)
+        {
+          char *entry = NA_IndexToName(patch_na, idx);
+          int patch_id = atoi(entry);
+          public_xtra->seepage_patches[idx] = patch_id;
+        }
+        public_xtra->num_seepage_patches = count;
+      }
+
+      NA_FreeNameArray(patch_na);
+    }
+  }
 
 /* get preconditioner to check for MGSemi to use custom overland flow formulation*/
   precond_switch_na = NA_NewNameArray("NoPC MGSemi SMG PFMG PFMGOctree");
@@ -2525,6 +2566,10 @@ void  RichardsJacobianEvalFreePublicXtra()
 
   if (public_xtra)
   {
+    if (public_xtra->seepage_patches)
+    {
+      tfree(public_xtra->seepage_patches);
+    }
     tfree(public_xtra);
   }
 }
