@@ -138,7 +138,7 @@ PopulateSeepagePatchesFromBCPressure(PublicXtra *public_xtra)
   int domain_index = NA_NameToIndexExitOnError(GlobalsGeomNames, geom_name, "Domain.GeomName");
   amps_Printf("PopulateSeepagePatchesFromBCPressure: domain_index = %d\n", domain_index);
 
-  int *tmp_ids = ctalloc(int, num_patches + 1);
+  int *tmp_ids = ctalloc(int, num_patches);
   int count = 0;
 
   for (int idx = 0; idx < num_patches; idx++)
@@ -178,7 +178,7 @@ PopulateSeepagePatchesFromBCPressure(PublicXtra *public_xtra)
       NA_InputError(GlobalsGeometries[domain_index]->patches, patch_name, "");
     }
 
-    tmp_ids[1 + count++] = patch_id;
+    tmp_ids[count++] = patch_id + 1;
   }
 
   if (count > 0)
