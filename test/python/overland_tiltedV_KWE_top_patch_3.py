@@ -187,25 +187,25 @@ overland.Patch.bottom.BCPressure.Type = "FluxConst"
 overland.Patch.bottom.BCPressure.Cycle = "constant"
 overland.Patch.bottom.BCPressure.alltime.Value = 0.0
 
-overland.Patch.slope.BCPressure.Type = "OverlandFlow"
+overland.Patch.slope.BCPressure.Type = "OverlandKinematic"
 overland.Patch.slope.BCPressure.Cycle = "rainrec"
 overland.Patch.slope.BCPressure.rain.Value = -0.01
 overland.Patch.slope.BCPressure.rec.Value = 0.0000
 overland.Patch.slope.BCPressure.Seepage = False
 
-overland.Patch.channel.BCPressure.Type = "OverlandFlow"
+overland.Patch.channel.BCPressure.Type = "OverlandKinematic"
 overland.Patch.channel.BCPressure.Cycle = "rainrec"
 overland.Patch.channel.BCPressure.rain.Value = -0.001
 overland.Patch.channel.BCPressure.rec.Value = 0.0000
 overland.Patch.channel.BCPressure.Seepage = False
 
-overland.Patch.seepage1.BCPressure.Type = "OverlandFlow"
+overland.Patch.seepage1.BCPressure.Type = "OverlandKinematic"
 overland.Patch.seepage1.BCPressure.Cycle = "rainrec"
 overland.Patch.seepage1.BCPressure.rain.Value = -0.001
 overland.Patch.seepage1.BCPressure.rec.Value = 0.0000
 overland.Patch.seepage1.BCPressure.Seepage = True
 
-overland.Patch.seepage2.BCPressure.Type = "OverlandFlow"
+overland.Patch.seepage2.BCPressure.Type = "OverlandKinematic"
 overland.Patch.seepage2.BCPressure.Cycle = "rainrec"
 overland.Patch.seepage2.BCPressure.rain.Value = -0.001
 overland.Patch.seepage2.BCPressure.rec.Value = 0.0000
@@ -288,10 +288,6 @@ overland.Geom.domain.ICPressure.RefPatch = "bottom"
 runcheck = 1
 correct_output_dir_name = get_absolute_path("../correct_output")
 test_dir = get_absolute_path("test_output/overland_tiltedV_KWE_top_patch_3/")
-overland.Patch.slope.BCPressure.Type = "OverlandKinematic"
-overland.Patch.channel.BCPressure.Type = "OverlandKinematic"
-overland.Patch.seepage1.BCPressure.Type = "OverlandKinematic"
-overland.Patch.seepage2.BCPressure.Type = "OverlandKinematic"
 overland.Solver.PrintSlopes = True
 
 # Ypos

@@ -129,7 +129,6 @@ PopulateSeepagePatchesFromBCPressure(PublicXtra *public_xtra)
     return;
   }
 
-  /* Map patch names to geometric patch indices */
   char key[IDB_MAX_KEY_LEN];
   char *geom_name = GetString("Domain.GeomName");
   amps_Printf("PopulateSeepagePatchesFromBCPressure: geom_name = %s\n", geom_name);
@@ -137,6 +136,7 @@ PopulateSeepagePatchesFromBCPressure(PublicXtra *public_xtra)
   amps_Printf("PopulateSeepagePatchesFromBCPressure: domain_index = %d\n", domain_index);
   int *tmp_ids = ctalloc(int, num_patches);
   int count = 0;
+  NameArray switch_na = NA_NewNameArray("False True");
 
   for (int idx = 0; idx < num_patches; idx++)
   {
@@ -151,19 +151,12 @@ PopulateSeepagePatchesFromBCPressure(PublicXtra *public_xtra)
       continue;
     }
 
-    /* Check the optional Seepage flag */
     sprintf(key, "Patch.%s.BCPressure.Seepage", patch_name);
-    amps_Printf("PopulateSeepagePatchesFromBCPressure: seepage_flag = %s\n", key);
-    char *seepage_flag = GetStringDefault(key, NULL);
-    amps_Printf("PopulateSeepagePatchesFromBCPressure: seepage_flag = %s\n", seepage_flag);
-    if (seepage_flag == NULL)
-    {
-      continue;
-    }
-
-    if (!(strcmp(seepage_flag, "True") == 0 ||
-          strcmp(seepage_flag, "true") == 0 ||
-          strcmp(seepage_flag, "1") == 0))
+    amps_Printf("PopulateSeepagePatchesFromBCPressure: seepage_flag key = %s\n", key);
+    char *switch_name = GetStringDefault(key, "False");
+    int seepage_flag = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+    amps_Printf("PopulateSeepagePatchesFromBCPressure: seepage_flag = %d\n", seepage_flag);
+    if (!seepage_flag)
     {
       continue;
     }
@@ -175,7 +168,7 @@ PopulateSeepagePatchesFromBCPressure(PublicXtra *public_xtra)
       amps_Printf("Invalid patch name <%s> in Patch.%s.BCPressure.Seepage\n", patch_name, patch_name);
       NA_InputError(GlobalsGeometries[domain_index]->patches, patch_name, "");
     }
-
+    /* Add 1 to patch_id as the seepage patch implementation expects 1-indexed patch ids*/
     tmp_ids[count++] = patch_id + 1;
   }
   amps_Printf("PopulateSeepagePatchesFromBCPressure: count after for loop = %d\n", count);
@@ -193,6 +186,7 @@ PopulateSeepagePatchesFromBCPressure(PublicXtra *public_xtra)
 
   tfree(tmp_ids);
   NA_FreeNameArray(patches_na);
+  NA_FreeNameArray(switch_na);
 }
 
 typedef struct {
