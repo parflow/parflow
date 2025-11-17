@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# Running different configurations of tilted V with a seepage patch in the 
+# Running different configurations of tilted V with a seepage patch in the
 # middle of the channel
 # -----------------------------------------------------------------------------
 
