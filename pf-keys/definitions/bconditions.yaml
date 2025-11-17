@@ -130,8 +130,9 @@ Patch:
           formulation. Internally, ParFlow will add the corresponding patch id to the
           Solver.OverlandKinematic.SeepagePatches list, so existing overland kinematic
           logic can be used without further changes.
+        default: False
         domains:
-          BoolValue:
+          BoolDomain:
 
       .{interval_name}:
         __class__: BCPressureIntervalItem
