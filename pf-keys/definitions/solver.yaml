@@ -1675,14 +1675,6 @@ Solver:
         DoubleValue:
           min_value: 0.0
 
-    SeepagePatches:
-      help: >
-        [Type: string] Whitespace separated list of patch ids that should receive the mixed seepage face boundary condition.
-        Specify patch ids (not names) as a space-separated string.
-      default: ""
-      domains:
-        AnyString:
-
   # missing from manual
   PolyDegree:
     help: >

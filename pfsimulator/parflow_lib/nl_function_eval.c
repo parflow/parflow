@@ -98,19 +98,12 @@ IsSeepagePatch(const PublicXtra *public_xtra,
  *   Patch.<patch_name>.BCPressure.Seepage = True
  *
  * We translate these patch-level flags into the integer patch ids
- * used internally in the same way as Solver.OverlandKinematic.SeepagePatches.
+ * used internally by the seepage patch logic.
  *---------------------------------------------------------------------*/
 static void
 PopulateSeepagePatchesFromBCPressure(PublicXtra *public_xtra)
 {
   char *patch_names;
-
-  /* If we already have seepage patches (from Solver.OverlandKinematic.SeepagePatches)
-   * then respect that and do nothing here. */
-  if (public_xtra->num_seepage_patches > 0 || public_xtra->seepage_patches != NULL)
-  {
-    return;
-  }
 
   patch_names = GetStringDefault("BCPressure.PatchNames", NULL);
   if (patch_names == NULL || patch_names[0] == '\0')
@@ -2542,36 +2535,7 @@ PFModule   *NlFunctionEvalNewPublicXtra(char *name)
   public_xtra->seepage_patches = NULL;
   public_xtra->num_seepage_patches = 0;
 
-  sprintf(key, "Solver.OverlandKinematic.SeepagePatches");
-  {
-    char *patch_list = GetStringDefault(key, "");
-
-    if (patch_list != NULL && patch_list[0] != '\0')
-    {
-      NameArray patch_na = NA_NewNameArray(patch_list);
-      int count = NA_Sizeof(patch_na);
-
-      if (count > 0)
-      {
-        int idx;
-        public_xtra->seepage_patches = ctalloc(int, count);
-
-        for (idx = 0; idx < count; idx++)
-        {
-          char *entry = NA_IndexToName(patch_na, idx);
-          int patch_id = atoi(entry);
-          public_xtra->seepage_patches[idx] = patch_id;
-        }
-
-        public_xtra->num_seepage_patches = count;
-      }
-
-      NA_FreeNameArray(patch_na);
-    }
-  }
-
-  /* If no explicit solver-level seepage patches were provided, fall back to
-   * collecting any patches that have Patch.<name>.BCPressure.Seepage = True. */
+  /* Collect seepage patches from Patch.<name>.BCPressure.Seepage flags. */
   PopulateSeepagePatchesFromBCPressure(public_xtra);
 
   ///* parameters for upwinding formulation for TFG */
