@@ -67,7 +67,7 @@ typedef struct {
   int num_seepage_patches;
 } PublicXtra;
 
-static int
+__host__ __device__ static int
 IsSeepagePatch(const PublicXtra *public_xtra,
                int               patch_id)
 {
@@ -2460,7 +2460,11 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
       if (count > 0)
       {
         int idx;
+#if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
+        public_xtra->seepage_patches = (int*)_ctalloc_device(sizeof(int) * count);
+#else
         public_xtra->seepage_patches = ctalloc(int, count);
+#endif
         for (idx = 0; idx < count; idx++)
         {
           char *entry = NA_IndexToName(patch_na, idx);
@@ -2568,7 +2572,11 @@ void  RichardsJacobianEvalFreePublicXtra()
   {
     if (public_xtra->seepage_patches)
     {
+#if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
+      _tfree_device(public_xtra->seepage_patches);
+#else
       tfree(public_xtra->seepage_patches);
+#endif
     }
     tfree(public_xtra);
   }
