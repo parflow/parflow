@@ -106,15 +106,12 @@ PopulateSeepagePatchesFromBCPressure(PublicXtra *public_xtra)
 
   /* If we already have seepage patches (from Solver.OverlandKinematic.SeepagePatches)
    * then respect that and do nothing here. */
-  amps_Printf("PopulateSeepagePatchesFromBCPressure: num_seepage_patches = %d\n", public_xtra->num_seepage_patches);
-  amps_Printf("PopulateSeepagePatchesFromBCPressure: seepage_patches = %p\n", public_xtra->seepage_patches);
   if (public_xtra->num_seepage_patches > 0 || public_xtra->seepage_patches != NULL)
   {
     return;
   }
 
   patch_names = GetStringDefault("BCPressure.PatchNames", NULL);
-  amps_Printf("PopulateSeepagePatchesFromBCPressure: patch_names = %s\n", patch_names);
   if (patch_names == NULL || patch_names[0] == '\0')
   {
     return;
@@ -122,7 +119,6 @@ PopulateSeepagePatchesFromBCPressure(PublicXtra *public_xtra)
 
   NameArray patches_na = NA_NewNameArray(patch_names);
   int num_patches = NA_Sizeof(patches_na);
-  amps_Printf("PopulateSeepagePatchesFromBCPressure: num_patches from patch_names array = %d\n", num_patches);
   if (num_patches <= 0)
   {
     NA_FreeNameArray(patches_na);
@@ -131,9 +127,7 @@ PopulateSeepagePatchesFromBCPressure(PublicXtra *public_xtra)
 
   char key[IDB_MAX_KEY_LEN];
   char *geom_name = GetString("Domain.GeomName");
-  amps_Printf("PopulateSeepagePatchesFromBCPressure: geom_name = %s\n", geom_name);
   int domain_index = NA_NameToIndexExitOnError(GlobalsGeomNames, geom_name, "Domain.GeomName");
-  amps_Printf("PopulateSeepagePatchesFromBCPressure: domain_index = %d\n", domain_index);
   int *tmp_ids = ctalloc(int, num_patches);
   int count = 0;
   NameArray switch_na = NA_NewNameArray("False True");
@@ -141,28 +135,23 @@ PopulateSeepagePatchesFromBCPressure(PublicXtra *public_xtra)
   for (int idx = 0; idx < num_patches; idx++)
   {
     char *patch_name = NA_IndexToName(patches_na, idx);
-    amps_Printf("PopulateSeepagePatchesFromBCPressure: patch_name = %s\n", patch_name);
-    /* Only consider patches that use the OverlandKinematic BC type */
+    /* Only consider patches that use the OverlandKinematic BC type and have Seepage = True */
     sprintf(key, "Patch.%s.BCPressure.Type", patch_name);
     char *type_name = GetStringDefault(key, NULL);
-    amps_Printf("PopulateSeepagePatchesFromBCPressure: type_name = %s\n", type_name);
     if (type_name == NULL || strcmp(type_name, "OverlandKinematic") != 0)
     {
       continue;
     }
 
     sprintf(key, "Patch.%s.BCPressure.Seepage", patch_name);
-    amps_Printf("PopulateSeepagePatchesFromBCPressure: seepage_flag key = %s\n", key);
     char *switch_name = GetStringDefault(key, "False");
     int seepage_flag = NA_NameToIndexExitOnError(switch_na, switch_name, key);
-    amps_Printf("PopulateSeepagePatchesFromBCPressure: seepage_flag = %d\n", seepage_flag);
     if (!seepage_flag)
     {
       continue;
     }
 
     int patch_id = NA_NameToIndex(GlobalsGeometries[domain_index]->patches, patch_name);
-    amps_Printf("PopulateSeepagePatchesFromBCPressure: patch_id = %d\n", patch_id);
     if (patch_id < 0)
     {
       amps_Printf("Invalid patch name <%s> in Patch.%s.BCPressure.Seepage\n", patch_name, patch_name);
@@ -171,16 +160,14 @@ PopulateSeepagePatchesFromBCPressure(PublicXtra *public_xtra)
     /* Add 1 to patch_id as the seepage patch implementation expects 1-indexed patch ids*/
     tmp_ids[count++] = patch_id + 1;
   }
-  amps_Printf("PopulateSeepagePatchesFromBCPressure: count after for loop = %d\n", count);
+
   if (count > 0)
   {
     public_xtra->seepage_patches = ctalloc(int, count);
     for (int i = 0; i < count; i++)
     {
       public_xtra->seepage_patches[i] = tmp_ids[i];
-      amps_Printf("PopulateSeepagePatchesFromBCPressure: seepage_patches[%d] = %d\n", i, public_xtra->seepage_patches[i]);
     }
-    amps_Printf("PopulateSeepagePatchesFromBCPressure: num_seepage_patches = %d\n", count);
     public_xtra->num_seepage_patches = count;
   }
 
