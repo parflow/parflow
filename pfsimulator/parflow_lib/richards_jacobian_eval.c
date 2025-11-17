@@ -69,7 +69,7 @@ typedef struct {
 
 static int
 IsSeepagePatch(const PublicXtra *public_xtra,
-               int patch_id)
+               int               patch_id)
 {
   int n;
 
@@ -180,7 +180,7 @@ PopulateSeepagePatchesFromBCPressure(PublicXtra *public_xtra)
       public_xtra->seepage_patches[i] = tmp_ids[i];
       amps_Printf("PopulateSeepagePatchesFromBCPressure: seepage_patches[%d] = %d\n", i, public_xtra->seepage_patches[i]);
     }
-    amps_Printf ("PopulateSeepagePatchesFromBCPressure: num_seepage_patches = %d\n", count);
+    amps_Printf("PopulateSeepagePatchesFromBCPressure: num_seepage_patches = %d\n", count);
     public_xtra->num_seepage_patches = count;
   }
 

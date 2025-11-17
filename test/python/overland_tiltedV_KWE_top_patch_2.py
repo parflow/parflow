@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# Running different configurations of tilted V with a seepage patch in the 
+# Running different configurations of tilted V with a seepage patch in the
 # middle of the channel
 # -----------------------------------------------------------------------------
 
@@ -193,7 +193,7 @@ overland.Patch.slope.BCPressure.Cycle = "rainrec"
 overland.Patch.slope.BCPressure.rain.Value = -0.01
 overland.Patch.slope.BCPressure.rec.Value = 0.0000
 overland.Patch.slope.BCPressure.Seepage = False
-    
+
 overland.Patch.channel.BCPressure.Type = "OverlandKinematic"
 overland.Patch.channel.BCPressure.Cycle = "rainrec"
 overland.Patch.channel.BCPressure.rain.Value = -0.001
@@ -246,7 +246,7 @@ overland.Solver.Nonlinear.Globalization = "LineSearch"
 overland.Solver.Linear.KrylovDimension = 50
 overland.Solver.Linear.MaxRestart = 2
 overland.Solver.OverlandKinematic.Epsilon = 1e-5
-#overland.Solver.OverlandKinematic.SeepagePatches = "5"
+# overland.Solver.OverlandKinematic.SeepagePatches = "5"
 
 overland.Solver.Linear.Preconditioner = "PFMG"
 overland.Solver.PrintSubsurf = False
