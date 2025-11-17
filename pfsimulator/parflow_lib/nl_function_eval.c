@@ -68,7 +68,7 @@ typedef struct {
   Vector       *qy;
 } InstanceXtra;
 
-static int
+__host__ __device__ static int
 IsSeepagePatch(const PublicXtra *public_xtra,
                int               patch_id)
 {

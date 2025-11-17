@@ -67,7 +67,7 @@ typedef struct {
   int num_seepage_patches;
 } PublicXtra;
 
-static int
+__host__ __device__ static int
 IsSeepagePatch(const PublicXtra *public_xtra,
                int               patch_id)
 {
