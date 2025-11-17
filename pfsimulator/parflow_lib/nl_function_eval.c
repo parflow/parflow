@@ -70,7 +70,7 @@ typedef struct {
 
 static int
 IsSeepagePatch(const PublicXtra *public_xtra,
-               int patch_id)
+               int               patch_id)
 {
   int n;
 
