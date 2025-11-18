@@ -323,7 +323,6 @@ LW_surface_press.Solver.TerrainFollowingGrid = True
 
 LW_surface_press.Solver.Nonlinear.MaxIter = 80
 LW_surface_press.Solver.Nonlinear.ResidualTol = 1e-5
-LW_surface_press.Solver.Nonlinear.EtaValue = 0.001
 
 LW_surface_press.Solver.PrintSubsurf = False
 LW_surface_press.Solver.Drop = 1e-20

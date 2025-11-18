@@ -53,6 +53,9 @@ typedef struct {
   int    *patch_indexes;  /* num_patches patch indexes */
   int    *cycle_numbers;  /* num_patches cycle numbers */
   void  **data;           /* num_patches pointers to Type structures */
+
+  int using_overland_flow;
+  int using_deep_aquifer;
 } PublicXtra;
 
 typedef struct {
@@ -584,6 +587,8 @@ PFModule  *BCPressurePackageNewPublicXtra(
     (public_xtra->patch_indexes) = ctalloc(int, num_patches);
     (public_xtra->cycle_numbers) = ctalloc(int, num_patches);
     (public_xtra->data) = ctalloc(void *, num_patches);
+    (public_xtra->using_overland_flow) = FALSE;
+    (public_xtra->using_deep_aquifer) = FALSE;
 
     /* Determine the domain geom index from domain name */
     switch_name = GetString("Domain.GeomName");
@@ -631,7 +636,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
 #if 0 /* Do not undef this block, it is example code not for actual use */
       /* Example flow for setting up TypeStruct for boundary conditions */
       /*
-       * switch yNewPatchType:
+       * switch NewPatchType:
        * {
        * // Allocate the struct, second parameter is whatever variable name you wish to use in this scope
        * NewTypeStruct(MyNewPatchType, data);
@@ -1045,6 +1050,24 @@ PFModule  *BCPressurePackageNewPublicXtra(
           break;
         } /* End DeepAquifer */
       } /* End switch types */
+
+      switch ((public_xtra)->input_types[(i)])
+      {
+        case OverlandFlow:
+        case OverlandFlowPFB:
+        case OverlandKinematic:
+        case OverlandDiffusive:
+        {
+          (public_xtra->using_overland_flow) = TRUE;
+          break;
+        }
+
+        case DeepAquifer:
+        {
+          (public_xtra->using_deep_aquifer) = TRUE;
+          break;
+        }
+      }
     } /* End for patches */
   } /* if patches */
 
@@ -1055,6 +1078,23 @@ PFModule  *BCPressurePackageNewPublicXtra(
   return this_module;
 }
 
+// This function is a hack to take information from the PublicXtra structure
+int BCPressurePackageUsingOverlandFlow(Problem *problem)
+{
+  PFModule *bc_pressure = ProblemBCPressurePackage(problem);
+  PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(bc_pressure);
+
+  return(public_xtra->using_overland_flow);
+}
+
+// This function is a hack to take information from the PublicXtra structure
+int BCPressurePackageUsingDeepAquifer(Problem *problem)
+{
+  PFModule *bc_pressure = ProblemBCPressurePackage(problem);
+  PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(bc_pressure);
+
+  return(public_xtra->using_deep_aquifer);
+}
 
 /*-------------------------------------------------------------------------
  * BCPressurePackageFreePublicXtra

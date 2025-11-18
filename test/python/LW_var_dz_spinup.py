@@ -330,7 +330,6 @@ LWvdz.Solver.TerrainFollowingGrid = True
 
 LWvdz.Solver.Nonlinear.MaxIter = 80
 LWvdz.Solver.Nonlinear.ResidualTol = 1e-5
-LWvdz.Solver.Nonlinear.EtaValue = 0.001
 
 LWvdz.Solver.PrintSubsurf = False
 LWvdz.Solver.Drop = 1e-20
