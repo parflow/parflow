@@ -339,30 +339,30 @@ make_solid_file(
 )
 
 overland.run(working_directory=new_output_dir_name, skip_validation=True)
-# if runcheck == 1:
-#     passed = True
-#     for i in range(20):
-#         timestep = str(i).rjust(5, "0")
-#         filename = f"/{run_name}.out.press.{timestep}.pfb"
-#         if not pf_test_file(
-#             new_output_dir_name + filename,
-#             correct_output_dir_name + filename,
-#             f"Max difference in Pressure for timestep {timestep}",
-#         ):
-#             passed = False
-#         filename = f"/{run_name}.out.satur.{timestep}.pfb"
-#         if not pf_test_file(
-#             new_output_dir_name + filename,
-#             correct_output_dir_name + filename,
-#             f"Max difference in Saturation for timestep {timestep}",
-#         ):
-#             passed = False
+if runcheck == 1:
+    passed = True
+    for i in range(20):
+        timestep = str(i).rjust(5, "0")
+        filename = f"/{run_name}.out.press.{timestep}.pfb"
+        if not pf_test_file(
+            new_output_dir_name + filename,
+            correct_output_dir_name + filename,
+            f"Max difference in Pressure for timestep {timestep}",
+        ):
+            passed = False
+        filename = f"/{run_name}.out.satur.{timestep}.pfb"
+        if not pf_test_file(
+            new_output_dir_name + filename,
+            correct_output_dir_name + filename,
+            f"Max difference in Saturation for timestep {timestep}",
+        ):
+            passed = False
 
-#     if passed:
-#         print(f"{run_name} : PASSED")
-#     else:
-#         print(f"{run_name} : FAILED")
-#         sys.exit(1)
+    if passed:
+        print(f"{run_name} : PASSED")
+    else:
+        print(f"{run_name} : FAILED")
+        sys.exit(1)
 
 # Yneg
 
@@ -418,30 +418,30 @@ make_solid_file(
 )
 
 overland.run(working_directory=new_output_dir_name, skip_validation=True)
-# if runcheck == 1:
-#     passed = True
-#     for i in range(20):
-#         timestep = str(i).rjust(5, "0")
-#         filename = f"/{run_name}.out.press.{timestep}.pfb"
-#         if not pf_test_file(
-#             new_output_dir_name + filename,
-#             correct_output_dir_name + filename,
-#             f"Max difference in Pressure for timestep {timestep}",
-#         ):
-#             passed = False
-#         filename = f"/{run_name}.out.satur.{timestep}.pfb"
-#         if not pf_test_file(
-#             new_output_dir_name + filename,
-#             correct_output_dir_name + filename,
-#             f"Max difference in Saturation for timestep {timestep}",
-#         ):
-#             passed = False
+if runcheck == 1:
+    passed = True
+    for i in range(20):
+        timestep = str(i).rjust(5, "0")
+        filename = f"/{run_name}.out.press.{timestep}.pfb"
+        if not pf_test_file(
+            new_output_dir_name + filename,
+            correct_output_dir_name + filename,
+            f"Max difference in Pressure for timestep {timestep}",
+        ):
+            passed = False
+        filename = f"/{run_name}.out.satur.{timestep}.pfb"
+        if not pf_test_file(
+            new_output_dir_name + filename,
+            correct_output_dir_name + filename,
+            f"Max difference in Saturation for timestep {timestep}",
+        ):
+            passed = False
 
-#     if passed:
-#         print(f"{run_name} : PASSED")
-#     else:
-#         print(f"{run_name} : FAILED")
-#         sys.exit(1)
+    if passed:
+        print(f"{run_name} : PASSED")
+    else:
+        print(f"{run_name} : FAILED")
+        sys.exit(1)
 
 
 # Xpos
@@ -498,30 +498,30 @@ make_solid_file(
 )
 
 overland.run(working_directory=new_output_dir_name, skip_validation=True)
-# if runcheck == 1:
-#     passed = True
-#     for i in range(20):
-#         timestep = str(i).rjust(5, "0")
-#         filename = f"/{run_name}.out.press.{timestep}.pfb"
-#         if not pf_test_file(
-#             new_output_dir_name + filename,
-#             correct_output_dir_name + filename,
-#             f"Max difference in Pressure for timestep {timestep}",
-#         ):
-#             passed = False
-#         filename = f"/{run_name}.out.satur.{timestep}.pfb"
-#         if not pf_test_file(
-#             new_output_dir_name + filename,
-#             correct_output_dir_name + filename,
-#             f"Max difference in Saturation for timestep {timestep}",
-#         ):
-#             passed = False
+if runcheck == 1:
+    passed = True
+    for i in range(20):
+        timestep = str(i).rjust(5, "0")
+        filename = f"/{run_name}.out.press.{timestep}.pfb"
+        if not pf_test_file(
+            new_output_dir_name + filename,
+            correct_output_dir_name + filename,
+            f"Max difference in Pressure for timestep {timestep}",
+        ):
+            passed = False
+        filename = f"/{run_name}.out.satur.{timestep}.pfb"
+        if not pf_test_file(
+            new_output_dir_name + filename,
+            correct_output_dir_name + filename,
+            f"Max difference in Saturation for timestep {timestep}",
+        ):
+            passed = False
 
-#     if passed:
-#         print(f"{run_name} : PASSED")
-#     else:
-#         print(f"{run_name} : FAILED")
-#         sys.exit(1)
+    if passed:
+        print(f"{run_name} : PASSED")
+    else:
+        print(f"{run_name} : FAILED")
+        sys.exit(1)
 
 # Xneg
 
@@ -577,27 +577,27 @@ make_solid_file(
 )
 
 overland.run(working_directory=new_output_dir_name, skip_validation=True)
-# if runcheck == 1:
-#     passed = True
-#     for i in range(20):
-#         timestep = str(i).rjust(5, "0")
-#         filename = f"/{run_name}.out.press.{timestep}.pfb"
-#         if not pf_test_file(
-#             new_output_dir_name + filename,
-#             correct_output_dir_name + filename,
-#             f"Max difference in Pressure for timestep {timestep}",
-#         ):
-#             passed = False
-#         filename = f"/{run_name}.out.satur.{timestep}.pfb"
-#         if not pf_test_file(
-#             new_output_dir_name + filename,
-#             correct_output_dir_name + filename,
-#             f"Max difference in Saturation for timestep {timestep}",
-#         ):
-#             passed = False
+if runcheck == 1:
+    passed = True
+    for i in range(20):
+        timestep = str(i).rjust(5, "0")
+        filename = f"/{run_name}.out.press.{timestep}.pfb"
+        if not pf_test_file(
+            new_output_dir_name + filename,
+            correct_output_dir_name + filename,
+            f"Max difference in Pressure for timestep {timestep}",
+        ):
+            passed = False
+        filename = f"/{run_name}.out.satur.{timestep}.pfb"
+        if not pf_test_file(
+            new_output_dir_name + filename,
+            correct_output_dir_name + filename,
+            f"Max difference in Saturation for timestep {timestep}",
+        ):
+            passed = False
 
-#     if passed:
-#         print(f"{run_name} : PASSED")
-#     else:
-#         print(f"{run_name} : FAILED")
-#         sys.exit(1)
+    if passed:
+        print(f"{run_name} : PASSED")
+    else:
+        print(f"{run_name} : FAILED")
+        sys.exit(1)
