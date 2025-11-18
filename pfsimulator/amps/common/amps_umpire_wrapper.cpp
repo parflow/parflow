@@ -9,66 +9,71 @@
 
 extern "C" {
 // -----------------------------------------------------------------------------
-// Helper function: determine the correct base allocator name based on backend.
+// Helper: Select correct Umpire memory resource based on active backend
 // -----------------------------------------------------------------------------
-static std::string get_base_allocator_name()
+static std::string get_resource_name()
 {
 #if defined(PARFLOW_HAVE_CUDA) || defined(KOKKOS_ENABLE_CUDA)
-  // Native CUDA or Kokkos-enabled CUDA
-  return "UM";  // Unified Memory
+  return "UM";
 #elif defined(KOKKOS_ENABLE_HIP)
-  // Kokkos-enabled HIP (AMD)
   return "DEVICE";
 #elif defined(KOKKOS_ENABLE_SYCL)
-  // Kokkos-enabled SYCL (Intel/oneAPI or other SYCL devices)
   return "UM";
 #elif defined(KOKKOS_ENABLE_OPENMP_TARGET)
-  // OpenMP offload targets (NVIDIA/AMD/Intel GPUs)
   return "UM";
-#else
-  // CPU-only fallback
+#else  // CPU-only fallback
   return "HOST";
 #endif
 }
 
 // -----------------------------------------------------------------------------
-// Initialize Umpire allocators and dynamic memory pools
+// Helper: Name of the pooled allocator constructed from the resource
 // -----------------------------------------------------------------------------
-void amps_umpireInit()
+static std::string get_pool_name()
 {
-  // Create a pool allocator
-  // Initial size (default: 512MB) and pool increase size (1MB) can be tuned in the constructor.
-  auto& rm = umpire::ResourceManager::getInstance();
-
-  std::string base_allocator_name = get_base_allocator_name();
-  auto base_alloc = rm.getAllocator(base_allocator_name);
-  auto pooled_alloc =
-    rm.makeAllocator<umpire::strategy::DynamicPoolList>(
-                                                        base_allocator_name + "_pool", base_alloc);
+  return get_resource_name() + "_pool";
 }
 
 // -----------------------------------------------------------------------------
-// Allocate memory using the correct pooled allocator
+// Initialize Umpire allocators and pool strategy.
+// -----------------------------------------------------------------------------
+void amps_umpireInit()
+{
+  auto& rm = umpire::ResourceManager::getInstance();
+  auto resource_name = get_resource_name();
+  auto resource_alloc = rm.getAllocator(resource_name);
+
+  // Construct a DynamicPoolList allocator with tunable sizes:
+  // - Initial pool size: 512 MB
+  // - Growth size: 1 MB
+  //
+  // Other parameters use defaults (but can also be tuned in the constructor):
+  //   * Allocation alignment: 16 bytes
+  //   * Coalescing heuristic: 100% releasable
+  //     (automatically coalesces when all bytes in the pool are releasable
+  //      and there is more than one block)
+  auto pooled_alloc =
+    rm.makeAllocator<umpire::strategy::DynamicPoolList>(
+                                                        get_pool_name(),
+                                                        resource_alloc,
+                                                        512 * 1024 * 1024, // initial size: 512 MB
+                                                        1 * 1024 * 1024 // growth size: 1 MB
+                                                        );
+}
+
+// -----------------------------------------------------------------------------
+// Alloc/Free from pool
 // -----------------------------------------------------------------------------
 void* amps_umpireAlloc(std::size_t bytes)
 {
-  auto& rm = umpire::ResourceManager::getInstance();
-  std::string pool_name = get_base_allocator_name() + "_pool";
-
-  auto alloc = rm.getAllocator(pool_name);
+  auto alloc = umpire::ResourceManager::getInstance().getAllocator(get_pool_name());
 
   return alloc.allocate(bytes);
 }
 
-// -----------------------------------------------------------------------------
-// Free memory using the corresponding pooled allocator
-// -----------------------------------------------------------------------------
 void amps_umpireFree(void* p)
 {
-  auto& rm = umpire::ResourceManager::getInstance();
-  std::string pool_name = get_base_allocator_name() + "_pool";
-
-  auto alloc = rm.getAllocator(pool_name);
+  auto alloc = umpire::ResourceManager::getInstance().getAllocator(get_pool_name());
 
   alloc.deallocate(p);
 }
