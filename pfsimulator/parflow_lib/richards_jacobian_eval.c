@@ -123,7 +123,6 @@ typedef struct {
   Vector       *bottom_KE_der;
   Vector       *bottom_KN_der;
   Vector       *bottom_KS_der;
-
 } InstanceXtra;
 
 /*--------------------------------------------------------------------------
@@ -1014,7 +1013,7 @@ void    RichardsJacobianEval(
       knns_der = SubvectorData(knns_sub);
       ksns_der = SubvectorData(ksns_sub);
     }
-    
+
     /* Deep Aquifer variables */
     if ((instance_xtra->using_deep_aquifer) == TRUE)
     {
@@ -2143,7 +2142,7 @@ void    RichardsJacobianEval(
     }             /* End subgrid loop */
   }
 
-  /* Construct jacobian matrix for bottom surface 
+  /* Construct jacobian matrix for bottom surface
    * we assume a flat bottom, so there is no separation
    * between JC and JB like in the case of Overland */
   ForSubgridI(is, GridSubgrids(grid))

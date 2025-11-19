@@ -72,7 +72,6 @@ typedef struct {
   Vector       *bottom_KE;
   Vector       *bottom_KN;
   Vector       *bottom_KS;
-
 } InstanceXtra;
 
 /*---------------------------------------------------------------------
