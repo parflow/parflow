@@ -853,9 +853,10 @@ class ParflowBinaryReader:
         y_min = np.min(y_sg_coords)
         z_min = np.min(z_sg_coords)
         # Make an array which can fit all of the subgrids
-        full_size = (len(x_sg_coords), len(y_sg_coords), len(z_sg_coords))
+        full_size = (len(z_sg_coords), len(y_sg_coords), len(x_sg_coords))
         bounding_data = np.empty(full_size, dtype=np.float64)
         subgrid_iter = itertools.product(p_subgrids, q_subgrids, r_subgrids)
+
         for xsg, ysg, zsg in subgrid_iter:
             subgrid_idx = xsg + (p * ysg) + (p * q * zsg)
             # Set up the indices to insert subgrid data into the bounding data
@@ -863,16 +864,17 @@ class ParflowBinaryReader:
             x0, y0, z0 = x0 - x_min, y0 - y_min, z0 - z_min
             dx, dy, dz = self.subgrid_shapes[subgrid_idx]
             x1, y1, z1 = x0 + dx, y0 + dy, z0 + dz
-            bounding_data[x0:x1, y0:y1, z0:z1] = self.iloc_subgrid(subgrid_idx)
+            bounding_data[z0:z1, y0:y1, x0:x1] = self.iloc_subgrid(subgrid_idx).T
 
         # Now clip out the exact part from the bounding box
         clip_x = _get_final_clip(start_x, end_x, x_sg_coords)
         clip_y = _get_final_clip(start_y, end_y, y_sg_coords)
         clip_z = _get_final_clip(start_z, end_z, z_sg_coords)
         if z_first:
-            ret_data = bounding_data[clip_x, clip_y, clip_z].T
+            ret_data = bounding_data[clip_z, clip_y, clip_x]
         else:
-            ret_data = bounding_data[clip_x, clip_y, clip_z]
+            ret_data = bounding_data[clip_z, clip_y, clip_x].T
+
         return ret_data
 
     def loc_subgrid(self, sg_p: int, sg_q: int, sg_r: int) -> np.ndarray:
