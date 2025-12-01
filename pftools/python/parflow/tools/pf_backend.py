@@ -593,7 +593,7 @@ class ParflowBackendArray(BackendArray):
             if self.z_first:
                 _dims = ["time", "z", "y", "x"]
             else:
-                _dims = ["time", "x", "y", "x"]
+                _dims = ["time", "x", "y", "z"]
         # Add some logic for dealing with clm output's inconsistent format
         if self.init_key:
             for i, (dim, size) in enumerate(zip(_dims, _shape)):
