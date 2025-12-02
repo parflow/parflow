@@ -4452,6 +4452,42 @@ minimum value for the :math:`\bar{S_{f}}` used in the
       pfset Solver.OverlandKinematic.Epsilon 1E-7           ## TCL syntax
 
       <runname>.Solver.OverlandKinematic.Epsilon = 1E-7     ## Python syntax
+  
+
+Mixed Boundary Conditions  
+
+If the top boundary is set to **OverlandKinematic** and a pfsolid file is used, this solid file can have multiple patches with mixed boundary conditions.  One patch is assigned to the overland kinematic, and up to two more patches can be assigned to seepage face cells mixed in with the overland flow.
+
+*integer* **Solver.OverlandKinematic.SeepageOne** -999  
+
+This key sets the first of two available patch values for mixed boundary conditions. Default value -999 has the meaning "Off" or "Does not apply".
+
+::
+   pfset Solver.OverlandKinematic.SeepageOne 3           ## TCL syntax
+
+   <runname>.Solver.OverlandKinematic.SeepageOne = 3    ## Python syntax
+
+*integer* **Solver.OverlandKinematic.SeepageTwo** -999 This key sets the second of two available patch values for mixed boundary conditions. Default value -999 has the meaning "Off" or "Does not apply".
+
+::
+
+   pfset Solver.OverlandKinematic.SeepageTwo 4           ## TCL syntax
+
+   <runname>.Solver.OverlandKinematic.SeepageTwo = 4    ## Python syntax
+
+Example of mixed boundary conditions: 
+
+::
+   CONUS2.Geom.domain.Patches = "ocean land top lake sink bottom"
+   CONUS2.BCPressure.PatchNames ="ocean land top lake sink bottom"
+
+In this example, the top gets assigned to the **OverlandKinematic** BC (below) and the sink and bottom (patch 3 and patch 4 starting from zero) get assigned **SeepageFace**.
+ 
+::
+   
+   CONUS2.Patch.top.BCPressure.Type = 'OverlandKinematic'
+   CONUS2.Solver.OverlandKinematic.SeepageOne = 3  
+   CONUS2.Solver.OverlandKinematic.SeepageTwo = 4
 
 
 *string* **Solver.PrintInitialConditions** True This key is used to
