@@ -236,7 +236,7 @@ overland.Solver = "Richards"
 overland.Solver.MaxIter = 2500
 
 overland.Solver.Nonlinear.MaxIter = 100
-overland.Solver.Nonlinear.ResidualTol = 1e-9
+overland.Solver.Nonlinear.ResidualTol = 1e-10
 overland.Solver.Nonlinear.EtaChoice = "EtaConstant"
 overland.Solver.Nonlinear.EtaValue = 1e-5
 overland.Solver.Nonlinear.UseJacobian = True
