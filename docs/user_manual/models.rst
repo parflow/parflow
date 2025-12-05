@@ -317,6 +317,64 @@ assumes that the user provides face centered bedslopes
 (:math:`S_{o,i}`). This is different from the original formulation which
 assumes the user provides grid cenered bedslopes.
 
+.. _Deep Aquifer:
+
+Deep Aquifer
+------------
+
+In the bottom of the domain, ParFlow is able to simulate the interaction
+with a deep aquifer, as given in :cite:t:`Rahman2018`. While complete details
+of this approach are given in that paper, a brief summary of the equations
+solved are presented here.
+
+In two spatial dimensions, the equations of transient groundwater flow
+in an unconfined aquifer can be written as:
+
+.. math::
+   :label: unconfined_aquifer
+
+   \begin{aligned}
+   S_{y} \frac{\partial h}{\partial t} = \nabla \cdot \left( T_{r} \nabla h \right) + q_{r} \\
+   h = \Delta z_{a} / 2  + \Psi_{a}
+   \end{aligned}
+
+where :math:`S_{y}` is the specific yield :math:`[-]`, :math:`h` is the depth
+integrated hydraulic head in the aquifer :math:`[L]`, :math:`T_{r}` is the
+transmissivity of the aquifer :math:`[L^2 T^{-1}]`, :math:`q_{r}` is the
+recharge / discharge rate :math:`[L T^{-1}]`, :math:`\Delta z_{a}` is the
+aquifer thickness :math:`[L]`, and :math:`\Psi_{a}` is the pressure head in the
+aquifer :math:`[L]`. Note that :math:`T_{r}` is calculated by integrating
+:math:`K_{s}` over :math:`h`. This approach assumes that the variation of the
+saturated depth (:math:`\Delta h`) is negligible compared to its absolute value
+(i.e., :math:`\Delta h \ll h`).
+
+If the recharge rate of the aquifer is set to the flow across the bottom
+surface, then that flux can be written as:
+
+.. math::
+   :label: deep_aquifer_flux
+
+   \begin{aligned}
+   - {\bf n} \cdot {\bf K}_{s} K_{r} \nabla \left( \psi - z \right) = 
+   S_{y} \frac{\partial h}{\partial t} - \nabla \cdot \left( T_{r} \nabla h \right)
+   \end{aligned}
+
+where :math:`\psi` is the pressure head in the interface betwee the bottom of
+the domain and the aquifer.
+
+In this boundary condition, two major assumptions are made. First, the
+negligible variability of saturated depth compared to its absolute value
+(i.e., :math:`\Delta h \ll h`). Second, the linear interpolation of the
+pressure between the aquifer and the overlying soil layer.
+
+**Implementation notes:**
+1) At the moment, this boundary condition is only available for domains with
+a flat bottom.
+2) Only one patch on the bottom may be set to this boundary condition. Setting
+two patches to this boundary condition will result in undefined behaviour.
+3) Finally, the parameters of the boundary condition do not change with the
+time cycles.
+
 .. _Multi-Phase Flow Equations:
 
 Multi-Phase Flow Equations

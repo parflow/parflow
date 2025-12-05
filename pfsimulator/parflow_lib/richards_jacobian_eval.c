@@ -76,6 +76,7 @@ typedef struct {
   PFModule     *overlandflow_module;  //DOK
   PFModule     *overlandflow_module_diff;  //@LEC
   PFModule     *overlandflow_module_kin;
+  PFModule     *deepaquifer_module;
 
   /* The analytic Jacobian matrix is decomposed as follows:
    *
@@ -115,6 +116,13 @@ typedef struct {
   Vector       *KEns;
   Vector       *KNns;
   Vector       *KSns;
+
+  // Deep Aquifer variables
+  int using_deep_aquifer;
+  Vector       *bottom_KW_der;
+  Vector       *bottom_KE_der;
+  Vector       *bottom_KN_der;
+  Vector       *bottom_KS_der;
 } InstanceXtra;
 
 /*--------------------------------------------------------------------------
@@ -244,6 +252,7 @@ void    RichardsJacobianEval(
   PFModule    *overlandflow_module = (instance_xtra->overlandflow_module);
   PFModule    *overlandflow_module_diff = (instance_xtra->overlandflow_module_diff);
   PFModule    *overlandflow_module_kin = (instance_xtra->overlandflow_module_kin);
+  PFModule    *deepaquifer_module = (instance_xtra->deepaquifer_module);
 
   Matrix      *J = (instance_xtra->J);
   Matrix      *JC = (instance_xtra->JC);
@@ -261,6 +270,7 @@ void    RichardsJacobianEval(
   Vector      *permeability_z = ProblemDataPermeabilityZ(problem_data);
   Vector      *sstorage = ProblemDataSpecificStorage(problem_data);           //sk
   Vector      *top = ProblemDataIndexOfDomainTop(problem_data);               //DOK
+  Vector      *bottom = ProblemDataIndexOfDomainBottom(problem_data);
   Vector      *slope_x = ProblemDataTSlopeX(problem_data);                //DOK
 
   /* Overland flow variables */  //DOK
@@ -272,9 +282,16 @@ void    RichardsJacobianEval(
   Vector      *KEns = (instance_xtra->KEns);
   Vector      *KNns = (instance_xtra->KNns);
   Vector      *KSns = (instance_xtra->KSns);
-  Subvector   *kw_sub, *ke_sub, *kn_sub, *ks_sub, *kwns_sub, *kens_sub, *knns_sub, *ksns_sub, *top_sub, *sx_sub;
+  Subvector   *kw_sub, *ke_sub, *kn_sub, *ks_sub, *kwns_sub, *kens_sub, *knns_sub, *ksns_sub, *top_sub, *bottom_sub, *sx_sub;
   double      *kw_der, *ke_der, *kn_der, *ks_der, *kwns_der, *kens_der, *knns_der, *ksns_der;
 
+  /* Deep Aquifer variables */
+  Vector      *bottom_KW_der = (instance_xtra->bottom_KW_der);
+  Vector      *bottom_KE_der = (instance_xtra->bottom_KE_der);
+  Vector      *bottom_KN_der = (instance_xtra->bottom_KN_der);
+  Vector      *bottom_KS_der = (instance_xtra->bottom_KS_der);
+  Subvector   *bkw_der_sub, *bke_der_sub, *bkn_der_sub, *bks_der_sub;;
+  double      *bkw_der, *bke_der, *bkn_der, *bks_der;
   double gravity = ProblemGravity(problem);
   double viscosity = ProblemPhaseViscosity(problem, 0);
 
@@ -358,6 +375,14 @@ void    RichardsJacobianEval(
     InitVectorAll(KEns, 0.0);
     InitVectorAll(KNns, 0.0);
     InitVectorAll(KSns, 0.0);
+  }
+
+  if ((instance_xtra->using_deep_aquifer) == TRUE)
+  {
+    InitVectorAll(bottom_KW_der, 0.0);
+    InitVectorAll(bottom_KE_der, 0.0);
+    InitVectorAll(bottom_KN_der, 0.0);
+    InitVectorAll(bottom_KS_der, 0.0);
   }
 
   // SGS set this to 1 since the off/on behavior does not work in
@@ -954,6 +979,7 @@ void    RichardsJacobianEval(
   {
     subgrid = GridSubgrid(grid, is);
 
+    bottom_sub = VectorSubvector(bottom, is);
     p_sub = VectorSubvector(pressure, is);
     s_sub = VectorSubvector(saturation, is);
     dd_sub = VectorSubvector(density_der, is);
@@ -986,6 +1012,20 @@ void    RichardsJacobianEval(
       kens_der = SubvectorData(kens_sub);
       knns_der = SubvectorData(knns_sub);
       ksns_der = SubvectorData(ksns_sub);
+    }
+
+    /* Deep Aquifer variables */
+    if ((instance_xtra->using_deep_aquifer) == TRUE)
+    {
+      bkw_der_sub = VectorSubvector(bottom_KW_der, is);
+      bke_der_sub = VectorSubvector(bottom_KE_der, is);
+      bkn_der_sub = VectorSubvector(bottom_KN_der, is);
+      bks_der_sub = VectorSubvector(bottom_KS_der, is);
+
+      bkw_der = SubvectorData(bkw_der_sub);
+      bke_der = SubvectorData(bke_der_sub);
+      bkn_der = SubvectorData(bkn_der_sub);
+      bks_der = SubvectorData(bks_der_sub);
     }
 
     dx = SubgridDX(subgrid);
@@ -1409,6 +1449,32 @@ void    RichardsJacobianEval(
                             kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
       })
                            ); /* End OverlandDiffusiveBC */
+
+      ForPatchCellsPerFace(DeepAquiferBC,
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int im; double *op; ),
+                           CellSetup(
+      {
+        im = SubmatrixEltIndex(J_sub, i, j, k);
+      }),
+                           FACE(LeftFace, { op = wp; }),
+                           FACE(RightFace, { op = ep; }),
+                           FACE(DownFace, { op = sop; }),
+                           FACE(UpFace, { op = np; }),
+                           FACE(BackFace, { op = lp; }),
+                           FACE(FrontFace, { op = up; }),
+                           CellFinalize({
+        PlusEquals(cp[im], op[im]);
+        op[im] = 0.0;
+      }),
+                           AfterAllCells(
+      {
+        PFModuleInvokeType(DeepAquiferEvalInvoke, deepaquifer_module,
+                           (problem_data, pressure, bc_struct, ipatch, is,
+                            bke_der, bkw_der, bkn_der, bks_der, CALCDER));
+      })
+                           ); /* End DeepAquiferBC */
     } /* End ipatch loop */
   }            /* End subgrid loop */
 
@@ -1455,6 +1521,22 @@ void    RichardsJacobianEval(
       vector_update_handle = InitVectorUpdate(KNns, VectorUpdateAll);
       FinalizeVectorUpdate(vector_update_handle);
     }
+  }
+
+  if ((instance_xtra->using_deep_aquifer) == TRUE)
+  {
+    /* Pass KW values to neighbors.  */
+    vector_update_handle = InitVectorUpdate(bottom_KW_der, VectorUpdateAll);
+    FinalizeVectorUpdate(vector_update_handle);
+    /* Pass KE values to neighbors.  */
+    vector_update_handle = InitVectorUpdate(bottom_KE_der, VectorUpdateAll);
+    FinalizeVectorUpdate(vector_update_handle);
+    /* Pass KS values to neighbors.  */
+    vector_update_handle = InitVectorUpdate(bottom_KS_der, VectorUpdateAll);
+    FinalizeVectorUpdate(vector_update_handle);
+    /* Pass KN values to neighbors.  */
+    vector_update_handle = InitVectorUpdate(bottom_KN_der, VectorUpdateAll);
+    FinalizeVectorUpdate(vector_update_handle);
   }
 
   /* Build submatrix JC if overland flow case and *not* MGSemi*/
@@ -2060,6 +2142,119 @@ void    RichardsJacobianEval(
     }             /* End subgrid loop */
   }
 
+  /* Construct jacobian matrix for bottom surface
+   * we assume a flat bottom, so there is no separation
+   * between JC and JB like in the case of Overland */
+  ForSubgridI(is, GridSubgrids(grid))
+  {
+    subgrid = GridSubgrid(grid, is);
+    dx = SubgridDX(subgrid);
+    dy = SubgridDY(subgrid);
+    dz = SubgridDZ(subgrid);
+
+    bottom_sub = VectorSubvector(bottom, is);
+
+    J_sub = MatrixSubmatrix(J, is);
+
+    if ((instance_xtra->using_deep_aquifer) == TRUE)
+    {
+      bkw_der_sub = VectorSubvector(bottom_KW_der, is);
+      bke_der_sub = VectorSubvector(bottom_KE_der, is);
+      bkn_der_sub = VectorSubvector(bottom_KN_der, is);
+      bks_der_sub = VectorSubvector(bottom_KS_der, is);
+
+      bkw_der = SubvectorData(bkw_der_sub);
+      bke_der = SubvectorData(bke_der_sub);
+      bkn_der = SubvectorData(bkn_der_sub);
+      bks_der = SubvectorData(bks_der_sub);
+    }
+
+    /* for Bmat */
+    cp = SubmatrixStencilData(J_sub, 0);
+    wp = SubmatrixStencilData(J_sub, 1);
+    ep = SubmatrixStencilData(J_sub, 2);
+    sop = SubmatrixStencilData(J_sub, 3);
+    np = SubmatrixStencilData(J_sub, 4);
+    lp = SubmatrixStencilData(J_sub, 5);
+    up = SubmatrixStencilData(J_sub, 6);
+
+    ForBCStructNumPatches(ipatch, bc_struct)
+    {
+      ForPatchCellsPerFace(DeepAquiferBC,
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int im, ibot_c;
+                                  int ibot_w, ibot_e, ibot_s, ibot_n;
+                                  double use_off_diagonals = symm_part == TRUE ? 0.0 : 1.0;
+                                  double dxdy = dx * dy;
+                                  double dtdx_over_dy = dt * dx / dy;
+                                  double dtdy_over_dx = dt * dy / dx;
+                                  Vector *Sy_v = NULL;
+                                  Subvector *Sy_sub = NULL;
+                                  double *Sy = NULL;
+                                  double q_storage_der = 0.0;
+                                  double q_divergence_der = 0.0;
+                                  double west_der = 0.0;
+                                  double east_der = 0.0;
+                                  double north_der = 0.0;
+                                  double south_der = 0.0;
+                                  double *op; ),
+                           CellSetup(
+      {
+        im = SubmatrixEltIndex(J_sub, i, j, k);
+        ibot_c = SubvectorEltIndex(bottom_sub, i, j, 0);
+        ibot_w = SubvectorEltIndex(bottom_sub, i - 1, j, 0);
+        ibot_e = SubvectorEltIndex(bottom_sub, i + 1, j, 0);
+        ibot_s = SubvectorEltIndex(bottom_sub, i, j - 1, 0);
+        ibot_n = SubvectorEltIndex(bottom_sub, i, j + 1, 0);
+
+        Sy_v = ProblemDataDeepAquiferSpecificYield(problem_data);
+        Sy_sub = VectorSubvector(Sy_v, is);
+        Sy = SubvectorData(Sy_sub);
+
+        q_storage_der = 0.0;
+        q_divergence_der = 0.0;
+        west_der = 0.0;
+        east_der = 0.0;
+        north_der = 0.0;
+        south_der = 0.0;
+      }),
+                           FACE(LeftFace, { op = wp; }),
+                           FACE(RightFace, { op = ep; }),
+                           FACE(DownFace, { op = sop; }),
+                           FACE(UpFace, { op = np; }),
+                           FACE(BackFace,
+      {
+        op = lp;
+
+        // add storage term derivatives' contribution to diagonal
+        q_storage_der = dxdy * Sy[ibot_c];
+        // add divergence term derivatives' contribution to diagonal
+        q_divergence_der = dtdy_over_dx * (bke_der[ibot_c] - bkw_der[ibot_c]) + dtdx_over_dy * (bkn_der[ibot_c] - bks_der[ibot_c]);
+        // add divergence term derivatives' contribution to adjacents
+        west_der = dtdy_over_dx * bke_der[ibot_w];
+        east_der = -dtdy_over_dx * bkw_der[ibot_e];
+        south_der = dtdx_over_dy * bkn_der[ibot_s];
+        north_der = -dtdx_over_dy * bks_der[ibot_n];
+      }),
+                           FACE(FrontFace, { op = up; }),
+                           CellFinalize({
+        PlusEquals(cp[im], op[im]);
+        op[im] = 0.0;
+
+        // add storage and divergence term derivatives' contribution to diagonal
+        PlusEquals(cp[im], q_storage_der - q_divergence_der);
+        // add divergence term derivatives' contribution to adjacents
+        PlusEquals(wp[im], use_off_diagonals * west_der);
+        PlusEquals(ep[im], use_off_diagonals * east_der);
+        PlusEquals(sop[im], use_off_diagonals * south_der);
+        PlusEquals(np[im], use_off_diagonals * north_der);
+      }),
+                           AfterAllCells(DoNothing)
+                           ); /* End DeepAquiferBC */
+    } /* End ipatch loop */
+  } /* End subgrid loop */
+
   /* Set pressures outside domain to zero.
    * Recall: equation to solve is f = 0, so components of f outside
    * domain are set to the respective pressure value.
@@ -2255,6 +2450,8 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
       PFModuleNewInstance(ProblemOverlandFlowEvalDiff(problem), ());   //RMM-LEC
     (instance_xtra->overlandflow_module_kin)
       = PFModuleNewInstance(ProblemOverlandFlowEvalKin(problem), ());
+    (instance_xtra->deepaquifer_module) =
+      PFModuleNewInstance(ProblemDeepAquiferEval(problem), ());
 
     // Allocate vectors for the derivatives
     (instance_xtra->density_der) = NewVectorType(grid, 1, 1, vector_cell_centered);
@@ -2296,6 +2493,22 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
       (instance_xtra->KNns) = NULL;
       (instance_xtra->KSns) = NULL;
     }
+
+    (instance_xtra->using_deep_aquifer) = BCPressurePackageUsingDeepAquifer(problem);
+    if ((instance_xtra->using_deep_aquifer) == TRUE)
+    {
+      (instance_xtra->bottom_KW_der) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->bottom_KE_der) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->bottom_KN_der) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->bottom_KS_der) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+    }
+    else
+    {
+      (instance_xtra->bottom_KW_der) = NULL;
+      (instance_xtra->bottom_KE_der) = NULL;
+      (instance_xtra->bottom_KN_der) = NULL;
+      (instance_xtra->bottom_KS_der) = NULL;
+    }
   }
   else
   {
@@ -2309,6 +2522,7 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
     PFModuleReNewInstance((instance_xtra->overlandflow_module), ());     //DOK
     PFModuleReNewInstance((instance_xtra->overlandflow_module_diff), ());      //RMM-LEC
     PFModuleReNewInstance((instance_xtra->overlandflow_module_kin), ());
+    PFModuleReNewInstance((instance_xtra->deepaquifer_module), ());
   }
 
 
@@ -2328,6 +2542,14 @@ void  RichardsJacobianEvalFreeInstanceXtra()
 
   if (instance_xtra)
   {
+    if ((instance_xtra->using_deep_aquifer) == TRUE)
+    {
+      FreeVector(instance_xtra->bottom_KS_der);
+      FreeVector(instance_xtra->bottom_KN_der);
+      FreeVector(instance_xtra->bottom_KE_der);
+      FreeVector(instance_xtra->bottom_KW_der);
+    }
+
     if ((instance_xtra->using_overland_flow) == TRUE)
     {
       FreeVector(instance_xtra->KSns);
@@ -2343,6 +2565,7 @@ void  RichardsJacobianEvalFreeInstanceXtra()
     FreeVector(instance_xtra->saturation_der);
     FreeVector(instance_xtra->density_der);
 
+    PFModuleFreeInstance(instance_xtra->deepaquifer_module);
     PFModuleFreeInstance(instance_xtra->overlandflow_module_kin);
     PFModuleFreeInstance(instance_xtra->overlandflow_module_diff);       //RMM-LEC
     PFModuleFreeInstance(instance_xtra->overlandflow_module);     //DOK

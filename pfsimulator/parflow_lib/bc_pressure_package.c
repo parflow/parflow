@@ -55,6 +55,7 @@ typedef struct {
   void  **data;           /* num_patches pointers to Type structures */
 
   int using_overland_flow;
+  int using_deep_aquifer;
 } PublicXtra;
 
 typedef struct {
@@ -441,6 +442,33 @@ void         BCPressurePackage(
             break;
           } /* End OverlandDiffusive */
 
+          /* Set up DeepAquifer condition structure */
+          case DeepAquifer:
+          {
+            /* Set deep aquifer parameters */
+            GetTypeStruct(DeepAquifer, data, public_xtra, i);
+            if ((data->is_initialized) == FALSE)
+            {
+              SetDeepAquiferPermeability(problem_data);
+              SetDeepAquiferSpecificYield(problem_data);
+              SetDeepAquiferAquiferDepth(problem_data);
+              SetDeepAquiferElevation(problem_data);
+              DeepAquiferCheckPermeabilityTensorValues();
+              (data->is_initialized) = TRUE;
+            }
+
+            NewBCPressureTypeStruct(DeepAquifer, interval_data);
+
+            BCPressureDataBCType(bc_pressure_data, i) = DeepAquiferBC;
+
+            /* No additional parameters in interval_data to set */
+
+            BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
+              = (void*)interval_data;
+
+            break;
+          }
+
           default:
           {
             PARFLOW_ERROR("Invalid BC input type");
@@ -560,6 +588,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
     (public_xtra->cycle_numbers) = ctalloc(int, num_patches);
     (public_xtra->data) = ctalloc(void *, num_patches);
     (public_xtra->using_overland_flow) = FALSE;
+    (public_xtra->using_deep_aquifer) = FALSE;
 
     /* Determine the domain geom index from domain name */
     switch_name = GetString("Domain.GeomName");
@@ -1011,6 +1040,15 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
           break;
         } /* End OverlandDiffusive */
+
+        case DeepAquifer:
+        {
+          NewTypeStruct(DeepAquifer, data);
+          (data->is_initialized) = FALSE;
+          /* No additional parameters to set */
+          StoreTypeStruct(public_xtra, data, i);
+          break;
+        } /* End DeepAquifer */
       } /* End switch types */
 
       switch ((public_xtra)->input_types[(i)])
@@ -1021,6 +1059,12 @@ PFModule  *BCPressurePackageNewPublicXtra(
         case OverlandDiffusive:
         {
           (public_xtra->using_overland_flow) = TRUE;
+          break;
+        }
+
+        case DeepAquifer:
+        {
+          (public_xtra->using_deep_aquifer) = TRUE;
           break;
         }
       }
@@ -1041,6 +1085,15 @@ int BCPressurePackageUsingOverlandFlow(Problem *problem)
   PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(bc_pressure);
 
   return(public_xtra->using_overland_flow);
+}
+
+// This function is a hack to take information from the PublicXtra structure
+int BCPressurePackageUsingDeepAquifer(Problem *problem)
+{
+  PFModule *bc_pressure = ProblemBCPressurePackage(problem);
+  PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(bc_pressure);
+
+  return(public_xtra->using_deep_aquifer);
 }
 
 /*-------------------------------------------------------------------------
@@ -1189,6 +1242,14 @@ void  BCPressurePackageFreePublicXtra()
           {
             GetTypeStruct(OverlandDiffusive, data, public_xtra, i);
             tfree(data->values);
+            tfree(data);
+            break;
+          }
+
+          case DeepAquifer:
+          {
+            GetTypeStruct(DeepAquifer, data, public_xtra, i);
+            /* nothing inside data to free */
             tfree(data);
             break;
           }
