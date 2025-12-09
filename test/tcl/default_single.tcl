@@ -10,7 +10,6 @@ namespace import Parflow::*
 # File input version number
 #-----------------------------------------------------------------------------
 pfset FileVersion 4
-pfwritedb default_single
 
 #-----------------------------------------------------------------------------
 # Process Topology

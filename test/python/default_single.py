@@ -347,7 +347,7 @@ default_single.Solver.AbsTol = 1e-25
 
 new_output_dir_name = get_absolute_path("test_output/default_single")
 mkdir(new_output_dir_name)
-default_single.run(working_directory=new_output_dir_name)
+default_single.run(working_directory=new_output_dir_name, undist=True)
 
 # -----------------------------------------------------------------------------
 # Check results for regression
