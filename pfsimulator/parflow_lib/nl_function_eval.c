@@ -68,6 +68,13 @@ typedef struct {
   Vector       *qy;
 } InstanceXtra;
 
+/**
+* @brief Returns true if the specified patch_id is a Seepage patch
+*
+* @param publix_xtra nl_function publix extra
+* @param patch_id Patch id to check
+* @return True If patch is a Seepage patch 
+*/
 __host__ __device__ static int
 IsSeepagePatch(const PublicXtra *public_xtra,
                int               patch_id)
@@ -91,15 +98,16 @@ IsSeepagePatch(const PublicXtra *public_xtra,
 }
 
 
-/*---------------------------------------------------------------------
- * Helper to populate seepage patches from BCPressure.Seepage flags
- *
- * This allows users to specify seepage patches one-by-one as:
- *   Patch.<patch_name>.BCPressure.Seepage = True
- *
- * We translate these patch-level flags into the integer patch ids
- * used internally by the seepage patch logic.
- *---------------------------------------------------------------------*/
+/**
+* @brief Populate Seepage patch information from input database
+*
+* Parses input database and builds lookup table to identify which patch_id's are
+* Seepage patches.   Seepage patches are specified using the input key: 
+*   Patch.<patch_name>.BCPressure.Seepage = True
+*
+* @param publix_xtra nl_function publix extra
+* @return None 
+*/
 static void
 PopulateSeepagePatchesFromBCPressure(PublicXtra *public_xtra)
 {
@@ -2057,11 +2065,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
         if (IsSeepagePatch(public_xtra, (int)patch_dat[io]))
         {
           q_overlnd = vol
-                      * (pfmax(pp[ip], 0.0) - 0.0) / dz; //+
-          //* dt* (pfmax(pp[ip], 0.0) -0.0) / dz + //RMM, why is dt multiplied by the first term?
-          // dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy)
-          // / dz;
-          //printf("Current seepage patch %d at surface index %d (%d,%d,%d)\n",(int)patch_dat[io], io, i, j, k);
+                      * (pfmax(pp[ip], 0.0) - 0.0) / dz; 
         }
         else
         {

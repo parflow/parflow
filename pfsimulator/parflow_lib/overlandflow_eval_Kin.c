@@ -147,8 +147,6 @@ void    OverlandFlowEvalKin(
       p1 = (int)patch_dat[ipat];
       p0x = (int)patch_dat[ipat - 1];
       p0y = (int)patch_dat[ipat - sy_v];
-      //printf("Current Patch %d, lower x %d, lower y %d, (%d,%d,%d)\n",p1, p0x, p0y, i,j,k);
-      //printf("Current top %d, lower x %d, lower y %d, (%d,%d,%d)\n",k1, k0x, k0y, i,j,k);
 
       if (k1 >= 0)
       {
@@ -344,15 +342,6 @@ void    OverlandFlowEvalKin(
 
         qx_temp = -(5.0 / 3.0) * (Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_x, (2.0 / 3.0));
         qy_temp = -(5.0 / 3.0) * (Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_y, (2.0 / 3.0));
-        //ke_v[io] = qx_temp;
-        //kn_v[io] = qy_temp;
-        //kw_v[io+1] = qx_temp;
-        //ks_v[io+sy_v] = qy_temp;
-
-        //ke_v[io] = qx_v[io];**
-        //kw_v[io] = qx_v[io - 1];
-        //kn_v[io] = qy_v[io];**
-        //ks_v[io] = qy_v[io - sy_v];
 
         ke_v[io] = pfmax(qx_temp, 0);
         kw_v[io + 1] = -pfmax(-qx_temp, 0);
@@ -360,7 +349,7 @@ void    OverlandFlowEvalKin(
         ks_v[io + sy_v] = -pfmax(-qy_temp, 0);
       }
 
-// fix for internal patch edges in x direction
+      // fix for internal patch edges in x direction
       if (p1 != p0x)
       {
         if (k1 >= 0)
@@ -425,10 +414,7 @@ void    OverlandFlowEvalKin(
             ip = SubvectorEltIndex(p_sub, i, j, k1);
             Press_x = pfmax((pp[ip]), 0.0);
             qx_temp = -(5.0 / 3.0) * (Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_x, (2.0 / 3.0));
-            //qx_v[io - 1] = qx_temp;
 
-            //kw_v[io] = qx_temp;
-            //ke_v[io - 1] = qx_temp;
             kw_v[io] = -pfmax(-qx_temp, 0);
             ke_v[io - 1] = pfmax(qx_temp, 0);
           }
@@ -452,10 +438,8 @@ void    OverlandFlowEvalKin(
             ip = SubvectorEltIndex(p_sub, i, j, k1);
             Press_y = pfmax((pp[ip]), 0.0);
             qy_temp = -(5.0 / 3.0) * (Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_y, (2.0 / 3.0));
-            //qy_v[io - sy_v] = qy_temp;
-            //ks_v[io] = qy_temp;
+
             ks_v[io] = -pfmax(-qy_temp, 0);
-            //kn_v[io - sy_v] = qy_temp;
             kn_v[io - sy_v] = pfmax(qy_temp, 0);
           }
         }
@@ -464,25 +448,6 @@ void    OverlandFlowEvalKin(
                                   CellFinalize(DoNothing),
                                   AfterAllCells(DoNothing)
                                   );
-    /*                        ForPatchCellsPerFace(BC_ALL,
-     *             BeforeAllCells(DoNothing),
-     *             LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
-     *             Locals(int io; ),
-     *             CellSetup(DoNothing),
-     *             FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
-     *             FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
-     *             FACE(BackFace, DoNothing),
-     *             FACE(FrontFace,
-     * {
-     * io = SubvectorEltIndex(sx_sub, i, j, 0);
-     * ke_v[io] = qx_v[io];
-     * kw_v[io] = qx_v[io - 1];
-     * kn_v[io] = qy_v[io];
-     * ks_v[io] = qy_v[io - sy_v];
-     * }),
-     *             CellFinalize(DoNothing),
-     *             AfterAllCells(DoNothing)
-     *             ); */
   }   // else calcder
 }     // function
 

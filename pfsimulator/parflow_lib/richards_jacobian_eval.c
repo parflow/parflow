@@ -67,6 +67,8 @@ typedef struct {
   int num_seepage_patches;
 } PublicXtra;
 
+
+// SGS need to remove duplication
 __host__ __device__ static int
 IsSeepagePatch(const PublicXtra *public_xtra,
                int               patch_id)
@@ -1715,12 +1717,10 @@ void    RichardsJacobianEval(
           /* Now add overland contributions to JC */
           if ((pp[ip]) > 0.0)
           {
-            /* RMM, switch seepage face on optionally for two surface patches */
+            /* RMM, switch if seepage face on */
             if (IsSeepagePatch(public_xtra, iitmp))
             {
-              cp_c[io] += (vol / dz) * (1.0 + 0.0);  // + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
-              //           + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
-              // printf("Seepage face on patch %d at surface index %d (%d,%d,%d)\n",(int)patch_dat[io], io, i, j, k);
+              cp_c[io] += (vol / dz) * (1.0 + 0.0);
             }
             else
             {
@@ -2063,8 +2063,7 @@ void    RichardsJacobianEval(
             /* RMM, switch seepage face on optionally for specified surface patches */
             if (IsSeepagePatch(public_xtra, iitmp))
             {
-              cp[im] += dt * (vol / dz) * (1.0 + 0.0); // + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
-              //  + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+              cp[im] += dt * (vol / dz) * (1.0 + 0.0); 
             }
             else
             {
