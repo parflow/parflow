@@ -376,7 +376,7 @@ void    RichardsJacobianEval(
   Vector      *KNns = (instance_xtra->KNns);
   Vector      *KSns = (instance_xtra->KSns);
   Subvector   *kw_sub, *ke_sub, *kn_sub, *ks_sub, *kwns_sub, *kens_sub, *knns_sub, *ksns_sub, *top_sub, *sx_sub;
-  double      *kw_der, *ke_der, *kn_der, *ks_der, *kwns_der, *kens_der, *knns_der, *ksns_der;
+  double      *kw_der=NULL, *ke_der=NULL, *kn_der=NULL, *ks_der=NULL, *kwns_der=NULL, *kens_der=NULL, *knns_der=NULL, *ksns_der=NULL;
 
   double gravity = ProblemGravity(problem);
   double viscosity = ProblemPhaseViscosity(problem, 0);

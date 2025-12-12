@@ -310,7 +310,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   Subvector   *x_sl_sub;
   // Subvector *y_sl_sub;
   // Subvector *mann_sub;
-  double      *kw_, *ke_, *kn_, *ks_, *qx_, *qy_;
+  double      *kw_=NULL, *ke_=NULL, *kn_=NULL, *ks_=NULL, *qx_=NULL, *qy_=NULL;
 
   Vector      *porosity = ProblemDataPorosity(problem_data);
   Vector      *permeability_x = ProblemDataPermeabilityX(problem_data);
