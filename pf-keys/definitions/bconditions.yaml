@@ -123,6 +123,15 @@ Patch:
         skip:
       __doc__: ''
 
+      Seepage:
+        help: >
+          [Type: bool] When set to True for an OverlandKinematic pressure boundary condition,
+          this patch will be treated as a seepage patch for the overland kinematic wave
+          formulation.
+        default: False
+        domains:
+          BoolDomain:
+
       .{interval_name}:
         __class__: BCPressureIntervalItem
         __from__: /Cycle/{CycleItem}/Names

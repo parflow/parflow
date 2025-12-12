@@ -188,20 +188,23 @@ overland.Patch.bottom.BCPressure.Type = "FluxConst"
 overland.Patch.bottom.BCPressure.Cycle = "constant"
 overland.Patch.bottom.BCPressure.alltime.Value = 0.0
 
-overland.Patch.slope.BCPressure.Type = "OverlandFlow"
+overland.Patch.slope.BCPressure.Type = "OverlandKinematic"
 overland.Patch.slope.BCPressure.Cycle = "rainrec"
 overland.Patch.slope.BCPressure.rain.Value = -0.01
 overland.Patch.slope.BCPressure.rec.Value = 0.0000
+overland.Patch.slope.BCPressure.Seepage = False
 
-overland.Patch.channel.BCPressure.Type = "OverlandFlow"
+overland.Patch.channel.BCPressure.Type = "OverlandKinematic"
 overland.Patch.channel.BCPressure.Cycle = "rainrec"
 overland.Patch.channel.BCPressure.rain.Value = -0.001
 overland.Patch.channel.BCPressure.rec.Value = 0.0000
+overland.Patch.channel.BCPressure.Seepage = False
 
-overland.Patch.seepage.BCPressure.Type = "OverlandFlow"
+overland.Patch.seepage.BCPressure.Type = "OverlandKinematic"
 overland.Patch.seepage.BCPressure.Cycle = "rainrec"
 overland.Patch.seepage.BCPressure.rain.Value = -0.001
 overland.Patch.seepage.BCPressure.rec.Value = 0.0000
+overland.Patch.seepage.BCPressure.Seepage = True
 
 # ---------------------------------------------------------
 # Mannings coefficient
@@ -233,9 +236,9 @@ overland.Solver = "Richards"
 overland.Solver.MaxIter = 2500
 
 overland.Solver.Nonlinear.MaxIter = 100
-overland.Solver.Nonlinear.ResidualTol = 1e-9
+overland.Solver.Nonlinear.ResidualTol = 1e-10
 overland.Solver.Nonlinear.EtaChoice = "EtaConstant"
-overland.Solver.Nonlinear.EtaValue = 0.01
+overland.Solver.Nonlinear.EtaValue = 1e-5
 overland.Solver.Nonlinear.UseJacobian = True
 overland.Solver.Nonlinear.DerivativeEpsilon = 1e-15
 overland.Solver.Nonlinear.StepTol = 1e-20
@@ -243,7 +246,6 @@ overland.Solver.Nonlinear.Globalization = "LineSearch"
 overland.Solver.Linear.KrylovDimension = 50
 overland.Solver.Linear.MaxRestart = 2
 overland.Solver.OverlandKinematic.Epsilon = 1e-5
-overland.Solver.OverlandKinematic.SeepageOne = 4.0
 
 overland.Solver.Linear.Preconditioner = "PFMG"
 overland.Solver.PrintSubsurf = False
@@ -280,9 +282,6 @@ overland.Geom.domain.ICPressure.RefPatch = "bottom"
 runcheck = 1
 correct_output_dir_name = get_absolute_path("../correct_output")
 test_dir = get_absolute_path("test_output/overland_tiltedV_KWE_top_patch_2/")
-overland.Patch.slope.BCPressure.Type = "OverlandKinematic"
-overland.Patch.channel.BCPressure.Type = "OverlandKinematic"
-overland.Patch.seepage.BCPressure.Type = "OverlandKinematic"
 overland.Solver.PrintSlopes = True
 
 # Ypos
