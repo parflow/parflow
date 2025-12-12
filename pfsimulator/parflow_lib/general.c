@@ -372,6 +372,9 @@ int  Exp2(int p)
 /* This method defined in the old embedded Kinsol implementation and used
  * in ParFlow.  When linking with the SUNDIAL library this is not longer available
  */
+
+BEGIN_EXTERN_C
+
 double RPowerR(double base, double exponent)
 {
   if (base <= 0.0)
@@ -379,4 +382,6 @@ double RPowerR(double base, double exponent)
 
   return(pow(base, exponent));
 }
+
+END_EXTERN_C
 #endif
