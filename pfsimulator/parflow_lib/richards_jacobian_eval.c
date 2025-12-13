@@ -40,6 +40,7 @@
  */
 
 #include "parflow.h"
+#include "seepage.h"
 #include "llnlmath.h"
 #include "llnltyps.h"
 #include "assert.h"
@@ -63,112 +64,8 @@ typedef struct {
   double SpinupDampP2; // NBE
   int tfgupwind;  // RMM
   int using_MGSemi;  // RMM
-  int *seepage_patches;
-  int num_seepage_patches;
+  SeepageLookup seepage;
 } PublicXtra;
-
-
-// SGS need to remove duplication
-__host__ __device__ static int
-IsSeepagePatch(const PublicXtra *public_xtra,
-               int               patch_id)
-{
-  int n;
-
-  if (public_xtra == NULL)
-  {
-    return 0;
-  }
-
-  for (n = 0; n < public_xtra->num_seepage_patches; n++)
-  {
-    if (public_xtra->seepage_patches[n] == patch_id)
-    {
-      return 1;
-    }
-  }
-
-  return 0;
-}
-
-
-/*---------------------------------------------------------------------
- * Helper to populate seepage patches from BCPressure.Seepage flags
- *
- * This allows users to specify seepage patches one-by-one as:
- *   Patch.<patch_name>.BCPressure.Seepage = True
- *
- * We translate these patch-level flags into the integer patch ids
- * used internally by the seepage patch logic.
- *---------------------------------------------------------------------*/
-static void
-PopulateSeepagePatchesFromBCPressure(PublicXtra *public_xtra)
-{
-  char *patch_names;
-
-  patch_names = GetStringDefault("BCPressure.PatchNames", NULL);
-  if (patch_names == NULL || patch_names[0] == '\0')
-  {
-    return;
-  }
-
-  NameArray patches_na = NA_NewNameArray(patch_names);
-  int num_patches = NA_Sizeof(patches_na);
-  if (num_patches <= 0)
-  {
-    NA_FreeNameArray(patches_na);
-    return;
-  }
-
-  char key[IDB_MAX_KEY_LEN];
-  char *geom_name = GetString("Domain.GeomName");
-  int domain_index = NA_NameToIndexExitOnError(GlobalsGeomNames, geom_name, "Domain.GeomName");
-  int *tmp_ids = ctalloc(int, num_patches);
-  int count = 0;
-  NameArray switch_na = NA_NewNameArray("False True");
-
-  for (int idx = 0; idx < num_patches; idx++)
-  {
-    char *patch_name = NA_IndexToName(patches_na, idx);
-    /* Only consider patches that use the OverlandKinematic BC type and have Seepage = True */
-    sprintf(key, "Patch.%s.BCPressure.Type", patch_name);
-    char *type_name = GetStringDefault(key, NULL);
-    if (type_name == NULL || strcmp(type_name, "OverlandKinematic") != 0)
-    {
-      continue;
-    }
-
-    sprintf(key, "Patch.%s.BCPressure.Seepage", patch_name);
-    char *switch_name = GetStringDefault(key, "False");
-    int seepage_flag = NA_NameToIndexExitOnError(switch_na, switch_name, key);
-    if (!seepage_flag)
-    {
-      continue;
-    }
-
-    int patch_id = NA_NameToIndex(GlobalsGeometries[domain_index]->patches, patch_name);
-    if (patch_id < 0)
-    {
-      amps_Printf("Invalid patch name <%s> in Patch.%s.BCPressure.Seepage\n", patch_name, patch_name);
-      NA_InputError(GlobalsGeometries[domain_index]->patches, patch_name, "");
-    }
-    tmp_ids[count++] = patch_id;
-  }
-
-  if (count > 0)
-  {
-    public_xtra->seepage_patches = ctalloc(int, count);
-    for (int i = 0; i < count; i++)
-    {
-      public_xtra->seepage_patches[i] = tmp_ids[i];
-    }
-    public_xtra->num_seepage_patches = count;
-  }
-
-  tfree(tmp_ids);
-  NA_FreeNameArray(patches_na);
-  NA_FreeNameArray(switch_na);
-}
 
 typedef struct {
   Problem      *problem;
@@ -1718,7 +1615,7 @@ void    RichardsJacobianEval(
           if ((pp[ip]) > 0.0)
           {
             /* RMM, switch if seepage face on */
-            if (IsSeepagePatch(public_xtra, iitmp))
+            if (IsSeepagePatch(&(public_xtra->seepage), iitmp))
             {
               cp_c[io] += (vol / dz) * (1.0 + 0.0);
             }
@@ -2061,7 +1958,7 @@ void    RichardsJacobianEval(
           if ((pp[ip]) > 0.0)
           {
             /* RMM, switch seepage face on optionally for specified surface patches */
-            if (IsSeepagePatch(public_xtra, iitmp))
+            if (IsSeepagePatch(&(public_xtra->seepage), iitmp))
             {
               cp[im] += dt * (vol / dz) * (1.0 + 0.0); 
             }
@@ -2522,11 +2419,8 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   sprintf(key, "OverlandSpinupDampP2");
   public_xtra->SpinupDampP2 = GetDoubleDefault(key, 0.0);    // NBE
 
-  public_xtra->seepage_patches = NULL;
-  public_xtra->num_seepage_patches = 0;
-
   /* Collect seepage patches from Patch.<name>.BCPressure.Seepage flags. */
-  PopulateSeepagePatchesFromBCPressure(public_xtra);
+  PopulateSeepagePatchesFromBCPressure(&(public_xtra->seepage));
 
 /* get preconditioner to check for MGSemi to use custom overland flow formulation*/
   precond_switch_na = NA_NewNameArray("NoPC MGSemi SMG PFMG PFMGOctree");
@@ -2620,10 +2514,7 @@ void  RichardsJacobianEvalFreePublicXtra()
 
   if (public_xtra)
   {
-    if (public_xtra->seepage_patches)
-    {
-      tfree(public_xtra->seepage_patches);
-    }
+    SeepageLookupFree(&(public_xtra->seepage));
     tfree(public_xtra);
   }
 }
