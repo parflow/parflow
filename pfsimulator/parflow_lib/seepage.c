@@ -40,17 +40,7 @@
 __host__ __device__ int
 IsSeepagePatch(const SeepageLookup *seepage, int patch_id)
 {
-  int n;
-
-  for (n = 0; n < seepage->num_seepage_patches; n++)
-  {
-    if (seepage->seepage_patches[n] == patch_id)
-    {
-      return 1;
-    }
-  }
-
-  return 0;
+  return seepage->seepage_patches[patch_id];
 }
 
 /**
@@ -87,9 +77,9 @@ PopulateSeepagePatchesFromBCPressure(SeepageLookup *seepage)
   char *geom_name = GetString("Domain.GeomName");
   int domain_index = NA_NameToIndexExitOnError(GlobalsGeomNames, geom_name, "Domain.GeomName");
 
-  int *tmp_ids = ctalloc(int, num_patches);
-  int count = 0;
   NameArray switch_na = NA_NewNameArray("False True");
+
+  seepage->seepage_patches = ctalloc(int, num_patches);
 
   for (int idx = 0; idx < num_patches; idx++)
   {
@@ -117,20 +107,11 @@ PopulateSeepagePatchesFromBCPressure(SeepageLookup *seepage)
       amps_Printf("Invalid patch name <%s> in Patch.%s.BCPressure.Seepage\n", patch_name, patch_name);
       NA_InputError(GlobalsGeometries[domain_index]->patches, patch_name, "");
     }
-    tmp_ids[count++] = patch_id;
+
+    /* patch_id is a seepage patch */
+    seepage->seepage_patches[patch_id] = 1;
   }
 
-  if (count > 0)
-  {
-    seepage->seepage_patches = ctalloc(int, count);
-    for (int i = 0; i < count; i++)
-    {
-      seepage->seepage_patches[i] = tmp_ids[i];
-    }
-    seepage->num_seepage_patches = count;
-  }
-
-  tfree(tmp_ids);
   NA_FreeNameArray(patches_na);
   NA_FreeNameArray(switch_na);
 }

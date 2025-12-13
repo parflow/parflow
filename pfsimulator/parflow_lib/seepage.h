@@ -31,7 +31,6 @@
 
 typedef struct {
   int *seepage_patches;
-  int num_seepage_patches;
 } SeepageLookup;
 
 __host__ __device__ int IsSeepagePatch(const SeepageLookup *seepage, int patch_id);
