@@ -33,7 +33,19 @@ typedef struct {
   int *seepage_patches;
 } SeepageLookup;
 
-__host__ __device__ int IsSeepagePatch(const SeepageLookup *seepage, int patch_id);
+/**
+ * @brief Returns true if the specified patch_id is a Seepage patch
+ *
+ * @param publix_xtra nl_function publix extra
+ * @param patch_id Patch id to check
+ * @return True If patch is a Seepage patch
+ */
+__host__ __device__ inline int
+IsSeepagePatch(const SeepageLookup *seepage, int patch_id)
+{
+  return seepage->seepage_patches[patch_id];
+}
+
 
 void PopulateSeepagePatchesFromBCPressure(SeepageLookup *seepage);
 

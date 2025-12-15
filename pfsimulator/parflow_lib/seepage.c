@@ -30,29 +30,17 @@
 
 #include "seepage.h"
 
-/**
-* @brief Returns true if the specified patch_id is a Seepage patch
-*
-* @param publix_xtra nl_function publix extra
-* @param patch_id Patch id to check
-* @return True If patch is a Seepage patch 
-*/
-__host__ __device__ int
-IsSeepagePatch(const SeepageLookup *seepage, int patch_id)
-{
-  return seepage->seepage_patches[patch_id];
-}
 
 /**
-* @brief Populate Seepage patch information from input database
-*
-* Parses input database and builds lookup table to identify which patch_id's are
-* Seepage patches.   Seepage patches are specified using the input key: 
-*   Patch.<patch_name>.BCPressure.Seepage = True
-*
-* @param publix_xtra nl_function publix extra
-* @return None 
-*/
+ * @brief Populate Seepage patch information from input database
+ *
+ * Parses input database and builds lookup table to identify which patch_id's are
+ * Seepage patches.   Seepage patches are specified using the input key:
+ *   Patch.<patch_name>.BCPressure.Seepage = True
+ *
+ * @param publix_xtra nl_function publix extra
+ * @return None
+ */
 void
 PopulateSeepagePatchesFromBCPressure(SeepageLookup *seepage)
 {
