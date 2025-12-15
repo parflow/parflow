@@ -3,7 +3,7 @@ name: GPU CI Tests
 on:
   workflow_run:
     workflows: ["Linux CI Tests"]   # Other CI tests that must pass before trying to run GPU tests
-    types:[completed]
+    types: [completed]
 
 jobs:
   test-gpu:
