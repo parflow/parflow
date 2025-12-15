@@ -5,7 +5,12 @@ name: MacOS CI Tests
 # Currently using GCC for the build rather than Clang
 # Python 3.13 used rather than more current available versions since Numba library does not work with later versions
 
-on: [push, pull_request]
+#on: [push, pull_request]
+
+on:
+  workflow_run:
+    workflows: ["Linux CI Tests"]   # Other CI tests that must pass before trying to run GPU tests
+    types: [completed]
 
 jobs:
   build:
