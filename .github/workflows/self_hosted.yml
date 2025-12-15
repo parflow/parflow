@@ -1,9 +1,15 @@
 name: GPU CI Tests
 
-on: [push, pull_request]
+on:
+  workflow_run:
+    workflows: ["Linux CI Tests", "MacOS CI Tests"]   # Other CI tests that must pass before trying to run GPU tests
+    types:
+      - completed
 
 jobs:
   test-gpu:
+    # Only run if workflow_run has passed.
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     # only run GPU test if in parflow project
     if: github.repository == 'parflow/parflow'
     name: ${{ matrix.config.name }}
