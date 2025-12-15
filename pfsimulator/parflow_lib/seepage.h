@@ -29,6 +29,8 @@
 #ifndef _PARFLOW_SEEPAGE_HEADER
 #define _PARFLOW_SEEPAGE_HEADER
 
+#include "general.h"
+
 typedef struct {
   int *seepage_patches;
 } SeepageLookup;
@@ -40,7 +42,7 @@ typedef struct {
  * @param patch_id Patch id to check
  * @return True If patch is a Seepage patch
  */
-__host__ __device__ inline int
+__host__ __device__ static inline int
 IsSeepagePatch(const SeepageLookup *seepage, int patch_id)
 {
   return seepage->seepage_patches[patch_id];
