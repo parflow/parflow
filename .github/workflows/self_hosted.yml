@@ -8,10 +8,8 @@ on:
 
 jobs:
   test-gpu:
-    # Only run if workflow_run has passed.
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    # only run GPU test if in parflow project
-    if: github.repository == 'parflow/parflow'
+    # Only run if workflow_run has passed && only if in parflow project
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.repository == 'parflow/parflow' }}
     name: ${{ matrix.config.name }}
     runs-on: self-hosted
     strategy:
