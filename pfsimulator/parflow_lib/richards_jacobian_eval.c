@@ -275,7 +275,7 @@ void    RichardsJacobianEval(
   Vector      *KNns = (instance_xtra->KNns);
   Vector      *KSns = (instance_xtra->KSns);
   Subvector   *kw_sub, *ke_sub, *kn_sub, *ks_sub, *kwns_sub, *kens_sub, *knns_sub, *ksns_sub, *top_sub, *sx_sub;
-  double      *kw_der=NULL, *ke_der=NULL, *kn_der=NULL, *ks_der=NULL, *kwns_der=NULL, *kens_der=NULL, *knns_der=NULL, *ksns_der=NULL;
+  double      *kw_der = NULL, *ke_der = NULL, *kn_der = NULL, *ks_der = NULL, *kwns_der = NULL, *kens_der = NULL, *knns_der = NULL, *ksns_der = NULL;
 
   double gravity = ProblemGravity(problem);
   double viscosity = ProblemPhaseViscosity(problem, 0);
@@ -1960,7 +1960,7 @@ void    RichardsJacobianEval(
             /* RMM, switch seepage face on optionally for specified surface patches */
             if (IsSeepagePatch(&(public_xtra->seepage), iitmp))
             {
-              cp[im] += dt * (vol / dz) * (1.0 + 0.0); 
+              cp[im] += dt * (vol / dz) * (1.0 + 0.0);
             }
             else
             {

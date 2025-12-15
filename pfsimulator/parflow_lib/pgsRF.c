@@ -722,13 +722,13 @@ void         PGSRF(
 
                   /* Compute b2' = b2 - A21 * A11_inv * b1 and augment b1 */
 
-		  // GCC 15.2.0 Was issuing warning about reading  at offset [-17179869184, -8] into source object of size [8, 17179869176] allocated by ‘calloc’
-		  // Seems related to npts possibly being negative?, could avoid by putting an if (npts >= 0) arount this loop as well.
+                  // GCC 15.2.0 Was issuing warning about reading  at offset [-17179869184, -8] into source object of size [8, 17179869176] allocated by ‘calloc’
+                  // Seems related to npts possibly being negative?, could avoid by putting an if (npts >= 0) arount this loop as well.
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstringop-overread"
-		  for (i2 = 0; i2 < cpts; i2++)
-		    b2[i2] = b[i2 + npts];
-#pragma GCC diagnostic pop		  
+                  for (i2 = 0; i2 < cpts; i2++)
+                    b2[i2] = b[i2 + npts];
+#pragma GCC diagnostic pop
                   for (i2 = 0; i2 < npts; i2++)
                     b_tmp[i2] = b[i2];
                   dposl_(A11, &npts, &npts, b_tmp);

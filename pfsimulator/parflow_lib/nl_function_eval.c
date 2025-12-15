@@ -206,7 +206,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   Subvector   *x_sl_sub;
   // Subvector *y_sl_sub;
   // Subvector *mann_sub;
-  double      *kw_=NULL, *ke_=NULL, *kn_=NULL, *ks_=NULL, *qx_=NULL, *qy_=NULL;
+  double      *kw_ = NULL, *ke_ = NULL, *kn_ = NULL, *ks_ = NULL, *qx_ = NULL, *qy_ = NULL;
 
   Vector      *porosity = ProblemDataPorosity(problem_data);
   Vector      *permeability_x = ProblemDataPermeabilityX(problem_data);
@@ -1953,7 +1953,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
         if (IsSeepagePatch(&(public_xtra->seepage), (int)patch_dat[io]))
         {
           q_overlnd = vol
-                      * (pfmax(pp[ip], 0.0) - 0.0) / dz; 
+                      * (pfmax(pp[ip], 0.0) - 0.0) / dz;
         }
         else
         {
