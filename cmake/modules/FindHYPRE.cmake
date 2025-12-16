@@ -110,13 +110,13 @@ if (NOT DEFINED HYPRE_USING_OPENMP OR HYPRE_USING_OPENMP STREQUAL "")
   set(HYPRE_USING_OPENMP 0)
 endif()
 
-find_package_handle_standard_args(Hypre DEFAULT_MSG HYPRE_LIBRARIES HYPRE_INCLUDE_DIRS)
+find_package_handle_standard_args(HYPRE DEFAULT_MSG HYPRE_LIBRARIES HYPRE_INCLUDE_DIRS)
 mark_as_advanced(HYPRE_INCLUDE_DIRS HYPRE_LIBRARIES)
 
 #
 # Create target Hypre::Hypre
 #
-if (Hypre_FOUND AND NOT TARGET Hypre::Hypre)
+if (HYPRE_FOUND AND NOT TARGET Hypre::Hypre)
   add_library(Hypre::Hypre INTERFACE IMPORTED)
   target_include_directories(Hypre::Hypre INTERFACE ${HYPRE_INCLUDE_DIRS})
   target_link_libraries(Hypre::Hypre INTERFACE ${HYPRE_LIBRARIES})
