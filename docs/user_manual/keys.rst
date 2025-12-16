@@ -3362,6 +3362,35 @@ solid specified by the Patch.\ *patch_name*.BCPressure.RefGeom key.
 
       pfset Patch.top.BCPressure.RefPatch    "bottom"
 
+*bool* **Patch.\ *patch_name*.BCPressure.Seepage** False When set to
+True for an OverlandKinematic pressure boundary condition, this patch
+will be treated as a seepage patch for the overland kinematic wave
+formulation.
+
+Example of mixed boundary conditions: 
+
+::
+   CONUS2.Geom.domain.Patches = "ocean land top lake sink bottom"
+   CONUS2.BCPressure.PatchNames ="ocean land top lake sink bottom"
+
+In this example, the top gets assigned to the **OverlandKinematic** BC
+and the sink and lake will be treated as a seepage patch for the
+overland kinematic wave formulation
+ 
+::
+   
+   CONUS2.Patch.top.BCPressure.Type = 'OverlandKinematic'
+   CONUS2.Patch.lake.BCPressure.Type = 'OverlandKinematic'
+   CONUS2.Patch.lake.BCPressure.Seepage = True
+   CONUS2.Patch.sink.BCPressure.Type = 'OverlandKinematic'
+   CONUS2.Patch.sink.BCPressure.Seepage = True
+
+.. container:: list
+
+   ::
+
+      pfset Patch.top.BCPressure.Seepage    "True"
+      
 *double* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.Value** no
 default This key specifies the reference pressure value for the
 **DirEquilRefPatch** boundary condition or the constant flux value for
