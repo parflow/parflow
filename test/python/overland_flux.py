@@ -10,7 +10,7 @@ from parflow.tools.fs import mkdir, get_absolute_path
 from parflow.tools.io import read_pfb
 from parflow.tools.compare import pf_test_file_with_abs
 
-run_name = "overland_flux_validation"
+run_name = "overland_flux"
 overland = Run(run_name, __file__)
 
 overland.FileVersion = 4
@@ -239,11 +239,8 @@ overland.Solver.Linear.Preconditioner.PCMatrixType = "PFSymmetric"
 
 output_dir = get_absolute_path(f"test_output/{run_name}")
 mkdir(output_dir)
-overland.run(working_directory=output_dir)
-
 correct_output_dir = get_absolute_path("../correct_output")
-print(correct_output_dir)
-
+overland.run(working_directory=output_dir)
 
 passed = True
 
@@ -253,19 +250,7 @@ timestep = str(i).rjust(5, "0")
 sig_digits = 8
 abs_value = 1e-12
 
-test_files = ["qx_overland"]
-for test_file in test_files:
-    filename = f"/{run_name}.out.{test_file}.{timestep}.pfb"
-    if not pf_test_file_with_abs(
-        output_dir + filename,
-        correct_output_dir + filename,
-        f"Max difference in {filename}",
-        abs_value,
-        sig_digits,
-    ):
-        passed = False
-
-test_files = ["qy_overland"]
+test_files = ["qx_overland", "qy_overland"]
 for test_file in test_files:
     filename = f"/{run_name}.out.{test_file}.{timestep}.pfb"
     if not pf_test_file_with_abs(
