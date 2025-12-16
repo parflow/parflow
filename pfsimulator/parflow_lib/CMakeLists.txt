@@ -156,6 +156,7 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     problem_saturation.cpp
     rb_GS_point.cpp
     richards_jacobian_eval.cpp
+    seepage.cpp
     vector.cpp
     vector_utilities.cpp
   )
@@ -254,6 +255,7 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}
     rb_GS_point.c
     region.c
     richards_jacobian_eval.c
+    seepage.c
     vector.c
     vector_utilities.c
   )

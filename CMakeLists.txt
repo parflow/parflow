@@ -1,8 +1,10 @@
-cmake_minimum_required (VERSION 3.14)
+cmake_minimum_required (VERSION 3.22)
 
-project (PARFLOW LANGUAGES C Fortran CXX)
+project (PARFLOW VERSION 3.14.1 LANGUAGES C Fortran CXX)
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/")
+
+#cmake_policy(SET CMP0144 NEW)
 
 #-----------------------------------------------------------------------------
 # Set standard compiler flagsx
@@ -46,6 +48,7 @@ set_property(CACHE PARFLOW_ACCELERATOR_BACKEND PROPERTY STRINGS none cuda kokkos
 
 if(PARFLOW_ACCELERATOR_BACKEND STREQUAL "none")
 elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
+   message(STATUS "ACCELERATOR: CUDA backend selected")
   set(PARFLOW_HAVE_CUDA "yes")
 
   if(NOT DEFINED KOKKOS_ROOT)
@@ -74,15 +77,42 @@ elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
     set(KOKKOS_INCLUDE "${KOKKOS_ROOT}/include")
     set(PARFLOW_HAVE_KOKKOS "yes")
   endif(NOT DEFINED KOKKOS_ROOT)
+
 elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "kokkos")
+  # Check Kokkos installation root
   if(DEFINED KOKKOS_ROOT)
+     # Find and configure Kokkos
     find_package(Kokkos REQUIRED HINTS ${KOKKOS_ROOT})
     set(KOKKOS_INCLUDE "${KOKKOS_ROOT}/include")
     set(PARFLOW_HAVE_KOKKOS "yes")
-  else(DEFINED KOKKOS_ROOT)
+
+    # Select the active Kokkos backend
+    if(Kokkos_ENABLE_CUDA)
+      message(STATUS "ACCELERATOR: Kokkos-enabled CUDA backend selected")
+      set(KOKKOS_ENABLE_CUDA "yes")
+
+    elseif(Kokkos_ENABLE_HIP)
+      message(STATUS "ACCELERATOR: Kokkos-enabled HIP backend selected")
+      set(KOKKOS_ENABLE_HIP "yes")
+
+    elseif(Kokkos_ENABLE_SYCL)
+      message(STATUS "ACCELERATOR: Kokkos-enabled SYCL backend selected")
+      set(KOKKOS_ENABLE_SYCL "yes")
+
+    elseif(Kokkos_ENABLE_OPENMP_TARGET)
+      message(STATUS "ACCELERATOR: Kokkos-enabled OpenMP target-offload backend selected")
+      set(KOKKOS_ENABLE_OPENMP_TARGET "yes")
+
+    else(Kokkos_ENABLE_CUDA)  # host-only backend
+      message(STATUS "Kokkos host-only backend selected")
+      set(KOKKOS_ENABLE_SERIAL "yes")
+    endif(Kokkos_ENABLE_CUDA)  # end Kokkos active backend select
+
+  else(DEFINED KOKKOS_ROOT)  # KOKKOS_ROOT not set
     message(FATAL_ERROR "ERROR: KOKKOS_ROOT not specified with PARFLOW_ACCELERATOR_BACKEND=kokkos")
-  endif(DEFINED KOKKOS_ROOT)
-elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "omp")
+  endif(DEFINED KOKKOS_ROOT)  # end Kokkos root check
+
+  elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "omp")
   message(STATUS "ACCELERATOR: Compiling ParFlow with backend accelerator OpenMP")
   # Enable C and CXX -fopenmp flag, enable ParFlow defines.
   find_package(OpenMP REQUIRED)
@@ -90,39 +120,33 @@ elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "omp")
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
   set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${OpenMP_Fortran_FLAGS}")
   set(PARFLOW_HAVE_OMP "yes")
-else()
+
+else(PARFLOW_ACCELERATOR_BACKEND STREQUAL "none")
   message(FATAL_ERROR "ERROR: Unknown backend type! PARFLOW_ACCELERATOR_BACKEND=${PARFLOW_ACCELERATOR_BACKEND} does not exist!")
-endif()
+endif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "none")
 
 # Include Umpire or RMM memory manager for pool allocation
-if((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}))
+if(PARFLOW_HAVE_CUDA OR PARFLOW_HAVE_KOKKOS)
 
-  if (DEFINED umpire_ROOT AND DEFINED rmm_ROOT)
+  if (DEFINED umpire_ROOT AND DEFINED RMM_ROOT)
     message(FATAL_ERROR "ERROR: Cannot have both Umpire and RMM enabled at the same time.")
-  endif(DEFINED umpire_ROOT AND DEFINED rmm_ROOT)
+  endif(DEFINED umpire_ROOT AND DEFINED RMM_ROOT)
   
+  # Determine memory manager and print single status message
   if(DEFINED umpire_ROOT)
     find_package(umpire REQUIRED)
     set(PARFLOW_HAVE_UMPIRE "yes")
-    message(STATUS "ACCELERATOR: Compiling with CUDA and Umpire")
-  endif(DEFINED umpire_ROOT)
-  
-  if(DEFINED rmm_ROOT)
+    message(STATUS "MEMORY MANAGER: Umpire is sleceted")
+   
+  elseif(DEFINED rmm_ROOT)
     find_package(rmm REQUIRED)
     set(PARFLOW_HAVE_RMM "yes")
-    if(${PARFLOW_HAVE_CUDA}) 
-      message(STATUS "ACCELERATOR: Compiling with CUDA and RMM")
-    else(${PARFLOW_HAVE_CUDA}) 
-      message(STATUS "ACCELERATOR: Compiling with Kokkos and RMM")
-    endif(${PARFLOW_HAVE_CUDA}) 
-  else(DEFINED rmm_ROOT)
-    if(${PARFLOW_HAVE_CUDA}) 
-      message(STATUS "ACCELERATOR: Compiling with CUDA (RMM not used)")
-    else(${PARFLOW_HAVE_CUDA}) 
-      message(STATUS "ACCELERATOR: Compiling with Kokkos (RMM not used)")
-    endif(${PARFLOW_HAVE_CUDA}) 
-  endif(DEFINED rmm_ROOT)
-endif((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}))
+    message(STATUS "MEMORY MANAGER: RMM is sleceted")
+   
+  else(DEFINED umpire_ROOT)
+    message(STATUS "MEMORY MANAGER: NO memoery manager is sleceted")
+  endif(DEFINED umpire_ROOT)
+endif(PARFLOW_HAVE_CUDA OR PARFLOW_HAVE_KOKKOS)
 
 #-----------------------------------------------------------------------------
 # Version number

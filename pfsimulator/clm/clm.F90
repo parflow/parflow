@@ -351,7 +351,7 @@ clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak)
            !clm(t)%tksatu(k)       = clm(t)%tkmg(k)*0.57**clm(t)%watsat(k)
         end do !k
 
-        call drv_clmini (drv, grid, pf_porosity,tile(t), clm(t), istep_pf) !Initialize CLM Variables
+        call drv_clmini (drv, grid, pf_porosity,tile(t), clm(t), istep_pf, clm_forc_veg) !Initialize CLM Variables
      enddo ! t
 
      !=== IMF:
@@ -558,7 +558,7 @@ clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak)
      clm(t)%qflx_infl_old       = clm(t)%qflx_infl
      clm(t)%qflx_tran_veg_old   = clm(t)%qflx_tran_veg
      if (clm(t)%planar_mask == 1) then
-        call clm_main (clm(t),drv%day,drv%gmt) 
+        call clm_main (clm(t),drv%day,drv%gmt,clm_forc_veg)
      else
      endif ! Planar mask
   enddo ! End of the space vector loop
