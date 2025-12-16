@@ -81,6 +81,7 @@ typedef struct {
   int print_mannings;           /* print mannings? */
   int print_specific_storage;   /* print spec storage? */
   int print_top;                /* print top? */
+  int print_bottom;             /* print bottom? */
   int print_velocities;         /* print velocities? */
   int print_satur;              /* print saturations? */
   int print_mask;               /* print mask? */
@@ -99,6 +100,7 @@ typedef struct {
   int write_pdi_mannings;         /* write mannings via PDI */
   int write_pdi_specific_storage; /* write specific storage via PDI */
   int write_pdi_top;              /* write top via PDI */
+  int write_pdi_bottom;           /* write bottom via PDI */
   int write_pdi_velocities;       /* write velocities via PDI */
   int write_pdi_satur;            /* write saturation via PDI */
   int write_pdi_mask;             /* write mask via PDI */
@@ -122,6 +124,7 @@ typedef struct {
   int write_silo_mannings;      /* write mannings? */
   int write_silo_specific_storage;      /* write specific storage? */
   int write_silo_top;           /* write top? */
+  int write_silo_bottom;           /* write bottom? */
   int write_silo_overland_sum;  /* write sum of overland outflow? */
   int write_silo_overland_bc_flux;      /* write overland outflow boundary condition flux? */
   int write_silo_dzmult;        /* write dz multiplier */
@@ -479,7 +482,7 @@ SetupRichards(PFModule * this_module)
 
   /* Do turning bands (and other stuff maybe) */
   PFModuleInvokeType(SetProblemDataInvoke, set_problem_data, (problem_data));
-  ComputeTop(problem, problem_data);
+  ComputeTopAndBottom(problem, problem_data);
 
   if (public_xtra->print_top || public_xtra->write_silo_top)
   {
@@ -837,9 +840,20 @@ SetupRichards(PFModule * this_module)
     WritePFBinary(file_prefix, file_postfix, ProblemDataPatchIndexOfDomainTop(problem_data));
   }
 
+  if (public_xtra->print_bottom)
+  {
+    strcpy(file_postfix, "bottom_zindex");
+    WritePFBinary(file_prefix, file_postfix, ProblemDataIndexOfDomainBottom(problem_data));
+  }
+
   if (public_xtra->write_pdi_top)
   {
     printf("WritePDITop -- not yet implemented\n");
+  }
+
+  if (public_xtra->write_pdi_bottom)
+  {
+    printf("WritePDIBottom -- not yet implemented\n");
   }
 
   if (public_xtra->write_silo_top)
@@ -851,6 +865,14 @@ SetupRichards(PFModule * this_module)
     strcpy(file_type, "top_patch");
     WriteSilo(file_prefix, file_type, file_postfix, ProblemDataPatchIndexOfDomainTop(problem_data),
               t, 0, "TopPatch");
+  }
+
+  if (public_xtra->write_silo_bottom)
+  {
+    strcpy(file_postfix, "");
+    strcpy(file_type, "bottom_zindex");
+    WriteSilo(file_prefix, file_type, file_postfix, ProblemDataIndexOfDomainBottom(problem_data),
+              t, 0, "BottomZIndex");
   }
 
   if (!amps_Rank(amps_CommWorld))
@@ -1828,8 +1850,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 #ifdef HAVE_CLM
   Grid *grid = (instance_xtra->grid);
   Subgrid *subgrid;
-  Subvector *p_sub, *s_sub, *et_sub, *m_sub, *po_sub, *dz_sub;
-  double *pp, *sp, *et, *ms, *po_dat, *dz_dat;
+  Subvector *p_sub, *s_sub, *et_sub, *po_sub, *dz_sub;
+  double *pp, *sp, *et, *po_dat, *dz_dat;
 
   /* IMF: For CLM met forcing (local to AdvanceRichards) */
   int istep;                    // IMF: counter for clm output times
@@ -2447,11 +2469,19 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         int soi_z;
         int x, y, z;
 
+        Vector *top = ProblemDataIndexOfDomainTop(problem_data);
+        Vector *bot = ProblemDataIndexOfDomainBottom(problem_data);
+        Subvector *top_sub;
+        Subvector *bot_sub;
+        double *top_dat;
+        double *bot_dat;
+
         subgrid = GridSubgrid(grid, is);
         p_sub = VectorSubvector(instance_xtra->pressure, is);
         s_sub = VectorSubvector(instance_xtra->saturation, is);
         et_sub = VectorSubvector(evap_trans, is);
-        m_sub = VectorSubvector(instance_xtra->mask, is);
+        top_sub = VectorSubvector(top, is);
+        bot_sub = VectorSubvector(bot, is);
         po_sub = VectorSubvector(porosity, is);
         dz_sub = VectorSubvector(instance_xtra->dz_mult, is);
 
@@ -2528,7 +2558,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         sp = SubvectorData(s_sub);
         pp = SubvectorData(p_sub);
         et = SubvectorData(et_sub);
-        ms = SubvectorData(m_sub);
+        top_dat = SubvectorData(top_sub);
+        bot_dat = SubvectorData(bot_sub);
         po_dat = SubvectorData(po_sub);
         dz_dat = SubvectorData(dz_sub);
 
@@ -2658,8 +2689,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           {
             /*BH: added vegetation forcings and associated option (clm_forc_veg) */
             clm_file_dir_length = strlen(public_xtra->clm_file_dir);
-            CALL_CLM_LSM(pp, sp, et, ms, po_dat, dz_dat, istep, cdt, t,
-                         start_time, dx, dy, dz, ix, iy, nx, ny, nz,
+            CALL_CLM_LSM(pp, sp, et, top_dat, bot_dat, po_dat, dz_dat, istep,
+                         cdt, t, start_time, dx, dy, dz, ix, iy, nx, ny, nz,
                          nx_f, ny_f, nz_f, nz_rz, ip, p, q, r, gnx,
                          gny, rank, sw_data, lw_data, prcp_data,
                          tas_data, u_data, v_data, patm_data,
@@ -5004,7 +5035,7 @@ SolverRichardsInitInstanceXtra()
     (instance_xtra->nonlin_solver) =
       PFModuleNewInstanceType(NonlinSolverInitInstanceXtraInvoke,
                               public_xtra->nonlin_solver,
-                              (problem, grid, instance_xtra->problem_data,
+                              (problem, grid, grid2d, instance_xtra->problem_data,
                                NULL));
   }
   else
@@ -5100,7 +5131,7 @@ SolverRichardsInitInstanceXtra()
   /* renew nonlinear solver module */
   PFModuleReNewInstanceType(NonlinSolverInitInstanceXtraInvoke,
                             (instance_xtra->nonlin_solver),
-                            (NULL, NULL, instance_xtra->problem_data,
+                            (NULL, NULL, NULL, instance_xtra->problem_data,
                              temp_data));
 
   /* renew set_problem_data module */
@@ -5748,6 +5779,11 @@ SolverRichardsNewPublicXtra(char *name)
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_top = switch_value;
 
+  sprintf(key, "%s.PrintBottom", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->print_bottom = switch_value;
+
   sprintf(key, "%s.PrintPressure", name);
   switch_name = GetStringDefault(key, "True");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
@@ -6214,6 +6250,10 @@ SolverRichardsNewPublicXtra(char *name)
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_top = switch_value;
 
+  sprintf(key, "%s.WriteSiloBottom", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->write_silo_bottom = switch_value;
 
   /* Initialize silo if necessary */
   if (public_xtra->write_silo_subsurf_data ||
@@ -6228,6 +6268,7 @@ SolverRichardsNewPublicXtra(char *name)
       public_xtra->write_silo_mannings ||
       public_xtra->write_silo_mask ||
       public_xtra->write_silo_top ||
+      public_xtra->write_silo_bottom ||
       public_xtra->write_silo_overland_sum ||
       public_xtra->write_silo_overland_bc_flux ||
       public_xtra->write_silo_dzmult || public_xtra->write_silo_CLM)

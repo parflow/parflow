@@ -453,6 +453,7 @@ ProblemData   *NewProblemData(
 
   ProblemDataIndexOfDomainTop(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   ProblemDataPatchIndexOfDomainTop(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+  ProblemDataIndexOfDomainBottom(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
 
   ProblemDataPorosity(problem_data) = NewVectorType(grid, 1, 1, vector_cell_centered);
 
@@ -508,6 +509,7 @@ void          FreeProblemData(
     FreeVector(ProblemDataRealSpaceZ(problem_data));
     FreeVector(ProblemDataIndexOfDomainTop(problem_data));
     FreeVector(ProblemDataPatchIndexOfDomainTop(problem_data));
+    FreeVector(ProblemDataIndexOfDomainBottom(problem_data));
 
     tfree(problem_data);
   }

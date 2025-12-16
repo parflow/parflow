@@ -557,7 +557,7 @@ static int KINSolInit(void *kinmem, integer Neq,
 
   if (etaflag == ETACHOICE1)
     /* this value ALWAYS used for Choice 1 */
-    ealpha = ONE + HALF * RSqrt(FIVE);
+    ealpha = (ONE + RSqrt(FIVE)) / TWO;
 
   if (etaflag == ETACHOICE2)
   {

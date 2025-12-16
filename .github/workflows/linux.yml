@@ -25,7 +25,7 @@ jobs:
            cache-parflow-style-hit: ${{steps.cache-parflow-style-dependencies.outputs.cache-hit}}
          with:
            path: "~/depend"
-           key: cache-check-style-${{ secrets.CACHE_VERSION }}
+           key: cache-check-style-${{ hashfiles('**/.github/workflows/linux.yml') }}
 
        - name: Directory Setup
          run: |
@@ -56,13 +56,13 @@ jobs:
            CACHE_HIT: ${{steps.cache-parflow-style-dependencies.outputs.cache-hit}}
          run: |
             if [[ "$CACHE_HIT" != 'true' ]]; then
-              echo "cache-check-style-${{ secrets.CACHE_VERSION }}" > $HOME/depend/cache-key
+              echo "cache-check-style-${{ hashfiles('**/.github/workflows/linux.yml') }}" > $HOME/depend/cache-key
               curl -L -o uncrustify-0.79.0.tar.gz https://github.com/uncrustify/uncrustify/archive/uncrustify-0.79.0.tar.gz
               tar -xf uncrustify-0.79.0.tar.gz
               cd uncrustify-uncrustify-0.79.0
               mkdir build
               cd build
-              cmake -DCMAKE_INSTALL_PREFIX=/usr/local ..
+              cmake -DCMAKE_INSTALL_PREFIX=${PARFLOW_DEP_DIR} ..
               make
               sudo make -j 2 install
               cd ../..
@@ -77,7 +77,7 @@ jobs:
                echo "Installing"
                mkdir -p $HOME/depend/{include,lib}
                cd $HOME/depend
-               echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ secrets.CACHE_VERSION }}" > $HOME/depend/cache-key
+               echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ hashfiles('**/.github/workflows/linux.yml') }}" > $HOME/depend/cache-key
                wget -nv --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-x86_64.tar.gz
                tar -xf cmake-3.25.1-linux-x86_64.tar.gz
                $HOME/depend/cmake-3.25.1-linux-x86_64/bin/cmake --version
@@ -121,7 +121,21 @@ jobs:
             amps_layer: mpi1,
             netcdf: "true",
             memory_manager: "none",
-            pdi: "false"
+            pdi: "false",
+            sundials: "embedded"
+          }
+        - {
+            name: "Ubuntu 24.04 GCC Sundials",
+            os: ubuntu-24.04,
+            cudaos: 'ubuntu2404',
+            cc: "gcc", cxx: "g++", fc: "gfortran",
+            python: "false",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "true",
+            memory_manager: "none",
+            pdi: "false",
+            sundials: "external"
           }
         - {
             name: "Ubuntu 24.04 LLVM",
@@ -133,7 +147,8 @@ jobs:
             amps_layer: mpi1,
             netcdf: "true",
             memory_manager: "none",
-            pdi: "false"
+            pdi: "false",
+            sundials: "embedded"
           }
         - {
             name: "Ubuntu 22.04 GCC Python",
@@ -145,7 +160,8 @@ jobs:
             amps_layer: mpi1,
             netcdf: "true",
             memory_manager: "none",
-            pdi: "false"
+            pdi: "false",
+            sundials: "embedded"
           }
         - {
             name: "Ubuntu 24.04 GCC Python",
@@ -157,7 +173,8 @@ jobs:
             amps_layer: mpi1,
             netcdf: "false",
             memory_manager: "none",
-            pdi: "false"
+            pdi: "false",
+            sundials: "embedded"
           }
         - {
             name: "Ubuntu 24.04 GCC OMP",
@@ -169,7 +186,8 @@ jobs:
             amps_layer: mpi1,
             netcdf: "false",
             memory_manager: "none",
-            pdi: "false"
+            pdi: "false",
+            sundials: "embedded"
           }
         - {
             name: "Ubuntu 24.04 LLVM OASIS3-MCT Build",
@@ -181,7 +199,8 @@ jobs:
             amps_layer: oas3,
             netcdf: "true",
             memory_manager: "none",
-            pdi: "false"
+            pdi: "false",
+            sundials: "embedded"
           }
 #        - {
 #            name: "Ubuntu 24.04 GCC CUDA/RMM Build",
@@ -204,7 +223,8 @@ jobs:
             amps_layer: mpi1,
             netcdf: "false",
             memory_manager: "umpire",
-            pdi: "false"
+            pdi: "false",
+            sundials: "embedded"
           }
 #        - {
 #            name: "Ubuntu 24.04 GCC Kokkos/RMM Build",
@@ -227,7 +247,8 @@ jobs:
             amps_layer: mpi1,
             netcdf: "false",
             memory_manager: "umpire",
-            pdi: "false"
+            pdi: "false",
+            sundials: "embedded"
           }
         - {
             name: "Ubuntu 24.04 GCC PDI Build",
@@ -239,7 +260,8 @@ jobs:
             amps_layer: mpi1,
             netcdf: "false",
             memory_manager: "none",
-            pdi: "true"
+            pdi: "true",
+            sundials: "embedded"
           }
 
     steps:
@@ -274,10 +296,6 @@ jobs:
         sudo apt-get -qq update
         sudo apt -qq install python3 python3-venv
 
-    # Cache dependencies so don't have to rebuild on each test.
-    # Can flush caches by resetting the CACHE_VERSION secret on GitHub
-    # settings for the project (using date-timestamp for secret).
-
     - name: Cache dependencies
       uses: actions/cache@v4
       id: cache-parflow-dependencies
@@ -286,7 +304,7 @@ jobs:
         cache-parflow-hit: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       with:
         path: "~/depend"
-        key: cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ matrix.config.memory_manager }}-${{ matrix.config.pdi }}-${{ secrets.CACHE_VERSION }}
+        key: cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ matrix.config.memory_manager }}-${{ matrix.config.pdi }}-${{ hashfiles('**/.github/workflows/linux.yml') }}
 
     - name: Directory Setup
       run: |
@@ -331,7 +349,7 @@ jobs:
        if [[ "$CACHE_HIT" != 'true' ]]; then
           echo "Installing CMake v3.26.5"
           cd $HOME/depend
-          echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ secrets.CACHE_VERSION }}" > $HOME/depend/cache-key
+          echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ hashfiles('**/.github/workflows/linux.yml') }}" > $HOME/depend/cache-key
           wget -nv --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.26.5/cmake-3.26.5-linux-x86_64.tar.gz
           tar -xf cmake-3.26.5-linux-x86_64.tar.gz
           $HOME/depend/cmake-3.26.5-linux-x86_64/bin/cmake --version
@@ -367,7 +385,7 @@ jobs:
       if: (matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos') && matrix.config.memory_manager == 'rmm'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          git clone --branch main --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git
+          git clone --depth 1 -b v25.08.00 --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git
           cd rmm
           mkdir build
           cd build
@@ -383,7 +401,7 @@ jobs:
       if: (matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos') && matrix.config.memory_manager == 'umpire'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          git clone --recursive https://github.com/LLNL/Umpire.git
+          git clone --depth 1 -b v2025.03.1 --single-branch --recursive https://github.com/LLNL/Umpire.git
           cd Umpire
           cmake -S . -B build                                             \
                      -DCMAKE_CXX_COMPILER=mpicxx                        \
@@ -476,11 +494,11 @@ jobs:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          URL=https://github.com/LLNL/Silo/archive/refs/tags/4.11.tar.gz
+          URL=https://github.com/LLNL/Silo/archive/refs/tags/4.11.1.tar.gz
           mkdir silo
           cd silo
           curl -L $URL | tar --strip-components=1 -xz
-          ./configure --disable-silex --disable-hzip --disable-fpzip --prefix=$PARFLOW_DEP_DIR
+          ./configure --disable-silex --disable-hzip --disable-fpzip --enable-shared=yes --prefix=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
 
@@ -503,7 +521,7 @@ jobs:
           fi
 
           # Install Hypre. See https://hypre.readthedocs.io/en/latest/ch-misc.html#build-system-options
-          cmake -S src -B build                                \
+          cmake -S src -B build                              \
                 -DCMAKE_C_COMPILER=mpicc                     \
                 -DCMAKE_CXX_COMPILER=mpicxx                  \
                 -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}"  \
@@ -512,6 +530,25 @@ jobs:
           cmake --build build --parallel 4
           cmake --install build
           echo "" && echo "Successfully built Hypre ${BACKEND}"
+        fi
+
+    - name: Sundials Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: matrix.config.sundials == 'external'
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          # Download
+          wget https://github.com/llnl/sundials/archive/v7.4.0.tar.gz
+          tar xf v7.4.0.tar.gz
+          cd sundials-7.4.0
+          cmake -S . -B build                   \
+                -DCMAKE_C_COMPILER=mpicc                     \
+                -DCMAKE_CXX_COMPILER=mpicxx                  \
+                -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}"
+          cmake --build build --parallel 4
+          cmake --install build
+          echo "SUNDIALS_FLAGS=-DSUNDIALS_ROOT=${PARFLOW_DEP_DIR}" >> $GITHUB_ENV
         fi
 
     - name: PDI Install
@@ -529,9 +566,8 @@ jobs:
           # Configure and install PDI
           mkdir build install
           cd build
-          cmake .. -DCMAKE_INSTALL_PREFIX=../install
+          cmake .. -DCMAKE_INSTALL_PREFIX=${PARFLOW_DEP_DIR}
           make -j 2 install
-          mv -v ${curr_pdi}/pdi ${PARFLOW_DEP_DIR}
         fi
 
         export LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/pdi/install/lib:${LD_LIBRARY_PATH}
@@ -556,6 +592,7 @@ jobs:
            -DPARFLOW_AMPS_LAYER=${{ matrix.config.amps_layer }}         \
            -DMPIEXEC_POSTFLAGS='--oversubscribe'                        \
            -DPARFLOW_ACCELERATOR_BACKEND=${{ matrix.config.backend }}   \
+           -DCMAKE_CUDA_ARCHITECTURES="60;70;75;80"                     \
            -DPARFLOW_AMPS_SEQUENTIAL_IO=true                            \
            -DPARFLOW_HAVE_CLM=${HAVE_CLM}                               \
            -DHYPRE_ROOT=$PARFLOW_DEP_DIR                                \
@@ -563,7 +600,7 @@ jobs:
            -DSILO_ROOT=$PARFLOW_DEP_DIR                                 \
            -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }}          \
            -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR                          \
-           $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS $UMPIRE_FLAGS $PDI_FLAGS
+           $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS $UMPIRE_FLAGS $PDI_FLAGS $SUNDIALS_FLAGS
 
     - name: ParFlow CMake Build
       run: (cd build; make -j 2 install)

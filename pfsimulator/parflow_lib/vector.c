@@ -33,7 +33,6 @@
 *****************************************************************************/
 
 #include "parflow.h"
-#include "vector.h"
 
 #ifdef HAVE_SAMRAI
 #include "SAMRAI/hier/PatchDescriptor.h"
@@ -284,6 +283,7 @@ static Vector  *NewTempVector(
 
   VectorSize(new_vector) = GridSize(grid);  /* VectorSize(vector) is vector->size, which is the total number of coefficients */
 
+  VectorNumGhost(new_vector) = num_ghost;  /* number of ghost cells for this vector */
 
 #ifdef HAVE_SAMRAI
   new_vector->samrai_id = -1;
@@ -410,7 +410,7 @@ Vector  *NewVectorType(
   type = vector_non_samrai;
 #endif
 
-  new_vector->type = type;
+  VectorType(new_vector) = type; /* type of this vector */
 
 
   switch (type)
