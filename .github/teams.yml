@@ -1,0 +1,8 @@
+# GitHub Teams Configuration
+# This file defines team memberships for the parflow organization
+
+teams:
+  hydroframe-ml:
+    description: "HydroFrame Machine Learning team"
+    members:
+      - snoorduijn
