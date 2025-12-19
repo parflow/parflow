@@ -5,7 +5,7 @@
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
 from parflow.tools.compare import pf_test_file, pf_test_file_with_abs
-import sys
+import sys, argparse
 
 run_name = "default_single"
 default_single = Run(run_name, __file__)
@@ -16,13 +16,19 @@ correct_output_dir_name = get_absolute_path("../correct_output")
 
 default_single.FileVersion = 4
 
+parser = argparse.ArgumentParser()
+parser.add_argument("-p", "--p", default=1)
+parser.add_argument("-q", "--q", default=1)
+parser.add_argument("-r", "--r", default=1)
+args = parser.parse_args()
+
 # -----------------------------------------------------------------------------
 # Process Topology
 # -----------------------------------------------------------------------------
 
-default_single.Process.Topology.P = 1
-default_single.Process.Topology.Q = 1
-default_single.Process.Topology.R = 1
+default_single.Process.Topology.P = args.p
+default_single.Process.Topology.Q = args.q
+default_single.Process.Topology.R = args.r
 
 # -----------------------------------------------------------------------------
 # Computational Grid

@@ -3362,6 +3362,35 @@ solid specified by the Patch.\ *patch_name*.BCPressure.RefGeom key.
 
       pfset Patch.top.BCPressure.RefPatch    "bottom"
 
+*bool* **Patch.\ *patch_name*.BCPressure.Seepage** False When set to
+True for an OverlandKinematic pressure boundary condition, this patch
+will be treated as a seepage patch for the overland kinematic wave
+formulation.
+
+Example of mixed boundary conditions: 
+
+::
+   CONUS2.Geom.domain.Patches = "ocean land top lake sink bottom"
+   CONUS2.BCPressure.PatchNames ="ocean land top lake sink bottom"
+
+In this example, the top gets assigned to the **OverlandKinematic** BC
+and the sink and lake will be treated as a seepage patch for the
+overland kinematic wave formulation
+ 
+::
+   
+   CONUS2.Patch.top.BCPressure.Type = 'OverlandKinematic'
+   CONUS2.Patch.lake.BCPressure.Type = 'OverlandKinematic'
+   CONUS2.Patch.lake.BCPressure.Seepage = True
+   CONUS2.Patch.sink.BCPressure.Type = 'OverlandKinematic'
+   CONUS2.Patch.sink.BCPressure.Seepage = True
+
+.. container:: list
+
+   ::
+
+      pfset Patch.top.BCPressure.Seepage    "True"
+      
 *double* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.Value** no
 default This key specifies the reference pressure value for the
 **DirEquilRefPatch** boundary condition or the constant flux value for
@@ -3515,36 +3544,6 @@ The choices for this key correspond to pressures as follows.
 
 **XYZTPlus1PermTensor**: 
    :math:`p = xyzt + 1`
-
-Example Script:
-
-.. container:: list
-
-   ::
-
-
-      #---------------------------------------------------------
-      # Initial conditions: water pressure [m]
-      #---------------------------------------------------------
-      # Using a patch is great when you are not using a box domain
-      # If using a box domain HydroStaticDepth is fine
-      # If your RefPatch is z-lower (bottom of domain), the pressure is positive.
-      # If your RefPatch is z-upper (top of domain), the pressure is negative.
-      ### Set water table to be at the bottom of the domain, the top layer is initially dry
-      pfset ICPressure.Type				      "HydroStaticPatch"
-      pfset ICPressure.GeomNames		         "domain"
-      pfset Geom.domain.ICPressure.Value	   2.2
-
-      pfset Geom.domain.ICPressure.RefGeom	"domain"
-      pfset Geom.domain.ICPressure.RefPatch	z-lower
-
-      ### Using a .pfb to initialize
-      pfset ICPressure.Type                  "PFBFile"
-      pfset ICPressure.GeomNames		         "domain"
-      pfset Geom.domain.ICPressure.FileName	"press.00090.pfb"
-
-      pfset Geom.domain.ICPressure.RefGeom	"domain"
-      pfset Geom.domain.ICPressure.RefPatch	"z-upper"
 
 .. _`Boundary Conditions: Saturation`:
 
@@ -3822,6 +3821,36 @@ domain. It is assumed that *geom_name* is “domain” for this key.
    ::
 
       pfset Geom.domain.ICPressure.FileName  "ic_pressure.pfb"
+
+Example Script:
+
+.. container:: list
+
+   ::
+
+
+      #---------------------------------------------------------
+      # Initial conditions: water pressure [m]
+      #---------------------------------------------------------
+      # Using a patch is great when you are not using a box domain
+      # If using a box domain HydroStaticDepth is fine
+      # If your RefPatch is z-lower (bottom of domain), the pressure is positive.
+      # If your RefPatch is z-upper (top of domain), the pressure is negative.
+      ### Set water table to be at the bottom of the domain, the top layer is initially dry
+      pfset ICPressure.Type				      "HydroStaticPatch"
+      pfset ICPressure.GeomNames		         "domain"
+      pfset Geom.domain.ICPressure.Value	   2.2
+
+      pfset Geom.domain.ICPressure.RefGeom	"domain"
+      pfset Geom.domain.ICPressure.RefPatch	z-lower
+
+      ### Using a .pfb to initialize
+      pfset ICPressure.Type                  "PFBFile"
+      pfset ICPressure.GeomNames		         "domain"
+      pfset Geom.domain.ICPressure.FileName	"press.00090.pfb"
+
+      pfset Geom.domain.ICPressure.RefGeom	"domain"
+      pfset Geom.domain.ICPressure.RefPatch	"z-upper"
 
 .. _`Initial Conditions: Phase Concentrations`:
 
@@ -4544,6 +4573,42 @@ ParFlow binary file.
 
       <runname>.Solver.PrintSaturation = False  ## Python syntax
 
+*string* **Solver.PrintQxOverland** False This key is used to turn on
+printing of the x-direction overland flow data. The printing of the data is 
+controlled by values in the timing information section. The data is written 
+as a 2D ParFlow binary file with dimensions [NY, NX]. The values represent 
+the x-direction surface flow velocity (ke_) in m/hr. For OverlandKinematic 
+and OverlandDiffusive, values are located at cell edges (x-faces). For 
+OverlandFlow, values are located at cell centers. To convert to volumetric 
+flux, multiply by dy and dt. This key produces files in the format 
+``<runname>.out.qx_overland.00000.pfb``.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.PrintQxOverland True           ## TCL syntax
+
+      <runname>.Solver.PrintQxOverland = True     ## Python syntax
+
+*string* **Solver.PrintQyOverland** False This key is used to turn on
+printing of the y-direction overland flow data. The printing of the data is 
+controlled by values in the timing information section. The data is written 
+as a 2D ParFlow binary file with dimensions [NY, NX]. The values represent 
+the y-direction surface flow velocity (kn_) in m/hr. For OverlandKinematic 
+and OverlandDiffusive, values are located at cell edges (y-faces). For 
+OverlandFlow, values are located at cell centers. To convert to volumetric 
+flux, multiply by dx and dt. This key produces files in the format 
+``<runname>.out.qy_overland.00000.pfb``.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.PrintQyOverland True           ## TCL syntax
+
+      <runname>.Solver.PrintQyOverland = True     ## Python syntax
+
 *string* **Solver.PrintConcentration** True This key is used to turn on
 printing of the concentration data. The printing of the data is
 controlled by values in the timing information section. The data is
@@ -4571,7 +4636,20 @@ intersect the domain.  The data is written as a ParFlow binary file.
       pfset Solver.PrintTop False                    ## TCL syntax
 
       <runname>.Solver.PrintTop = False              ## Python syntax
-      
+
+*string* **Solver.PrintBottom** False This key is used to turn on printing
+of the bottom of domain data.  'BottomZIndex' is a NX * NY file with the Z
+index of the top of the domain.  A value of -1 indicates an (i,j) column does 
+not intersect the domain.The data is written as a ParFlow binary file.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.PrintBottom False                 ## TCL syntax
+
+      <runname>.Solver.PrintBottom = False           ## Python syntax
+
 *string* **Solver.PrintWells** True This key is used to turn on
 collection and printing of the well data. The data is collected at
 intervals given by values in the timing information section. Printing
@@ -4675,6 +4753,36 @@ information section.
       pfset Solver.WriteSiloVelocities True           ## TCL syntax
 
       <runname>.Solver.WriteSiloVelocities = True     ## Python syntax
+
+*string* **Solver.WriteSiloQxOverland** False This key is used to
+specify printing of the x-direction overland flow data in silo binary format.
+The printing of the data is controlled by values in the timing information 
+section. The values represent x-direction surface flow velocity (ke_) in m/hr. 
+For OverlandKinematic and OverlandDiffusive, values are located at cell edges 
+(x-faces). For OverlandFlow, values are located at cell centers.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WriteSiloQxOverland True           ## TCL syntax
+
+      <runname>.Solver.WriteSiloQxOverland = True     ## Python syntax
+
+*string* **Solver.WriteSiloQyOverland** False This key is used to
+specify printing of the y-direction overland flow data in silo binary format.
+The printing of the data is controlled by values in the timing information 
+section. The values represent y-direction surface flow velocity (kn_) in m/hr. 
+For OverlandKinematic and OverlandDiffusive, values are located at cell edges 
+(y-faces). For OverlandFlow, values are located at cell centers.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WriteSiloQyOverland True           ## TCL syntax
+
+      <runname>.Solver.WriteSiloQyOverland = True     ## Python syntax
 
 *string* **Solver.WriteSiloSlopes** False This key is used to specify
 printing of the x and y slope data using silo binary format. The
@@ -4782,12 +4890,24 @@ Patch index for the top of the domain.  A value of -1 indicates an
 
 .. container:: list
 
-
    ::
 
       pfset Solver.WriteSiloTop True                  ## TCL syntax
 
       <runname>.Solver.WriteSiloTop = True            ## Python syntax
+
+*string* **Solver.WriteSiloBottom** False Key used to control writing of
+one Silo file for the bottom of the domain.  'BottomZIndex' is a NX * NY
+file with the Z index of the bottom of the domain. A value of -1 indicates
+an (i,j) column does not intersect the domain.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WriteSiloBottom True               ## TCL syntax
+
+      <runname>.Solver.WriteSiloBottom = True         ## Python syntax
 
 *string* **Solver.WritePDISubsurfData** False This key is used to specify exposing of
       the subsurface data, Permeability and Porosity to PDI library. The data is
@@ -4867,6 +4987,38 @@ Patch index for the top of the domain.  A value of -1 indicates an
       pfset Solver.WritePDIVelocities  True            ## TCL syntax
 
       <runname>.Solver.WritePDIVelocities = True       ## Python syntax
+
+*string* **Solver.WritePDIQxOverland** False This key is used to specify exposure of
+      x-direction overland flow data to PDI library. The values represent x-direction 
+      surface flow velocity (ke_) in m/hr. For OverlandKinematic and OverlandDiffusive, 
+      values are located at cell edges (x-faces). For OverlandFlow, values are located 
+      at cell centers. The data exposure is controlled by values in the timing 
+      information section and is subsequently managed by the PDI plugin according to 
+      the specification tree defined in conf.yaml.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WritePDIQxOverland  True            ## TCL syntax
+
+      <runname>.Solver.WritePDIQxOverland = True       ## Python syntax
+
+*string* **Solver.WritePDIQyOverland** False This key is used to specify exposure of
+      y-direction overland flow data to PDI library. The values represent y-direction 
+      surface flow velocity (kn_) in m/hr. For OverlandKinematic and OverlandDiffusive, 
+      values are located at cell edges (y-faces). For OverlandFlow, values are located 
+      at cell centers. The data exposure is controlled by values in the timing 
+      information section and is subsequently managed by the PDI plugin according to 
+      the specification tree defined in conf.yaml.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WritePDIQyOverland  True            ## TCL syntax
+
+      <runname>.Solver.WritePDIQyOverland = True       ## Python syntax
 
 *string* **Solver.WritePDISaturation** False This key is used to specify exposre of
       the saturation data to PDI library. The data exposure is controlled by
@@ -5428,6 +5580,16 @@ help with slope errors and issues and provides some diagnostic information.  The
       <runname>.Solver.SurfacePredictor.PrintValue  = "True"    ## Python syntax
 
 
+*logical* **Solver.SurfacePredictor.LateralFlows** False This key enables the use of overland flow lateral fluxes (qx_overland and qy_overland) in the surface predictor water balance calculation. When enabled, the predictor uses these surface flow values in addition to the subsurface fluxes to compute lateral flux divergence at the land surface. This improves the surface predictor's ability to estimate when ponding will occur by accounting for lateral redistribution of surface water.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.SurfacePredictor.LateralFlows        True        ## TCL syntax
+      <runname>.Solver.SurfacePredictor.LateralFlows  = "True"    ## Python syntax
+
+
 *logical* **Solver.EvapTransFile** False This key specifies specifies
 that the Flux terms for Richards’ equation are read in from a ParFlow 3D binary
 file. This file has [T^-1] units corresponding to the flux value(s) divided by
@@ -5877,8 +6039,11 @@ to be active.
       <runname>.Solver.CLM.CLMFileDir = "CLM_Output/"    ## Python syntax
 
 *integer* **Solver.CLM.CLMDumpInterval** 1 This key specifies how often
-output from the ``CLM`` is written. This key is in integer multipliers 
-of the ``CLM`` timestep. Note that ``CLM`` must be compiled and linked 
+output from the ``CLM`` is written. This key is the real
+time interval at which time-dependent output should be written. A value
+of **0** will produce undefined behavior. If the value is negative,
+output will be dumped out every :math:`n` time steps, where :math:`n` is
+the absolute value of the integer part of the value.  Note that ``CLM`` must be compiled and linked 
 at runtime for this option to be active.
 
 .. container:: list
@@ -5979,7 +6144,7 @@ to be active.
       pfset Solver.CLM.FieldCapacity  0.95         ## TCL syntax
       <runname>.Solver.CLM.FieldCapacity = 0.95    ## Python syntax
 
-*string* **Solver.CLM.IrrigationTypes** none This key specifies the form
+*string* **Solver.CLM.IrrigationType** none This key specifies the form
 of the irrigation in ``CLM``. The valid types for this key are **none**, 
 **Spray**, **Drip**, **Instant**.
 
@@ -5987,14 +6152,14 @@ of the irrigation in ``CLM``. The valid types for this key are **none**,
 
    ::
 
-      pfset Solver.CLM.IrrigationTypes "Drip"      ## TCL syntax
-      <runname>.Solver.CLM.IrrigationTypes "Drip"  ## Python syntax
+      pfset Solver.CLM.IrrigationType "Drip"      ## TCL syntax
+      <runname>.Solver.CLM.IrrigationType "Drip"  ## Python syntax
 
 *string* **Solver.CLM.IrrigationCycle** Constant This key specifies the
 cycle of the irrigation in ``CLM``. The valid types for this key are 
 **Constant**, **Deficit**. Note only **Constant** is currently implemented. Constant 
 cycle applies irrigation each day from IrrigationStartTime to 
-IrrigationStopTime in GMT.
+IrrigationStopTime in hours of the day (24-hour time) in GMT.
 
 .. container:: list
 
@@ -6020,8 +6185,8 @@ specifies the start time of the irrigation in ``CLM`` GMT.
 
    ::
 
-      pfset Solver.CLM.IrrigationStartTime 0800          ## TCL syntax
-      <runname>.Solver.CLM.IrrigationStartTime = 0800    ## Python syntax
+      pfset Solver.CLM.IrrigationStartTime 8.0          ## TCL syntax
+      <runname>.Solver.CLM.IrrigationStartTime = 8.0    ## Python syntax
 
 *double* **Solver.CLM.IrrigationStopTime** no default This key specifies
 the stop time of the irrigation in ``CLM`` GMT.
@@ -6030,8 +6195,8 @@ the stop time of the irrigation in ``CLM`` GMT.
 
    ::
 
-      pfset Solver.CLM.IrrigationStopTime 1200        ## TCL syntax
-      <runname>.Solver.CLM.IrrigationStopTime = 1200  ## Python syntax
+      pfset Solver.CLM.IrrigationStopTime 12.0        ## TCL syntax
+      <runname>.Solver.CLM.IrrigationStopTime = 12.0  ## Python syntax
 
 *double* **Solver.CLM.IrrigationThreshold** 0.5 This key specifies the
 threshold value for the irrigation in ``CLM``.
@@ -6231,6 +6396,32 @@ coefficients to be written in NetCDF4 file.
 
       pfset NetCDF.WriteMannings	    True    ## TCL syntax
       <runname>.NetCDF.WriteMannings = True  ## Python syntax
+
+*string* **NetCDF.WriteQxOverland** False This key sets x-direction 
+overland flow (qx_overland) to be written in NetCDF4 file. The values 
+represent x-direction surface flow velocity (ke_) in m/hr. For 
+OverlandKinematic and OverlandDiffusive, values are located at cell 
+edges (x-faces). For OverlandFlow, values are located at cell centers.
+
+.. container:: list
+
+   ::
+
+      pfset NetCDF.WriteQxOverland    True      ## TCL syntax
+      <runname>.NetCDF.WriteQxOverland = True   ## Python syntax
+
+*string* **NetCDF.WriteQyOverland** False This key sets y-direction 
+overland flow (qy_overland) to be written in NetCDF4 file. The values 
+represent y-direction surface flow velocity (kn_) in m/hr. For 
+OverlandKinematic and OverlandDiffusive, values are located at cell 
+edges (y-faces). For OverlandFlow, values are located at cell centers.
+
+.. container:: list
+
+   ::
+
+      pfset NetCDF.WriteQyOverland    True      ## TCL syntax
+      <runname>.NetCDF.WriteQyOverland = True   ## Python syntax
 
 *string* **NetCDF.WriteSubsurface** False This key sets subsurface
 data (permeabilities, porosity, specific storage) to be written in

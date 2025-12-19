@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-subroutine drv_clmini (drv, grid,pf_porosity, tile, clm, istep_pf)
+subroutine drv_clmini (drv, grid,pf_porosity, tile, clm, istep_pf, clm_forc_veg)
 
 !=========================================================================
 !
@@ -76,6 +76,7 @@ subroutine drv_clmini (drv, grid,pf_porosity, tile, clm, istep_pf)
   real(r8) dzlak(1:10)  !temporary dz; currenly hard coded initialization
   real(r8) xksat
   real(r8) pf_porosity(nlevsoi)  !porosity from PF, replaces watsat clm var
+  integer,intent(in)  :: clm_forc_veg
 
 !=== End Variable List ===================================================
 
@@ -443,7 +444,7 @@ subroutine drv_clmini (drv, grid,pf_porosity, tile, clm, istep_pf)
 ! fraction
 ! ========================================================================
 
-  call clm_dynvegpar (clm)
+  call clm_dynvegpar (clm,clm_forc_veg)
 
 ! ========================================================================
 ! TIME VARIANT [7]

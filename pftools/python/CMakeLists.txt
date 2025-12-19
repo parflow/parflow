@@ -54,9 +54,8 @@ add_custom_command(
     "${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt"
     "${CMAKE_CURRENT_SOURCE_DIR}/requirements_all.txt"
     "${CMAKE_CURRENT_SOURCE_DIR}/requirements_pfsol.txt"
-    "${CMAKE_CURRENT_SOURCE_DIR}/setup.cfg"
     "${CMAKE_CURRENT_SOURCE_DIR}/requirements_dev.txt"
-    "${CMAKE_CURRENT_SOURCE_DIR}/setup.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/pyproject.toml"
     "${CMAKE_CURRENT_SOURCE_DIR}/pfpython"
     "${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt"
   COMMENT
@@ -76,7 +75,7 @@ install(
     "${CMAKE_CURRENT_SOURCE_DIR}/requirements_all.txt"
     "${CMAKE_CURRENT_SOURCE_DIR}/requirements_pfsol.txt"
     "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
-    "${CMAKE_CURRENT_SOURCE_DIR}/setup.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/pyproject.toml"
   DESTINATION
     "python"
 )
@@ -106,7 +105,9 @@ add_custom_target(PythonCreatePackage
   COMMAND
       "${CMAKE_COMMAND}" -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/dist/"
   COMMAND
-      ${PARFLOW_PYTHON} setup.py sdist bdist_wheel
+      ${CMAKE_INSTALL_PREFIX}/py-env/bin/pip3 install build
+  COMMAND
+      ${CMAKE_INSTALL_PREFIX}/py-env/bin/python3 -m build --wheel --sdist
   COMMAND
       ${CMAKE_INSTALL_PREFIX}/py-env/bin/twine check "${CMAKE_CURRENT_BINARY_DIR}/dist/*"
   COMMENT

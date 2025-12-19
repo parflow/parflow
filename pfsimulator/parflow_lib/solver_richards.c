@@ -85,6 +85,7 @@ typedef struct {
   int print_mannings;           /* print mannings? */
   int print_specific_storage;   /* print spec storage? */
   int print_top;                /* print top? */
+  int print_bottom;             /* print bottom? */
   int print_velocities;         /* print velocities? */
   int print_satur;              /* print saturations? */
   int print_mask;               /* print mask? */
@@ -96,6 +97,8 @@ typedef struct {
   int print_evaptrans_sum;      /* print evaptrans_sum? */
   int print_overland_sum;       /* print overland_sum? */
   int print_overland_bc_flux;   /* print overland outflow boundary condition flux? */
+  int print_qx_overland;        /* print q_overlnd_x? */
+  int print_qy_overland;        /* print q_overlnd_y? */
 
   int write_pdi_subsurf_data;     /* write subsurf via PDI */
   int write_pdi_press;            /* write pressure via PDI */
@@ -103,6 +106,7 @@ typedef struct {
   int write_pdi_mannings;         /* write mannings via PDI */
   int write_pdi_specific_storage; /* write specific storage via PDI */
   int write_pdi_top;              /* write top via PDI */
+  int write_pdi_bottom;           /* write bottom via PDI */
   int write_pdi_velocities;       /* write velocities via PDI */
   int write_pdi_satur;            /* write saturation via PDI */
   int write_pdi_mask;             /* write mask via PDI */
@@ -113,6 +117,8 @@ typedef struct {
   int write_pdi_evaptrans_sum;    /* write evaptrans_sum via PDI */
   int write_pdi_overland_sum;     /* write overland_sum via PDI */
   int write_pdi_overland_bc_flux; /* write overland_bc_flux via PDI */
+  int write_pdi_qx_overland;      /* write q_overlnd_x via PDI */
+  int write_pdi_qy_overland;      /* write q_overlnd_y via PDI */
 
   int write_silo_subsurf_data;  /* write permeability/porosity? */
   int write_silo_press;         /* write pressures? */
@@ -126,8 +132,11 @@ typedef struct {
   int write_silo_mannings;      /* write mannings? */
   int write_silo_specific_storage;      /* write specific storage? */
   int write_silo_top;           /* write top? */
+  int write_silo_bottom;           /* write bottom? */
   int write_silo_overland_sum;  /* write sum of overland outflow? */
   int write_silo_overland_bc_flux;      /* write overland outflow boundary condition flux? */
+  int write_silo_qx_overland;   /* write q_overlnd_x? */
+  int write_silo_qy_overland;   /* write q_overlnd_y? */
   int write_silo_dzmult;        /* write dz multiplier */
   int write_silopmpio_subsurf_data;     /* write permeability/porosity as PMPIO? */
   int write_silopmpio_press;    /* write pressures as PMPIO? */
@@ -155,6 +164,7 @@ typedef struct {
   int surface_predictor;  /* key to turn on surface predictor feature RMM */
   double surface_predictor_pressure;  /* surface predictor pressure value RMM */
   int surface_predictor_print;  /* key to turn on surface predictor printing RMM */
+  int surface_lateral_flows;          /* enable surface lateral flow prediction */
 
 
 #ifdef HAVE_CLM                 /* VARIABLES FOR CLM ONLY */
@@ -214,6 +224,8 @@ typedef struct {
   int write_netcdf_evaptrans_sum;       /* write evaptrans_sum? */
   int write_netcdf_overland_sum;        /* write overland_sum? */
   int write_netcdf_overland_bc_flux;    /* write overland_bc_flux? */
+  int write_netcdf_qx_overland;        /* write q_overlnd_x? */
+  int write_netcdf_qy_overland;        /* write q_overlnd_y? */
   int write_netcdf_mask;        /* write mask? */
   int write_netcdf_mannings;    /* write mask? */
   int write_netcdf_subsurface;  /* write subsurface? */
@@ -281,6 +293,8 @@ typedef struct {
   Vector *x_velocity;           /* vector containing x-velocity face values */
   Vector *y_velocity;           /* vector containing y-velocity face values */
   Vector *z_velocity;           /* vector containing z-velocity face values */
+  Vector *q_overlnd_x;          /* 2D vector containing surface flow in x-direction */
+  Vector *q_overlnd_y;          /* 2D vector containing surface flow in y-direction */
 #ifdef HAVE_CLM
   /* RM: vars for pf printing of clm output */
   Vector *eflx_lh_tot;          /* total LH flux from canopy height to atmosphere [W/m^2] */
@@ -490,7 +504,7 @@ SetupRichards(PFModule * this_module)
 
   /* Do turning bands (and other stuff maybe) */
   PFModuleInvokeType(SetProblemDataInvoke, set_problem_data, (problem_data));
-  ComputeTop(problem, problem_data);
+  ComputeTopAndBottom(problem, problem_data);
 
   if (public_xtra->print_top || public_xtra->write_silo_top)
   {
@@ -848,9 +862,20 @@ SetupRichards(PFModule * this_module)
     WritePFBinary(file_prefix, file_postfix, ProblemDataPatchIndexOfDomainTop(problem_data));
   }
 
+  if (public_xtra->print_bottom)
+  {
+    strcpy(file_postfix, "bottom_zindex");
+    WritePFBinary(file_prefix, file_postfix, ProblemDataIndexOfDomainBottom(problem_data));
+  }
+
   if (public_xtra->write_pdi_top)
   {
     printf("WritePDITop -- not yet implemented\n");
+  }
+
+  if (public_xtra->write_pdi_bottom)
+  {
+    printf("WritePDIBottom -- not yet implemented\n");
   }
 
   if (public_xtra->write_silo_top)
@@ -862,6 +887,14 @@ SetupRichards(PFModule * this_module)
     strcpy(file_type, "top_patch");
     WriteSilo(file_prefix, file_type, file_postfix, ProblemDataPatchIndexOfDomainTop(problem_data),
               t, 0, "TopPatch");
+  }
+
+  if (public_xtra->write_silo_bottom)
+  {
+    strcpy(file_postfix, "");
+    strcpy(file_type, "bottom_zindex");
+    WriteSilo(file_prefix, file_type, file_postfix, ProblemDataIndexOfDomainBottom(problem_data),
+              t, 0, "BottomZIndex");
   }
 
   if (!amps_Rank(amps_CommWorld))
@@ -965,6 +998,36 @@ SetupRichards(PFModule * this_module)
     instance_xtra->z_velocity =
       NewVectorType(z_grid, 1, 2, vector_side_centered_z);
     InitVectorAll(instance_xtra->z_velocity, 0.0);
+
+    /* initialize 2D surface flow vectors */
+
+    if (public_xtra->write_silo_qx_overland
+        || public_xtra->print_qx_overland
+        || public_xtra->write_pdi_qx_overland
+        || public_xtra->write_netcdf_qx_overland)
+    {
+      instance_xtra->q_overlnd_x =
+        NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      InitVectorAll(instance_xtra->q_overlnd_x, 0.0);
+    }
+    else
+    {
+      instance_xtra->q_overlnd_x = NULL;
+    }
+
+    if (public_xtra->write_silo_qy_overland
+        || public_xtra->print_qy_overland
+        || public_xtra->write_pdi_qy_overland
+        || public_xtra->write_netcdf_qy_overland)
+    {
+      instance_xtra->q_overlnd_y =
+        NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      InitVectorAll(instance_xtra->q_overlnd_y, 0.0);
+    }
+    else
+    {
+      instance_xtra->q_overlnd_y = NULL;
+    }
 
     /*sk Initialize LSM terms */
     instance_xtra->evap_trans = NewVectorType(grid, 1, 1, vector_cell_centered);
@@ -1921,8 +1984,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 #ifdef HAVE_CLM
   Grid *grid = (instance_xtra->grid);
   Subgrid *subgrid;
-  Subvector *p_sub, *s_sub, *et_sub, *m_sub, *po_sub, *dz_sub;
-  double *pp, *sp, *et, *ms, *po_dat, *dz_dat;
+  Subvector *p_sub, *s_sub, *et_sub, *po_sub, *dz_sub;
+  double *pp, *sp, *et, *po_dat, *dz_dat;
 
   /* IMF: For CLM met forcing (local to AdvanceRichards) */
   int istep;                    // IMF: counter for clm output times
@@ -2540,11 +2603,19 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         int soi_z;
         int x, y, z;
 
+        Vector *top = ProblemDataIndexOfDomainTop(problem_data);
+        Vector *bot = ProblemDataIndexOfDomainBottom(problem_data);
+        Subvector *top_sub;
+        Subvector *bot_sub;
+        double *top_dat;
+        double *bot_dat;
+
         subgrid = GridSubgrid(grid, is);
         p_sub = VectorSubvector(instance_xtra->pressure, is);
         s_sub = VectorSubvector(instance_xtra->saturation, is);
         et_sub = VectorSubvector(evap_trans, is);
-        m_sub = VectorSubvector(instance_xtra->mask, is);
+        top_sub = VectorSubvector(top, is);
+        bot_sub = VectorSubvector(bot, is);
         po_sub = VectorSubvector(porosity, is);
         dz_sub = VectorSubvector(instance_xtra->dz_mult, is);
 
@@ -2621,7 +2692,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         sp = SubvectorData(s_sub);
         pp = SubvectorData(p_sub);
         et = SubvectorData(et_sub);
-        ms = SubvectorData(m_sub);
+        top_dat = SubvectorData(top_sub);
+        bot_dat = SubvectorData(bot_sub);
         po_dat = SubvectorData(po_sub);
         dz_dat = SubvectorData(dz_sub);
 
@@ -2751,8 +2823,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           {
             /*BH: added vegetation forcings and associated option (clm_forc_veg) */
             clm_file_dir_length = strlen(public_xtra->clm_file_dir);
-            CALL_CLM_LSM(pp, sp, et, ms, po_dat, dz_dat, istep, cdt, t,
-                         start_time, dx, dy, dz, ix, iy, nx, ny, nz,
+            CALL_CLM_LSM(pp, sp, et, top_dat, bot_dat, po_dat, dz_dat, istep,
+                         cdt, t, start_time, dx, dy, dz, ix, iy, nx, ny, nz,
                          nx_f, ny_f, nz_f, nz_rz, ip, p, q, r, gnx,
                          gny, rank, sw_data, lw_data, prcp_data,
                          tas_data, u_data, v_data, patm_data,
@@ -3196,9 +3268,13 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         int ip;
         double dx, dy, dz;
         double vol, vol_max, flux_in, press_pred, flux_darcy;
+        double flux_surface_lateral = 0.0;
+        double flux_total = 0.0;
 
         Subvector *p_sub, *s_sub, *et_sub, *po_sub, *dz_sub, *vz_sub, *vx_sub, *vy_sub;
+        Subvector *qx_sub, *qy_sub;
         double *pp, *sp, *et, *po_dat, *dz_dat, *vz, *vx, *vy;
+        double *qx_dat, *qy_dat;
 
         Subgrid *subgrid;
         Grid *grid = VectorGrid(evap_trans_sum);
@@ -3214,6 +3290,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           vx_sub = VectorSubvector(instance_xtra->x_velocity, is);
           vy_sub = VectorSubvector(instance_xtra->y_velocity, is);
           vz_sub = VectorSubvector(instance_xtra->z_velocity, is);
+
+          qx_sub = VectorSubvector(instance_xtra->q_overlnd_x, is);
+          qy_sub = VectorSubvector(instance_xtra->q_overlnd_y, is);
 
           r = SubgridRX(subgrid);
 
@@ -3239,6 +3318,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           vy = SubvectorData(vy_sub);
           vz = SubvectorData(vz_sub);
 
+          qx_dat = SubvectorData(qx_sub);
+          qy_dat = SubvectorData(qy_sub);
+
 
           GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
           {
@@ -3249,20 +3331,37 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
             int vyi_jm1 = SubvectorEltIndex(vy_sub, i, j, k);
             int vzi_km1 = SubvectorEltIndex(vz_sub, i, j, k);
 
-            int vxi_p1 = SubvectorEltIndex(vx_sub, i + 1, j, k + 1);
-            int vyi_p1 = SubvectorEltIndex(vy_sub, i, j + 1, k + 1);
-            int vxi_im1_p1 = SubvectorEltIndex(vx_sub, i, j, k + 1);
-            int vyi_jm1_p1 = SubvectorEltIndex(vy_sub, i, j, k + 1);
-
             if (k == (nz - 1))
             {
               vol = dx * dy * dz * dz_dat[ip] * po_dat[ip] * sp[ip];
               flux_in = dx * dy * dz * dz_dat[ip] * et[ip] * dt;
               vol_max = dx * dy * dz * dz_dat[ip] * po_dat[ip];
 
+              flux_surface_lateral = 0.0;
+
               flux_darcy = vz[vzi_km1] * dx * dy * dt + (-vx[vxi] + vx[vxi_im1]) * dy * dz * dz_dat[ip] * dt + (-vy[vyi] + vy[vyi_jm1]) * dx * dz * dz_dat[ip] * dt;
-              press_pred = ((flux_in + flux_darcy) - (vol_max - vol)) / (dx * dy * po_dat[ip]);
-              if ((flux_in + flux_darcy) > (vol_max - vol))
+
+              if (public_xtra->surface_lateral_flows == 1)
+              {
+                int io_q = SubvectorEltIndex(qx_sub, i, j, 0);
+                int io_q_west = SubvectorEltIndex(qx_sub, i - 1, j, 0);
+                int io_q_south = SubvectorEltIndex(qy_sub, i, j - 1, 0);
+
+                double qx_current = qx_dat[io_q];
+                double qx_west = (i > 0) ? qx_dat[io_q_west] : 0.0;
+                double qy_current = qy_dat[io_q];
+                double qy_south = (j > 0) ? qy_dat[io_q_south] : 0.0;
+
+                flux_surface_lateral = dt * ((qx_current - qx_west) * dy + (qy_current - qy_south) * dx);
+                flux_total = flux_in + flux_darcy + flux_surface_lateral;
+              }
+              else
+              {
+                flux_total = flux_in + flux_darcy;
+              }
+
+              press_pred = (flux_total - (vol_max - vol)) / (dx * dy * po_dat[ip]);
+              if (flux_total > (vol_max - vol))
               {
                 if (pp[ip] < 0.0)
                 {
@@ -3273,9 +3372,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
                   if (public_xtra->surface_predictor_print == 1)
                   {
-                    amps_Printf("SP: Cell vol: %3.6e vol_max: %3.6e flux_in: %3.6e  Flux Darcy: %3.6e Cell Pressure: %3.6e Pred Pressure: %3.6e I: %d J: %d  Time: %12.4e  \n", vol, vol_max, flux_in, flux_darcy, pp[ip], press_pred, i, j, t);
-                    amps_Printf("SP: vx_r: %3.6e vx_l: %3.6e vy_r: %3.6e vy_l: %3.6e vz_l: %3.6e  I: %d J: %d k: %d \n", vx[vxi], vx[vxi_im1], vy[vyi], vy[vyi_jm1], vz[vzi_km1], i, j, k);
-                    amps_Printf("SP: vx_r: %3.6e vx_l: %3.6e vy_r: %3.6e vy_l: %3.6e    k+1 \n", vx[vxi_p1], vx[vxi_im1_p1], vy[vyi_p1], vy[vyi_jm1_p1]);
+                    amps_Printf("SP: Cell vol: %3.6e vol_max: %3.6e flux_in: %3.6e  Flux Darcy: %3.6e Flux Surface: %3.6e Flux Total: %3.6e \n", vol, vol_max, flux_in, flux_darcy, flux_surface_lateral, flux_total);
+                    amps_Printf("SP: Cell Pressure: %3.6e Pred Pressure: %3.6e I: %d J: %d  Time: %12.4e \n", pp[ip], press_pred, i, j, t);
+                    amps_Printf("SP: vx_r: %3.6e vx_l: %3.6e vy_r: %3.6e vy_l: %3.6e vz_l: %3.6e  I: %d J: %d K: %d \n", vx[vxi], vx[vxi_im1], vy[vyi], vy[vyi_jm1], vz[vzi_km1], i, j, k);
                   }
                   pp[ip] = press_pred;
                 }
@@ -3304,7 +3403,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                                    instance_xtra->ovrl_bc_flx,
                                    instance_xtra->x_velocity,
                                    instance_xtra->y_velocity,
-                                   instance_xtra->z_velocity));
+                                   instance_xtra->z_velocity,
+                                   instance_xtra->q_overlnd_x,
+                                   instance_xtra->q_overlnd_y));
 
       if (retval != 0)
       {
@@ -4006,6 +4107,76 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         WriteSiloPMPIO(file_prefix, file_type, file_postfix,
                        instance_xtra->ovrl_bc_flx, t,
                        instance_xtra->file_number, "OverlandBCFlux");
+        any_file_dumped = 1;
+      }
+
+      if (public_xtra->write_netcdf_qx_overland)
+      {
+        sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+        WritePFNC(file_prefix, nc_postfix, t,
+                  instance_xtra->q_overlnd_x,
+                  public_xtra->numVarTimeVariant, "qx_overland",
+                  2, false, public_xtra->numVarIni);
+        any_file_dumped = 1;
+      }
+
+      if (public_xtra->write_netcdf_qy_overland)
+      {
+        sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+        WritePFNC(file_prefix, nc_postfix, t,
+                  instance_xtra->q_overlnd_y,
+                  public_xtra->numVarTimeVariant, "qy_overland",
+                  2, false, public_xtra->numVarIni);
+        any_file_dumped = 1;
+      }
+
+      if (public_xtra->print_qx_overland)
+      {
+        sprintf(file_postfix, "qx_overland.%05d", instance_xtra->file_number);
+        WritePFBinary(file_prefix, file_postfix, instance_xtra->q_overlnd_x);
+        any_file_dumped = 1;
+      }
+
+      if (public_xtra->print_qy_overland)
+      {
+        sprintf(file_postfix, "qy_overland.%05d", instance_xtra->file_number);
+        WritePFBinary(file_prefix, file_postfix, instance_xtra->q_overlnd_y);
+        any_file_dumped = 1;
+      }
+
+      if (public_xtra->write_pdi_qx_overland)
+      {
+        sprintf(file_postfix, "qx_overland.%05d", instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                 instance_xtra->q_overlnd_x, 0, 0);
+        any_file_dumped = 1;
+      }
+
+      if (public_xtra->write_pdi_qy_overland)
+      {
+        sprintf(file_postfix, "qy_overland.%05d", instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                 instance_xtra->q_overlnd_y, 0, 0);
+        any_file_dumped = 1;
+      }
+
+      if (public_xtra->write_silo_qx_overland)
+      {
+        sprintf(file_postfix, "%05d", instance_xtra->file_number);
+        sprintf(file_type, "qx_overland");
+        WriteSilo(file_prefix, file_type, file_postfix,
+                  instance_xtra->q_overlnd_x, t,
+                  instance_xtra->file_number, "QxOverland");
+        any_file_dumped = 1;
+      }
+
+      if (public_xtra->write_silo_qy_overland)
+      {
+        sprintf(file_postfix, "%05d", instance_xtra->file_number);
+        sprintf(file_type, "qy_overland");
+        WriteSilo(file_prefix, file_type, file_postfix,
+                  instance_xtra->q_overlnd_y, t,
+                  instance_xtra->file_number, "QyOverland");
         any_file_dumped = 1;
       }
 
@@ -4750,25 +4921,18 @@ TeardownRichards(PFModule * this_module)
   FreeVector(instance_xtra->x_velocity);
   FreeVector(instance_xtra->y_velocity);
   FreeVector(instance_xtra->z_velocity);
+  FreeVector(instance_xtra->q_overlnd_x);
+
+  FreeVector(instance_xtra->q_overlnd_y);
   FreeVector(instance_xtra->evap_trans);
 
-  if (instance_xtra->evap_trans_sum)
-  {
-    FreeVector(instance_xtra->evap_trans_sum);
-  }
-
-  if (instance_xtra->overland_sum)
-  {
-    FreeVector(instance_xtra->overland_sum);
-  }
+  FreeVector(instance_xtra->evap_trans_sum);
+  FreeVector(instance_xtra->overland_sum);
 
 #ifdef HAVE_CLM
   if (instance_xtra->eflx_lh_tot)
   {
-    if (instance_xtra->clm_out_grid)
-    {
-      FreeVector(instance_xtra->clm_out_grid);
-    }
+    FreeVector(instance_xtra->clm_out_grid);
 
     FreeVector(instance_xtra->eflx_lh_tot);
     FreeVector(instance_xtra->eflx_lwrad_out);
@@ -5131,7 +5295,7 @@ SolverRichardsInitInstanceXtra()
     (instance_xtra->nonlin_solver) =
       PFModuleNewInstanceType(NonlinSolverInitInstanceXtraInvoke,
                               public_xtra->nonlin_solver,
-                              (problem, grid, instance_xtra->problem_data,
+                              (problem, grid, grid2d, instance_xtra->problem_data,
                                NULL));
   }
   else
@@ -5227,7 +5391,7 @@ SolverRichardsInitInstanceXtra()
   /* renew nonlinear solver module */
   PFModuleReNewInstanceType(NonlinSolverInitInstanceXtraInvoke,
                             (instance_xtra->nonlin_solver),
-                            (NULL, NULL, instance_xtra->problem_data,
+                            (NULL, NULL, NULL, instance_xtra->problem_data,
                              temp_data));
 
   /* renew set_problem_data module */
@@ -5875,6 +6039,11 @@ SolverRichardsNewPublicXtra(char *name)
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_top = switch_value;
 
+  sprintf(key, "%s.PrintBottom", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->print_bottom = switch_value;
+
   sprintf(key, "%s.PrintPressure", name);
   switch_name = GetStringDefault(key, "True");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
@@ -5924,6 +6093,16 @@ SolverRichardsNewPublicXtra(char *name)
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_overland_bc_flux = switch_value;
+
+  sprintf(key, "%s.PrintQxOverland", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->print_qx_overland = switch_value;
+
+  sprintf(key, "%s.PrintQyOverland", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->print_qy_overland = switch_value;
 
   sprintf(key, "%s.PrintWells", name);
   switch_name = GetStringDefault(key, "True");
@@ -6092,6 +6271,26 @@ SolverRichardsNewPublicXtra(char *name)
   }
   public_xtra->write_pdi_overland_bc_flux = switch_value;
 
+  sprintf(key, "%s.WritePDIQxOverland", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_qx_overland = switch_value;
+
+  sprintf(key, "%s.WritePDIQyOverland", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_qy_overland = switch_value;
+
   /* Silo file writing control */
 
   sprintf(key, "%s.WriteSiloSubsurfData", name);
@@ -6133,6 +6332,16 @@ SolverRichardsNewPublicXtra(char *name)
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_overland_bc_flux = switch_value;
+
+  sprintf(key, "%s.WriteSiloQxOverland", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->write_silo_qx_overland = switch_value;
+
+  sprintf(key, "%s.WriteSiloQyOverland", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->write_silo_qy_overland = switch_value;
 
   sprintf(key, "%s.WriteSiloDZMultiplier", name);
   switch_name = GetStringDefault(key, "False");
@@ -6210,6 +6419,24 @@ SolverRichardsNewPublicXtra(char *name)
     public_xtra->numVarTimeVariant++;
   }
   public_xtra->write_netcdf_overland_bc_flux = switch_value;
+
+  sprintf(key, "NetCDF.WriteQxOverland");
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  if (switch_value == 1)
+  {
+    public_xtra->numVarTimeVariant++;
+  }
+  public_xtra->write_netcdf_qx_overland = switch_value;
+
+  sprintf(key, "NetCDF.WriteQyOverland");
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  if (switch_value == 1)
+  {
+    public_xtra->numVarTimeVariant++;
+  }
+  public_xtra->write_netcdf_qy_overland = switch_value;
 
   sprintf(key, "NetCDF.WriteMannings");
   switch_name = GetStringDefault(key, "False");
@@ -6341,6 +6568,10 @@ SolverRichardsNewPublicXtra(char *name)
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_top = switch_value;
 
+  sprintf(key, "%s.WriteSiloBottom", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->write_silo_bottom = switch_value;
 
   /* Initialize silo if necessary */
   if (public_xtra->write_silo_subsurf_data ||
@@ -6355,6 +6586,7 @@ SolverRichardsNewPublicXtra(char *name)
       public_xtra->write_silo_mannings ||
       public_xtra->write_silo_mask ||
       public_xtra->write_silo_top ||
+      public_xtra->write_silo_bottom ||
       public_xtra->write_silo_overland_sum ||
       public_xtra->write_silo_overland_bc_flux ||
       public_xtra->write_silo_dzmult || public_xtra->write_silo_CLM)
@@ -6483,6 +6715,11 @@ SolverRichardsNewPublicXtra(char *name)
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->surface_predictor_print = switch_value;
+
+  sprintf(key, "%s.SurfacePredictor.LateralFlows", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->surface_lateral_flows = switch_value;
 
 
 

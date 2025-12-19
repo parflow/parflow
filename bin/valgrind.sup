@@ -200,6 +200,14 @@
 }
 
 {
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:__intel_sse2_strncmp
+   ...
+   fun:MPIDI_CH3I_set_affinity
+}
+
+{
    Clone
    Memcheck:Leak
    ...
@@ -255,6 +263,37 @@
 
 {
    <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   obj:/usr/lib64/libibverbs.so.1.14.48.0
+   fun:nl_recvmsgs_report
+   fun:nl_recvmsgs
+   obj:/usr/lib64/libibverbs.so.1.14.48.0
+   obj:/usr/lib64/libibverbs.so.1.14.48.0
+   obj:/usr/lib64/libibverbs.so.1.14.48.0
+   fun:ibv_get_device_list
+   ...
+   fun:rdma_cm_get_hca_type
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   obj:/usr/lib64/libmlx4.so.1.0.48.0
+   obj:/usr/lib64/libibverbs.so.1.14.48.0
+   obj:/usr/lib64/libibverbs.so.1.14.48.0
+   obj:/usr/lib64/libibverbs.so.1.14.48.0
+   fun:ibv_get_device_list
+   ...
+   fun:MPID_Init
+}
+
+
+{
+   <insert_a_suppression_name_here>
    Memcheck:Cond
    ...
    fun:mv2_get_arch_hca_type
@@ -268,7 +307,6 @@
    fun:PMPI_Finalize
    ...
 }
-
 
 {
    <insert_a_suppression_name_here>
@@ -525,20 +563,6 @@
 
 ##############################################################################
 #
-# Silo
-#
-##############################################################################
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Addr8
-   fun:DBClose
-   fun:WriteSilo
-   ...
-   fun:main
-}
-
-##############################################################################
-#
 # CUDA
 # These suppressions are overly version specific
 #
@@ -746,3 +770,4 @@
    fun:cudaMemPrefetchAsync
    ...
 }
+

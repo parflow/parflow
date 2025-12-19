@@ -1,8 +1,0 @@
-Process 0 on Reed-Maxwells-MacBook-Air-8.local
-TFG true 
-Node 0: Using process grid (1,1,1)
-Node 0: Well Information
-Node 0: No Wells.
-Node 0: Well Information
-Node 0: No Wells.
-Problem solved 
