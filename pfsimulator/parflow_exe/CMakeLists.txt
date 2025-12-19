@@ -30,6 +30,10 @@ if (${PARFLOW_HAVE_HYPRE})
   target_link_libraries (parflow Hypre::Hypre)
 endif (${PARFLOW_HAVE_HYPRE})
 
+if (${PARFLOW_HAVE_TORCH})
+  target_link_libraries (parflow ${TORCH_LIBRARIES})
+endif (${PARFLOW_HAVE_TORCH})
+
 if (${PARFLOW_HAVE_SUNDIALS})
   target_link_libraries (parflow ${SUNDIALS_LIBRARIES})
 endif (${PARFLOW_HAVE_SUNDIALS})

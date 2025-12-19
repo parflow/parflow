@@ -17,6 +17,12 @@ set(TESTS
   overland_tiltedV_MGSemiTest
 )
 
+if(${PARFLOW_HAVE_TORCH})
+  list(APPEND TESTS
+    default_richards_wells_with_torch
+  )
+endif()  
+
 if(${PARFLOW_HAVE_HYPRE})
   list(APPEND TESTS
     bc_pressure_file

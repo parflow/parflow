@@ -1,4 +1,5 @@
-set (SRC_FILES_CONST advect.F
+set (SRC_FILES_CONST torch_wrapper.cpp
+  advect.F
   advection_godunov.c
   bc_lb.c
   bc_pressure.c
@@ -292,6 +293,11 @@ if (${PARFLOW_HAVE_HYPRE})
   target_include_directories (pfsimulator PUBLIC ${HYPRE_INCLUDE_DIR})
   target_link_libraries (pfsimulator Hypre::Hypre)
 endif (${PARFLOW_HAVE_HYPRE})
+
+if (${PARFLOW_HAVE_TORCH})
+  target_link_libraries(pfsimulator "${TORCH_LIBRARIES}")
+  set_property(TARGET pfsimulator PROPERTY CXX_STANDARD 17)
+endif (${PARFLOW_HAVE_TORCH})
 
 if (${PARFLOW_HAVE_MPI})
   target_include_directories (pfsimulator PUBLIC "${MPI_C_INCLUDE_PATH}")
