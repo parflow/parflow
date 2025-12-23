@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include "parflow.h"
 
@@ -128,7 +128,7 @@ void         WellPackage(
   double          **phase_values;
   double subgrid_volume;
   double x_lower, x_upper, y_lower, y_upper,
-    z_lower, z_upper;
+         z_lower, z_upper;
 
   /* Allocate the well data */
   WellDataNumPhases(well_data) = (public_xtra->num_phases);
@@ -471,7 +471,7 @@ void         WellPackage(
           /* well_action = 0 means we're doing extraction, well_action = 1 means we're doing injection    */
           /* The ordering of the extraction and injection wells is important.  The partner_ptr of the     */
           /*   injection well needs to point to allocated data (in the extraction well).  If the order is */
-          /*   reversed then this storage wont exist.                                                     */
+          /*   reversed then this storage won't exist.                                                    */
 
           for (well_action = 0; well_action < 2; well_action++)
           {
@@ -865,7 +865,8 @@ PFModule  *WellPackageNewPublicXtra(
   (public_xtra->num_phases) = num_phases;
   (public_xtra->num_contaminants) = num_contaminants;
 
-  well_names = GetString("Wells.Names");
+  char* EMPTY_NAMES_LIST = "";
+  well_names = GetStringDefault("Wells.Names", EMPTY_NAMES_LIST);
 
   public_xtra->well_names = NA_NewNameArray(well_names);
 
@@ -894,7 +895,7 @@ PFModule  *WellPackageNewPublicXtra(
 
       sprintf(key, "Wells.%s.InputType", well_name);
       switch_name = GetString(key);
-      public_xtra->type[i] = NA_NameToIndex(inputtype_na, switch_name);
+      public_xtra->type[i] = NA_NameToIndexExitOnError(inputtype_na, switch_name, key);
 
       switch ((public_xtra->type[i]))
       {
@@ -907,22 +908,11 @@ PFModule  *WellPackageNewPublicXtra(
 
           sprintf(key, "Wells.%s.Action", well_name);
           switch_name = GetString(key);
-          dummy0->action = NA_NameToIndex(action_na, switch_name);
-          if (dummy0->action < 0)
-          {
-            InputError("Error: invalid action <%s> for key <%s>\n",
-                       switch_name, key);
-          }
+          dummy0->action = NA_NameToIndexExitOnError(action_na, switch_name, key);
 
           sprintf(key, "Wells.%s.Type", well_name);
           switch_name = GetString(key);
-          dummy0->mechanism = NA_NameToIndex(mechanism_na, switch_name);
-          if (dummy0->mechanism < 0)
-          {
-            InputError("Error: invalid type <%s> for key <%s>\n",
-                       switch_name, key);
-          }
-
+          dummy0->mechanism = NA_NameToIndexExitOnError(mechanism_na, switch_name, key);
 
           sprintf(key, "Wells.%s.X", well_name);
           dummy0->xlocation = GetDouble(key);
@@ -941,34 +931,18 @@ PFModule  *WellPackageNewPublicXtra(
           {
             sprintf(key, "Wells.%s.Method", well_name);
             switch_name = GetString(key);
-            (dummy0->method) = NA_NameToIndex(methodpress_na, switch_name);
-            if ((dummy0->method) < 0)
-            {
-              InputError("Error: invalid action <%s> for key <%s>\n",
-                         switch_name, key);
-            }
+            (dummy0->method) = NA_NameToIndexExitOnError(methodpress_na, switch_name, key);
           }
           else if ((dummy0->mechanism) == FLUX_WELL)
           {
             sprintf(key, "Wells.%s.Method", well_name);
             switch_name = GetString(key);
-            (dummy0->method) = NA_NameToIndex(methodflux_na, switch_name);
-            if ((dummy0->method) < 0)
-            {
-              InputError("Error: invalid action <%s> for key <%s>\n",
-                         switch_name, key);
-            }
+            (dummy0->method) = NA_NameToIndexExitOnError(methodflux_na, switch_name, key);
           }
 
           sprintf(key, "Wells.%s.Cycle", well_name);
           cycle_name = GetString(key);
-          global_cycle = NA_NameToIndex(GlobalsCycleNames, cycle_name);
-
-          if (global_cycle < 0)
-          {
-            InputError("Error: Cycle name <%s> does not exist for key <%s>\n",
-                       cycle_name, key);
-          }
+          global_cycle = NA_NameToIndexExitOnError(GlobalsCycleNames, cycle_name, key);
 
           dummy0->cycle_number = i;
 
@@ -1107,23 +1081,13 @@ PFModule  *WellPackageNewPublicXtra(
           sprintf(key, "Wells.%s.ExtractionType", well_name);
           switch_name = GetString(key);
           dummy1->mechanism_ext =
-            NA_NameToIndex(mechanism_na, switch_name);
+            NA_NameToIndexExitOnError(mechanism_na, switch_name, key);
 
-          if (dummy1->mechanism_ext < 0)
-          {
-            InputError("Error: invalid extraction type <%s> for key <%s>\n",
-                       switch_name, key);
-          }
 
           sprintf(key, "Wells.%s.InjectionType", well_name);
           switch_name = GetString(key);
           dummy1->mechanism_inj =
-            NA_NameToIndex(mechanism_na, switch_name);
-          if (dummy1->mechanism_inj < 0)
-          {
-            InputError("Error: invalid injection type <%s> for key <%s>\n",
-                       switch_name, key);
-          }
+            NA_NameToIndexExitOnError(mechanism_na, switch_name, key);
 
           sprintf(key, "Wells.%s.X", well_name);
           dummy1->xlocation = GetDouble(key);
@@ -1150,58 +1114,32 @@ PFModule  *WellPackageNewPublicXtra(
           {
             sprintf(key, "Wells.%s.ExtractionMethod", well_name);
             switch_name = GetString(key);
-            (dummy1->method_ext) = NA_NameToIndex(methodpress_na, switch_name);
-            if ((dummy1->method_ext) < 0)
-            {
-              InputError("Error: invalid action <%s> for key <%s>\n",
-                         switch_name, key);
-            }
+            (dummy1->method_ext) = NA_NameToIndexExitOnError(methodpress_na, switch_name, key);
           }
           else if ((dummy1->mechanism_ext) == FLUX_WELL)
           {
             sprintf(key, "Wells.%s.ExtractionMethod", well_name);
             switch_name = GetString(key);
-            (dummy1->method_ext) = NA_NameToIndex(methodflux_na, switch_name);
-            if ((dummy1->method_ext) < 0)
-            {
-              InputError("Error: invalid action <%s> for key <%s>\n",
-                         switch_name, key);
-            }
+            (dummy1->method_ext) = NA_NameToIndexExitOnError(methodflux_na, switch_name, key);
           }
 
           if ((dummy1->mechanism_inj) == PRESSURE_WELL)
           {
             sprintf(key, "Wells.%s.InjectionMethod", well_name);
             switch_name = GetString(key);
-            (dummy1->method_inj) = NA_NameToIndex(methodpress_na, switch_name);
-            if ((dummy1->method_inj) < 0)
-            {
-              InputError("Error: invalid action <%s> for key <%s>\n",
-                         switch_name, key);
-            }
+            (dummy1->method_inj) = NA_NameToIndexExitOnError(methodpress_na, switch_name, key);
           }
           else if ((dummy1->mechanism_inj) == FLUX_WELL)
           {
             sprintf(key, "Wells.%s.InjectionMethod", well_name);
             switch_name = GetString(key);
-            (dummy1->method_inj) = NA_NameToIndex(methodflux_na, switch_name);
-            if ((dummy1->method_inj) < 0)
-            {
-              InputError("Error: invalid action <%s> for key <%s>\n",
-                         switch_name, key);
-            }
+            (dummy1->method_inj) = NA_NameToIndexExitOnError(methodflux_na, switch_name, key);
           }
 
           sprintf(key, "Wells.%s.Cycle", well_name);
           cycle_name = GetString(key);
 
-          global_cycle = NA_NameToIndex(GlobalsCycleNames, cycle_name);
-
-          if (global_cycle < 0)
-          {
-            InputError("Error: invalid cycle name <%s> for key <%s>\n",
-                       cycle_name, key);
-          }
+          global_cycle = NA_NameToIndexExitOnError(GlobalsCycleNames, cycle_name, key);
 
           dummy1->cycle_number = i;
 
@@ -1346,8 +1284,7 @@ PFModule  *WellPackageNewPublicXtra(
 
         default:
         {
-          InputError("Error: invalid type <%s> for key <%s>\n",
-                     switch_name, key);
+          InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
         }
       }
     }

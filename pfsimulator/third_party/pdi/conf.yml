@@ -1,0 +1,136 @@
+.types:
+  - &Subregion
+    type: record
+    buffersize: 56
+    members:
+      ix:      {disp: 0, type: int}
+      iy:      {disp: 4, type: int}
+      iz:      {disp: 8, type: int}
+      nx:      {disp: 12, type: int}
+      ny:      {disp: 16, type: int}
+      nz:      {disp: 20, type: int}
+      sx:      {disp: 24, type: int}
+      sy:      {disp: 28, type: int}
+      sz:      {disp: 32, type: int}
+      rx:      {disp: 36, type: int}
+      ry:      {disp: 40, type: int}
+      rz:      {disp: 44, type: int}
+      level:   {disp: 48, type: int}
+      process: {disp: 52, type: int}
+  - &Subvector
+    type: record
+    buffersize: 32
+    members:
+      data:
+        disp: 0
+        type: pointer
+        subtype:
+          type: array
+          size: $temp_data_size
+          subtype: double
+      allocated:
+        disp: 8
+        type: int
+      data_space:
+        disp: 16
+        type: pointer
+        subtype: *Subregion
+      data_size:
+        disp: 24
+        type: int
+  - &SubregionArray
+    type: record
+    buffersize: 16
+    members:
+      subregions:
+        disp: 0
+        type: pointer
+        subtype:
+          type: array
+          size: $num_grid
+          subtype:
+            type: pointer
+            subtype: *Subregion
+      size:
+        disp: 8
+        type: int
+  - &Grid
+    type: record
+    buffersize: 40
+    members:
+      subgrids:
+        disp: 0
+        type: pointer
+        subtype:
+          type: array
+          size: 1
+          subtype: *SubregionArray
+      all_subgrids:
+        disp: 8
+        type: pointer
+        subtype:
+          type: array
+          size: 1
+          subtype: *SubregionArray
+      size:
+        disp: 16
+        type: int
+logging: trace
+metadata:
+  filename:               { type: array, subtype: char, size: 255 }
+  parflowrank:            int
+  file_number:            int
+  drop_tolerance:         double
+  with_tolerance:         int
+  temp_data_size:         int
+  num_grid:               int
+  grid_disp:              int
+  data_space_disp:        int
+  size_disp:              int
+  vector_pdi_buffer_size: int
+  X:                      double
+  Y:                      double
+  Z:                      double
+  NX:                     int
+  NY:                     int
+  NZ:                     int
+  DX:                     double
+  DY:                     double
+  DZ:                     double
+  num_subgrids:           int
+data:
+  sparse_vector_data:
+    type: record
+    buffersize: $vector_pdi_buffer_size
+    members:
+      subvectors:
+        disp: 0
+        type: pointer
+        subtype:
+          type: array
+          size: 1
+          subtype:
+            type: pointer
+            subtype: *Subvector
+      data_size:
+        disp: 8
+        type: int
+      grid:
+        disp: $grid_disp
+        type: pointer
+        subtype: *Grid
+      data_space:
+        disp: $data_space_disp
+        type: pointer
+        subtype: *SubregionArray
+      size:
+        disp: $size_disp
+        type: int
+plugins:
+  serialize:
+    sparse_vector_data: vector_data
+  decl_hdf5:
+#  - file: ${filename}.${parflowrank}.h5
+  - file: ${filename}.h5
+    write: [ X, Y, Z, NX, NY, NZ, DX, DY, DZ, file_number, num_subgrids, drop_tolerance, with_tolerance, vector_data ]
+#    write: [ X, Y, Z, NX, NY, NZ, DX, DY, DZ, file_number, num_subgrids, drop_tolerance, with_tolerance, sparse_vector_data ]

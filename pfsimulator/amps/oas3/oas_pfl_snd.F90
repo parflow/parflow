@@ -29,7 +29,7 @@ SUBROUTINE oas_pfl_snd(kid, kstep, kdata, nx, ny, kinfo, kindex)
 ! Modules Used:
 
 USE oas_pfl_vardef
-USE mod_prism_put_proto
+
 
 !==============================================================================
 

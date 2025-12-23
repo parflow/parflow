@@ -44,7 +44,7 @@ c----------------------------------------------------------------------
       subroutine advect(s,sn,uedge,vedge,wedge,phi,
      $     slx,sly,slz,
      $     lo,hi,dlo,dhi,hx,dt,fstord,
-     $     sbot,stop,sbotp,sfrt,sbck,sleft,sright,sfluxz,
+     $     sbot,s_top,sbotp,sfrt,sbck,sleft,sright,sfluxz,
      $     dxscr,dyscr,dzscr,dzfrm) 
       implicit none
 
@@ -81,7 +81,7 @@ c     ::: argument declarations
       real*8  slz(dlo(1)-2:dhi(1)+2, dlo(2)-2:dhi(2)+2, 3) 
 
       real*8  sbot(dlo(1)-3:dhi(1)+3, dlo(2)-3:dhi(2)+3)
-      real*8  stop(dlo(1)-3:dhi(1)+3, dlo(2)-3:dhi(2)+3)
+      real*8  s_top(dlo(1)-3:dhi(1)+3, dlo(2)-3:dhi(2)+3)
       real*8  sbotp(dlo(1)-3:dhi(1)+3, dlo(2)-3:dhi(2)+3)
 
       real*8  sbck(dlo(1)-3:dhi(1)+3, dlo(2)-3:dhi(2)+3)
@@ -263,7 +263,7 @@ c----------------------------------------------------------
 
                sbotp(i,j)  =
      $              thi_zlo - dth*( sux + suy + cuz ) * phiinv
-               stop(i,j)   =
+               s_top(i,j)   =
      $              tlo_zhi - dth*( sux + suy + cuz ) * phiinv
 
             enddo
@@ -337,7 +337,7 @@ c     ::: add z contributions to sn
                   if (wedge(i,j,k) .ge. 0.0) then
                      supw = sbot(i,j)
                   else
-                     supw = stop(i,j)
+                     supw = s_top(i,j)
                   endif
                   sfluxz(i) = wedge(i,j,k)*supw*dzi
 

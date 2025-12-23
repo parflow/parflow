@@ -20,7 +20,7 @@
   line output to the trace file and will permit the translation of the
   other entry and exit pointers to their symbolic names. You may set
   the macro PTRACE_INCLUDE with any #include directives needed for
-  that function to be accesible to this source file.
+  that function to be accessible to this source file.
 
   The printed messages yield function addresses, not human-readable
   names. To link both, you need to get a list of symbols from the

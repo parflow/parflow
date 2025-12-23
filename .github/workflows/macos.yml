@@ -1,0 +1,164 @@
+name: MacOS CI Tests
+
+#
+# Notes
+# Currently using GCC for the build rather than Clang
+# Python 3.13 used rather than more current available versions since Numba library does not work with later versions
+
+on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      # fail-fast: true
+      matrix:
+        config:
+        - {
+            name: "MacOS 14",
+            os: macos-14,
+            cudaos: '',
+            python: "true",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "true"
+          }
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.13' 
+    - uses: fortran-lang/setup-fortran@v1
+      with:
+        compiler: gcc
+    - uses: mpi4py/setup-mpi@v1
+      with:
+        mpi: openmpi
+
+    - name: HDF5 Install
+      run: |
+        brew install hdf5-mpi
+
+    - name: TCL Link
+      run: |
+        brew link tcl-tk@8
+
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      id: cache-parflow-dependencies
+      env:
+        cache-name: cache-parflow-dependencies
+        cache-parflow-hit: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      with:
+        path: "~/depend"
+        key: cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ hashfiles('**/.github/workflows/macos.yml') }}
+
+    - name: Directory Setup
+      run: |
+        mkdir -p $HOME/install
+        echo "PARFLOW_DIR=$HOME/install" >> $GITHUB_ENV
+        echo "Setting PARFLOW_DIR=$HOME/install"
+        mkdir -p $HOME/depend/{include,lib}
+        echo "PARFLOW_DEP_DIR=$HOME/depend" >> $GITHUB_ENV
+        echo "Setting PARFLOW_DEP_DIR=$HOME/depend"
+        echo "PARFLOW_DEP_DIR=$HOME/depend" >> $GITHUB_ENV
+        echo "$HOME/depend/bin" >> $GITHUB_PATH
+        export LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/lib64:${PARFLOW_DEP_DIR}/lib:${LD_LIBRARY_PATH}
+        echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+        export PARFLOW_PYTHON3=/opt/homebrew/bin/python3.13
+        echo "PARFLOW_PYTHON3=${PARFLOW_PYTHON3}" >> $GITHUB_ENV
+        echo "Python version:"
+        $PARFLOW_PYTHON3 --version
+
+    - name: CMake Install
+      if: matrix.config.os != 'macos-14'
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      run: |
+       if [[ "$CACHE_HIT" != 'true' ]]; then
+          echo "Installing"
+          cd ~/depend
+          echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ hashfiles('**/.github/workflows/macos.yml') }}" > ~/depend/cache-key
+          wget -nv --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-x86_64.tar.gz
+          tar -xf cmake-3.25.1-linux-x86_64.tar.gz
+          $HOME/depend/cmake-3.25.1-linux-x86_64/bin/cmake --version
+        fi
+        echo "$HOME/depend/cmake-3.25.1-linux-x86_64/bin" >> $GITHUB_PATH
+
+    # Package netcdf is missing features needed by the ParFlow writers, build from source
+    # netcdf is True when we want to build the PF NetCDF writer.
+    - name: NetCDF Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: matrix.config.netcdf == 'true'
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          URL=https://github.com/Unidata/netcdf-c/archive/v4.9.0.tar.gz
+          mkdir netcdf-c
+          cd netcdf-c
+          curl -L $URL | tar --strip-components=1 -xz
+          CC=mpicc CPPFLAGS=-I/opt/homebrew/include LDFLAGS=-L/opt/homebrew/lib/ ./configure --prefix=$PARFLOW_DEP_DIR
+          make -j 3
+          make install
+          cd ..
+
+          URL=https://github.com/Unidata/netcdf-fortran/archive/v4.5.4.tar.gz
+          mkdir netcdf-fortran
+          cd netcdf-fortran
+          curl -L $URL | tar --strip-components=1 -xz
+          CC=mpicc FC=mpifort CPPFLAGS=-I${PARFLOW_DEP_DIR}/include LDFLAGS=-L${PARFLOW_DEP_DIR}/lib ./configure --prefix=${PARFLOW_DEP_DIR}
+          make -j 3
+          make install
+        fi
+        echo "NETCDF_FLAGS=-DNETCDF_DIR=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_HDF5=TRUE" >> $GITHUB_ENV
+
+    - name: SILO Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          URL=https://github.com/LLNL/Silo/archive/refs/tags/4.11.1.tar.gz
+          mkdir silo
+          cd silo
+          curl -L $URL | tar --strip-components=1 -xz
+          ./configure --disable-silex --disable-hzip --disable-fpzip --enable-shared=yes --disable-fortran --with-readline=no --prefix=$PARFLOW_DEP_DIR 
+          make -j 3 install
+        fi
+
+    - name: HYPRE Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          URL=https://github.com/hypre-space/hypre/archive/v2.26.0.tar.gz
+          mkdir hypre
+          cd hypre
+          curl -L $URL | tar --strip-components=1 -xz
+          cd src
+          CC=mpicc CXX=mpic++ FC=mpif77 F77=mpif90 ./configure --prefix=$PARFLOW_DEP_DIR
+          make -j 3 install
+        fi
+
+    - name: ParFlow CMake Configure
+      run: |
+        mpicc -v
+        if [[ "${{ matrix.config.amps_layer }}" == "oas3" ]]; then HAVE_CLM="OFF"; else HAVE_CLM="ON"; fi
+        # SGS 2025-01-06  Had to hack in homebrew file paths for TCL.  Links in /opt/homebrew/bin and lib are created by brew link above.
+        # Why can't we get TCL paths from pkgconf?
+        CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function" -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_AMPS_LAYER=${{ matrix.config.amps_layer }} -DPARFLOW_ACCELERATOR_BACKEND=${{ matrix.config.backend }} -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_HAVE_CLM=${HAVE_CLM} -DHYPRE_ROOT=$PARFLOW_DEP_DIR -DOAS3_ROOT=$PARFLOW_DEP_DIR -DSILO_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }} $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DTCL_INCLUDE_PATH=/opt/homebrew/bin/usr/include -DTCL_LIBRARY=/opt/homebrew/lib/libtcl8.6.dylib -DTCL_TCLSH=/opt/homebrew/bin/tclsh8.6 -DPython3_EXECUTABLE=$PARFLOW_PYTHON3
+
+    - name: ParFlow CMake Build
+      run: (cd build; make -j 3 VERBOSE=1 install)
+
+    # Can't test with GPU since have no GPU hardware on testing nodes, GPU test is build only
+    - name: ParFlow CTest
+      if: matrix.config.backend != 'cuda' && matrix.config.backend != 'kokkos'
+      run: |
+        (cd build; ctest --output-on-failure)

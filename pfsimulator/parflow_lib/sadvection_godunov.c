@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 /*****************************************************************************
 *
@@ -134,15 +134,15 @@ void     SatGodunov(
   SubregionArray   *subregion_array;
 
   Subgrid          *subgrid,
-    *well_subgrid,
-    *tmp_subgrid;
+                   *well_subgrid,
+                   *tmp_subgrid;
   Subregion        *subregion;
   Subvector        *subvector,
-    *subvector_scal,
-    *subvector_rhs,
-    *subvector_xvel,
-    *subvector_yvel,
-    *subvector_zvel;
+                   *subvector_scal,
+                   *subvector_rhs,
+                   *subvector_xvel,
+                   *subvector_yvel,
+                   *subvector_zvel;
 
   ComputePkg       *compute_pkg;
   Region           *compute_reg = NULL;
@@ -152,10 +152,10 @@ void     SatGodunov(
   int nx, ny, nz;
   double dx, dy, dz;
   int nx_s, ny_s, nz_s,
-    nx_w, ny_w, nz_w,
-    nx_xv, ny_xv, nz_xv,
-    nx_yv, ny_yv, nz_yv,
-    nx_zv, ny_zv, nz_zv;
+      nx_w, ny_w, nz_w,
+      nx_xv, ny_xv, nz_xv,
+      nx_yv, ny_yv, nz_yv,
+      nx_zv, ny_zv, nz_zv;
 
   int i, j, k, si, wi, xi, yi, zi;
   int index, flopest;

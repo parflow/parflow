@@ -9,7 +9,7 @@ Utitility to build 3D PFSOL domain from 2D mask file(s).
 There are two modes of running.  In the first case a single mask file
 is supplied, enabling a top surface to have multiple patches with the
 sides/bottom labeled as one patch.  In the second mode, a mask file is
-provived for each direction to enable labeling of each cell surface.
+provided for each direction to enable labeling of each cell surface.
 The values in the mask file are used to label the patches.
 
 ```shell
@@ -60,14 +60,30 @@ Back   +Y
 Each mask file should be the same dimensions in X and Y and have
 number of points in Z = 1.
 
+Note that the axis alignment shown here is based on the standard PF
+axis alignment used inside the code and in PF file formats.  Other
+file formats, such as the ASC format, use different alignments.  In
+the ASC format the Y axis is inverted from the PF file formats.
+
 #### Setting Top/Bottom of domain
 
 The mask file is typically coming from a 2D file so does not have any
-depth information.  By default the top is 0 and bottom is 1000.0.  The
+depth information.  By default the top is 1000.0 and bottom is 0.0.  The
 top and bottom can be set using the "--z-top" and "--z-bottom" flags:
 
 ```shell
-pfmask-to-pfsol --z-top 10.0 --z-bottom 200.0
+pfmask-to-pfsol --z-top 200.0 --z-bottom 10.0 <other args>
+```
+
+#### Setting DX/DY
+
+The simple PF file formats do not include DX/DY/DZ information, this
+information may be set using the top, bottom, dx, and dy flags.  The
+dx/dy flags have priority over information coming from from the input
+file (such as the cellsize value from an ASC file).
+
+```shell
+pfmask-to-pfsol --z-top 200.0 --z-bottom 10.0 --dy 1.0 --dx 1.0 <other args>
 ```
 
 ### Mask ASC file format

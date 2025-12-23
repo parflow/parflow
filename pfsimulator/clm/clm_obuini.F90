@@ -40,7 +40,7 @@ subroutine clm_obuini(ur,      thv,     dthv,      zldis,       &
        z0m          ! roughness length, momentum [m]
 
   real(r8), intent(out) :: &
-       um,         &! wind speed including the stablity effect [m/s]
+       um,         &! wind speed including the stability effect [m/s]
        obu          ! monin-obukhov length (m)
 
 !=== Local Variables =====================================================

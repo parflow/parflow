@@ -1,6 +1,6 @@
 #  This test problem runs the Richards' equation solvers
 #  on the eqn:  - div (p grad p) = f where p = x^3y^2 + sin(xy) + 1
-#  and f is choosen to guarantee the correct solution.
+#  and f is chosen to guarantee the correct solution.
 #  For 128 x 128 unknowns, the following line should be printed on
 #  the screen:
 #
@@ -293,6 +293,8 @@ pfset Solver.Linear.Preconditioner                       MGSemi
 pfset Solver.Linear.Preconditioner.SymmetricMat          Symmetric
 pfset Solver.Linear.Preconditioner.MGSemi.MaxIter        1
 pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      100
+
+pfset Solver.TerrainFollowingGrid.SlopeUpwindFormulation Upwind
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files

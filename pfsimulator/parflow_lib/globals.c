@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 /** @file
  * @brief Routines for manipulating global structures.
@@ -88,7 +88,7 @@ void   NewGlobals(char *run_name)
 
 void  FreeGlobals()
 {
-  free(globals_ptr);
+  tfree(globals_ptr);
 }
 
 /*--------------------------------------------------------------------------
@@ -117,39 +117,3 @@ void  LogGlobals()
     CloseLogFile(log_file);
   }
 }
-
-#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
-
-/**
- * @brief A struct for constant global data in read-only device memory.
- **/
-__constant__ Globals dev_globals;
-
-/**
- * @brief A struct member for constant global data in read-only device memory.
- **/
-__constant__ Background dev_background;
-
-/**
- * @brief A function to copy constant global data to read-only device memory.
- **/
-void CopyGlobalsToDevice()
-{
-  // Temporary pointers for getting the symbol addresses
-  Globals *tmp_globals_ptr;
-  Background *tmp_background_ptr;
-
-  // Get the symbol addresses from the __constant__ allocations
-  CUDA_ERR(cudaGetSymbolAddress((void**)&tmp_globals_ptr, dev_globals));
-  CUDA_ERR(cudaGetSymbolAddress((void**)&tmp_background_ptr, dev_background));
-
-  // Copy background data from host to device
-  CUDA_ERR(cudaMemcpy(tmp_background_ptr, globals->background, sizeof(Background), cudaMemcpyHostToDevice));
-
-  // Assign dev_background address to dev_globals.background
-  CUDA_ERR(cudaMemcpyToSymbol(dev_globals, &tmp_background_ptr, sizeof(Background*), offsetof(Globals, background), cudaMemcpyHostToDevice));
-
-  // Assign dev_globals address to dev_globals_ptr
-  CUDA_ERR(cudaMemcpyToSymbol(dev_globals_ptr, &tmp_globals_ptr, sizeof(Globals*), 0, cudaMemcpyHostToDevice));
-}
-#endif // PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA

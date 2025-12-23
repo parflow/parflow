@@ -1,0 +1,50 @@
+Perm:
+  Names: background
+  TensorByGeom:
+    Names: background
+Porosity:
+  GeomNames: background
+Retardation:
+  GeomNames: ''
+background:
+  Lower:
+    X: -99999999.0
+    Y: -99999999.0
+    Z: -99999999.0
+  Perm:
+    TensorValX: 1.0
+    TensorValY: 1.0
+    TensorValZ: 1.0
+    Type: Constant
+    Value: 4.0
+  Porosity:
+    Type: Constant
+    Value: 1.0
+  Upper:
+    X: 99999999.0
+    Y: 99999999.0
+    Z: 99999999.0
+domain:
+  ICPressure:
+    RefGeom: domain
+    RefPatch: bottom
+    Value: 3.0
+  Lower:
+    X: -10.0
+    Y: 10.0
+    Z: 1.0
+  Patches: left right front back bottom top
+  RelPerm:
+    Alpha: 0.005
+    N: 2.0
+  Saturation:
+    Alpha: 0.005
+    N: 2.0
+    SRes: 0.2
+    SSat: 0.99
+  SpecificStorage:
+    Value: 0.0001
+  Upper:
+    X: 150.0
+    Y: 170.0
+    Z: 9.0

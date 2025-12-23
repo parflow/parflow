@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /****************************************************************************
  *
  *****************************************************************************/
@@ -268,32 +268,32 @@ double  MaxPhaseFieldValue(
           tmp_max = fabs(vp[vi]) / psi_max;
           switch (dir)
           {
-            case 0:
-              {
-                if (tmp_max > max_xdir_value)
+              case 0:
                 {
-                  max_xdir_value = tmp_max;
+                  if (tmp_max > max_xdir_value)
+                  {
+                    max_xdir_value = tmp_max;
+                  }
+                  break;
                 }
-                break;
-              }
 
-            case 1:
-              {
-                if (tmp_max > max_ydir_value)
+              case 1:
                 {
-                  max_ydir_value = tmp_max;
+                  if (tmp_max > max_ydir_value)
+                  {
+                    max_ydir_value = tmp_max;
+                  }
+                  break;
                 }
-                break;
-              }
 
-            case 2:
-              {
-                if (tmp_max > max_zdir_value)
+              case 2:
                 {
-                  max_zdir_value = tmp_max;
+                  if (tmp_max > max_zdir_value)
+                  {
+                    max_zdir_value = tmp_max;
+                  }
+                  break;
                 }
-                break;
-              }
           }
         }
       });
@@ -364,7 +364,7 @@ double  MaxTotalFieldValue(
   double f_prime_max, h_prime_max = 0.0;
   double max_field_value, psi_max, ds = 0.0;
   double max_xdir_value, max_ydir_value, max_zdir_value,
-    max_total_value, max_gravity_value;
+         max_total_value, max_gravity_value;
   double tmp, tmp_max, tmp_total = 0.0, tmp_gravity = 0.0;
 
   double a, b, den0, den1, dtmp, g, constant;
@@ -577,40 +577,40 @@ double  MaxTotalFieldValue(
 
           switch (dir)
           {
-            case 0:
-              {
-                if (tmp_max > max_xdir_value)
+              case 0:
                 {
-                  max_xdir_value = tmp_max;
+                  if (tmp_max > max_xdir_value)
+                  {
+                    max_xdir_value = tmp_max;
+                  }
+                  break;
                 }
-                break;
-              }
 
-            case 1:
-              {
-                if (tmp_max > max_ydir_value)
+              case 1:
                 {
-                  max_ydir_value = tmp_max;
+                  if (tmp_max > max_ydir_value)
+                  {
+                    max_ydir_value = tmp_max;
+                  }
+                  break;
                 }
-                break;
-              }
 
-            case 2:
-              {
-                if (tmp_max > max_zdir_value)
+              case 2:
                 {
-                  max_zdir_value = tmp_max;
+                  if (tmp_max > max_zdir_value)
+                  {
+                    max_zdir_value = tmp_max;
+                  }
+                  if (tmp_total > max_total_value)
+                  {
+                    max_total_value = tmp_total;
+                  }
+                  if (tmp_gravity > max_gravity_value)
+                  {
+                    max_gravity_value = tmp_gravity;
+                  }
+                  break;
                 }
-                if (tmp_total > max_total_value)
-                {
-                  max_total_value = tmp_total;
-                }
-                if (tmp_gravity > max_gravity_value)
-                {
-                  max_gravity_value = tmp_gravity;
-                }
-                break;
-              }
           }
         }
       });

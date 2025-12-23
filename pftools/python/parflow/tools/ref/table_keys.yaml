@@ -1,0 +1,360 @@
+# -----------------------------------------------------------------------------
+# Definition anatomy
+# -----------------------------------------------------------------------------
+#
+# run.Geom.{name}.{PARFLOW_KEY}:
+#   alias:
+#     - Short names that can be used inside your table definition
+#   addon:
+#     If provided those other key/value will be set under
+#       Geom.{name}.{KEY_1} = {VALUE_1}
+#       Geom.{name}.{KEY_2} = {VALUE_2}
+#   register:
+#     If provided the {name} will be added to a set() with the name
+#     run.{VALUE} = [] + {name}.
+#
+# -----------------------------------------------------------------------------
+
+key:
+  type: str
+  alias:
+    - key
+    - name
+    - Name
+    - Key
+
+# -----------------------------------------------------------------------------
+# Permeability
+# -----------------------------------------------------------------------------
+
+Perm.Value:
+  alias:
+    - Perm
+    - PermValue
+    - Perm.Value
+  addon:
+    .Perm.Type: Constant
+  register: Geom.Perm.Names
+
+Perm.LambdaX:
+  alias:
+    - PermLambdaX
+    - LambdaX
+    - Perm.LambdaX
+  register: Geom.Perm.Names
+
+Perm.LambdaY:
+  alias:
+    - PermLambdaY
+    - LambdaY
+    - Perm.LambdaY
+  register: Geom.Perm.Names
+
+Perm.LambdaZ:
+  alias:
+    - PermLambdaZ
+    - LambdaZ
+    - Perm.LambdaZ
+  register: Geom.Perm.Names
+
+Perm.GeomMean:
+  alias:
+    - PermGeomMean
+    - GeomMean
+    - Perm.GeomMean
+  register: Geom.Perm.Names
+
+Perm.Seed:
+  type: int
+  alias:
+    - PermSeed
+    - Seed
+    - Perm.Seed
+  register: Geom.Perm.Names
+
+Perm.NumLines:
+  type: int
+  alias:
+    - PermNumLines
+    - NumLines
+    - Perm.NumLines
+  addon:
+    .Perm.Type: TurnBands
+  register: Geom.Perm.Names
+
+Perm.RZeta:
+  alias:
+    - PermRZeta
+    - RZeta
+    - Perm.RZeta
+  addon:
+    .Perm.Type: TurnBands
+  register: Geom.Perm.Names
+
+Perm.KMax:
+  alias:
+    - PermKMax
+    - KMax
+    - Perm.KMax
+  addon:
+    .Perm.Type: TurnBands
+  register: Geom.Perm.Names
+
+Perm.DelK:
+  alias:
+    - PermDelK
+    - DelK
+    - Perm.DelK
+  addon:
+    .Perm.Type: TurnBands
+  register: Geom.Perm.Names
+
+Perm.MaxNPts:
+  type: int
+  alias:
+    - PermMaxNPts
+    - MaxNPts
+    - Perm.MaxNPts
+  addon:
+    .Perm.Type: ParGauss
+  register: Geom.Perm.Names
+
+Perm.MaxCpts:
+  type: int
+  alias:
+    - PermMaxCpts
+    - MaxCpts
+    - Perm.MaxCpts
+  addon:
+    .Perm.Type: ParGauss
+  register: Geom.Perm.Names
+
+Perm.LogNormal:
+  type: str
+  alias:
+    - PermLogNormal
+    - LogNormal
+    - Perm.LogNormal
+  register: Geom.Perm.Names
+
+Perm.StratType:
+  type: str
+  alias:
+    - PermStratType
+    - StratType
+    - Perm.StratType
+  register: Geom.Perm.Names
+
+Perm.LowCutoff:
+  alias:
+    - PermLowCutoff
+    - LowCutoff
+    - Perm.LowCutoff
+  register: Geom.Perm.Names
+
+Perm.HighCutoff:
+  alias:
+    - PermHighCutoff
+    - HighCutoff
+    - Perm.HighCutoff
+  register: Geom.Perm.Names
+
+Perm.MaxSearchRad:
+  alias:
+    - PermMaxSearchRad
+    - MaxSearchRad
+    - Perm.MaxSearchRad
+  register: Geom.Perm.Names
+
+# -----------------------------------------------------------------------------
+# Porosity
+# -----------------------------------------------------------------------------
+
+Porosity.Value:
+  alias:
+    - Porosity
+    - PorosityValue
+    - Porosity.Value
+  addon:
+    .Porosity.Type: Constant
+  register: Geom.Porosity.GeomNames
+
+# -----------------------------------------------------------------------------
+# Specific Storage
+# -----------------------------------------------------------------------------
+
+SpecificStorage.Value:
+  alias:
+    - SpecStorage
+    - SpecificStorage
+    - SpecificStorageValue
+    - SpecificStorage.Value
+  addon:
+    SpecificStorage.Type: Constant
+  register: SpecificStorage.GeomNames
+
+# -----------------------------------------------------------------------------
+# Relative Permeability
+# -----------------------------------------------------------------------------
+
+RelPerm.Value:
+  alias:
+    - RelPerm
+    - RelPermValue
+    - RelPerm.Value
+  addon:
+    Phase.RelPerm.Type: Constant
+  register: Phase.RelPerm.GeomNames
+
+RelPerm.Alpha:
+  alias:
+    - RelPermAlpha
+    - Alpha
+    - RelPerm.Alpha
+  addon:
+    Phase.RelPerm.Type: VanGenuchten
+  register: Phase.RelPerm.GeomNames
+
+RelPerm.N:
+  alias:
+    - RelPermN
+    - N
+    - RelPerm.N
+  addon:
+    Phase.RelPerm.Type: VanGenuchten
+  register: Phase.RelPerm.GeomNames
+
+RelPerm.NumSamplePoints:
+  type: int
+  alias:
+    - RelPermNumSamplePoints
+    - NumSamplePoints
+    - RelPerm.NumSamplePoints
+  addon:
+    Phase.RelPerm.Type: VanGenuchten
+  register: Phase.RelPerm.GeomNames
+
+RelPerm.MinPressureHead:
+  alias:
+    - RelPermMinPressureHead
+    - MinPressureHead
+    - RelPerm.MinPressureHead
+  addon:
+    Phase.RelPerm.Type: VanGenuchten
+  register: Phase.RelPerm.GeomNames
+
+RelPerm.A:
+  alias:
+    - RelPermA
+    - A
+    - RelPerm.A
+  addon:
+    Phase.RelPerm.Type: Haverkamp
+  register: Phase.RelPerm.GeomNames
+
+RelPerm.Gamma:
+  alias:
+    - RelPermGamma
+    - Gamma
+    - RelPerm.Gamma
+  addon:
+    Phase.RelPerm.Type: Haverkamp
+  register: Phase.RelPerm.GeomNames
+
+RelPerm.Degree:
+  type: int
+  alias:
+    - RelPermDegree
+    - Degree
+    - RelPerm.Degree
+  addon:
+    Phase.RelPerm.Type: Polynomial
+  register: Phase.RelPerm.GeomNames
+
+# Geom.geom_name.RelPerm.Coeff.coeff_number could be added if necessary
+
+# -----------------------------------------------------------------------------
+# Saturation
+# -----------------------------------------------------------------------------
+
+Saturation.Value:
+  alias:
+    - Sat
+    - SatValue
+    - Saturation.Value
+  addon:
+    Phase.Saturation.Type: Constant
+  register: Phase.Saturation.GeomNames
+
+Saturation.Alpha:
+  alias:
+    - SatAlpha
+    - Saturation.Alpha
+  addon:
+    Phase.Saturation.Type: VanGenuchten
+  register: Phase.Saturation.GeomNames
+
+Saturation.N:
+  alias:
+    - SatN
+    - Saturation.N
+  addon:
+    Phase.Saturation.Type: VanGenuchten
+  register: Phase.Saturation.GeomNames
+
+Saturation.SRes:
+  alias:
+    - SRes
+    - SatSRes
+    - Saturation.SRes
+  register: Phase.Saturation.GeomNames
+
+Saturation.SSat:
+  alias:
+    - SSat
+    - SatSSat
+    - Saturation.SSat
+  register: Phase.Saturation.GeomNames
+
+Saturation.NumSamplePoints:
+  alias:
+    - SatNumSamplePoints
+    - Saturation.NumSamplePoints
+  addon:
+    Phase.Saturation.Type: VanGenuchten
+  register: Phase.Saturation.GeomNames
+
+Saturation.MinPressureHead:
+  alias:
+    - SatMinPressureHead
+    - Saturation.MinPressureHead
+  addon:
+    Phase.Saturation.Type: VanGenuchten
+  register: Phase.Saturation.GeomNames
+
+Saturation.A:
+  alias:
+    - SatA
+    - Saturation.A
+  addon:
+    Phase.Saturation.Type: Haverkamp
+  register: Phase.Saturation.GeomNames
+
+Saturation.Gamma:
+  alias:
+    - SatGamma
+    - Saturation.Gamma
+  addon:
+    Phase.Saturation.Type: Haverkamp
+  register: Phase.Saturation.GeomNames
+
+Saturation.Degree:
+  type: int
+  alias:
+    - SatDegree
+    - Saturation.Degree
+  addon:
+    Phase.Saturation.Type: Polynomial
+  register: Phase.Saturation.GeomNames
+
+# Geom.geom_name.Saturation.Coeff.coeff_number could be added if necessary

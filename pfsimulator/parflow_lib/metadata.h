@@ -34,9 +34,6 @@
 
 #include "cJSON.h"
 
-struct PFModule;
-struct Grid;
-
 // Hide cJSON from the public API so we can switch to other JSON libraries as needed.
 typedef cJSON* MetadataItem;
 

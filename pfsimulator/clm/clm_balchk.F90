@@ -86,7 +86,7 @@ subroutine clm_balchk (clm, nstep)
   clm%errlon = clm%eflx_lwrad_out - clm%eflx_lwrad_net - clm%forc_lwrad
 
   !if (abs(clm%errlon) > .10 ) then
-  !write(166,100)' longwave enery balance error',nstep,clm%kpatch,clm%errlon
+  !write(166,100)' longwave energy balance error',nstep,clm%kpatch,clm%errlon
   call endrun
   !endif
 

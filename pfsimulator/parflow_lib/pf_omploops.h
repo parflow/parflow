@@ -1,23 +1,32 @@
-/*BHEADER*********************************************************************
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
+/* *INDENT-OFF* */
 #ifndef _PF_OMPLOOPS_H_
 #define _PF_OMPLOOPS_H_
 
@@ -25,13 +34,16 @@
  * @brief OpenMP functions and loop definitions
  */
 
-#if PARFLOW_ACC_BACKEND != PARFLOW_BACKEND_OMP
+#ifndef PARFLOW_HAVE_OMP
 
 #define NO_OMP_PARALLEL
 
 #else
 
-#include <omp.h>
+extern "C++" {
+  /* to avoid a GCC error from overloaded C++ functions */
+  #include <omp.h>
+}
 #include <stdarg.h>
 
 /**
@@ -504,7 +516,7 @@ INC_IDX(int idx, int i, int j, int k,
 */
 #define CALC_IVAL(diff, a, b, prev) ((diff) * (a) + (a) + (b)) + (prev)
 
-#define GrGeomPatchLoopBoxesNoFdir_omp(i, j, k, grgeom, patch_num,      \
+#define GrGeomPatchLoopBoxesNoFdir_omp(i, j, k, grgeom, patch_num, ovrlnd,     \
                                    ix, iy, iz, nx, ny, nz,              \
                                    locals, setup,                       \
                                    f_left, f_right,                     \
@@ -711,5 +723,6 @@ static const int FDIR_TABLE[6][3] = {
     }                                                                   \
   }
 
-#endif // PARFLOW_ACC_BACKEND != PARFLOW_BACKEND_OMP
+#endif // PARFLOW_HAVE_OMP
 #endif // _PF_OMPLOOPS_H_
+/* *INDENT-ON* */

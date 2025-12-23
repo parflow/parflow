@@ -99,7 +99,7 @@ class Arg
 		std::string _flag;
 
 		/**
-		 * A single word namd identifying the argument.
+		 * A single word name identifying the argument.
 		 * This value (preceded by two dashed {--}) can also be used
 		 * to identify an argument on the command line.  Note that the
 		 * _name does NOT include the two dashes as part of the _name. The
@@ -227,7 +227,7 @@ class Arg
 		static char flagStartChar() { return TCLAP_FLAGSTARTCHAR; }
 
 		/**
-		 * The sting that indicates the beginning of a flag.  Defaults to "-", but
+		 * The string that indicates the beginning of a flag.  Defaults to "-", but
 		 * clients can define TCLAP_FLAGSTARTSTRING to override. Should be the same
 		 * as TCLAP_FLAGSTARTCHAR.
 		 */
@@ -237,7 +237,7 @@ class Arg
 		static const std::string flagStartString() { return TCLAP_FLAGSTARTSTRING; }
 
 		/**
-		 * The sting that indicates the beginning of a name.  Defaults to "--", but
+		 * The string that indicates the beginning of a name.  Defaults to "--", but
 		 *  clients can define TCLAP_NAMESTARTSTRING to override.
 		 */
 #ifndef TCLAP_NAMESTARTSTRING

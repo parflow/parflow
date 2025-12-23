@@ -1,6 +1,6 @@
 \newcommand{\pfkey}[4]{\vspace{0.15in} {\noindent{\normalsize {\sl #1}
 \hspace{0.2in}{\bfseries #2}\hspace{0.2in}[#3]}} \newline \indent #4 \newline
-Example Useage: \newline \vspace{-0.25in}}
+Example Usage: \newline \vspace{-0.25in}}
 
 %=============================================================================
 %=============================================================================
@@ -133,7 +133,7 @@ generators.  This can be automated from within the \parflow{} input file.
 
 The basic idea behind \parflow{} input is a simple database.  The
 database contains entries which have a key and a value associated with
-that key.  This is very similiar in nature to the Windows XP/Vista
+that key.  This is very similar in nature to the Windows XP/Vista
 registry and several other systems.  When \parflow{} runs, it
 queries the database you have created by key names to get the values
 you have specified.
@@ -146,7 +146,7 @@ It should be noted that the keys are ``dynamic'' in that many are
 built up from values of other keys.  For example if you have two wells
 named {\em northwell} and {\em southwell} then you will have to set some keys
 which specify the parameters for each well.  The keys are built up in
-a simple sort of heirarchy.
+a simple sort of hierarchy.
 
 The following sections contain a description of all of the keys used by
 \parflow{}.  For an example of input files you can look at the
@@ -166,7 +166,7 @@ Strings can contain spaces if you use the proper TCL syntax
 (i.e. using double quotes).  These types are standard TCL
 types.  Lists are strings but they indicate the names of a series of items.
 For example you might need to specify the names of the geometries. You
-would do this using space seperated names (what we are calling a list)
+would do this using space separated names (what we are calling a list)
 ``layer1 layer2 layer3''.
 
 The descriptions that follow are organized into functional areas.  An
@@ -341,7 +341,7 @@ for iteration.
 This does not always have a signiciant impact on performance and the
 clustering algorithm can be expensive to compute.  For small problems
 and short running problems clustering is not recommended.  Long
-running problems may or may not see a benifit.  The result varies
+running problems may or may not see a benefit.  The result varies
 significantly based on the geometries in the problem.
 
 The Berger-Rigoutsos algorithm is currently used for clustering.
@@ -417,7 +417,7 @@ pfset GeomInput.solidinput.FileName   ocwd.pfsol
 {
 For IndicatorField geometry inputs you need to specify the mapping between
 values in the input file and the geometry names.  The named geometry will
-be defined whereever the input file is equal to the specifed value.
+be defined wherever the input file is equal to the specified value.
 }
 \begin{display}\begin{verbatim}
 pfset GeomInput.sourceregion.Value   11
@@ -704,7 +704,7 @@ Growth} type time step is selected.
 pfset TimeStep.MinStep      1.0e-3
 \end{verbatim}\end{display}
 
-Here is a detailed example of how timing keys might be used in a simualtion.
+Here is a detailed example of how timing keys might be used in a simulation.
 \begin{display}\begin{verbatim}
 #-----------------------------------------------------------------------------
 # Setup timing info [hr]
@@ -771,7 +771,7 @@ This key is used to specify the how many times a named time interval repeats.  A
 pfset Cycle.onoff.Repeat               -1
 \end{verbatim}\end{display}
 
-Here is a detailed example of how time cycles might be used in a simualtion.
+Here is a detailed example of how time cycles might be used in a simulation.
 \begin{display}\begin{verbatim}
 
 #-----------------------------------------------------------------------------
@@ -1552,7 +1552,7 @@ pfset Cell.4.dzScale.Value 0.05
 \label{Flow Barrier Keys}
 \pfaddanchor{pfindFB}
 
-Here, the values for Flow Barriers described in \ref{FB} can be input.  These are only available with Solver {\bf Richards} and can be specified in X, Y or Z directions independently using PFB files.  These barriers are appied at the cell face at the location $i+1/2$.  That is a value of $FB_x$ specified at $i$ will be applied to the cell face at $i+1/2$ or {/em between} cells $i$ and $i+1$.  The same goes for $FB_y$ ($j+1/2$) and $FB_z$ ($k+1/2$). The flow barrier values are unitless and mulitply the flux equation as shown in \ref{eq:qFBx}.
+Here, the values for Flow Barriers described in \ref{FB} can be input.  These are only available with Solver {\bf Richards} and can be specified in X, Y or Z directions independently using PFB files.  These barriers are applied at the cell face at the location $i+1/2$.  That is a value of $FB_x$ specified at $i$ will be applied to the cell face at $i+1/2$ or {/em between} cells $i$ and $i+1$.  The same goes for $FB_y$ ($j+1/2$) and $FB_z$ ($k+1/2$). The flow barrier values are unitless and multiply the flux equation as shown in \ref{eq:qFBx}.
 
 The format for this section of input is:
 
@@ -1888,7 +1888,7 @@ on all specified geometries.  Note that only one type of relative permeability
 may be used for the entire problem.  However, parameters may be different for
 that type in different geometries.  For instance, if the problem consists of
 three geometries, then {\bf VanGenuchten} may be specified with three different
-sets of parameters for the three different goemetries.  However, once {\bf
+sets of parameters for the three different geometries.  However, once {\bf
 VanGenuchten} is specified, one geometry cannot later be specified to have {\bf
 Data} as its relative permeability.  The possible values for this key
 are {\bf Constant, VanGenuchten, Haverkamp, Data,} and {\bf  Polynomial}.
@@ -2208,7 +2208,7 @@ on all specified geometries.  Note that only one type of saturation
 may be used for the entire problem.  However, parameters may be different for
 that type in different geometries.  For instance, if the problem consists of
 three geometries, then {\bf VanGenuchten} may be specified with three different
-sets of parameters for the three different goemetries.  However, once {\bf
+sets of parameters for the three different geometries.  However, once {\bf
 VanGenuchten} is specified, one geometry cannot later be specified to have {\bf
 Data} as its saturation.  The possible values for this key
 are {\bf Constant, VanGenuchten, Haverkamp, Data, Polynomial} and
@@ -2683,33 +2683,6 @@ $p = x^3 y^4 + x^2 + \sin(xy)\cos y + 1$
 \item[{\bf XYZTPlus1PermTensor}: ] $p = xyzt + 1$
 \end{description}
 
-Example Script:
-\begin{display}\begin{verbatim}
-
-#---------------------------------------------------------
-# Initial conditions: water pressure [m]
-#---------------------------------------------------------
-# Using a patch is great when you are not using a box domain
-# If using a box domain HydroStaticDepth is fine
-# If your RefPatch is z-lower (bottom of domain), the pressure is positive.
-# If your RefPatch is z-upper (top of domain), the pressure is negative.
-### Set water table to be at the bottom of the domain, the top layer is initially dry
-pfset ICPressure.Type				HydroStaticPatch
-pfset ICPressure.GeomNames		domain
-pfset Geom.domain.ICPressure.Value	2.2
-
-pfset Geom.domain.ICPressure.RefGeom	domain
-pfset Geom.domain.ICPressure.RefPatch	z-lower
-
-### Using a .pfb to initialize
-pfset ICPressure.Type                                   PFBFile
-pfset ICPressure.GeomNames		 "domain"
-pfset Geom.domain.ICPressure.FileName	press.00090.pfb
-
-pfset Geom.domain.ICPressure.RefGeom	domain
-pfset Geom.domain.ICPressure.RefPatch	z-upper
-\end{verbatim}\end{display}
-
 %=============================================================================
 %=============================================================================
 
@@ -2963,6 +2936,33 @@ domain.  It is assumed that {\em geom\_name} is ``domain'' for this key.}
 pfset Geom.domain.ICPressure.FileName  "ic_pressure.pfb"
 \end{verbatim}\end{display}
 
+Example Script:
+\begin{display}\begin{verbatim}
+
+#---------------------------------------------------------
+# Initial conditions: water pressure [m]
+#---------------------------------------------------------
+# Using a patch is great when you are not using a box domain
+# If using a box domain HydroStaticDepth is fine
+# If your RefPatch is z-lower (bottom of domain), the pressure is positive.
+# If your RefPatch is z-upper (top of domain), the pressure is negative.
+### Set water table to be at the bottom of the domain, the top layer is initially dry
+pfset ICPressure.Type				HydroStaticPatch
+pfset ICPressure.GeomNames		domain
+pfset Geom.domain.ICPressure.Value	2.2
+
+pfset Geom.domain.ICPressure.RefGeom	domain
+pfset Geom.domain.ICPressure.RefPatch	z-lower
+
+### Using a .pfb to initialize
+pfset ICPressure.Type                                   PFBFile
+pfset ICPressure.GeomNames		 "domain"
+pfset Geom.domain.ICPressure.FileName	press.00090.pfb
+
+pfset Geom.domain.ICPressure.RefGeom	domain
+pfset Geom.domain.ICPressure.RefPatch	z-upper
+\end{verbatim}\end{display}
+
 %=============================================================================
 %=============================================================================
 
@@ -3115,7 +3115,7 @@ Wells.test_well.Action Injection
 
 \pfkey{double}{Wells.{\em well\_name}.Type}{no default}
 {
-This key specfies the mechanism by which the well works (how \parflow{}
+This key specifies the mechanism by which the well works (how \parflow{}
 works with the well data) if the input type key is set to {\bf Vectical}.
 This key can be either {\bf Pressure} or {\bf Flux}.  A value of
 {\bf Pressure} indicates that the data provided for the well is in terms
@@ -3132,7 +3132,7 @@ Wells.test_well.Type Flux
 
 \pfkey{string}{Wells.{\em well\_name}.ExtractionType}{no default}
 {
-This key specfies the mechanism by which the extraction well works (how
+This key specifies the mechanism by which the extraction well works (how
 \parflow{} works with the well data) if the input type key is set to
 {\bf Recirc}.  This key can be either {\bf Pressure} or {\bf Flux}.  A
 value of {\bf Pressure} indicates that the data provided for the well is
@@ -3342,7 +3342,7 @@ Wells.inj_well.all_time.Injection.Pressure.Value 10.2
 This key specifies the volumetric flux for a vectical well if the type
 key is set to {\bf Flux}.
 
-Note only a positive number should be entered, \parflow{} assignes the
+Note only a positive number should be entered, \parflow{} assigns the
 correct sign based on the chosen action for the well.
 }
 \begin{display}\begin{verbatim}
@@ -3354,7 +3354,7 @@ Wells.test_well.all_time.Flux.water.Value 250.0
 This key specifies the volumetric flux for an extraction well if the
 extraction type key is set to {\bf Flux}.
 
-Note only a positive number should be entered, \parflow{} assignes the
+Note only a positive number should be entered, \parflow{} assigns the
 correct sign based on the chosen action for the well.
 }
 \begin{display}\begin{verbatim}
@@ -3366,7 +3366,7 @@ Wells.ext_well.all_time.Extraction.Flux.water.Value 125.0
 This key specifies the volumetric flux for an injection well if the
 injection type key is set to {\bf Flux}.
 
-Note only a positive number should be entered, \parflow{} assignes the
+Note only a positive number should be entered, \parflow{} assigns the
 correct sign based on the chosen action for the well.
 }
 \begin{display}\begin{verbatim}
@@ -3550,10 +3550,18 @@ pfset Solver.PrintPressure False
 
 \pfkey{string}{Solver.PrintVelocities}{False}
 {
-This key is used to turn on printing of the x, y and z
-velocity data.  The printing of the data is controlled by
-values in the timing information section.  The data is
-written as a PFB file.
+This key is used to turn on printing of the x, y, and z 
+velocity (Darcy flux) data. The printing of the data is 
+controlled by values in the timing information section. 
+The x, y, and z data are written to separate PFB files. 
+The dimensions of these files are slightly different 
+than most PF data,  with the dimension of interest 
+representing interfaces, and the other two dimensions 
+representing cells. E.g. the x-velocity PFB has dimensions
+[NX+1, NY, NZ]. This key produces files in the format of 
+runname.out.phase<x||y||z>.00.0000.pfb when using ParFlow's
+saturated solver and runname.out.vel<x||y||z>.00000.pfb
+when using the Richards equation solver.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.PrintVelocities True
@@ -3588,6 +3596,17 @@ end of the run when all collected data is written.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.PrintWells False
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.PrintReservoirs}{True}
+{
+This key is used to turn on collection and printing of the
+reservoirs data.  The data is collected at intervals given by values
+in the timing information section.  Printing occurs at the
+end of the run when all collected data is written.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Printeservoirs False
 \end{verbatim}\end{display}
 
 \pfkey{string}{Solver.PrintLSMSink}{False}
@@ -3762,7 +3781,7 @@ pfset SILO.Filetype  PDB
 \pfkey{string}{SILO.CompressionOptions}{}
 {
 This key is used to specify the SILO compression options. See the SILO manual for the
- DB\_SetCompression command for information on available options.   NOTE: the options avaialable are highly dependent on the configure options when building SILO.}
+ DB\_SetCompression command for information on available options.   NOTE: the options available are highly dependent on the configure options when building SILO.}
 \begin{display}\begin{verbatim}
 pfset SILO.CompressionOptions  ``METHOD=GZIP''
 \end{verbatim}\end{display}
@@ -3954,7 +3973,7 @@ pfset Solver.Linear.Preconditioner   MGSemi
 
 \pfkey{string}{Solver.Linear.Preconditioner.SymmetricMat}{Symmetric}
 {This key specifies whether the preconditioning matrix is symmetric.
-Choices fo rthis key are {\bf Symmetric} and {\bf Nonsymmetric}.
+Choices for this key are {\bf Symmetric} and {\bf Nonsymmetric}.
 The choice {\bf Symmetric} specifies that the symmetric part of the Jacobian
 will be used as the preconditioning matrix.  The choice {\bf Nonsymmetric}
 specifies that the full Jacobian will be used as the preconditioning matrix.
@@ -4098,7 +4117,7 @@ pfset Solver.CLM.MetForcing   2D
 \end{verbatim}\end{display}
 
 \pfkey{String}{Solver.CLM.MetFileName}{no default}
-{This key specifies defines the file name for 1D, 2D or 3D forcing data.  1D meteorological forcing files are text files with single columns for each variable and each timestep per row, while 2D and 3D forcing files are distributed \parflow{} binary files, one for each variable and timestep (2D) or one for each variable and \emph{multiple} timesteps (3D). Behavior of this key is different for 1D and 2D and 3D cases, as sepcified by the {\bf Solver.CLM.MetForcing} key above. For 1D cases, it is the {\em FULL FILE NAME}. Note that in this configuration, this forcing file is {\bf not} distributed,  the user does not provide copies such as \code{narr.1hr.txt.0}, \code{narr.1hr.txt.1} for each processor.  \parflow{} only needs the single original file ({\em e.g.} narr.1hr.txt).  For 2D cases, this key is the {\em BASE FILE NAME} for the 2D forcing files, currently set to NLDAS, with individual files determined as follows \code{NLDAS.<variable>.<time step>.pfb}. Where the \code{<variable>} is the forcing variable and \code{<timestep>} is the integer file counter corresponding to {\em istep} above. Forcing is needed for following variables:
+{This key specifies defines the file name for 1D, 2D or 3D forcing data.  1D meteorological forcing files are text files with single columns for each variable and each timestep per row, while 2D and 3D forcing files are distributed \parflow{} binary files, one for each variable and timestep (2D) or one for each variable and \emph{multiple} timesteps (3D). Behavior of this key is different for 1D and 2D and 3D cases, as specified by the {\bf Solver.CLM.MetForcing} key above. For 1D cases, it is the {\em FULL FILE NAME}. Note that in this configuration, this forcing file is {\bf not} distributed,  the user does not provide copies such as \code{narr.1hr.txt.0}, \code{narr.1hr.txt.1} for each processor.  \parflow{} only needs the single original file ({\em e.g.} narr.1hr.txt).  For 2D cases, this key is the {\em BASE FILE NAME} for the 2D forcing files, currently set to NLDAS, with individual files determined as follows \code{NLDAS.<variable>.<time step>.pfb}. Where the \code{<variable>} is the forcing variable and \code{<timestep>} is the integer file counter corresponding to {\em istep} above. Forcing is needed for following variables:
 \begin{description}
 \item[{\bf DSWR}: ] Downward Visible or Short-Wave radiation $[W/m^2]$.
 \item[{\bf DLWR}: ] Downward Infa-Red or Long-Wave radiation $[W/m^2]$
@@ -4337,8 +4356,8 @@ pfset Solver.CLM.IrrigationThreshold 0.2
 {How many times to reuse a \code{CLM} atmospheric forcing file input. For example timestep=1,
 reuse =1 is normal behavior but reuse=2 and timestep=0.5 subdivides
 the time step using the same \code{CLM} input for both halves instead of needing two files.
-This is particually useful for large, distributed runs when the user wants to run \parflow{}
-at a smaller timestep than the \code{CLM} forcing.  Forcing files will be re-used and
+This is particularly useful for large, distributed runs when the user wants to run \parflow{}
+at a smaller timestep than the \code{CLM} forcing.  Forcing files will be reused and
 total fluxes adjusted accordingly without needing duplicate files.}
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.ReuseCount      5
@@ -4401,6 +4420,23 @@ pfset Solver.CLM.RootZoneNZ      4
 {This key sets the soil layer, and thus the soil depth, that \code{CLM} uses for the seasonal temperature adjustment for all leaf and stem area indices.}
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.SoiLayer      4
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Solver.CLM.RZWaterStress}{0}
+{This key sets the distribution of transpiration over the root zone and changes the behavior of plant water limitations.  As discussed in \cite{Ferg16} water stress approaches result in different cut-offs for transpiration.  Two options are currently implemented both use the beta-type water stress defined above.  Option 0 (default) will limit transpiration when the top soil layer drops below wilting point, option 1 limits each layer independently.} 
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.RZWaterStress       1
+\end{verbatim}\end{display}
+
+%====
+% @JSS CLM Slope Keys here
+%=====
+\pfkey{string}{Solver.CLM.UseSlopeAspect}{False}
+{This key specifies whether or not \code{CLM} allows for the inclusion of slopes when determining solar zenith angles.
+ Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.UseSlopeAspect True
 \end{verbatim}\end{display}
 
 %=============================================================================
@@ -4511,6 +4547,18 @@ pfset NetCDF.ChunkY    50
 {This key sets chunking size in z-direction.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.ChunkZ    30
+\end{verbatim}\end{display}
+
+\pfkey{integer}{NetCDF.Compression}{False}
+{This key enables in-transit deflate compression for all NetCDF variables using zlib. To use this feature, NetCDF4 v4.7.4 must be available, which supports the necessary parallel zlib compression. The compression quality can be influenced by the chunk sizes and the overall data distribution. Compressed variables in NetCDF files can be opened in serial mode also within older versions of NetCDF4.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.Compression True
+\end{verbatim}\end{display}
+
+\pfkey{integer}{NetCDF.CompressionLevel}{1}
+{This key sets the deflate compression level (if NetCDF.Compression is enabled), which influence the overall compression quality. zlib supports values between 0 (no compression), 1 (fastest compression) - 9 (slowest compression,smallest files). }
+\begin{display}\begin{verbatim}
+pfset NetCDF.CompressionLevel 1
 \end{verbatim}\end{display}
 
 \subsection{ROMIO Hints}
@@ -4744,7 +4792,7 @@ END
 The \file{.pfb} file format is a binary file format which is used to
 store \code{CLM} output data in a single file.  It is written as BIG
 ENDIAN binary bit ordering \cite{endian}.  Each field is written as a
-contigious 2D array; one can think of the Z axis as representing
+contiguous 2D array; one can think of the Z axis as representing
 field.  The number of fields depends on CLM options used.  The format
 for the file is:
 

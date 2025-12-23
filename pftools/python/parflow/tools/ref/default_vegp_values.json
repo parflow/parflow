@@ -1,0 +1,22 @@
+{
+    "itypwat": 1,
+    "lai": 6.0,
+    "lai0": 5.0,
+    "sai": 2.0,
+    "z0m": 1.0,
+    "displa": 11.0,
+    "dleaf": 0.04,
+    "roota": 7.0,
+    "rootb": 2.0,
+    "rhol_vis": 0.07,
+    "rhol_nir": 0.35,
+    "rhos_vis": 0.16,
+    "rhos_nir": 0.39,
+    "taul_vis": 0.05,
+    "taul_nir": 0.1,
+    "taus_vis": 0.001,
+    "taus_nir": 0.001,
+    "xl": 0.01,
+    "vw": 1.0,
+    "irrig": 0
+}

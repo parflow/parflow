@@ -229,7 +229,7 @@ The identifier of the data set created by this operation is returned upon succes
 \item{\begin{verbatim}pfcomputedomain top bottom\end{verbatim}} This
  command computes a domain based on the top and bottom data sets.  The
  domain built will have a single subgrid per processor that covers the
- active data as defined by the top and botttom.  This domain will more
+ active data as defined by the top and bottom.  This domain will more
  closely follow the topology of the terrain than the default single
  computation domain.
 
@@ -406,7 +406,7 @@ This command computes a new dataset with the subbox starting at il, jl, kl and g
 
 \item{\begin{verbatim}pfgridtype gridtype\end{verbatim}}
 This command sets the grid type to either cell centered if `gridtype'
-is set to `cell' or vetex centered if `gridtype' is set to `vertex'.
+is set to `cell' or vertex centered if `gridtype' is set to `vertex'.
 If no new value for `gridtype' is given, then the current value of
 `gridtype' is returned.  The value of `gridtype' will be returned upon
 successful completion of this command.
@@ -439,7 +439,7 @@ name and label will be returned.
 
 \item{\begin{verbatim}pfload [file format] filename\end{verbatim}}
 Loads a dataset into memory so it can be manipulated using the other
-utilities.  A file format may preceed the filename in order to
+utilities.  A file format may precede the filename in order to
 indicate the file's format.  If no file type option is given, then the
 extension of the filename is used to determine the default file type.
 An identifier used to represent the data set will be returned upon
@@ -592,7 +592,7 @@ This command prints a single element from the provided dataset given an i, j, k 
 \item{\begin{verbatim}pfprintgrid dataset\end{verbatim}}
 This command executes pfgetgrid and formats its output before printing
 it on the screen.  The triples (nx, ny, nz), (x, y, z), and
-(dx, dy, dz) are all printed on seperate lines along with labels
+(dx, dy, dz) are all printed on separate lines along with labels
 describing each.
 
 
@@ -710,7 +710,7 @@ an adjacent neighbor. Slopes at local minima (in x-direction) do not drain in
 the x-direction and are therefore set to zero. Note that dem must be a
 ParFlow dataset and must have the correct grid information -- dx in particular
 is used in slope calculations. If gridded elevation values are read from a text
-file (e.g., using pfload's simple ascii format), grid inforamtion must be
+file (e.g., using pfload's simple ascii format), grid information must be
 specified using the pfsetgrid command.
 
 \item{\begin{verbatim}pfslopexD4 dem\end{verbatim}}

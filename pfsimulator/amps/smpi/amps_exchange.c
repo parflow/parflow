@@ -1,85 +1,39 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include <sys/times.h>
 #include "amps.h"
 
-int _amps_send_sizes(amps_Package package, int **sizes)
-{
-  int i;
-  char *buffer;
-
-  *sizes = (int*)calloc(package->num_send, sizeof(int));
-
-  for (i = 0; i < package->num_send; i++)
-  {
-    (*sizes)[i] = amps_pack(amps_CommWorld, package->send_invoices[i],
-                            &buffer);
-    MPI_Isend(&((*sizes)[i]), 1, MPI_INT, package->dest[i],
-              0, amps_CommWorld,
-              &(package->send_requests[i]));
-  }
-
-  return(0);
-}
-
 #ifdef AMPS_MPI_NOT_USE_PERSISTENT
-
-int _amps_recv_sizes(amps_Package package)
-{
-  int i;
-  int size;
-
-  MPI_Status status;
-
-  for (i = 0; i < package->num_recv; i++)
-  {
-    MPI_Recv(&size, 1, MPI_INT, package->src[i], 0,
-             amps_CommWorld, &status);
-
-    package->recv_invoices[i]->combuf =
-      (char*)calloc(size, sizeof(char *));
-
-    /* Post receives for incoming byte buffers */
-
-    MPI_Irecv(package->recv_invoices[i]->combuf, size,
-              MPI_BYTE, package->src[i], 1,
-              amps_CommWorld, &(package->recv_requests[i]));
-  }
-
-  return(0);
-}
 
 void _amps_wait_exchange(amps_Handle handle)
 {
   int i;
-  int size;
-  int *flags;
 
   MPI_Status *status;
 
@@ -125,7 +79,6 @@ amps_Handle amps_IExchangePackage(amps_Package package)
   int *flags;
   char *buffer;
   int size;
-  struct timeval tm;
 
   MPI_Status status;
 
@@ -197,10 +150,29 @@ amps_Handle amps_IExchangePackage(amps_Package package)
  * amps_Printf("IEX done %ld\n", tm.tv_sec);
  * fflush(NULL);
  */
-  return(amps_NewHandle(NULL, 0, NULL, package));
+  return(amps_NewHandle(amps_CommWorld, 0, NULL, package));
 }
 
 #else
+
+int _amps_send_sizes(amps_Package package, int **sizes)
+{
+  int i;
+  char *buffer;
+
+  *sizes = (int*)calloc(package->num_send, sizeof(int));
+
+  for (i = 0; i < package->num_send; i++)
+  {
+    (*sizes)[i] = amps_pack(amps_CommWorld, package->send_invoices[i],
+                            &buffer);
+    MPI_Isend(&((*sizes)[i]), 1, MPI_INT, package->dest[i],
+              0, amps_CommWorld,
+              &(package->send_requests[i]));
+  }
+
+  return(0);
+}
 
 int _amps_recv_sizes(amps_Package package)
 {
@@ -232,11 +204,10 @@ void _amps_wait_exchange(amps_Handle handle)
 
   num = handle->package->num_send + handle->package->num_recv;
 
-  MPI_Waitall(num, handle->package->recv_requests,
-              handle->package->status);
-
   if (num)
   {
+    MPI_Waitall(num, handle->package->recv_requests,
+                handle->package->status);
     if (handle->package->num_recv)
     {
       for (i = 0; i < handle->package->num_recv; i++)
@@ -250,6 +221,16 @@ void _amps_wait_exchange(amps_Handle handle)
  *         AMPS_CLEAR_INVOICE(handle -> package -> recv_invoices[i]);
  */
       }
+    }
+    for (i = 0; i < handle->package->num_recv; i++)
+    {
+      if (handle->package->recv_requests[i] != MPI_REQUEST_NULL)
+        MPI_Request_free(&(handle->package->recv_requests[i]));
+    }
+    for (i = 0; i < handle->package->num_send; i++)
+    {
+      if (handle->package->send_requests[i] != MPI_REQUEST_NULL)
+        MPI_Request_free(&(handle->package->send_requests[i]));
     }
   }
 }
@@ -335,7 +316,7 @@ amps_Handle amps_IExchangePackage(amps_Package package)
   if (package->num_send)
     MPI_Startall(package->num_send, package->send_requests);
 
-  return(amps_NewHandle(NULL, 0, NULL, package));
+  return(amps_NewHandle(amps_CommWorld, 0, NULL, package));
 }
 
 #endif

@@ -1,0 +1,619 @@
+name: Linux CI Tests
+
+on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  style-check:
+     # Runs a check on C and Python coding style.  Code
+     # should not be merged unless the style check passes.
+     runs-on: ubuntu-24.04
+     name: Check Style
+     steps:
+       - name: Checkout commit
+         uses: actions/checkout@v4
+
+       - name: Package Install
+         run: |
+           sudo apt-get -qq update
+           sudo apt-get -qq install curl cmake build-essential tcl-dev tk-dev
+
+       - name: Cache dependencies
+         uses: actions/cache@v4
+         id: cache-parflow-style-dependencies
+         env:
+           cache-name: cache-parflow-style-dependencies
+           cache-parflow-style-hit: ${{steps.cache-parflow-style-dependencies.outputs.cache-hit}}
+         with:
+           path: "~/depend"
+           key: cache-check-style-${{ hashfiles('**/.github/workflows/linux.yml') }}
+
+       - name: Directory Setup
+         run: |
+            mkdir -p $HOME/install
+
+            # Set necessary vars
+            PARFLOW_DIR="$HOME/install"
+            PARFLOW_DEP_DIR="$HOME/depend"
+            LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/lib64:${PARFLOW_DEP_DIR}/lib
+
+            # Create folders
+            mkdir -p ${PARFLOW_DIR} ${PARFLOW_DEP_DIR}/{include,lib}
+
+            # Verify if paths were correctly set
+            echo "PARFLOW_DIR=${PARFLOW_DIR}"
+            echo "PARFLOW_DEP_DIR=${PARFLOW_DEP_DIR}"
+            echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
+
+            # Vars pushed to GITHUB_ENV take effect only on the next CI steps.
+            echo "PARFLOW_DIR=${PARFLOW_DIR}" >> $GITHUB_ENV
+            echo "PARFLOW_DEP_DIR=${PARFLOW_DEP_DIR}" >> $GITHUB_ENV
+            echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+            echo "$HOME/depend/bin" >> $GITHUB_PATH
+            echo "$PARFLOW_DIR/bin" >> $GITHUB_PATH
+
+       - name: Build Uncrustify
+         env:
+           CACHE_HIT: ${{steps.cache-parflow-style-dependencies.outputs.cache-hit}}
+         run: |
+            if [[ "$CACHE_HIT" != 'true' ]]; then
+              echo "cache-check-style-${{ hashfiles('**/.github/workflows/linux.yml') }}" > $HOME/depend/cache-key
+              curl -L -o uncrustify-0.79.0.tar.gz https://github.com/uncrustify/uncrustify/archive/uncrustify-0.79.0.tar.gz
+              tar -xf uncrustify-0.79.0.tar.gz
+              cd uncrustify-uncrustify-0.79.0
+              mkdir build
+              cd build
+              cmake -DCMAKE_INSTALL_PREFIX=${PARFLOW_DEP_DIR} ..
+              make
+              sudo make -j 2 install
+              cd ../..
+              rm -fr uncrustify-uncrustify-0.79.0 uncrustify-0.79.0.tar.gz
+            fi
+
+       - name: CMake Install
+         env:
+           CACHE_HIT: ${{steps.cache-parflow-style-dependencies.outputs.cache-hit}}
+         run: |
+            if [[ "$CACHE_HIT" != 'true' ]]; then
+               echo "Installing"
+               mkdir -p $HOME/depend/{include,lib}
+               cd $HOME/depend
+               echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ hashfiles('**/.github/workflows/linux.yml') }}" > $HOME/depend/cache-key
+               wget -nv --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-x86_64.tar.gz
+               tar -xf cmake-3.25.1-linux-x86_64.tar.gz
+               $HOME/depend/cmake-3.25.1-linux-x86_64/bin/cmake --version
+               echo "$HOME/depend/cmake-3.25.1-linux-x86_64/bin" >> $GITHUB_PATH
+            fi
+
+       - name: ParFlow CMake Configure
+         run: |
+            cmake -Bbuild -DPARFLOW_ENABLE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR
+       - name: ParFlow CMake Build
+         run: (cd build; make -j 2 install)
+       - name: Run Uncrustify
+         run: |
+            ./bin/pfformat --check
+
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      # fail-fast: true
+      matrix:
+        # Basic philosophy is to check builds with different compilers, backends
+        # and OS.
+        # 1) Should retain checks for GCC and LLVM
+        # 2) Should at minimum check OMP, CUDA, and Kokkos backends
+        # 3) Most checks an be run on the same version of Ubuntu but at least one older
+        #    version should be retained to verify we still run on older systems.
+        # 4) Should check Python build, currently we retain non-Python build but
+        #    the non-Python build may be deprecated
+        #
+        # Other builds maybe included to test other configuration options as deemed
+        # useful.
+        config:
+        - {
+            name: "Ubuntu 24.04 GCC",
+            os: ubuntu-24.04,
+            cudaos: 'ubuntu2404',
+            cc: "gcc", cxx: "g++", fc: "gfortran",
+            python: "false",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "true",
+            memory_manager: "none",
+            pdi: "false",
+            sundials: "embedded"
+          }
+        - {
+            name: "Ubuntu 24.04 GCC Sundials",
+            os: ubuntu-24.04,
+            cudaos: 'ubuntu2404',
+            cc: "gcc", cxx: "g++", fc: "gfortran",
+            python: "false",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "true",
+            memory_manager: "none",
+            pdi: "false",
+            sundials: "external"
+          }
+        - {
+            name: "Ubuntu 24.04 LLVM",
+            os: ubuntu-24.04,
+            cudaos: 'ubuntu2404',
+            cc: "clang-18", cxx: "clang++-18", fc: "gfortran",
+            python: "false",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "true",
+            memory_manager: "none",
+            pdi: "false",
+            sundials: "embedded"
+          }
+        - {
+            name: "Ubuntu 22.04 GCC Python",
+            os: ubuntu-22.04,
+            cudaos: 'ubuntu2204',
+            cc: "gcc", cxx: "g++", fc: "gfortran",
+            python: "true",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "true",
+            memory_manager: "none",
+            pdi: "false",
+            sundials: "embedded"
+          }
+        - {
+            name: "Ubuntu 24.04 GCC Python",
+            os: ubuntu-24.04,
+            cudaos: 'ubuntu2404',
+            cc: "gcc", cxx: "g++", fc: "gfortran",
+            python: "true",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "false",
+            memory_manager: "none",
+            pdi: "false",
+            sundials: "embedded"
+          }
+        - {
+            name: "Ubuntu 24.04 GCC OMP",
+            os: ubuntu-24.04,
+            cudaos: 'ubuntu2404',
+            cc: "gcc", cxx: "g++", fc: "gfortran",
+            python: "false",
+            backend: "omp",
+            amps_layer: mpi1,
+            netcdf: "false",
+            memory_manager: "none",
+            pdi: "false",
+            sundials: "embedded"
+          }
+        - {
+            name: "Ubuntu 24.04 LLVM OASIS3-MCT Build",
+            os: ubuntu-24.04,
+            cudaos: 'ubuntu2404',
+            cc: "clang-18", cxx: "clang++-18", fc: "gfortran",
+            python: "false",
+            backend: "omp",
+            amps_layer: oas3,
+            netcdf: "true",
+            memory_manager: "none",
+            pdi: "false",
+            sundials: "embedded"
+          }
+#        - {
+#            name: "Ubuntu 24.04 GCC CUDA/RMM Build",
+#            os: ubuntu-24.04,
+#            cc: "gcc", cxx: "g++", fc: "gfortran",
+#            python: "false",
+#            backend: "cuda",
+#            cudaos: 'ubuntu2204',
+#            amps_layer: mpi1,
+#            netcdf: "false",
+#            memory_manager: "rmm"
+#          }
+        - {
+            name: "Ubuntu 24.04 GCC CUDA/Umpire Build",
+            os: ubuntu-24.04,
+            cc: "gcc", cxx: "g++", fc: "gfortran",
+            python: "false",
+            backend: "cuda",
+            cudaos: 'ubuntu2404',
+            amps_layer: mpi1,
+            netcdf: "false",
+            memory_manager: "umpire",
+            pdi: "false",
+            sundials: "embedded"
+          }
+#        - {
+#            name: "Ubuntu 24.04 GCC Kokkos/RMM Build",
+#            os: ubuntu-24.04,
+#            cc: "gcc", cxx: "g++", fc: "gfortran",
+#            python: "false",
+#            backend: "kokkos",
+#            cudaos: 'ubuntu2204',
+#            amps_layer: mpi1,
+#            netcdf: "false",
+#            memory_manager: "rmm"
+#          }
+        - {
+            name: "Ubuntu 24.04 GCC Kokkos/Umpire Build",
+            os: ubuntu-24.04,
+            cc: "gcc", cxx: "g++", fc: "gfortran",
+            python: "false",
+            backend: "kokkos",
+            cudaos: 'ubuntu2404',
+            amps_layer: mpi1,
+            netcdf: "false",
+            memory_manager: "umpire",
+            pdi: "false",
+            sundials: "embedded"
+          }
+        - {
+            name: "Ubuntu 24.04 GCC PDI Build",
+            os: ubuntu-24.04,
+            cudaos: 'ubuntu2404',
+            cc: "gcc", cxx: "g++", fc: "gfortran",
+            python: "false",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "false",
+            memory_manager: "none",
+            pdi: "true",
+            sundials: "embedded"
+          }
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Package Install
+      run: |
+        sudo apt-get -qq update
+        sudo apt-get -qq install curl cmake build-essential tcl-dev tk-dev gfortran hdf5-helpers libcurl4 libcurl4-gnutls-dev
+
+    - name: HDF5 and OpenMPI Install on Ubuntu 22.04
+      if: matrix.config.os == 'ubuntu-22.04'
+      run: |
+        sudo apt-get -qq update
+        sudo apt -qq install libhdf5-openmpi-103 libhdf5-openmpi-dev
+
+    # libhdf5-openmpi-103 has been renamed in Ubuntu 24.04.
+    - name: HDF5 and OpenMPI Install on Ubuntu 24.04
+      if: matrix.config.os == 'ubuntu-24.04'
+      run: |
+        sudo apt-get -qq update
+        sudo apt -qq install libhdf5-openmpi-103-1t64 libhdf5-openmpi-dev
+
+    - name: LLVM 18.X Install
+      if: matrix.config.cc == 'clang-18'
+      run: |
+        sudo apt -qq install clang-18 libomp-18-dev
+
+    - name: Python Package Install
+      if: matrix.config.python == 'true'
+      run: |
+        sudo apt-get -qq update
+        sudo apt -qq install python3 python3-venv
+
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      id: cache-parflow-dependencies
+      env:
+        cache-name: cache-parflow-dependencies
+        cache-parflow-hit: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      with:
+        path: "~/depend"
+        key: cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ matrix.config.memory_manager }}-${{ matrix.config.pdi }}-${{ hashfiles('**/.github/workflows/linux.yml') }}
+
+    - name: Directory Setup
+      run: |
+        mkdir -p $HOME/install
+
+        # Set necessary vars
+        PARFLOW_DIR="$HOME/install"
+        PARFLOW_DEP_DIR="$HOME/depend"
+        LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/lib64:${PARFLOW_DEP_DIR}/lib
+
+        # Create folders
+        mkdir -p ${PARFLOW_DIR} ${PARFLOW_DEP_DIR}/{include,lib}
+
+        # Verify if paths were correctly set
+        echo "PARFLOW_DIR=${PARFLOW_DIR}"
+        echo "PARFLOW_DEP_DIR=${PARFLOW_DEP_DIR}"
+        echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
+
+        # Vars pushed to GITHUB_ENV take effect only on the next CI steps.
+        echo "PARFLOW_DIR=${PARFLOW_DIR}" >> $GITHUB_ENV
+        echo "PARFLOW_DEP_DIR=${PARFLOW_DEP_DIR}" >> $GITHUB_ENV
+        echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+        echo "$HOME/depend/bin" >> $GITHUB_PATH
+        echo "$PARFLOW_DIR/bin" >> $GITHUB_PATH
+
+    - name: Configure OpenMPI backend compiler
+      run: |
+        export OMPI_CC=${{ matrix.config.cc }}
+        export OMPI_CXX=${{ matrix.config.cxx }}
+        export OMPI_FC=${{ matrix.config.fc }}
+        echo "OMPI_CC=${{ matrix.config.cc }}" >> $GITHUB_ENV
+        echo "OMPI_CXX=${{ matrix.config.cxx }}" >> $GITHUB_ENV
+        echo "OMPI_FC=${{ matrix.config.fc }}" >> $GITHUB_ENV
+        echo "  mpicc: $(mpicc --version | head -n 1)"
+        echo " mpicxx: $(mpicxx --version | head -n 1)"
+        echo "mpifort: $(mpifort --version | head -n 1)"
+
+    - name: CMake Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      run: |
+       if [[ "$CACHE_HIT" != 'true' ]]; then
+          echo "Installing CMake v3.26.5"
+          cd $HOME/depend
+          echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ hashfiles('**/.github/workflows/linux.yml') }}" > $HOME/depend/cache-key
+          wget -nv --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.26.5/cmake-3.26.5-linux-x86_64.tar.gz
+          tar -xf cmake-3.26.5-linux-x86_64.tar.gz
+          $HOME/depend/cmake-3.26.5-linux-x86_64/bin/cmake --version
+        fi
+        echo "$HOME/depend/cmake-3.26.5-linux-x86_64/bin" >> $GITHUB_PATH
+
+    - name: NVidia compiler and CUDA toolkit Install
+      if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: nvidia-cuda-toolkit nvidia-cuda-dev
+        version: 1.0
+        execute_install_scripts: true
+
+    - name: UCX
+      if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          sudo apt install -qq -y autoconf automake libtool
+          URL=https://github.com/openucx/ucx/releases/download/v1.17.0/ucx-1.17.0.tar.gz
+          mkdir ucx
+          cd ucx
+          curl -L $URL | tar --strip-components=1 -xz
+          ./contrib/configure-release --with-cuda=$CUDA_HOME --with-java=no --with-go=no --disable-numa --prefix=$PARFLOW_DEP_DIR
+          make -j 2 install
+        fi
+
+    - name: RMM Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: (matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos') && matrix.config.memory_manager == 'rmm'
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          git clone --depth 1 -b v25.08.00 --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git
+          cd rmm
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR/rmm -DBUILD_TESTS=OFF
+          make -j
+          make install
+        fi
+        echo "RMM_FLAGS=-Drmm_ROOT=$PARFLOW_DEP_DIR/rmm" >> $GITHUB_ENV
+
+    - name: Umpire Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: (matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos') && matrix.config.memory_manager == 'umpire'
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          git clone --depth 1 -b v2025.03.1 --single-branch --recursive https://github.com/LLNL/Umpire.git
+          cd Umpire
+          cmake -S . -B build                                             \
+                     -DCMAKE_CXX_COMPILER=mpicxx                        \
+                     -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}/Umpire" \
+                     -DENABLE_CUDA="ON"
+          cmake --build build --parallel 4
+          cmake --install build
+        fi
+        echo "UMPIRE_FLAGS=-Dumpire_ROOT=$PARFLOW_DEP_DIR/Umpire" >> $GITHUB_ENV
+
+    - name: Kokkos Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: matrix.config.backend == 'kokkos'
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          URL=https://github.com/kokkos/kokkos/archive/refs/tags/4.2.01.tar.gz
+          mkdir kokkos
+          cd kokkos
+          curl -L $URL | tar --strip-components=1 -xz
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_CXX_COMPILER=$(pwd)/../bin/nvcc_wrapper -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR -DKokkos_ENABLE_CUDA=On -DKokkos_ENABLE_CUDA_LAMBDA=On -DKokkos_ENABLE_CUDA_UVM=On -DKokkos_ARCH_VOLTA70=On
+          make -j 2 install
+        fi
+        echo "KOKKOS_FLAGS=-DKOKKOS_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV
+
+    - name: OpenMPI Install for CUDA
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          URL=https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz
+          mkdir openmpi
+          cd openmpi
+          curl -L $URL | tar --strip-components=1 -xz
+          ./configure --with-cuda=$CUDA_HOME --with-ucx=$PARFLOW_DEP_DIR --prefix=$PARFLOW_DEP_DIR
+          sudo make -j 2 install
+          cd ..
+        fi
+        sudo ldconfig
+
+    # Package netcdf is missing features needed by the ParFlow writers, build from source
+    # netcdf is True when we want to build the PF NetCDF writer.  OASIS is using the Fortran interface
+    # which is currently not built here.   This is currently incompatible with the OASIS build which uses the NetCDF packages.
+    - name: NetCDF Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: matrix.config.netcdf == 'true'
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          URL=https://github.com/Unidata/netcdf-c/archive/v4.9.0.tar.gz
+          mkdir netcdf-c
+          cd netcdf-c
+          curl -L $URL | tar --strip-components=1 -xz
+          CC=mpicc CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --prefix=$PARFLOW_DEP_DIR
+          make
+          make install
+          cd ..
+
+          URL=https://github.com/Unidata/netcdf-fortran/archive/v4.5.4.tar.gz
+          mkdir netcdf-fortran
+          cd netcdf-fortran
+          curl -L $URL | tar --strip-components=1 -xz
+          CC=mpicc FC=mpifort CPPFLAGS=-I${PARFLOW_DEP_DIR}/include LDFLAGS=-L${PARFLOW_DEP_DIR}/lib ./configure --prefix=${PARFLOW_DEP_DIR}
+          make
+          make install
+        fi
+        echo "NETCDF_FLAGS=-DNETCDF_DIR=$PARFLOW_DEP_DIR -DNETCDF_Fortran_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_HDF5=TRUE" >> $GITHUB_ENV
+
+    - name: OASIS3-MCT Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: matrix.config.amps_layer == 'oas3'
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          git clone --depth 1 --branch OASIS3-MCT_5.1 https://gitlab.com/cerfacs/oasis3-mct.git
+          cd oasis3-mct
+          export OASIS_ROOT=$(pwd)
+          cd util/make_dir
+          echo 'include $(GITHUB_WORKSPACE)/misc/build_scripts/build.oasis3.ubuntu22.04' > make.inc
+          make realclean static-libs -f TopMakefileOasis3
+          mv -v ${OASIS_ROOT}/install/include/* ${PARFLOW_DEP_DIR}/include/
+          mv -v ${OASIS_ROOT}/install/lib/* ${PARFLOW_DEP_DIR}/lib/
+        fi
+
+    - name: SILO Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          URL=https://github.com/LLNL/Silo/archive/refs/tags/4.11.1.tar.gz
+          mkdir silo
+          cd silo
+          curl -L $URL | tar --strip-components=1 -xz
+          ./configure --disable-silex --disable-hzip --disable-fpzip --enable-shared=yes --prefix=$PARFLOW_DEP_DIR
+          make -j 2 install
+        fi
+
+    - name: HYPRE Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          # Download
+          wget https://github.com/hypre-space/hypre/archive/v2.33.0.tar.gz
+          tar xf v2.33.0.tar.gz && cd hypre-2.33.0
+
+          # Set Hypre accelerator backend
+          if [[ "${{ matrix.config.backend }}" == "cuda" ]]; then
+            HAS_CUDA="ON"
+            BACKEND="CUDA"
+          else
+            HAS_CUDA="OFF"
+            BACKEND=""
+          fi
+
+          # Install Hypre. See https://hypre.readthedocs.io/en/latest/ch-misc.html#build-system-options
+          cmake -S src -B build                              \
+                -DCMAKE_C_COMPILER=mpicc                     \
+                -DCMAKE_CXX_COMPILER=mpicxx                  \
+                -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}"  \
+                -DHYPRE_ENABLE_MPI="ON"                      \
+                -DHYPRE_ENABLE_CUDA="${HAS_CUDA}"
+          cmake --build build --parallel 4
+          cmake --install build
+          echo "" && echo "Successfully built Hypre ${BACKEND}"
+        fi
+
+    - name: Sundials Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: matrix.config.sundials == 'external'
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          # Download
+          wget https://github.com/llnl/sundials/archive/v7.4.0.tar.gz
+          tar xf v7.4.0.tar.gz
+          cd sundials-7.4.0
+          cmake -S . -B build                   \
+                -DCMAKE_C_COMPILER=mpicc                     \
+                -DCMAKE_CXX_COMPILER=mpicxx                  \
+                -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}"
+          cmake --build build --parallel 4
+          cmake --install build
+          echo "SUNDIALS_FLAGS=-DSUNDIALS_ROOT=${PARFLOW_DEP_DIR}" >> $GITHUB_ENV
+        fi
+
+    - name: PDI Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: matrix.config.pdi == 'true'
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          PDI_VERSION="1.8.1"
+          URL="https://github.com/pdidev/pdi/archive/refs/tags/1.8.1.tar.gz"
+          export curr_pdi=$(pwd)
+          mkdir -p pdi
+          cd pdi
+          curl -L $URL | tar --strip-components=1 -xz
+          # Configure and install PDI
+          mkdir build install
+          cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=${PARFLOW_DEP_DIR}
+          make -j 2 install
+        fi
+
+        export LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/pdi/install/lib:${LD_LIBRARY_PATH}
+        echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+        echo "PDI_FLAGS=-DPDI_ROOT=${PARFLOW_DEP_DIR}/pdi/install" >> $GITHUB_ENV
+
+    - name: ParFlow CMake Configure
+      run: |
+        cat $HOME/depend/cache-key
+        export OMPI_MCA_rmaps_base_oversubscribe=1
+        export OMP_NUM_THREADS=1
+        ${{ matrix.config.cc }} -v
+        mpicc -v
+        if [[ "${{ matrix.config.amps_layer }}" == "oas3" ]]; then HAVE_CLM="OFF"; else HAVE_CLM="ON"; fi
+        CFLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function -Wno-stringop-overread"
+        if [[ "${{ matrix.config.cc }}" == "gcc" ]]; then CFLAGS="${CFLAGS} -Wno-stringop-overread"; fi
+        export CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 CUDAHOSTCXX=mpicxx
+        cmake -Bbuild                                                   \
+           -DCMAKE_BUILD_TYPE=Release                                   \
+           -DCMAKE_C_FLAGS=$CFLAGS                                      \
+           -DPARFLOW_ENABLE_TIMING=TRUE                                 \
+           -DPARFLOW_AMPS_LAYER=${{ matrix.config.amps_layer }}         \
+           -DMPIEXEC_POSTFLAGS='--oversubscribe'                        \
+           -DPARFLOW_ACCELERATOR_BACKEND=${{ matrix.config.backend }}   \
+           -DCMAKE_CUDA_ARCHITECTURES="60;70;75;80"                     \
+           -DPARFLOW_AMPS_SEQUENTIAL_IO=true                            \
+           -DPARFLOW_HAVE_CLM=${HAVE_CLM}                               \
+           -DHYPRE_ROOT=$PARFLOW_DEP_DIR                                \
+           -DOAS3_ROOT=$PARFLOW_DEP_DIR                                 \
+           -DSILO_ROOT=$PARFLOW_DEP_DIR                                 \
+           -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }}          \
+           -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR                          \
+           $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS $UMPIRE_FLAGS $PDI_FLAGS $SUNDIALS_FLAGS
+
+    - name: ParFlow CMake Build
+      run: (cd build; make -j 2 install)
+
+    # Can't test with GPU since have no GPU hardware on testing nodes, GPU test is build only
+    # PDI testing requires a configuration file for specification tree, so for now, it is only being built and not tested.
+    - name: ParFlow CTest
+      if: matrix.config.backend != 'cuda' && matrix.config.backend != 'kokkos' && matrix.config.pdi != 'true'
+      run: |
+        export OMPI_MCA_rmaps_base_oversubscribe=1
+        export OMP_NUM_THREADS=1
+        (cd build; ctest --output-on-failure)

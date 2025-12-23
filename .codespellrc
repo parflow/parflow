@@ -1,0 +1,3 @@
+[codespell]
+skip = *.log,*.pdf,./pftools/tkdiff.tcl,./pfsimulator/amps/win32/rand48.3,./pfsimulator/clm/*
+ignore-words = ./misc/codespell.ignore

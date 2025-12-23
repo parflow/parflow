@@ -4,7 +4,7 @@ exec wish "$0" "$@"
 
 #BHEADER**********************************************************************
 #
-#  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+#  Copyright (c) 1995-2024, Lawrence Livermore National Security,
 #  LLC. Produced at the Lawrence Livermore National Laboratory. Written
 #  by the Parflow Team (see the CONTRIBUTORS file)
 #  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
@@ -74,7 +74,7 @@ proc AddFiles {} {
     pack $w.start
 
     frame $w.stop
-    label $w.stop.label -text "Stoping integer:" -width 15 -anchor w
+    label $w.stop.label -text "Stopping integer:" -width 15 -anchor w
     entry $w.stop.entry -width 40 -textvariable StopInt
     pack $w.stop.label $w.stop.entry -side left
     pack $w.stop

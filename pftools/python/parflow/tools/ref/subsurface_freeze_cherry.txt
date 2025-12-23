@@ -1,0 +1,22 @@
+# From Freeze and Cherry (1979) - see Tables 2.2 and 2.4		
+# Perm values are the mean of the log10 of the range provided, porosity values are the mean of the range provided
+key                      Perm      Porosity
+gravel_coarse            -         0.3
+gravel_fine              -         0.32
+sand_coarse              -         0.39
+sand_fine                -         0.45
+silt                     -         0.48
+clay                     -         0.47
+sandstone                1.14E-05  0.18
+siltstone                -         0.31
+limestone_dolomite       3.61E-05  0.2
+limestone_karst          -         0.2
+shale                    1.14E-08  0.2
+gravel                   3.61E+01  -
+sand_clean               3.61E-01  -
+silty_sand               3.61E-02  -
+silt_loess               1.14E-04  -
+glacial_till             1.14E-06  -
+clay_unweathered_marine  3.61E-08  -
+unfractured_meta_igneous 1.14E-09  -
+fractured_meta_igneous   1.14E-03  -

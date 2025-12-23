@@ -1,7 +1,7 @@
 #! /bin/sh
 #BHEADER**********************************************************************
 #
-#  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+#  Copyright (c) 1995-2024, Lawrence Livermore National Security,
 #  LLC. Produced at the Lawrence Livermore National Laboratory. Written
 #  by the Parflow Team (see the CONTRIBUTORS file)
 #  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
@@ -26,152 +26,118 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 #  USA
 #**********************************************************************EHEADER
+#
+# Run parflow in parallel.
+# Script hides the different ways to run MPI jobs.
+#
+
+#-----------------------------------------------------------------------------
+#
+# Program usage 
+#
+#-----------------------------------------------------------------------------
+usage () {
+   echo "usage: $0 run [-hvpg] pfidb_file num_procs"
+   echo "    -h               help"
+   echo "    -v               verbose"
+   echo "    -p executable    executable to run"
+   echo ""
+   echo "Runs parflow on using mpi startup command (e.g. mpiexec, mpirun etc)."
+}
+
+#=============================================================================
+#
+# Verbose logging
+#
+#=============================================================================
+pflog () {
+   if [ $VERBOSE -eq 1 ]
+   then
+      echo "pfrun: $@"
+   fi
+}
 
 if [ -f ~/.parflowrc ] 
 then
-    . ~/.parflowrc
+   . ~/.parflowrc
 fi
 
-
 #=============================================================================
 #
-# Loop to parse users arguments
+# Parse users arguments
 #
 #=============================================================================
+VERBOSE=0
 PROGRAM=""
 DEBUG=""
-while getopts hpg: c
+while getopts vmhpg: c
 do
-	case $c in
-	hp) 
-		echo "usage: $0 run runname"
-		echo "Runs parflow on the allocated cube."
-	        exit 0;;
-	p) 
-	       PROGRAM=$2
-	       shift 
-	       shift;;
-        g)    for i in $2
-	      do 
-		    DEBUG="$DEBUG -cegdb $i"
-	      done
-              shift
-	      shift;;
-esac
+   case $c in
+      h)
+	 usage;
+	 exit 1;;
+      v)
+	 VERBOSE=1
+	 shift;
+	 ;;
+      p) 
+	 PROGRAM=$2
+	 shift 
+	 shift;;
+   esac
 done
 
-if [ "$DMALLOC_OPTIONS" ]; then
-	rm -f malloc.log.????
+if [ ! \( "$#" -eq 2 \) ]; then
+  usage
+  exit 1
 fi
 
-#
-# The following is a hack to deal with NFS temp mount problems
-#
-if [ -z "$AMPS_ROOT_DIR" ]; then
-	AMPS_ROOT_DIR=$HOME
-	export AMPS_ROOT_DIR
-fi
+PFSCRIPT=$1
+NUMPROCS=$2
 
-real_home=`(cd $AMPS_ROOT_DIR; sh -c "pwd")`
-AMPS_EXE_DIR=`echo \`pwd\` | sed "s#$real_home#$AMPS_ROOT_DIR#"`
-export AMPS_EXE_DIR
+if ! [ -e "${PFSCRIPT}.pfidb" ]; then
+  echo "pfidb file \"${PFSCRIPT}.pfidb\" not found" >&2
+  exit 1
+fi
 
 if [ -z "$PROGRAM" ]
 then
-	#
-	# The default is to run ParFlow
-	#
-	PROGRAM=parflow
+   #
+   # The default is to run ParFlow
+   #
+   PROGRAM=parflow
 fi
 
 if [ -z "$DEBUG" ]
 then
-    DISPLAY_OPT=""
+   DISPLAY_OPT=""
 else
 
-    if [ -z "$DISPLAY" ]
-    then
-	DEBUG_OPT="-display `hostname`:0.0"
-    else
-	DEBUG_OPT="-display $DISPLAY"
-    fi
-fi
-
-case `uname -a` in
-    *AIX*)
-    #
-    # IBM SP2
-    #
-  
-    poe $PARFLOW_DIR/bin/$PROGRAM -procs `cat .amps.info.$2` $1 $DEBUG_OPT $DEBUG > $1.out.txt
-
-    exit 0
-    ;;
-    *WildFire*)
-    #
-    # For Sun WildFire systems
-    #
-    tmrun -np `cat .amps.info.$2`  $PARFLOW_DIR/bin/$PROGRAM $1 $DEBUG_OPT $DEBUG > $1.out.txt
-    exit 0
-    ;;
-    *chaos*)
-    #
-    # For LC chaos systems
-    #
-    srun -n $2 $PARFLOW_RUN_OPTS $PARFLOW_DIR/bin/$PROGRAM $1 > $1.out.txt
-    exit 0
-    ;;
-    *Cygwin*)
-    #
-    # For cygwin
-    #
-    mpiexec -n $2 ${PARFLOW_DIR}/bin/$PROGRAM $1 2>&1 > $1.out.txt < /dev/null
-    exit 0
-    ;;
-esac
-
-#
-# Assume MPICH or OpenMPI based cluster
-#
-if [ "`mpirun 2> /dev/null`" = "Missing: program name" ] 
-then
-    #
-    # MPICH
-    #
-    if [ "$PBS_NODEFILE" = "" ]
-    then
-       mpirun -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
-    else
-       mpirun -machinefile $PBS_NODEFILE -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
+   if [ -z "$DISPLAY" ]
+   then
+      DEBUG_OPT="-display `hostname`:0.0"
+   else
+      DEBUG_OPT="-display $DISPLAY"
    fi
-elif mpirun  2>&1 | grep -q "Open MPI"
+fi
+
+CMD=""
+
+# If CMake was used then use setting from file for MPI commands
+if [ -f $PARFLOW_DIR/config/pf-cmake-env.sh ]
 then
-    #
-    # OpenMPI
-    #
-    mpirun -np $2  $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
-    exit 0
-elif mpirun  2>&1 | grep -q "mpirun"
-then
-    #
-    # Other MPI
-    #
-    mpirun -np $2  $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
-    exit 0
+   . $PARFLOW_DIR/config/pf-cmake-env.sh
+
+   if [ -z ${PARFLOW_MEMORYCHECK_COMMAND} ]
+   then
+      CMD="${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${NUMPROCS} ${MPIEXEC_POSTFLAGS} ${PARFLOW_MPIEXEC_EXTRA_FLAGS} ${MPIEXEC_PREFLAGS} ${PARFLOW_DIR}/bin/${PROGRAM} ${PFSCRIPT} $DEBUG_OPT $DEBUG 2>&1 > ${PFSCRIPT}.out.txt"
+   else
+      CMD="${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${NUMPROCS} ${MPIEXEC_POSTFLAGS} ${PARFLOW_MPIEXEC_EXTRA_FLAGS} ${MPIEXEC_PREFLAGS} ${PARFLOW_MEMORYCHECK_COMMAND} ${PARFLOW_MEMORYCHECK_COMMAND_OPTIONS} ${PARFLOW_DIR}/bin/${PROGRAM} ${PFSCRIPT} $DEBUG_OPT $DEBUG 2>&1 > ${PFSCRIPT}.out.txt"
+   fi
 else
-    mpiexec -n $2 ${PARFLOW_DIR}/bin/$PROGRAM $1 2>&1 > $1.out.txt < /dev/null
-    exit 0
+   echo "Unable to to find $PARFLOW_DIR/config/pf-cmake-env.sh; CMake should have created this file"
 fi
 
-
-
-if [ "$DMALLOC_OPTIONS" ]; then
-	grep "^known" malloc.log.* 
-fi
-
-exit 0
-
-
-
-
-
+pflog "executing command : $CMD" 
+eval $CMD
+exit $?

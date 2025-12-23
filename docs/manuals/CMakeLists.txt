@@ -9,7 +9,7 @@ ADD_LATEX_DOCUMENT(
 
 ADD_LATEX_DOCUMENT(
     dev_manual.tex
-    INPUTS parflow.sty defs.tex dev_manual_intro.tex release_process.tex codeorg.tex documentation.tex modules.tex input.tex equations.tex grid.tex discretize.tex visualization.tex administrative.tex ref.tex ref.grid.tex
+    INPUTS parflow.sty defs.tex dev_manual_intro.tex codeorg.tex documentation.tex modules.tex input.tex equations.tex grid.tex discretize.tex visualization.tex administrative.tex ref.tex ref.grid.tex
     )
 
 ADD_LATEX_DOCUMENT(

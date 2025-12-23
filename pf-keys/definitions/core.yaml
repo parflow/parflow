@@ -1,0 +1,150 @@
+# core.yaml
+# Definitions of core components of ParFlow
+# Includes Process, ComputationalGrid
+
+# -----------------------------------------------------------------------------
+# Process.Topology.*
+# -----------------------------------------------------------------------------
+
+Process:
+  __doc__: >
+    run.Process input options are: Topology
+
+  Topology:
+    __doc__: >
+      This section describes how processors are assigned in order
+      to solve the domain in parallel.
+        - P allocates the number of processes to the grid-cells in x.
+        - Q allocates the number of processes to the grid-cells in y.
+        - R allocates the number of processes to the grid-cells in z.
+      Please note R should always be 1 if you are running with Solver Richards
+      unless you are running a totally saturated domain (solver IMPES).
+
+    P:
+      help: >
+        [Type: int] P allocates the number of processes to the grid-cells in x.
+      default: 1
+      domains:
+        MandatoryValue:
+        IntValue:
+          min_value: 1
+
+    Q:
+      help: >
+        [Type: int] Q allocates the number of processes to the grid-cells in y.
+      default: 1
+      domains:
+        MandatoryValue:
+        IntValue:
+          min_value: 1
+
+    R:
+      help: >
+        [Type: int] R allocates the number of processes to the grid-cells in z.
+        Please note R should always be 1 if you are running with Solver Richards
+        unless you are running a totally saturated domain (solver IMPES).
+      default: 1
+      domains:
+        MandatoryValue:
+        IntValue:
+          min_value: 1
+
+# -----------------------------------------------------------------------------
+# ComputationalGrid
+# -----------------------------------------------------------------------------
+
+ComputationalGrid:
+  __doc__: >
+    The computational grid keys set the bottom left corner of the domain to a
+    specific point in space. If using a .pfsol file, the bottom left corner
+    location of the .pfsol file must be the points designated in the
+    computational grid. The user can also assign the x, y and z location to
+    correspond to a specific coordinate system (i.e. UTM). run.ComputationalGrid
+    input options are: Lower.[X, Y, Z], [NX, NY, NZ], [DX, DY, DZ]
+
+  # None of these entries have defaults
+  Lower:
+    __doc__: >
+      This section sets the lower coordinate locations for the
+      computational grid (X, Y, Z).
+
+    X:
+      help: >
+        [Type: double] This assigns the lower x coordinate location for the
+        computational grid.
+      domains:
+        MandatoryValue:
+        DoubleValue:
+
+    Y:
+      help: >
+        [Type: double] This assigns the lower y coordinate location for the
+        computational grid.
+      domains:
+        MandatoryValue:
+        DoubleValue:
+
+    Z:
+      help: >
+        [Type: double] This assigns the lower z coordinate location for the
+        computational grid.
+      domains:
+        MandatoryValue:
+        DoubleValue:
+
+  NX:
+    help: >
+      [Type: int] This assigns the number of grid cells in the x direction
+      for the computational grid.
+    domains:
+      MandatoryValue:
+      IntValue:
+        min_value: 1
+
+  NY:
+    help: >
+      [Type: int] This assigns the number of grid cells in the y direction
+      for the computational grid.
+    domains:
+      MandatoryValue:
+      IntValue:
+        min_value: 1
+
+  NZ:
+    help: >
+      [Type: int] This assigns the number of grid cells in the z direction
+      for the computational grid.
+    domains:
+      MandatoryValue:
+      IntValue:
+        min_value: 1
+
+  DX:
+    help: >
+      [Type: double] This defines the size of grid cells in the x direction.
+      Units are L and are defined by the units of the hydraulic conductivity
+      used in the problem.
+    domains:
+      MandatoryValue:
+      DoubleValue:
+        min_value: 0.0
+
+  DY:
+    help: >
+      [Type: double] This defines the size of grid cells in the y direction.
+      Units are L and are defined by the units of the hydraulic conductivity
+      used in the problem.
+    domains:
+      MandatoryValue:
+      DoubleValue:
+        min_value: 0.0
+
+  DZ:
+    help: >
+      [Type: double] This defines the size of grid cells in the z direction.
+      Units are L and are defined by the units of the hydraulic conductivity
+      used in the problem.
+    domains:
+      MandatoryValue:
+      DoubleValue:
+        min_value: 0.0

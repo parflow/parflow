@@ -81,25 +81,25 @@ RUN wget https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.g
 # SILO
 #
 WORKDIR /home/parflow
-RUN curl "https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz" -o "silo-4.10.2.tar.gz" && \
-    tar -xf silo-4.10.2.tar.gz && \
-    cd silo-4.10.2 && \
+RUN wget -q https://github.com/LLNL/Silo/archive/refs/tags/4.10.2.tar.gz && \
+    tar -xf 4.10.2.tar.gz && \
+    cd Silo-4.10.2 && \
     ./configure  --prefix=$PARFLOW_DIR --disable-silex --disable-hzip --disable-fpzip && \
     make install && \
     cd .. && \
-    rm -fr silo-4.10.2 silo-4.10.2.tar.gz
+    rm -fr Silo-4.10.2 4.10.2.tar.gz
 
 #
 # Hypre
 #
 WORKDIR /home/parflow
-RUN wget -q https://github.com/hypre-space/hypre/archive/v2.17.0.tar.gz && \
-   tar -xvf v2.17.0.tar.gz && \
-   cd hypre-2.17.0/src && \
+RUN wget -q https://github.com/hypre-space/hypre/archive/v2.18.2.tar.gz && \
+   tar -xvf v2.18.2.tar.gz && \
+   cd hypre-2.18.2/src && \
    ./configure --prefix=$PARFLOW_DIR && \
    make install && \
    cd ../.. && \
-   rm -fr hypre-2.17.0 v2.17.0.tar.gz
+   rm -fr hypre-2.18.2 v2.18.2.tar.gz
 
 #
 # RMM
@@ -129,7 +129,7 @@ RUN mkdir -p build && \
     CC=mpicc CXX=mpicxx FC=mpif90 && \
     cmake ../parflow \
        -DCMAKE_C_FLAGS=-lcuda \
-       -DPARFLOW_AMPS_LAYER=cuda \
+       -DPARFLOW_AMPS_LAYER=mpi1 \
        -DPARFLOW_AMPS_SEQUENTIAL_IO=TRUE \
        -DHYPRE_ROOT=$PARFLOW_DIR \
        -DSILO_ROOT=$PARFLOW_DIR \

@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /*****************************************************************************
 *
 *****************************************************************************/
@@ -129,8 +129,8 @@ void SubsrfSim(
   SubgridArray     *subgrids;
 
   Subgrid          *subgrid,
-    *well_subgrid,
-    *tmp_subgrid;
+                   *well_subgrid,
+                   *tmp_subgrid;
 
   Subvector        *perm_x_sub, *perm_y_sub, *perm_z_sub;
   Subvector        *kx_values_sub, *ky_values_sub, *kz_values_sub;
@@ -709,7 +709,7 @@ PFModule   *SubsrfSimNewPublicXtra()
     sprintf(key, "Geom.%s.Perm.Type", geom_name);
     sim_type_name = GetString(key);
 
-    sim_type = NA_NameToIndex(switch_na, sim_type_name);
+    sim_type = NA_NameToIndexExitOnError(switch_na, sim_type_name, key);
 
     /* Assign the K field simulator method and invoke the "New" function */
     switch (sim_type)
@@ -744,16 +744,14 @@ PFModule   *SubsrfSimNewPublicXtra()
 
       default:
       {
-        InputError("Error: invalid perm type <%s> for key <%s>\n",
-                   sim_type_name, key);
-        break;
+        InputError("Invalid switch value <%s> for key <%s>", sim_type_name, key);
       }
     }
   }
 
   type_na = NA_NewNameArray("TensorByGeom TensorByFile");
   switch_name = GetString("Perm.TensorType");
-  public_xtra->type = NA_NameToIndex(type_na, switch_name);
+  public_xtra->type = NA_NameToIndexExitOnError(type_na, switch_name, "TensorByGeom TensorByFile");
 
   switch (public_xtra->type)
   {
@@ -813,6 +811,11 @@ PFModule   *SubsrfSimNewPublicXtra()
       public_xtra->data = (void*)dummy1;
 
       break;
+    }
+
+    default:
+    {
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }   /*End switch */
 

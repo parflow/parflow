@@ -1,0 +1,77 @@
+#
+# Include file for OASIS3 Makefile for a Linux system using 
+# GNU and OPENMPI. This file is used by the ParFlow CI Test 
+# to build the OASIS3-MCT library.
+#
+# This file is based from:
+# https://gitlab.com/cerfacs/oasis3-mct/-/blob/OASIS3-MCT_5.0/util/make_dir/header_examples/make.gfortran_openmpi_linux_openmp
+#
+###############################################################################
+#
+# CHAN  : communication technique used in OASIS3 (MPI1/MPI2)
+CHAN            = MPI1
+#
+# Paths for libraries, object files and binaries
+#
+# COUPLE        : path for oasis3 main directory
+COUPLE          = $(OASIS_ROOT)
+#
+# ARCHDIR       : directory created when compiling
+ARCHDIR         = $(OASIS_ROOT)/install
+#
+# MPI library ((see the file /etc/modulefiles/mpi/openmpi-x86_64)
+MPIDIR      = /usr/lib/x86_64-linux-gnu/openmpi
+MPIBIN      = /usr/bin
+MPI_INCLUDE = $(MPIDIR)/include
+MPILIB      = -L$(MPIDIR)/lib -lmpi
+#
+# NETCDF library of the system
+NETCDF_INCLUDE1 = ${PARFLOW_DEP_DIR}/include
+# netcdf.mod and hdf5.mod
+NETCDF_INCLUDE2 = ${PARFLOW_DEP_DIR}/include
+NETCDF_LIBRARY  =  -L/${PARLFLOW_DEP_DIR}/lib -lnetcdff -lnetcdf
+#
+# Compiling and other commands
+MAKE        = make
+F90         = $(MPIBIN)/mpif90 -I$(MPI_INCLUDE)
+F           = $(F90)
+f90         = $(F90)
+f           = $(F90)
+CC          = $(MPIBIN)/mpicc -I$(MPI_INCLUDE)
+LD          = $(MPIBIN)/mpif90 $(MPILIB)
+AR          = ar
+ARFLAGS     = -ruv
+#
+# CPP keys and compiler options
+#  
+CPPDEF    = -Duse_comm_$(CHAN) -D__VERBOSE -DTREAT_OVERLAY
+#
+# 
+#F90FLAGS_1  = -g -ffree-line-length-0 -fbounds-check -fopenmp
+F90FLAGS_1  = -ffree-line-length-none -fallow-argument-mismatch -fopenmp
+f90FLAGS_1  = $(F90FLAGS_1)
+FFLAGS_1    = $(F90FLAGS_1)
+fFLAGS_1    = $(F90FLAGS_1)
+CCFLAGS_1   = 
+LDFLAGS     = -fopenmp
+#
+#
+###################
+#
+# Additional definitions that should not be changed
+#
+FLIBS           = $(NETCDF_LIBRARY)
+# BINDIR        : directory for executables
+BINDIR          = $(ARCHDIR)/bin
+# LIBBUILD      : contains a directory for each library
+LIBBUILD        = $(ARCHDIR)/build/lib
+# INCPSMILE     : includes all *o and *mod for each library
+INCPSMILE       = -I$(LIBBUILD)/psmile.$(CHAN) -I$(LIBBUILD)/scrip  -I$(LIBBUILD)/mct 
+
+F90FLAGS  = $(F90FLAGS_1) $(CPPDEF) $(INCPSMILE) -I$(NETCDF_INCLUDE1) -I$(NETCDF_INCLUDE2)
+f90FLAGS  = $(f90FLAGS_1) $(CPPDEF) $(INCPSMILE) -I$(NETCDF_INCLUDE1) -I$(NETCDF_INCLUDE2)
+FFLAGS    = $(FFLAGS_1) $(CPPDEF) $(INCPSMILE) -I$(NETCDF_INCLUDE1) -I$(NETCDF_INCLUDE2)
+fFLAGS    = $(fFLAGS_1) $(CPPDEF) $(INCPSMILE) -I$(NETCDF_INCLUDE1) -I$(NETCDF_INCLUDE2)
+CCFLAGS   = $(CCFLAGS_1) $(CPPDEF) $(INCPSMILE) -I$(NETCDF_INCLUDE1) -I$(NETCDF_INCLUDE2)
+#
+#############################################################################

@@ -101,7 +101,7 @@ proc evap { PDT MM {QUAL ""} } {
 	catch {unset parameter alias rest}
 	regexp "^$evap_s*($evap_S*)$evap_s*,$evap_s*($evap_S*)$evap_s*:$evap_s*(.*)$" $option ignore parameter alias rest;
 	if { ! [info exists parameter] || ! [info exists alias] || ! [info exists rest] } {
-	    EvaP_PDT_error "Error in an evaluate_parameters 'parameter, alias: type' option specifiction:  \"$option\"."
+	    EvaP_PDT_error "Error in an evaluate_parameters 'parameter, alias: type' option specification:  \"$option\"."
 	    continue
 	}
 	if { [info exists evap_INFO($parameter)] } {
@@ -432,7 +432,7 @@ proc EvaP_fin {MM} {
 
 	    set parameter_help_in_progress 0
 	    foreach m $MM {
-		if { [regexp {^\.(.*)$} $m ignore p] } {; # look for `dot' leadin character
+		if { [regexp {^\.(.*)$} $m ignore p] } {; # look for `dot' leading character
 		    set parameter_help_in_progress 1
 		    set parameter_help($p) "\n"
 		    continue
@@ -446,7 +446,7 @@ proc EvaP_fin {MM} {
 
 	}; # ifend usage_help
 
-	# Pass throught the PDT list printing a standard EvaP help summary.
+	# Pass through the PDT list printing a standard EvaP help summary.
 
 	puts -nonewline $PAGER "\nParameters:\n"
 	if { ! $evap_full_help } { puts -nonewline $PAGER "\n" }
@@ -545,7 +545,7 @@ proc EvaP_fin {MM} {
 	}; # ifend unevaluated
     }
 
-    # Store progam name for caller.
+    # Store program name for caller.
 
     EvaP_set_value 0 {w} 0 $argv0 {help}
 
@@ -605,7 +605,7 @@ proc EvaP_set_value {evaluate type list v parameter} {
     # Store a parameter's value; some parameter types require special type
     # conversion.  Store values the old way in scalar/list variables of the
     # form $opt_parameter, as well as the new way in the associative arrays
-    # named $options() and $Options().  'list of' paramaters are are returned
+    # named $options() and $Options().  'list of' parameters are are returned
     # as a string 'joined' with the multi-dimensional array emulation character
     # \x1C.
     #
@@ -743,7 +743,7 @@ proc evap_pac {prompt I cmds0} {
     #
     # Process Application Commands
     #
-    # An application command can be envoked by entering either its full spelling or the alias.
+    # An application command can be invoked by entering either its full spelling or the alias.
     #
 
     upvar $cmds0 cmds 

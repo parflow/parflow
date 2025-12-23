@@ -55,8 +55,9 @@ subroutine clm_hydro_snow(clm)
   qout = 0.
 
   if (clm%snl+1 >=1) then
-
-     clm%qflx_top_soil = clm%qflx_rain_grnd + clm%qflx_snomelt
+!LB - added liquid dew to pass it to parflow if no snow is present.
+     clm%qflx_top_soil = clm%qflx_rain_grnd + clm%qflx_snomelt + clm%qflx_dew_grnd
+!     clm%qflx_top_soil = clm%qflx_rain_grnd + clm%qflx_snomelt
 
   else
 

@@ -5,32 +5,32 @@
 
 #include "f2c.h"
 
-/*BHEADER*********************************************************************
+/*BHEADER**********************************************************************
  *
- * Copyright (c) 1995-2009, Lawrence Livermore National Security,
- * LLC. Produced at the Lawrence Livermore National Laboratory. Written
- * by the Parflow Team (see the CONTRIBUTORS file)
- * <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
  *
- * This file is part of Parflow. For details, see
- * http://www.llnl.gov/casc/parflow
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
  *
- * Please read the COPYRIGHT file or Our Notice and the LICENSE file
- * for the GNU Lesser General Public License.
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License (as published
- * by the Free Software Foundation) version 2.1 dated February 1999.
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
  *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- * and conditions of the GNU General Public License for more details.
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- * USA
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
  **********************************************************************EHEADER********************************************************************
  ****/
 /****************************************************************************
@@ -52,7 +52,7 @@ integer *lo, *hi, *dlo, *dhi;
 doublereal *hx, *dt;
 integer *fstord;
 doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
-  dxscr, *dyscr, *dzscr, *dzfrm;
+           dxscr, *dyscr, *dzscr, *dzfrm;
 {
   /* Initialized data */
 
@@ -60,15 +60,15 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
 
   /* System generated locals */
   integer s_dim1, s_dim2, s_offset, sn_dim1, sn_dim2, sn_offset, uedge_dim1,
-    uedge_dim2, uedge_offset, vedge_dim1, vedge_dim2, vedge_offset,
-    wedge_dim1, wedge_dim2, wedge_offset, phi_dim1, phi_dim2,
-    phi_offset, slx_dim1, slx_offset, sly_dim1, sly_offset, slz_dim1,
-    slz_dim2, slz_offset, sbot_dim1, sbot_offset, stop_dim1,
-    stop_offset, sbotp_dim1, sbotp_offset, sbck_dim1, sbck_offset,
-    sfrt_dim1, sfrt_offset, sleft_offset, sright_offset,
-    sfluxz_offset, dxscr_dim1, dxscr_offset, dyscr_dim1, dyscr_offset,
-    dzscr_dim1, dzscr_offset, dzfrm_dim1, dzfrm_offset, i__1, i__2,
-    i__3;
+          uedge_dim2, uedge_offset, vedge_dim1, vedge_dim2, vedge_offset,
+          wedge_dim1, wedge_dim2, wedge_offset, phi_dim1, phi_dim2,
+          phi_offset, slx_dim1, slx_offset, sly_dim1, sly_offset, slz_dim1,
+          slz_dim2, slz_offset, sbot_dim1, sbot_offset, stop_dim1,
+          stop_offset, sbotp_dim1, sbotp_offset, sbck_dim1, sbck_offset,
+          sfrt_dim1, sfrt_offset, sleft_offset, sright_offset,
+          sfluxz_offset, dxscr_dim1, dxscr_offset, dyscr_dim1, dyscr_offset,
+          dzscr_dim1, dzscr_offset, dzfrm_dim1, dzfrm_offset, i__1, i__2,
+          i__3;
 
   /* Local variables */
   doublereal supw;
@@ -79,9 +79,9 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
   doublereal dx, dy, dz, phiinv, supw_m__;
   extern /* Subroutine */ int slopez_();
   doublereal supw_p__, dth, dxh, dyh, dzh, dxi, dyi, dzi, cux, cuy,
-    cuz, thi_xhi__, thi_yhi__, thi_zhi__, sux, suy, suz, tlo_xhi__,
-    tlo_yhi__, tlo_zhi__, thi_xlo__, thi_ylo__, thi_zlo__, tlo_xlo__,
-    tlo_ylo__, tlo_zlo__;
+             cuz, thi_xhi__, thi_yhi__, thi_zhi__, sux, suy, suz, tlo_xhi__,
+             tlo_yhi__, tlo_zhi__, thi_xlo__, thi_ylo__, thi_zlo__, tlo_xlo__,
+             tlo_ylo__, tlo_zlo__;
   extern /* Subroutine */ int slopexy_();
 
 /*     ::: argument declarations */
@@ -530,8 +530,8 @@ doublereal *dxscr, *dyscr;
 
   /* System generated locals */
   integer s_dim1, s_dim2, s_offset, slx_dim1, slx_offset, sly_dim1,
-    sly_offset, dxscr_dim1, dxscr_offset, dyscr_dim1, dyscr_offset,
-    i__1, i__2;
+          sly_offset, dxscr_dim1, dxscr_offset, dyscr_dim1, dyscr_offset,
+          i__1, i__2;
   doublereal d__1, d__2, d__3;
 
   /* Builtin functions */
@@ -687,7 +687,7 @@ doublereal *dzscr, *dzfrm;
 
   /* System generated locals */
   integer s_dim1, s_dim2, s_offset, slz_dim1, slz_dim2, slz_offset,
-    dzscr_dim1, dzscr_offset, dzfrm_dim1, dzfrm_offset, i__1, i__2;
+          dzscr_dim1, dzscr_offset, dzfrm_dim1, dzfrm_offset, i__1, i__2;
   doublereal d__1, d__2, d__3;
 
   /* Builtin functions */

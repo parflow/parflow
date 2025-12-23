@@ -1,0 +1,24 @@
+!=========================================================================
+!
+!  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely
+!  L                        M  available land surface process model.
+!  M --COMMON LAND MODEL--  C
+!  C                        L  CLM WEB INFO: http://clm.gsfc.nasa.gov
+!  LMCLMCLMCLMCLMCLMCLMCLMCLM  CLM ListServ/Mailing List:
+!
+!=========================================================================
+! clm_vegp.dat:
+!
+! DESCRIPTION:
+!  Vegetation parameter data file for IGBP classification.
+!  Please note that any other classification can be used with CLM
+!    provided that the following parameter values are given.
+!  This data file is read in by drv_getvegp.f90 - this program expects
+!    the format given below, but does not assume an exact parameter order.
+!
+! REVISION HISTORY:
+!  15 September 1999: Yongjiu Dai; Initial code
+!  15 December 1999:  Paul Houser; F90 Revision
+!  25 November 2000: Mariana Vertenstein
+!=========================================================================
+!IGBP Land Cover Types (other classes can be used by changing this file)

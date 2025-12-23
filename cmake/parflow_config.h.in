@@ -59,23 +59,32 @@
 #cmakedefine PARFLOW_HAVE_MALLOC_H
 #cmakedefine HAVE_MALLOC_H
 
+#cmakedefine PARFLOW_HAVE_MALLINFO2
 #cmakedefine PARFLOW_HAVE_MALLINFO
-#cmakedefine HAVE_MALLINFO
 
 #cmakedefine PARFLOW_HAVE_ETRACE
 
 #cmakedefine PARFLOW_HAVE_CUDA
 
-/* PARFLOW_HAVE_RMM is not defined here because because it is only set 
+#cmakedefine PARFLOW_HAVE_KOKKOS
+
+
+#cmakedefine PARFLOW_HAVE_RMM
+
+/* 
+is not defined here because because it is only set 
    for the compilation of parflow_exe, parflow_lib, and kinsol sources. 
    RMM must be initialized before it is used, so, for example, 
    the amps tests would fail if used across all compiles.              */
 
 #cmakedefine PARFLOW_HAVE_OMP
 
-#define PARFLOW_BACKEND_NONE 0
-#define PARFLOW_BACKEND_CUDA 1
-#define PARFLOW_BACKEND_OMP 2
-#define PARFLOW_ACC_BACKEND @PARFLOW_ACC_BACKEND@
+#cmakedefine PARFLOW_HAVE_PDI
+#cmakedefine PARFLOW_HAVE_UMPIRE
+
+#cmakedefine KOKKOS_ENABLE_CUDA
+#cmakedefine KOKKOS_ENABLE_HIP
+#cmakedefine Kokkos_ENABLE_SYCL
+#cmakedefine Kokkos_ENABLE_OPENMP_TARGET
 
 #endif // PARFLOW_CONFIG_H

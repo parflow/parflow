@@ -63,7 +63,7 @@
 \item \Ref{amps_ReadType}
 \end{itemize}
 
-{\large Send and Recieve}
+{\large Send and Receive}
 \begin{itemize}
 \item \Ref{amps_IRecv}
 \item \Ref{amps_Recv}

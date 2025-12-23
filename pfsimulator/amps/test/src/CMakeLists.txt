@@ -36,12 +36,36 @@ if(${PARFLOW_AMPS_LAYER} STREQUAL "cuda")
   list(REMOVE_ITEM PARALLEL_TESTS test16)
 endif(${PARFLOW_AMPS_LAYER} STREQUAL "cuda")
 
+# Add GPU test case (same as test15 with Unified Memory)
+if(((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS})) AND (${PARFLOW_AMPS_LAYER} STREQUAL "mpi1"))
+  # We cannot execute test18 if the memory manager has not been initialized.
+  # This needs to be fixed when we decouple the backend from amps.
+  if(NOT DEFINED PARFLOW_HAVE_RMM AND NOT DEFINED PARFLOW_HAVE_UMPIRE)
+    list(APPEND PARALLEL_TESTS test18)
+  endif()
+
+  if(NOT (${PARFLOW_HAVE_CUDA}))
+    list(REMOVE_ITEM PARALLEL_TESTS test15)  
+  endif(NOT (${PARFLOW_HAVE_CUDA}))
+endif(((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS})) AND (${PARFLOW_AMPS_LAYER} STREQUAL "mpi1"))
+
 set(ALL_TESTS ${SEQUENTIAL_TESTS} ${PARALLEL_TESTS})
 list(REMOVE_DUPLICATES ALL_TESTS)
 
 foreach(test ${ALL_TESTS})
+
+  if( ${PARFLOW_BUILD_WITH_CPP} )
+    set_source_files_properties(${test}.c
+      PROPERTIES LANGUAGE CXX)
+  endif()
+
   add_executable( ${test} ${test}.c)
   target_link_libraries(${test} amps)
+
+  # AMPS has a depency on CUDA
+  if ( ${PARFLOW_HAVE_CUDA} )
+    target_include_directories(${test} PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+  endif ( ${PARFLOW_HAVE_CUDA} )
   
   if (${PARFLOW_HAVE_MPI})
     # In CMake 3.13 this could be target_link_options

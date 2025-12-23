@@ -1,6 +1,6 @@
 #BHEADER**********************************************************************
 #
-#  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+#  Copyright (c) 1995-2024, Lawrence Livermore National Security,
 #  LLC. Produced at the Lawrence Livermore National Laboratory. Written
 #  by the Parflow Team (see the CONTRIBUTORS file)
 #  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
@@ -43,7 +43,7 @@
 #
 #   "metaEListBox" can be called on dropdown list widgets that have already
 #   been created.  This allows you to modify the behavior of the dropdown
-#   widget during its existance.  If you want to make more specific
+#   widget during its existence.  If you want to make more specific
 #   configurations, then you will have to modify the widgets directly using
 #   the "configure" command on the objects listed below.
 #  

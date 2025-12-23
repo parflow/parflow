@@ -1,0 +1,265 @@
+---
+code_id: 58218
+site_ownership_code: "LLNL"
+open_source: true
+repository_link: "https://github.com/parflow/parflow/releases/tag/v3.8.0"
+project_type: "OS"
+software_type: "S"
+official_use_only: {}
+developers:
+- email: ""
+  orcid: ""
+  first_name: "Steven"
+  last_name: "Smith"
+  middle_name: ""
+  affiliations:
+  - "Lawrence Livermore National Lab. (LLNL), Livermore, CA (United States)"
+- email: ""
+  orcid: ""
+  first_name: "Reed"
+  last_name: "Maxwell"
+  middle_name: ""
+  affiliations:
+  - "Princeton Univ., NJ (United States)"
+- email: ""
+  orcid: ""
+  first_name: "Ian"
+  last_name: "Ferguson"
+  middle_name: ""
+  affiliations:
+  - "Colorado School of Mines, Golden, CO (United States)"
+- email: ""
+  orcid: ""
+  first_name: "Fabian"
+  last_name: "Gasper"
+  middle_name: ""
+  affiliations:
+  - "Forschungszentrum Juelich (Germany)"
+- email: "nick.engdahl@wsu.edu"
+  orcid: ""
+  first_name: "Nick"
+  last_name: "Engdahl"
+  middle_name: ""
+  affiliations:
+  - "Washington State Univ., Pullman, WA (United States)"
+- email: "jaro.hokkanen@gmail.com"
+  orcid: ""
+  first_name: "Jaro"
+  last_name: "Hokkanen"
+  middle_name: ""
+  affiliations:
+  - "FZ-Juelich"
+- email: ""
+  orcid: ""
+  first_name: "Patrick"
+  last_name: "Avery"
+  middle_name: ""
+  affiliations:
+  - "Kitware"
+- email: "sebastien.jourdain@kitware.com"
+  orcid: ""
+  first_name: "Sebastien"
+  last_name: "Jourdain"
+  middle_name: ""
+  affiliations:
+  - "Kitware"
+- email: ""
+  orcid: ""
+  first_name: "Garrett"
+  last_name: "Rapp"
+  middle_name: ""
+  affiliations:
+  - "Kitware, Inc., Clifton Park, NY (United States)"
+- email: "lecondon@email.arizona.edu"
+  orcid: ""
+  first_name: "Laura"
+  last_name: "Condon"
+  middle_name: ""
+  affiliations:
+  - "University of Arizona"
+- email: ""
+  orcid: ""
+  first_name: "Ketan"
+  last_name: "Kulkarni"
+  middle_name: ""
+  affiliations:
+  - "Forschungszentrum Juelich (Germany)"
+- email: ""
+  orcid: ""
+  first_name: "Basile"
+  last_name: "Hector"
+  middle_name: ""
+  affiliations:
+  - "The Institute for Geosciences and Environmental research (IGE), Grenoble, France"
+- email: ""
+  orcid: ""
+  first_name: "David"
+  last_name: "Thompson"
+  middle_name: ""
+  affiliations:
+  - "Kitware, Inc."
+- email: ""
+  orcid: ""
+  first_name: "Jackson"
+  last_name: "Swilley"
+  middle_name: ""
+  affiliations:
+  - "Colorado School of Mines, Golden, CO (United States)"
+- email: ""
+  orcid: ""
+  first_name: "Calla"
+  last_name: "Chennault"
+  middle_name: ""
+  affiliations:
+  - "Princeton Univ., NJ (United States)"
+- email: ""
+  orcid: ""
+  first_name: "Ethan"
+  last_name: "Coon"
+  middle_name: ""
+  affiliations:
+  - "Oak Ridge National Laboratory"
+- email: "ian.bertolacci@gmail.com"
+  orcid: ""
+  first_name: "Ian"
+  last_name: "Bertolacci"
+  middle_name: ""
+  affiliations:
+  - "University of Arizona"
+- email: "jjbeisman@gmail.com"
+  orcid: ""
+  first_name: "Joe"
+  last_name: "Beisman"
+  middle_name: ""
+  affiliations:
+  - "Colorado School of Mines, Golden, CO (United States)"
+- email: "jose.fonseca@cea.fr"
+  orcid: ""
+  first_name: "Jose"
+  last_name: "Fonseca"
+  middle_name: "A."
+  affiliations:
+  - "CEA Saclay"
+- email: ""
+  orcid: ""
+  first_name: "Sebastian"
+  last_name: "Lührs"
+  middle_name: ""
+  affiliations:
+  - "Forschungszentrum Jülich"
+- email: ""
+  orcid: ""
+  first_name: "Vineet"
+  last_name: "Bansal"
+  middle_name: ""
+  affiliations:
+  - "Princeton University"
+- email: ""
+  orcid: ""
+  first_name: "Carol"
+  last_name: "Woodward"
+  middle_name: ""
+  affiliations:
+  - "Lawrence Livermore National Lab. (LLNL), Livermore, CA (United States)"
+- email: ""
+  orcid: ""
+  first_name: "Robert"
+  last_name: "Falgout"
+  middle_name: ""
+  affiliations:
+  - "Lawrence Livermore National Lab. (LLNL), Livermore, CA (United States)"
+- email: ""
+  orcid: ""
+  first_name: "Steve"
+  last_name: "Ashby"
+  middle_name: ""
+  affiliations:
+  - "Lawrence Livermore National Lab. (LLNL), Livermore, CA (United States)"
+- email: ""
+  orcid: ""
+  first_name: "Andrew"
+  last_name: "Tompson"
+  middle_name: ""
+  affiliations:
+  - "Lawrence Livermore National Lab. (LLNL), Livermore, CA (United States)"
+- email: ""
+  orcid: ""
+  first_name: "Stefan"
+  last_name: "Kollett"
+  middle_name: ""
+  affiliations:
+  - "Univ. of Bonn (Germany)"
+- email: ""
+  orcid: ""
+  first_name: "William"
+  last_name: "Bosl"
+  middle_name: ""
+  affiliations:
+  - "Harvard Medical School, Boston, MA (United States)"
+- email: ""
+  orcid: ""
+  first_name: "Chuck"
+  last_name: "Baldwin"
+  middle_name: ""
+  affiliations:
+  - "Lawrence Livermore National Lab. (LLNL), Livermore, CA (United States)"
+- email: ""
+  orcid: ""
+  first_name: "Richard"
+  last_name: "Hornung"
+  middle_name: ""
+  affiliations:
+  - "Lawrence Livermore National Lab. (LLNL), Livermore, CA (United States)"
+- email: ""
+  orcid: ""
+  first_name: "Michael"
+  last_name: "Burke"
+  middle_name: ""
+  affiliations:
+  - "Boise State Univ., ID (United States)"
+contributors: []
+sponsoring_organizations:
+- organization_name: "USDOE"
+  funding_identifiers: []
+  primary_award: "AC52-07NA27344"
+  DOE: true
+contributing_organizations: []
+research_organizations: []
+related_identifiers:
+- identifier_type: "DOI"
+  identifier_value: "10.5281/zenodo.6413322"
+  relation_type: "IsPreviousVersionOf"
+  source: "AutoBackfill"
+change_log: []
+release_date: "2021-05-27"
+software_title: "ParFlow"
+acronym: "parflow"
+doi: "https://doi.org/10.5281/zenodo.4816885"
+description: "ParFlow is an open-source, modular, parallel watershed flow model. It\
+  \ includes fully-integrated overland flow, the ability to simulate complex topography,\
+  \ geology and heterogeneity and coupled land-surface processes including the land-energy\
+  \ budget, biogeochemistry and snow (via CLM). It is multi-platform and runs with\
+  \ a common I/O structure from laptop to supercomputer. ParFlow is the result of\
+  \ a long, multi-institutional development history and is now a collaborative effort\
+  \ between CSM, LLNL, UniBonn and UCB. ParFlow has been coupled to the mesoscale,\
+  \ meteorological code ARPS and the NCAR code WRF."
+programming_languages:
+- "C"
+- "C++"
+- "Python"
+- "Tcl"
+version_number: "3.8.0"
+documentation_url: "https://www.parflow.org"
+country_of_origin: "United States"
+project_keywords: []
+licenses:
+- "GNU Lesser General Public License v2.1"
+recipient_org: "LLNL"
+site_accession_number: "CODE-OCEC-08-103"
+date_record_added: "2021-06-02"
+date_record_updated: "2021-06-29"
+links:
+- rel: "citation"
+  href: "https://www.osti.gov/doecode/biblio/58218"
+is_file_certified: false
+is_limited: false

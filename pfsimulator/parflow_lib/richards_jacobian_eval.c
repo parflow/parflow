@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 /*
  * SGS TODO this needs some work in the overland flow current
@@ -40,6 +40,7 @@
  */
 
 #include "parflow.h"
+#include "seepage.h"
 #include "llnlmath.h"
 #include "llnltyps.h"
 #include "assert.h"
@@ -61,7 +62,9 @@ typedef struct {
   enum JacobianType type;
   double SpinupDampP1; // NBE
   double SpinupDampP2; // NBE
-  int tfgupwind;  // @RMM
+  int tfgupwind;  // RMM
+  int using_MGSemi;  // RMM
+  SeepageLookup seepage;
 } PublicXtra;
 
 typedef struct {
@@ -82,10 +85,10 @@ typedef struct {
    * J =  |        |
    *      [ JF  JB ]
    *
-   * where JC corresponds to surface-surface interations,
-   *      JB corresponds to subsurface-subsurface interations,
-   *      JE corresponds to surface-subsurface interations, and
-   *      JF corresponds to subsurface-surface interations.
+   * where JC corresponds to surface-surface interactions,
+   *      JB corresponds to subsurface-subsurface interactions,
+   *      JE corresponds to surface-subsurface interactions, and
+   *      JF corresponds to subsurface-surface interactions.
    *
    * To make for a more efficient implementation, we store the
    * interactions for JE and JF as part of JB, so that JC handles
@@ -100,6 +103,20 @@ typedef struct {
 
   Grid         *grid;
   double       *temp_data;
+
+  Vector       *density_der;
+  Vector       *saturation_der;
+
+  // Overland flow variables
+  int using_overland_flow;
+  Vector       *KW;
+  Vector       *KE;
+  Vector       *KN;
+  Vector       *KS;
+  Vector       *KWns;
+  Vector       *KEns;
+  Vector       *KNns;
+  Vector       *KSns;
 } InstanceXtra;
 
 /*--------------------------------------------------------------------------
@@ -132,7 +149,19 @@ int jacobian_stencil_shape_C[5][3] = { { 0, 0, 0 },
 
 /*  This routine provides the interface between KINSOL and ParFlow
  *  for richards' equation jacobian evaluations and matrix-vector multiplies.*/
-
+#if defined (PARFLOW_HAVE_SUNDIALS)
+#include "kinsol/kinsol.h"
+int       KINSolMatVec(
+                       N_Vector pf_n_x,
+                       N_Vector pf_n_y,
+                       N_Vector pf_n_pressure,
+                       int *    recompute,
+                       void *   current_state)
+{
+  Vector      *x = N_VectorData(pf_n_x);
+  Vector      *y = N_VectorData(pf_n_y);
+  Vector      *pressure = N_VectorData(pf_n_pressure);
+#else
 int       KINSolMatVec(
                        void *   current_state,
                        N_Vector x,
@@ -140,6 +169,7 @@ int       KINSolMatVec(
                        int *    recompute,
                        N_Vector pressure)
 {
+#endif
   PFModule    *richards_jacobian_eval = StateJacEval(((State*)current_state));
   Matrix      *J = StateJac(((State*)current_state));
   Matrix      *JC = StateJacC(((State*)current_state));
@@ -200,7 +230,7 @@ void    RichardsJacobianEval(
                                                       * symmetric part of the Jacobian (1), or the
                                                       * full Jacobian */
 {
-  PUSH_NVTX("RichardsJacobianEval",1)
+  PUSH_NVTX("RichardsJacobianEval", 1)
 
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
@@ -220,12 +250,12 @@ void    RichardsJacobianEval(
   Matrix      *J = (instance_xtra->J);
   Matrix      *JC = (instance_xtra->JC);
 
-  Vector      *density_der = NULL;
-  Vector      *saturation_der = NULL;
+  Vector      *density_der = (instance_xtra->density_der);
+  Vector      *saturation_der = (instance_xtra->saturation_der);
 
-  /* Re-use vectors to save memory */
-  Vector      *rel_perm = NULL;
-  Vector      *rel_perm_der = NULL;
+  /* Reuse vectors to save memory */
+  Vector      *rel_perm = saturation;
+  Vector      *rel_perm_der = saturation_der;
 
   Vector      *porosity = ProblemDataPorosity(problem_data);
   Vector      *permeability_x = ProblemDataPermeabilityX(problem_data);
@@ -236,9 +266,16 @@ void    RichardsJacobianEval(
   Vector      *slope_x = ProblemDataTSlopeX(problem_data);                //DOK
 
   /* Overland flow variables */  //DOK
-  Vector      *KW, *KE, *KN, *KS, *KWns, *KEns, *KNns, *KSns;
+  Vector      *KW = (instance_xtra->KW);
+  Vector      *KE = (instance_xtra->KE);
+  Vector      *KN = (instance_xtra->KN);
+  Vector      *KS = (instance_xtra->KS);
+  Vector      *KWns = (instance_xtra->KWns);
+  Vector      *KEns = (instance_xtra->KEns);
+  Vector      *KNns = (instance_xtra->KNns);
+  Vector      *KSns = (instance_xtra->KSns);
   Subvector   *kw_sub, *ke_sub, *kn_sub, *ks_sub, *kwns_sub, *kens_sub, *knns_sub, *ksns_sub, *top_sub, *sx_sub;
-  double      *kw_der, *ke_der, *kn_der, *ks_der, *kwns_der, *kens_der, *knns_der, *ksns_der;
+  double      *kw_der = NULL, *ke_der = NULL, *kn_der = NULL, *ks_der = NULL, *kwns_der = NULL, *kens_der = NULL, *knns_der = NULL, *ksns_der = NULL;
 
   double gravity = ProblemGravity(problem);
   double viscosity = ProblemPhaseViscosity(problem, 0);
@@ -247,20 +284,24 @@ void    RichardsJacobianEval(
   Vector      *x_ssl = ProblemDataSSlopeX(problem_data);               //@RMM
   Vector      *y_ssl = ProblemDataSSlopeY(problem_data);               //@RMM
   Subvector   *x_ssl_sub, *y_ssl_sub;    //@RMM
-  double      *x_ssl_dat=NULL, *y_ssl_dat=NULL;     //@RMM
+  double      *x_ssl_dat = NULL, *y_ssl_dat = NULL;     //@RMM
 
-  /* @RMM variable dz multiplier */
+  /* RMM variable dz multiplier */
   Vector      *z_mult = ProblemDataZmult(problem_data);              //@RMM
   Subvector   *z_mult_sub;    //@RMM
   double      *z_mult_dat;    //@RMM
 
-  /* @RMM Flow Barrier / Boundary values */
+  /* RMM Flow Barrier / Boundary values */
   Vector      *FBx = ProblemDataFBx(problem_data);
   Vector      *FBy = ProblemDataFBy(problem_data);
   Vector      *FBz = ProblemDataFBz(problem_data);
   Subvector   *FBx_sub, *FBy_sub, *FBz_sub;    //@RMM
   double      *FBx_dat, *FBy_dat, *FBz_dat;     //@RMM
 
+/* RMM Top patch indicator for multiple  combined overland BC */
+  Vector      *patch = ProblemDataPatchIndexOfDomainTop(problem_data);
+  Subvector   *patch_sub;
+  double      *patch_dat;
   Subgrid     *subgrid;
 
   Subvector   *p_sub, *d_sub, *s_sub, *po_sub, *rp_sub, *ss_sub;
@@ -305,71 +346,25 @@ void    RichardsJacobianEval(
   CommHandle  *handle;
   VectorUpdateCommHandle  *vector_update_handle;
 
-  // Determine if an overland flow boundary condition is being used.
-  // If so will use the analytic Jacobian.
-  if (public_xtra->type == not_set)
-  {
-    // Default to simple
-    public_xtra->type = simple;
-
-    BCPressureData   *bc_pressure_data
-      = ProblemDataBCPressureData(problem_data);
-    int num_patches = BCPressureDataNumPatches(bc_pressure_data);
-
-    if (num_patches > 0)
-    {
-      int i;
-      for (i = 0; i < num_patches; i++)
-      {
-        int type = BCPressureDataType(bc_pressure_data, i);
-        switch (type)
-        {
-          case OverlandFlow:
-          case OverlandKinematic:
-          case OverlandDiffusive:
-          {
-            public_xtra->type = overland_flow;
-          }
-          break;
-        }
-      }
-    }
-  }
-
-  /*-----------------------------------------------------------------------
-   * Allocate temp vectors
-   *-----------------------------------------------------------------------*/
-  density_der = NewVectorType(grid, 1, 1, vector_cell_centered);
-  saturation_der = NewVectorType(grid, 1, 1, vector_cell_centered);
-
-  /*-----------------------------------------------------------------------
-   * reuse the temp vectors for both saturation and rel_perm calculations.
-   *-----------------------------------------------------------------------*/
-  rel_perm = saturation;
-  rel_perm_der = saturation_der;
-
   /* Pass pressure values to neighbors.  */
   vector_update_handle = InitVectorUpdate(pressure, VectorUpdateAll);
   FinalizeVectorUpdate(vector_update_handle);
 
-/* Define grid for surface contribution */
-  KW = NewVectorType(grid2d, 1, 1, vector_cell_centered);
-  KE = NewVectorType(grid2d, 1, 1, vector_cell_centered);
-  KN = NewVectorType(grid2d, 1, 1, vector_cell_centered);
-  KS = NewVectorType(grid2d, 1, 1, vector_cell_centered);
-  KWns = NewVectorType(grid2d, 1, 1, vector_cell_centered);
-  KEns = NewVectorType(grid2d, 1, 1, vector_cell_centered);
-  KNns = NewVectorType(grid2d, 1, 1, vector_cell_centered);
-  KSns = NewVectorType(grid2d, 1, 1, vector_cell_centered);
+  InitVectorAll(density_der, 0.0);
+  InitVectorAll(saturation_der, 0.0);
 
-  InitVector(KW, 0.0);
-  InitVector(KE, 0.0);
-  InitVector(KN, 0.0);
-  InitVector(KS, 0.0);
-  InitVector(KWns, 0.0);
-  InitVector(KEns, 0.0);
-  InitVector(KNns, 0.0);
-  InitVector(KSns, 0.0);
+  // /* Define grid for surface contribution */
+  if ((instance_xtra->using_overland_flow) == TRUE)
+  {
+    InitVectorAll(KW, 0.0);
+    InitVectorAll(KE, 0.0);
+    InitVectorAll(KN, 0.0);
+    InitVectorAll(KS, 0.0);
+    InitVectorAll(KWns, 0.0);
+    InitVectorAll(KEns, 0.0);
+    InitVectorAll(KNns, 0.0);
+    InitVectorAll(KSns, 0.0);
+  }
 
   // SGS set this to 1 since the off/on behavior does not work in
   // parallel.
@@ -445,7 +440,7 @@ void    RichardsJacobianEval(
     ddp = SubvectorData(dd_sub);    // density derivative: del-rho / del-press
     sdp = SubvectorData(sd_sub);    // saturation derivative: del-S / del-press
     pop = SubvectorData(po_sub);     // porosity
-    ss = SubvectorData(ss_sub);     // sepcific storage
+    ss = SubvectorData(ss_sub);     // specific storage
 
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
@@ -486,12 +481,12 @@ void    RichardsJacobianEval(
       ForPatchCellsPerFace(DirichletBC,
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                           Locals(int pp_idx, ip; double value;),
+                           Locals(int pp_idx, ip; double value; ),
                            CellSetup({
-                               pp_idx = 0;
-                               ip = SubvectorEltIndex(p_sub, i, j, k);
-                               value = bc_patch_values[ival];
-                             }),
+        pp_idx = 0;
+        ip = SubvectorEltIndex(p_sub, i, j, k);
+        value = bc_patch_values[ival];
+      }),
                            FACE(LeftFace, { pp_idx = ip - 1; }),
                            FACE(RightFace, { pp_idx = ip + 1; }),
                            FACE(DownFace, { pp_idx = ip - sy_v; }),
@@ -500,7 +495,7 @@ void    RichardsJacobianEval(
                            FACE(FrontFace, { pp_idx = ip + sz_v; }),
                            CellFinalize({ pp[pp_idx] = value; }),
                            AfterAllCells(DoNothing)
-        ); /* End DirichletBC Case */
+                           ); /* End DirichletBC Case */
     }          /* End ipatch loop */
   }            /* End subgrid loop */
 
@@ -610,13 +605,13 @@ void    RichardsJacobianEval(
 
       double prod_no = rpp[ip + sy_v] * dp[ip + sy_v];
       double prod_no_der = rpdp[ip + sy_v] * dp[ip + sy_v]
-                    + rpp[ip + sy_v] * ddp[ip + sy_v];
+                           + rpp[ip + sy_v] * ddp[ip + sy_v];
 
       double prod_up = rpp[ip + sz_v] * dp[ip + sz_v];
       double prod_up_der = rpdp[ip + sz_v] * dp[ip + sz_v]
-                    + rpp[ip + sz_v] * ddp[ip + sz_v];
+                           + rpp[ip + sz_v] * ddp[ip + sz_v];
 
-      //@RMM  tfgupwind == 0 (default) should give original behavior
+      //RMM  tfgupwind == 0 (default) should give original behavior
       // tfgupwind 1 should still use sine but upwind
       // tfgupwdin 2 just upwind
 
@@ -627,35 +622,35 @@ void    RichardsJacobianEval(
 
       switch (public_xtra->tfgupwind)
       {
-        case 0:
-          {
-            // default formulation in Maxwell 2013
-            x_dir_g = Mean(gravity * sin(atan(x_ssl_dat[ioo])), gravity * sin(atan(x_ssl_dat[ioo + 1])));
-            x_dir_g_c = Mean(gravity * cos(atan(x_ssl_dat[ioo])), gravity * cos(atan(x_ssl_dat[ioo + 1])));
-            y_dir_g = Mean(gravity * sin(atan(y_ssl_dat[ioo])), gravity * sin(atan(y_ssl_dat[ioo + sy_v])));
-            y_dir_g_c = Mean(gravity * cos(atan(y_ssl_dat[ioo])), gravity * cos(atan(y_ssl_dat[ioo + sy_v])));
-            break;
-          }
+          case 0:
+            {
+              // default formulation in Maxwell 2013
+              x_dir_g = Mean(gravity * sin(atan(x_ssl_dat[ioo])), gravity * sin(atan(x_ssl_dat[ioo + 1])));
+              x_dir_g_c = Mean(gravity * cos(atan(x_ssl_dat[ioo])), gravity * cos(atan(x_ssl_dat[ioo + 1])));
+              y_dir_g = Mean(gravity * sin(atan(y_ssl_dat[ioo])), gravity * sin(atan(y_ssl_dat[ioo + sy_v])));
+              y_dir_g_c = Mean(gravity * cos(atan(y_ssl_dat[ioo])), gravity * cos(atan(y_ssl_dat[ioo + sy_v])));
+              break;
+            }
 
-        case 1:
-          {
-            // direct upwinding, no averaging with sines
-            x_dir_g = gravity * sin(atan(x_ssl_dat[ioo]));
-            x_dir_g_c = gravity * cos(atan(x_ssl_dat[ioo]));
-            y_dir_g = gravity * sin(atan(y_ssl_dat[ioo]));
-            y_dir_g_c = gravity * cos(atan(y_ssl_dat[ioo]));
-            break;
-          }
+          case 1:
+            {
+              // direct upwinding, no averaging with sines
+              x_dir_g = gravity * sin(atan(x_ssl_dat[ioo]));
+              x_dir_g_c = gravity * cos(atan(x_ssl_dat[ioo]));
+              y_dir_g = gravity * sin(atan(y_ssl_dat[ioo]));
+              y_dir_g_c = gravity * cos(atan(y_ssl_dat[ioo]));
+              break;
+            }
 
-        case 2:
-          {
-            // direct upwinding, no averaging no sines
-            x_dir_g = x_ssl_dat[ioo];
-            x_dir_g_c = 1.0;
-            y_dir_g = y_ssl_dat[ioo];
-            y_dir_g_c = 1.0;
-            break;
-          }
+          case 2:
+            {
+              // direct upwinding, no averaging no sines
+              x_dir_g = x_ssl_dat[ioo];
+              x_dir_g_c = 1.0;
+              y_dir_g = y_ssl_dat[ioo];
+              y_dir_g_c = 1.0;
+              break;
+            }
       }
 
 
@@ -665,28 +660,28 @@ void    RichardsJacobianEval(
 
       /* multiply X_coeff by FB in x */
       double x_coeff = FBx_dat[ip] * dt * ffx * (1.0 / dx) * z_mult_dat[ip]
-                * PMean(pp[ip], pp[ip + 1], permxp[ip], permxp[ip + 1])
-                / viscosity;
+                       * PMean(pp[ip], pp[ip + 1], permxp[ip], permxp[ip + 1])
+                       / viscosity;
 
 
       double sym_west_temp = (-x_coeff
-                       * RPMean(updir, 0.0, prod, prod_rt)) * x_dir_g_c; //@RMM TFG contributions, sym
+                              * RPMean(updir, 0.0, prod, prod_rt)) * x_dir_g_c; //RMM TFG contributions, sym
 
 
       double west_temp = (-x_coeff * diff
-                   * RPMean(updir, 0.0, prod_der, 0.0)) * x_dir_g_c
-                  + sym_west_temp;
+                          * RPMean(updir, 0.0, prod_der, 0.0)) * x_dir_g_c
+                         + sym_west_temp;
 
-      west_temp += (x_coeff * dx * RPMean(updir, 0.0, prod_der, 0.0)) * x_dir_g; //@RMM TFG contributions, non sym
+      west_temp += (x_coeff * dx * RPMean(updir, 0.0, prod_der, 0.0)) * x_dir_g; //RMM TFG contributions, non sym
 
       double sym_east_temp = (-x_coeff
-                       * RPMean(updir, 0.0, prod, prod_rt)) * x_dir_g_c; //@RMM added sym TFG contributions
+                              * RPMean(updir, 0.0, prod, prod_rt)) * x_dir_g_c; //RMM added sym TFG contributions
 
       double east_temp = (x_coeff * diff
-                   * RPMean(updir, 0.0, 0.0, prod_rt_der)) * x_dir_g_c
-                  + sym_east_temp;
+                          * RPMean(updir, 0.0, 0.0, prod_rt_der)) * x_dir_g_c
+                         + sym_east_temp;
 
-      east_temp += -(x_coeff * dx * RPMean(updir, 0.0, 0.0, prod_rt_der)) * x_dir_g; //@RMM  TFG contributions non sym
+      east_temp += -(x_coeff * dx * RPMean(updir, 0.0, 0.0, prod_rt_der)) * x_dir_g; //RMM  TFG contributions non sym
 
       /* diff >= 0 implies flow goes south to north */
       diff = pp[ip] - pp[ip + sy_v];
@@ -695,28 +690,28 @@ void    RichardsJacobianEval(
 
       /* multiply y_coeff by FB in y */
       double y_coeff = FBy_dat[ip] * dt * ffy * (1.0 / dy) * z_mult_dat[ip]
-                * PMean(pp[ip], pp[ip + sy_v], permyp[ip], permyp[ip + sy_v])
-                / viscosity;
+                       * PMean(pp[ip], pp[ip + sy_v], permyp[ip], permyp[ip + sy_v])
+                       / viscosity;
 
       double sym_south_temp = -y_coeff
-                       * RPMean(updir, 0.0, prod, prod_no) * y_dir_g_c; //@RMM TFG contributions, SYMM
+                              * RPMean(updir, 0.0, prod, prod_no) * y_dir_g_c; //RMM TFG contributions, SYMM
 
       double south_temp = -y_coeff * diff
-                   * RPMean(updir, 0.0, prod_der, 0.0) * y_dir_g_c
-                   + sym_south_temp;
+                          * RPMean(updir, 0.0, prod_der, 0.0) * y_dir_g_c
+                          + sym_south_temp;
 
-      south_temp += (y_coeff * dy * RPMean(updir, 0.0, prod_der, 0.0)) * y_dir_g; //@RMM TFG contributions, non sym
+      south_temp += (y_coeff * dy * RPMean(updir, 0.0, prod_der, 0.0)) * y_dir_g; //RMM TFG contributions, non sym
 
 
       double sym_north_temp = y_coeff
-                       * -RPMean(updir, 0.0, prod, prod_no) * y_dir_g_c; //@RMM  TFG contributions non SYMM
+                              * -RPMean(updir, 0.0, prod, prod_no) * y_dir_g_c; //RMM  TFG contributions non SYMM
 
       double north_temp = y_coeff * diff
-                   * RPMean(updir, 0.0, 0.0,
-                            prod_no_der) * y_dir_g_c
-                   + sym_north_temp;
+                          * RPMean(updir, 0.0, 0.0,
+                                   prod_no_der) * y_dir_g_c
+                          + sym_north_temp;
 
-      north_temp += -(y_coeff * dy * RPMean(updir, 0.0, 0.0, prod_no_der)) * y_dir_g; //@RMM  TFG contributions non sym
+      north_temp += -(y_coeff * dy * RPMean(updir, 0.0, 0.0, prod_no_der)) * y_dir_g; //RMM  TFG contributions non sym
 
       double sep = (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v]));
       /* diff >= 0 implies flow goes lower to upper */
@@ -731,31 +726,31 @@ void    RichardsJacobianEval(
 
       /* multiply z_coeff by FB in z */
       double z_coeff = FBz_dat[ip] * dt * ffz
-                * PMeanDZ(permzp[ip], permzp[ip + sz_v], z_mult_dat[ip], z_mult_dat[ip + sz_v])
-                / viscosity;
+                       * PMeanDZ(permzp[ip], permzp[ip + sz_v], z_mult_dat[ip], z_mult_dat[ip + sz_v])
+                       / viscosity;
 
       double sym_lower_temp = -z_coeff * (1.0 / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])))
-                       * RPMean(lower_cond, upper_cond, prod,
-                                prod_up);
+                              * RPMean(lower_cond, upper_cond, prod,
+                                       prod_up);
 
       double lower_temp = -z_coeff
-                   * (diff * RPMean(lower_cond, upper_cond, prod_der, 0.0)
-                      + (-gravity * 0.5 * dz * (Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * ddp[ip]
-                         * RPMean(lower_cond, upper_cond, prod,
-                                  prod_up)))
-                   + sym_lower_temp;
+                          * (diff * RPMean(lower_cond, upper_cond, prod_der, 0.0)
+                             + (-gravity * 0.5 * dz * (Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * ddp[ip]
+                                * RPMean(lower_cond, upper_cond, prod,
+                                         prod_up)))
+                          + sym_lower_temp;
 
       double sym_upper_temp = z_coeff * (1.0 / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])))
-                       * -RPMean(lower_cond, upper_cond, prod,
-                                 prod_up);
+                              * -RPMean(lower_cond, upper_cond, prod,
+                                        prod_up);
 
       double upper_temp = z_coeff
-                   * (diff * RPMean(lower_cond, upper_cond, 0.0,
-                                    prod_up_der)
-                      + (-gravity * 0.5 * dz * (Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * ddp[ip + sz_v]
-                         * RPMean(lower_cond, upper_cond, prod,
-                                  prod_up)))
-                   + sym_upper_temp;
+                          * (diff * RPMean(lower_cond, upper_cond, 0.0,
+                                           prod_up_der)
+                             + (-gravity * 0.5 * dz * (Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * ddp[ip + sz_v]
+                                * RPMean(lower_cond, upper_cond, prod,
+                                         prod_up)))
+                          + sym_upper_temp;
 
       PlusEquals(cp[im], -(west_temp + south_temp + lower_temp));
       PlusEquals(cp[im + 1], -east_temp);
@@ -820,9 +815,9 @@ void    RichardsJacobianEval(
 
       sy_v = nx_v;
       sz_v = ny_v * nx_v;
-      /* @RMM added to provide access to zmult */
+      /* RMM added to provide access to zmult */
       z_mult_sub = VectorSubvector(z_mult, is);
-      /* @RMM added to provide variable dz */
+      /* RMM added to provide variable dz */
       z_mult_dat = SubvectorData(z_mult_sub);
 
       cp = SubmatrixStencilData(J_sub, 0);
@@ -844,120 +839,119 @@ void    RichardsJacobianEval(
 
       ForBCStructNumPatches(ipatch, bc_struct)
       {
-        ForPatchCellsPerFace(ALL,
+        ForPatchCellsPerFace(BC_ALL,
                              BeforeAllCells(DoNothing),
                              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                              Locals(int ip, im;
                                     double coeff, diff, prod, prod_der;
                                     double lower_cond, upper_cond;
-                                    double prod_lo, prod_up;),
+                                    double prod_lo, prod_up; ),
                              CellSetup({
-                                 ip = SubvectorEltIndex(p_sub, i, j, k);
-                                 im = SubmatrixEltIndex(J_sub, i, j, k);
+          ip = SubvectorEltIndex(p_sub, i, j, k);
+          im = SubmatrixEltIndex(J_sub, i, j, k);
 
-                                 /* SGS added this as prod was not being set to anything. Check with carol. */
-                                 prod = rpp[ip] * dp[ip];
-                                 prod_der = 0.0;
-                                 prod_lo = 0.0;
-                                 prod_up = 0.0;
-                                 coeff = 0.0;
-                                 diff = 0.0;
-                                 lower_cond = 0.0;
-                                 upper_cond = 0.0;
-                               }),
+          /* SGS added this as prod was not being set to anything. Check with carol. */
+          prod = rpp[ip] * dp[ip];
+          prod_der = 0.0;
+          prod_lo = 0.0;
+          prod_up = 0.0;
+          coeff = 0.0;
+          diff = 0.0;
+          lower_cond = 0.0;
+          upper_cond = 0.0;
+        }),
                              FACE(LeftFace,
-                             {
-                               diff = pp[ip - 1] - pp[ip];
-                               prod_der = rpdp[ip - 1] * dp[ip - 1] + rpp[ip - 1] * ddp[ip - 1];
-                               coeff = dt * z_mult_dat[ip] * ffx * (1.0 / dx)
-                                       * PMean(pp[ip - 1], pp[ip], permxp[ip - 1], permxp[ip])
-                                       / viscosity;
-                               wp[im] = -coeff * diff
-                                        * RPMean(pp[ip - 1], pp[ip], prod_der, 0.0);
-                             }),
+        {
+          diff = pp[ip - 1] - pp[ip];
+          prod_der = rpdp[ip - 1] * dp[ip - 1] + rpp[ip - 1] * ddp[ip - 1];
+          coeff = dt * z_mult_dat[ip] * ffx * (1.0 / dx)
+                  * PMean(pp[ip - 1], pp[ip], permxp[ip - 1], permxp[ip])
+                  / viscosity;
+          wp[im] = -coeff * diff
+                   * RPMean(pp[ip - 1], pp[ip], prod_der, 0.0);
+        }),
                              FACE(RightFace,
-                             {
-                               diff = pp[ip] - pp[ip + 1];
-                               prod_der = rpdp[ip + 1] * dp[ip + 1] + rpp[ip + 1] * ddp[ip + 1];
-                               coeff = dt * z_mult_dat[ip] * ffx * (1.0 / dx)
-                                       * PMean(pp[ip], pp[ip + 1], permxp[ip], permxp[ip + 1])
-                                       / viscosity;
-                               ep[im] = coeff * diff
-                                        * RPMean(pp[ip], pp[ip + 1], 0.0, prod_der);
-                             }),
+        {
+          diff = pp[ip] - pp[ip + 1];
+          prod_der = rpdp[ip + 1] * dp[ip + 1] + rpp[ip + 1] * ddp[ip + 1];
+          coeff = dt * z_mult_dat[ip] * ffx * (1.0 / dx)
+                  * PMean(pp[ip], pp[ip + 1], permxp[ip], permxp[ip + 1])
+                  / viscosity;
+          ep[im] = coeff * diff
+                   * RPMean(pp[ip], pp[ip + 1], 0.0, prod_der);
+        }),
                              FACE(DownFace,
-                             {
-                               diff = pp[ip - sy_v] - pp[ip];
-                               prod_der = rpdp[ip - sy_v] * dp[ip - sy_v]
-                                          + rpp[ip - sy_v] * ddp[ip - sy_v];
-                               coeff = dt * z_mult_dat[ip] * ffy * (1.0 / dy)
-                                       * PMean(pp[ip - sy_v], pp[ip],
-                                               permyp[ip - sy_v], permyp[ip])
-                                       / viscosity;
-                               sop[im] = -coeff * diff
-                                         * RPMean(pp[ip - sy_v], pp[ip], prod_der, 0.0);
-                             }),
+        {
+          diff = pp[ip - sy_v] - pp[ip];
+          prod_der = rpdp[ip - sy_v] * dp[ip - sy_v]
+                     + rpp[ip - sy_v] * ddp[ip - sy_v];
+          coeff = dt * z_mult_dat[ip] * ffy * (1.0 / dy)
+                  * PMean(pp[ip - sy_v], pp[ip],
+                          permyp[ip - sy_v], permyp[ip])
+                  / viscosity;
+          sop[im] = -coeff * diff
+                    * RPMean(pp[ip - sy_v], pp[ip], prod_der, 0.0);
+        }),
                              FACE(UpFace,
-                             {
-                               diff = pp[ip] - pp[ip + sy_v];
-                               prod_der = rpdp[ip + sy_v] * dp[ip + sy_v]
-                                          + rpp[ip + sy_v] * ddp[ip + sy_v];
-                               coeff = dt * z_mult_dat[ip] * ffy * (1.0 / dy)
-                                       * PMean(pp[ip], pp[ip + sy_v],
-                                               permyp[ip], permyp[ip + sy_v])
-                                       / viscosity;
-                               np[im] = -coeff * diff
-                                        * RPMean(pp[ip], pp[ip + sy_v], 0.0, prod_der);
-                             }),
+        {
+          diff = pp[ip] - pp[ip + sy_v];
+          prod_der = rpdp[ip + sy_v] * dp[ip + sy_v]
+                     + rpp[ip + sy_v] * ddp[ip + sy_v];
+          coeff = dt * z_mult_dat[ip] * ffy * (1.0 / dy)
+                  * PMean(pp[ip], pp[ip + sy_v],
+                          permyp[ip], permyp[ip + sy_v])
+                  / viscosity;
+          np[im] = -coeff * diff
+                   * RPMean(pp[ip], pp[ip + sy_v], 0.0, prod_der);
+        }),
                              FACE(BackFace,
-                             {
-                               lower_cond = (pp[ip - sz_v]) - 0.5 * dz
-                                            * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_v])
-                                            * dp[ip - sz_v] * gravity;
-                               upper_cond = (pp[ip]) + 0.5 * dz * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_v])
-                                            * dp[ip] * gravity;
-                               diff = lower_cond - upper_cond;
-                               prod_der = rpdp[ip - sz_v] * dp[ip - sz_v]
-                                          + rpp[ip - sz_v] * ddp[ip - sz_v];
-                               prod_lo = rpp[ip - sz_v] * dp[ip - sz_v];
-                               coeff = dt * ffz * (1.0 / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_v])))
-                                       * PMeanDZ(permzp[ip - sz_v], permzp[ip],
-                                                 z_mult_dat[ip - sz_v], z_mult_dat[ip])
-                                       / viscosity;
-                               lp[im] = -coeff *
-                                        (diff * RPMean(lower_cond, upper_cond,
-                                                       prod_der, 0.0)
-                                         - gravity * 0.5 * dz
-                                         * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_v]) * ddp[ip]
-                                         * RPMean(lower_cond, upper_cond, prod_lo, prod));
-                             }),
+        {
+          lower_cond = (pp[ip - sz_v]) - 0.5 * dz
+                       * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_v])
+                       * dp[ip - sz_v] * gravity;
+          upper_cond = (pp[ip]) + 0.5 * dz * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_v])
+                       * dp[ip] * gravity;
+          diff = lower_cond - upper_cond;
+          prod_der = rpdp[ip - sz_v] * dp[ip - sz_v]
+                     + rpp[ip - sz_v] * ddp[ip - sz_v];
+          prod_lo = rpp[ip - sz_v] * dp[ip - sz_v];
+          coeff = dt * ffz * (1.0 / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_v])))
+                  * PMeanDZ(permzp[ip - sz_v], permzp[ip],
+                            z_mult_dat[ip - sz_v], z_mult_dat[ip])
+                  / viscosity;
+          lp[im] = -coeff *
+                   (diff * RPMean(lower_cond, upper_cond,
+                                  prod_der, 0.0)
+                    - gravity * 0.5 * dz
+                    * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_v]) * ddp[ip]
+                    * RPMean(lower_cond, upper_cond, prod_lo, prod));
+        }),
                              FACE(FrontFace,
-                             {
-                               lower_cond = (pp[ip]) - 0.5 * dz
-                                            * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])
-                                            * dp[ip] * gravity;
-                               upper_cond = (pp[ip + sz_v]) + 0.5 * dz
-                                            * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])
-                                            * dp[ip + sz_v] * gravity;
-                               diff = lower_cond - upper_cond;
-                               prod_der = rpdp[ip + sz_v] * dp[ip + sz_v]
-                                          + rpp[ip + sz_v] * ddp[ip + sz_v];
-                               prod_up = rpp[ip + sz_v] * dp[ip + sz_v];
-                               coeff = dt * ffz * (1.0 / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])))
-                                       * PMeanDZ(permzp[ip], permzp[ip + sz_v],
-                                                 z_mult_dat[ip], z_mult_dat[ip + sz_v])
-                                       / viscosity;
-                               up[im] = -coeff *
-                                        (diff * RPMean(lower_cond, upper_cond,
-                                                       0.0, prod_der)
-                                         - gravity * 0.5 * dz
-                                         * (Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * ddp[ip]
-                                         * RPMean(lower_cond, upper_cond, prod, prod_up));
-
-                             }),
+        {
+          lower_cond = (pp[ip]) - 0.5 * dz
+                       * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])
+                       * dp[ip] * gravity;
+          upper_cond = (pp[ip + sz_v]) + 0.5 * dz
+                       * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])
+                       * dp[ip + sz_v] * gravity;
+          diff = lower_cond - upper_cond;
+          prod_der = rpdp[ip + sz_v] * dp[ip + sz_v]
+                     + rpp[ip + sz_v] * ddp[ip + sz_v];
+          prod_up = rpp[ip + sz_v] * dp[ip + sz_v];
+          coeff = dt * ffz * (1.0 / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])))
+                  * PMeanDZ(permzp[ip], permzp[ip + sz_v],
+                            z_mult_dat[ip], z_mult_dat[ip + sz_v])
+                  / viscosity;
+          up[im] = -coeff *
+                   (diff * RPMean(lower_cond, upper_cond,
+                                  0.0, prod_der)
+                    - gravity * 0.5 * dz
+                    * (Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * ddp[ip]
+                    * RPMean(lower_cond, upper_cond, prod, prod_up));
+        }),
                              CellFinalize(DoNothing),
                              AfterAllCells(DoNothing)
-          ); /* End Patch Loop */
+                             ); /* End Patch Loop */
       }           /* End ipatch loop */
     }             /* End subgrid loop */
   }                  /* End if symm_part */
@@ -978,22 +972,35 @@ void    RichardsJacobianEval(
     J_sub = MatrixSubmatrix(J, is);
 
     /* overland flow - DOK */
-    kw_sub = VectorSubvector(KW, is);
-    ke_sub = VectorSubvector(KE, is);
-    kn_sub = VectorSubvector(KN, is);
-    ks_sub = VectorSubvector(KS, is);
-    kwns_sub = VectorSubvector(KWns, is);
-    kens_sub = VectorSubvector(KEns, is);
-    knns_sub = VectorSubvector(KNns, is);
-    ksns_sub = VectorSubvector(KSns, is);
+    if ((instance_xtra->using_overland_flow) == TRUE)
+    {
+      kw_sub = VectorSubvector(KW, is);
+      ke_sub = VectorSubvector(KE, is);
+      kn_sub = VectorSubvector(KN, is);
+      ks_sub = VectorSubvector(KS, is);
+      kwns_sub = VectorSubvector(KWns, is);
+      kens_sub = VectorSubvector(KEns, is);
+      knns_sub = VectorSubvector(KNns, is);
+      ksns_sub = VectorSubvector(KSns, is);
+
+      /* overland flow contribution */
+      kw_der = SubvectorData(kw_sub);
+      ke_der = SubvectorData(ke_sub);
+      kn_der = SubvectorData(kn_sub);
+      ks_der = SubvectorData(ks_sub);
+      kwns_der = SubvectorData(kwns_sub);
+      kens_der = SubvectorData(kens_sub);
+      knns_der = SubvectorData(knns_sub);
+      ksns_der = SubvectorData(ksns_sub);
+    }
 
     dx = SubgridDX(subgrid);
     dy = SubgridDY(subgrid);
     dz = SubgridDZ(subgrid);
 
-    /* @RMM added to provide access to zmult */
+    /* RMM added to provide access to zmult */
     z_mult_sub = VectorSubvector(z_mult, is);
-    /* @RMM added to provide variable dz */
+    /* RMM added to provide variable dz */
     z_mult_dat = SubvectorData(z_mult_sub);
 
     double vol = dx * dy * dz;
@@ -1019,16 +1026,6 @@ void    RichardsJacobianEval(
     lp = SubmatrixStencilData(J_sub, 5);
     up = SubmatrixStencilData(J_sub, 6);
 
-    /* overland flow contribution */
-    kw_der = SubvectorData(kw_sub);
-    ke_der = SubvectorData(ke_sub);
-    kn_der = SubvectorData(kn_sub);
-    ks_der = SubvectorData(ks_sub);
-    kwns_der = SubvectorData(kwns_sub);
-    kens_der = SubvectorData(kens_sub);
-    knns_der = SubvectorData(knns_sub);
-    ksns_der = SubvectorData(ksns_sub);
-
     pp = SubvectorData(p_sub);
     sp = SubvectorData(s_sub);
     ddp = SubvectorData(dd_sub);
@@ -1051,342 +1048,307 @@ void    RichardsJacobianEval(
 
       ForPatchCellsPerFace(DirichletBC,
                            BeforeAllCells(
-                           {
-                             /* @MCB 04/14/2020:
-                                Previously two module invokes were made every iteration
-                                of the loop.  However, these calls were only retrieving
-                                a scalar and (potentially) multipling it against the BC
-                                value.
-                                The PhaseDensityConstants function was added to
-                                retrieve those values once and set den_d and dend_d appropriately.
-                             */
+      {
+        /* MCB 04/14/2020:
+         * Previously two module invokes were made every iteration
+         * of the loop.  However, these calls were only retrieving
+         * a scalar and (potentially) multiplying it against the BC
+         * value.
+         * The PhaseDensityConstants function was added to
+         * retrieve those values once and set den_d and dend_d appropriately.
+         */
 
-                             ThisPFModule = density_module;
-                             PhaseDensityConstants(0, CALCFCN, &phase_type,
-                                                   &fcn_phase_const,
-                                                   &phase_ref,
-                                                   &phase_comp);
-                             PhaseDensityConstants(0, CALCDER, &phase_type,
-                                                   &der_phase_const,
-                                                   &phase_ref,
-                                                   &phase_comp);
-                           }),
+        ThisPFModule = density_module;
+        PhaseDensityConstants(0, CALCFCN, &phase_type,
+                              &fcn_phase_const,
+                              &phase_ref,
+                              &phase_comp);
+        PhaseDensityConstants(0, CALCDER, &phase_type,
+                              &der_phase_const,
+                              &phase_ref,
+                              &phase_comp);
+      }),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                            Locals(int ip, im;
                                   double *op;
                                   double den_d, value, o_temp;
                                   double prod, prod_der, prod_val;
-                                  double diff, coeff, lower_cond, upper_cond;),
+                                  double diff, coeff, lower_cond, upper_cond; ),
                            CellSetup(
-                           {
-                             ip = SubvectorEltIndex(p_sub, i, j, k);
-                             im = SubmatrixEltIndex(J_sub, i, j, k);
-                             value = bc_patch_values[ival];
+      {
+        ip = SubvectorEltIndex(p_sub, i, j, k);
+        im = SubmatrixEltIndex(J_sub, i, j, k);
+        value = bc_patch_values[ival];
 
-                             op = NULL;
-                             coeff = 0.0;
-                             diff = 0.0;
-                             o_temp = 0.0;
-                             prod_val = 0.0;
-                             lower_cond = 0.0;
-                             upper_cond = 0.0;
+        op = NULL;
+        coeff = 0.0;
+        diff = 0.0;
+        o_temp = 0.0;
+        prod_val = 0.0;
+        lower_cond = 0.0;
+        upper_cond = 0.0;
 
-							 /* Note: If dend_d is needed, redeclare in Locals block above */
-                             if (phase_type == 0) {
-                               den_d = fcn_phase_const;
-                               //dend_d = der_phase_const;
-                             } else {
-                               den_d = phase_ref * exp(value * phase_comp);
-                               //dend_d = phase_comp * phase_ref * exp(value * phase_comp);
-                             }
+        /* Note: If dend_d is needed, redeclare in Locals block above */
+        if (phase_type == 0)
+        {
+          den_d = fcn_phase_const;
+          //dend_d = der_phase_const;
+        }
+        else
+        {
+          den_d = phase_ref * exp(value * phase_comp);
+          //dend_d = phase_comp * phase_ref * exp(value * phase_comp);
+        }
 
-                             prod = rpp[ip] * dp[ip];
-                             prod_der = rpdp[ip] * dp[ip] + rpp[ip] * ddp[ip];
-                           }),
+        prod = rpp[ip] * dp[ip];
+        prod_der = rpdp[ip] * dp[ip] + rpp[ip] * ddp[ip];
+      }),
                            FACE(LeftFace,
-                           {
-                             op = wp;
-                             coeff = dt * ffx * z_mult_dat[ip] * (2.0 / dx) * permxp[ip] / viscosity;
-                             prod_val = rpp[ip - 1] * den_d;
-                             diff = value - pp[ip];
-                             o_temp = coeff
-                                      * (diff * RPMean(value, pp[ip], 0.0, prod_der)
-                                         - RPMean(value, pp[ip], prod_val, prod));
-                           }),
+      {
+        op = wp;
+        coeff = dt * ffx * z_mult_dat[ip] * (2.0 / dx) * permxp[ip] / viscosity;
+        prod_val = rpp[ip - 1] * den_d;
+        diff = value - pp[ip];
+        o_temp = coeff
+                 * (diff * RPMean(value, pp[ip], 0.0, prod_der)
+                    - RPMean(value, pp[ip], prod_val, prod));
+      }),
                            FACE(RightFace,
-                           {
-                             op = ep;
-                             coeff = dt * ffx * z_mult_dat[ip] * (2.0 / dx) * permxp[ip] / viscosity;
-                             prod_val = rpp[ip + 1] * den_d;
-                             diff = pp[ip] - value;
-                             o_temp = -coeff
-                                      * (diff * RPMean(pp[ip], value, prod_der, 0.0)
-                                         + RPMean(pp[ip], value, prod, prod_val));
-                           }),
+      {
+        op = ep;
+        coeff = dt * ffx * z_mult_dat[ip] * (2.0 / dx) * permxp[ip] / viscosity;
+        prod_val = rpp[ip + 1] * den_d;
+        diff = pp[ip] - value;
+        o_temp = -coeff
+                 * (diff * RPMean(pp[ip], value, prod_der, 0.0)
+                    + RPMean(pp[ip], value, prod, prod_val));
+      }),
                            FACE(DownFace,
-                           {
-                             op = sop;
-                             coeff = dt * ffy * z_mult_dat[ip] * (2.0 / dy) * permyp[ip] / viscosity;
-                             prod_val = rpp[ip - sy_v] * den_d;
-                             diff = value - pp[ip];
-                             o_temp = coeff
-                                      * (diff * RPMean(value, pp[ip], 0.0, prod_der)
-                                         - RPMean(value, pp[ip], prod_val, prod));
-                           }),
+      {
+        op = sop;
+        coeff = dt * ffy * z_mult_dat[ip] * (2.0 / dy) * permyp[ip] / viscosity;
+        prod_val = rpp[ip - sy_v] * den_d;
+        diff = value - pp[ip];
+        o_temp = coeff
+                 * (diff * RPMean(value, pp[ip], 0.0, prod_der)
+                    - RPMean(value, pp[ip], prod_val, prod));
+      }),
                            FACE(UpFace,
-                           {
-                             op = np;
-                             coeff = dt * ffy * z_mult_dat[ip] * (2.0 / dy) * permyp[ip] / viscosity;
-                             prod_val = rpp[ip + sy_v] * den_d;
-                             diff = pp[ip] - value;
-                             o_temp = -coeff
-                                      * (diff * RPMean(pp[ip], value, prod_der, 0.0)
-                                         + RPMean(pp[ip], value, prod, prod_val));
-                           }),
+      {
+        op = np;
+        coeff = dt * ffy * z_mult_dat[ip] * (2.0 / dy) * permyp[ip] / viscosity;
+        prod_val = rpp[ip + sy_v] * den_d;
+        diff = pp[ip] - value;
+        o_temp = -coeff
+                 * (diff * RPMean(pp[ip], value, prod_der, 0.0)
+                    + RPMean(pp[ip], value, prod, prod_val));
+      }),
                            FACE(BackFace,
-                           {
-                             coeff = dt * ffz * (2.0 / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])))
-                                     * permzp[ip] / viscosity;
-                             op = lp;
-                             prod_val = rpp[ip - sz_v] * den_d;
+      {
+        coeff = dt * ffz * (2.0 / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])))
+                * permzp[ip] / viscosity;
+        op = lp;
+        prod_val = rpp[ip - sz_v] * den_d;
 
-                             lower_cond = (value) - 0.5 * dz * z_mult_dat[ip] * den_d * gravity;
-                             upper_cond = (pp[ip]) + 0.5 * dz * z_mult_dat[ip] * dp[ip] * gravity;
-                             diff = lower_cond - upper_cond;
+        lower_cond = (value) - 0.5 * dz * z_mult_dat[ip] * den_d * gravity;
+        upper_cond = (pp[ip]) + 0.5 * dz * z_mult_dat[ip] * dp[ip] * gravity;
+        diff = lower_cond - upper_cond;
 
 //                    o_temp = coeff
 //                             * (diff * RPMean(lower_cond, upper_cond, 0.0, prod_der)
 //                                + ((-1.0 - gravity * 0.5 * dz * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_v]) * ddp[ip])
 //                                   * RPMean(lower_cond, upper_cond, prod_val, prod)));
 
-                             o_temp = coeff
-                                      * (diff * RPMean(lower_cond, upper_cond, 0.0, prod_der)
-                                         + ((-1.0 - gravity * 0.5 * dz * z_mult_dat[ip] * ddp[ip])
-                                            * RPMean(lower_cond, upper_cond, prod_val, prod)));
+        o_temp = coeff
+                 * (diff * RPMean(lower_cond, upper_cond, 0.0, prod_der)
+                    + ((-1.0 - gravity * 0.5 * dz * z_mult_dat[ip] * ddp[ip])
+                       * RPMean(lower_cond, upper_cond, prod_val, prod)));
 
 //printf("jacobian lower BC: o_temp=%f prod_der=%f op=%f \n",o_temp, prod_der, op);
-                           }),
+      }),
                            FACE(FrontFace,
-                           {
-                             coeff = dt * ffz * (2.0 / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])))
-                                     * permzp[ip] / viscosity;
+      {
+        coeff = dt * ffz * (2.0 / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])))
+                * permzp[ip] / viscosity;
 
-                             op = up;
-                             prod_val = rpp[ip + sz_v] * den_d;
+        op = up;
+        prod_val = rpp[ip + sz_v] * den_d;
 
-                             lower_cond = (pp[ip]) - 0.5 * dz * z_mult_dat[ip] * dp[ip] * gravity;
-                             upper_cond = (value) + 0.5 * dz * z_mult_dat[ip] * den_d * gravity;
-                             diff = lower_cond - upper_cond;
+        lower_cond = (pp[ip]) - 0.5 * dz * z_mult_dat[ip] * dp[ip] * gravity;
+        upper_cond = (value) + 0.5 * dz * z_mult_dat[ip] * den_d * gravity;
+        diff = lower_cond - upper_cond;
 
-                             o_temp = -coeff * (diff * RPMean(lower_cond, upper_cond, prod_der, 0.0)
-                                                + ((1.0 - gravity * 0.5 * dz * z_mult_dat[ip] * ddp[ip])
-                                                   * RPMean(lower_cond, upper_cond, prod, prod_val)));
-                           }),
+        o_temp = -coeff * (diff * RPMean(lower_cond, upper_cond, prod_der, 0.0)
+                           + ((1.0 - gravity * 0.5 * dz * z_mult_dat[ip] * ddp[ip])
+                              * RPMean(lower_cond, upper_cond, prod, prod_val)));
+      }),
                            CellFinalize(
-                           {
-                             cp[im] += op[im];
-                             cp[im] -= o_temp;
-                             op[im] = 0.0;
-                           }),
+      {
+        cp[im] += op[im];
+        cp[im] -= o_temp;
+        op[im] = 0.0;
+      }),
                            AfterAllCells(DoNothing)
-        ); /* End DirichletBC */
+                           ); /* End DirichletBC */
 
       ForPatchCellsPerFace(FluxBC,
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                           Locals(int im; double *op;),
+                           Locals(int im; double *op; ),
                            CellSetup({ im = SubmatrixEltIndex(J_sub, i, j, k); }),
-                           FACE(LeftFace,  { op = wp; }),
+                           FACE(LeftFace, { op = wp; }),
                            FACE(RightFace, { op = ep; }),
-                           FACE(DownFace,  { op = sop; }),
-                           FACE(UpFace,    { op = np; }),
-                           FACE(BackFace,  { op = lp; }),
+                           FACE(DownFace, { op = sop; }),
+                           FACE(UpFace, { op = np; }),
+                           FACE(BackFace, { op = lp; }),
                            FACE(FrontFace, { op = up; }),
                            CellFinalize({
-                               cp[im] += op[im];
-                               op[im] = 0.0;
-                             }),
+        cp[im] += op[im];
+        op[im] = 0.0;
+      }),
                            AfterAllCells(DoNothing)
-        ); /* End FluxBC */
+                           ); /* End FluxBC */
 
       ForPatchCellsPerFace(OverlandBC,
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                           Locals(int im, ip; double *op;),
+                           Locals(int im, ip; double *op; ),
                            CellSetup({ im = SubmatrixEltIndex(J_sub, i, j, k); }),
-                           FACE(LeftFace,  { op = wp; }),
+                           FACE(LeftFace, { op = wp; }),
                            FACE(RightFace, { op = ep; }),
-                           FACE(DownFace,  { op = sop; }),
-                           FACE(UpFace,    { op = np; }),
-                           FACE(BackFace,  { op = lp; }),
+                           FACE(DownFace, { op = sop; }),
+                           FACE(UpFace, { op = np; }),
+                           FACE(BackFace, { op = lp; }),
                            FACE(FrontFace,
-                           {
-                             op = up;
-                             if (!ovlnd_flag[0])
-                             {
-                               ip = SubvectorEltIndex(p_sub, i, j, k);
-                               if ((pp[ip]) > 0.0)
-                               {
-                                 ovlnd_flag[0] = 1;
-                               }
-                             }
+      {
+        op = up;
+        if (!ovlnd_flag[0])
+        {
+          ip = SubvectorEltIndex(p_sub, i, j, k);
+          if ((pp[ip]) > 0.0)
+          {
+            ovlnd_flag[0] = 1;
+          }
+        }
 
-                             /* @MCB: This used to be after the loop.
-                                Either we would enter another BC loop, but only work on the front face
-                                Or we'd make a module call
-                                Second BC loops have been fused here, on the front face calculation.
-                                Module call has been moved to AfterAllCells
-                                This could be cleaner if the legacy flags were dealt with.
-                             */
-                             switch(public_xtra->type)
-                             {
-                               case no_nonlinear_jacobian:
-                               case not_set:
-                                 assert(1);
+        /* MCB: This used to be after the loop.
+         * Either we would enter another BC loop, but only work on the front face
+         * Or we'd make a module call
+         * Second BC loops have been fused here, on the front face calculation.
+         * Module call has been moved to AfterAllCells
+         * This could be cleaner if the legacy flags were dealt with.
+         */
+        switch (public_xtra->type)
+        {
+            case no_nonlinear_jacobian:
+            case not_set:
+              assert(1);
 
-                               case simple:
-                               {
-                                 double vol = dx * dy * dz;
-                                 int ip = SubvectorEltIndex(p_sub, i, j, k);
-                                 if ((pp[ip]) > 0.0)
-                                 {
-                                   cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
-                                 }
-                               }
-                               break;
+            case simple:
+              {
+                double vol = dx * dy * dz;
+                int ip = SubvectorEltIndex(p_sub, i, j, k);
+                if ((pp[ip]) > 0.0)
+                {
+                  cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
+                }
+              }
+              break;
 
-                               case overland_flow:
-                               {
-                                 if (overlandspinup == 1)
-                                 {
-                                   double vol = dx * dy * dz;
-                                   int ip = SubvectorEltIndex(p_sub, i, j, k);
+            case overland_flow:
+              {
+                if (overlandspinup == 1)
+                {
+                  double vol = dx * dy * dz;
+                  int ip = SubvectorEltIndex(p_sub, i, j, k);
 
-                                   if ((pp[ip]) >= 0.0)
-                                   {
-                                     cp[im] += (vol / dz) * dt * (1.0 + 0.0);                     //LEC
-//                      printf("Jac SU: CP=%f im=%d  \n", cp[im], im);
-                                   }
-                                   else
-                                   {
-                                     cp[im] += 0.0;
-                                   }
-                                 }
-                               }
-                               break;
-                             }
-                           }),
+                  if ((pp[ip]) >= 0.0)
+                  {
+                    cp[im] += (vol / dz) * dt * (1.0 + 0.0);                                      //LEC
+                  }
+                  else
+                  {
+                    cp[im] += 0.0;
+                  }
+                }
+              }
+              break;
+        }
+      }),
                            CellFinalize({
-                               cp[im] += op[im];
-                               op[im] = 0.0;
-                             }),
+        cp[im] += op[im];
+        op[im] = 0.0;
+      }),
                            AfterAllCells(
-                           {
-                             switch(public_xtra->type)
-                             {
-                               case overland_flow:
-                                 if (overlandspinup != 1)
-                                 {
-                                   /* Get overland flow contributions for using kinematic or diffusive - LEC */
-                                   if (diffusive == 0)
-                                   {
-                                     PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module,
-                                                        (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
-                                                         ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
-                                   }
-                                   else
-                                   {
-                                     /* Test running Diffuisve calc FCN */
-                                     //double *dummy1, *dummy2, *dummy3, *dummy4;
-                                     //PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure,
-                                     //                                             ke_der, kw_der, kn_der, ks_der,
-                                     //       dummy1, dummy2, dummy3, dummy4,
-                                     //                                                    NULL, NULL, CALCFCN));
+      {
+        switch (public_xtra->type)
+        {
+            case overland_flow:
+              if (overlandspinup != 1)
+              {
+                /* Get overland flow contributions for using kinematic or diffusive - LEC */
+                if (diffusive == 0)
+                {
+                  PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module,
+                                     (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
+                                      ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
+                }
+                else
+                {
+                  /* Test running Diffuisve calc FCN */
+                  //double *dummy1, *dummy2, *dummy3, *dummy4;
+                  //PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure,
+                  //                                             ke_der, kw_der, kn_der, ks_der,
+                  //       dummy1, dummy2, dummy3, dummy4,
+                  //                                                    NULL, NULL, CALCFCN));
 
-                                     PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
-                                                        (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
-                                                         ke_der, kw_der, kn_der, ks_der,
-                                                         kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
-                                   }
-                                 }
-								 break;
+                  PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
+                                     (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
+                                      ke_der, kw_der, kn_der, ks_der,
+                                      kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
+                }
+              }
+              break;
 
-							 default:
-                                 break;
-                             }
-                           })
-        ); /* End OverlandBC */
+            default:
+              break;
+        }
+      })
+                           ); /* End OverlandBC */
 
       ForPatchCellsPerFace(SeepageFaceBC,
                            BeforeAllCells({ vol = dx * dy * dz; }),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                           Locals(int ip, im;),
+                           Locals(int ip, im; ),
                            CellSetup(DoNothing),
-                           FACE(LeftFace,  DoNothing),
+                           FACE(LeftFace, DoNothing),
                            FACE(RightFace, DoNothing),
-                           FACE(DownFace,  DoNothing),
-                           FACE(UpFace,    DoNothing),
-                           FACE(BackFace,  DoNothing),
+                           FACE(DownFace, DoNothing),
+                           FACE(UpFace, DoNothing),
+                           FACE(BackFace, DoNothing),
                            FACE(FrontFace,
-                           {
-                             ip = SubvectorEltIndex(p_sub, i, j, k);
-                             im = SubmatrixEltIndex(J_sub, i, j, k);
+      {
+        ip = SubvectorEltIndex(p_sub, i, j, k);
+        im = SubmatrixEltIndex(J_sub, i, j, k);
 
-                             if ((pp[ip]) >= 0.0)
-                             {
-                               cp[im] += (vol / dz) * dt * (1.0 + 0.0);                       //@RMM
-//                  printf("Jac SF: CP=%f im=%d  \n", cp[im], im);
-                             }
-                             else
-                             {
-                               cp[im] += 0.0;
-                             }
-                           }),
+        if ((pp[ip]) >= 0.0)
+        {
+          cp[im] += (vol / dz) * dt * (1.0 + 0.0);                                            //RMM
+        }
+        else
+        {
+          cp[im] += 0.0;
+        }
+      }),
                            CellFinalize(DoNothing),
                            AfterAllCells(DoNothing)
-        ); /* End SeepageFaceBC */
+                           ); /* End SeepageFaceBC */
 
       ForPatchCellsPerFace(OverlandKinematicBC,
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                            Locals(int im, ip;
-                                  double *op;),
-                           CellSetup({ im = SubmatrixEltIndex(J_sub, i, j, k); }),
-                           FACE(LeftFace,  { op = wp; }),
-                           FACE(RightFace, { op = ep; }),
-                           FACE(DownFace,  { op = sop; }),
-                           FACE(UpFace,    { op = np; }),
-                           FACE(BackFace,  { op = lp; }),
-                           FACE(FrontFace, {
-                               op = up;
-                               /* check if overland flow kicks in */
-                               if (!ovlnd_flag[0])
-                               {
-                                 ip = SubvectorEltIndex(p_sub, i, j, k);
-                                 if ((pp[ip]) > 0.0)
-                                 {
-                                   ovlnd_flag[0] = 1;
-                                 }
-                               }
-                             }),
-                           CellFinalize({
-                               cp[im] += op[im];
-                               op[im] = 0.0;       //zero out entry in row of Jacobian
-                             }),
-                           AfterAllCells(
-                           {
-                             PFModuleInvokeType(OverlandFlowEvalKinInvoke, overlandflow_module_kin,
-                                                (grid, is, bc_struct, ipatch, problem_data, pressure,
-                                                 ke_der, kw_der, kn_der, ks_der,
-                                                 NULL, NULL, NULL, NULL, NULL, NULL, CALCDER));
-                           })
-        ); /* End OverlandKinematicBC */
-
-      ForPatchCellsPerFace(OverlandDiffusiveBC,
-                           BeforeAllCells(DoNothing),
-                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                           Locals(int im, ip;
-                                  double *op;),
+                                  double *op; ),
                            CellSetup({ im = SubmatrixEltIndex(J_sub, i, j, k); }),
                            FACE(LeftFace, { op = wp; }),
                            FACE(RightFace, { op = ep; }),
@@ -1394,30 +1356,65 @@ void    RichardsJacobianEval(
                            FACE(UpFace, { op = np; }),
                            FACE(BackFace, { op = lp; }),
                            FACE(FrontFace, {
-                               op = up;
-                               /* check if overland flow kicks in */
-                               if (!ovlnd_flag[0])
-                               {
-                                 ip = SubvectorEltIndex(p_sub, i, j, k);
-                                 if ((pp[ip]) > 0.0)
-                                 {
-                                   ovlnd_flag[0] = 1;
-                                 }
-                               }
-                             }),
+        op = up;
+        /* check if overland flow kicks in */
+        if (!ovlnd_flag[0])
+        {
+          ip = SubvectorEltIndex(p_sub, i, j, k);
+          if ((pp[ip]) > 0.0)
+          {
+            ovlnd_flag[0] = 1;
+          }
+        }
+      }),
                            CellFinalize({
-                               cp[im] += op[im];
-                               op[im] = 0.0;       //zero out entry in row of Jacobian
-                             }),
+        cp[im] += op[im];
+        op[im] = 0.0;                              //zero out entry in row of Jacobian
+      }),
                            AfterAllCells(
-                           {
-                             PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
-                                                (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
-                                                 ke_der, kw_der, kn_der, ks_der,
-                                                 kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
-                           })
-        ); /* End OverlandDiffusiveBC */
+      {
+        PFModuleInvokeType(OverlandFlowEvalKinInvoke, overlandflow_module_kin,
+                           (grid, is, bc_struct, ipatch, problem_data, pressure,
+                            ke_der, kw_der, kn_der, ks_der,
+                            NULL, NULL, NULL, NULL, NULL, NULL, CALCDER));
+      })
+                           ); /* End OverlandKinematicBC */
 
+      ForPatchCellsPerFace(OverlandDiffusiveBC,
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int im, ip;
+                                  double *op; ),
+                           CellSetup({ im = SubmatrixEltIndex(J_sub, i, j, k); }),
+                           FACE(LeftFace, { op = wp; }),
+                           FACE(RightFace, { op = ep; }),
+                           FACE(DownFace, { op = sop; }),
+                           FACE(UpFace, { op = np; }),
+                           FACE(BackFace, { op = lp; }),
+                           FACE(FrontFace, {
+        op = up;
+        /* check if overland flow kicks in */
+        if (!ovlnd_flag[0])
+        {
+          ip = SubvectorEltIndex(p_sub, i, j, k);
+          if ((pp[ip]) > 0.0)
+          {
+            ovlnd_flag[0] = 1;
+          }
+        }
+      }),
+                           CellFinalize({
+        cp[im] += op[im];
+        op[im] = 0.0;                              //zero out entry in row of Jacobian
+      }),
+                           AfterAllCells(
+      {
+        PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
+                           (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
+                            ke_der, kw_der, kn_der, ks_der,
+                            kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
+      })
+                           ); /* End OverlandDiffusiveBC */
     } /* End ipatch loop */
   }            /* End subgrid loop */
 
@@ -1426,7 +1423,7 @@ void    RichardsJacobianEval(
 
 
 
-  if (public_xtra->type == overland_flow)
+  if (public_xtra->type == overland_flow || public_xtra->using_MGSemi == 1)
   {
     // SGS always have to do communication here since
     // each processor may/may not be doing overland flow.
@@ -1437,34 +1434,37 @@ void    RichardsJacobianEval(
       FinalizeMatrixUpdate(handle);
     }
 
-    /* Pass KW values to neighbors.  */
-    vector_update_handle = InitVectorUpdate(KW, VectorUpdateAll);
-    FinalizeVectorUpdate(vector_update_handle);
-    /* Pass KE values to neighbors.  */
-    vector_update_handle = InitVectorUpdate(KE, VectorUpdateAll);
-    FinalizeVectorUpdate(vector_update_handle);
-    /* Pass KS values to neighbors.  */
-    vector_update_handle = InitVectorUpdate(KS, VectorUpdateAll);
-    FinalizeVectorUpdate(vector_update_handle);
-    /* Pass KN values to neighbors.  */
-    vector_update_handle = InitVectorUpdate(KN, VectorUpdateAll);
-    FinalizeVectorUpdate(vector_update_handle);
-    /* Pass KWns values to neighbors.  */
-    vector_update_handle = InitVectorUpdate(KWns, VectorUpdateAll);
-    FinalizeVectorUpdate(vector_update_handle);
-    /* Pass KEns values to neighbors.  */
-    vector_update_handle = InitVectorUpdate(KEns, VectorUpdateAll);
-    FinalizeVectorUpdate(vector_update_handle);
-    /* Pass KSns values to neighbors.  */
-    vector_update_handle = InitVectorUpdate(KSns, VectorUpdateAll);
-    FinalizeVectorUpdate(vector_update_handle);
-    /* Pass KNns values to neighbors.  */
-    vector_update_handle = InitVectorUpdate(KNns, VectorUpdateAll);
-    FinalizeVectorUpdate(vector_update_handle);
+    if ((instance_xtra->using_overland_flow) == TRUE)
+    {
+      /* Pass KW values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KW, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+      /* Pass KE values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KE, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+      /* Pass KS values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KS, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+      /* Pass KN values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KN, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+      /* Pass KWns values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KWns, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+      /* Pass KEns values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KEns, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+      /* Pass KSns values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KSns, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+      /* Pass KNns values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KNns, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+    }
   }
 
-  /* Build submatrix JC if overland flow case */
-  if (ovlnd_flag[0] && public_xtra->type == overland_flow)
+  /* Build submatrix JC if overland flow case and *not* MGSemi*/
+  if (ovlnd_flag[0] && public_xtra->type == overland_flow && public_xtra->using_MGSemi != 1)
   {
     /* begin loop to build JC */
     ForSubgridI(is, GridSubgrids(grid))
@@ -1494,6 +1494,8 @@ void    RichardsJacobianEval(
       kens_sub = VectorSubvector(KEns, is);
       knns_sub = VectorSubvector(KNns, is);
       ksns_sub = VectorSubvector(KSns, is);
+      /* RMM added to provide patch access */
+      patch_sub = VectorSubvector(patch, is);
 
       top_sub = VectorSubvector(top, is);
       sx_sub = VectorSubvector(slope_x, is);
@@ -1538,304 +1540,557 @@ void    RichardsJacobianEval(
       ksns_der = SubvectorData(ksns_sub);
 
       top_dat = SubvectorData(top_sub);
+      patch_dat = SubvectorData(patch_sub);
 
       ForBCStructNumPatches(ipatch, bc_struct)
       {
         ForPatchCellsPerFace(OverlandKinematicBC,
                              BeforeAllCells(DoNothing),
                              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                             Locals(int io, io1, itop, ip, im, k1;),
+                             Locals(int io, io1, itop, ip, im, iitmp, k1; ),
                              CellSetup(DoNothing),
-                             FACE(LeftFace,  DoNothing), FACE(RightFace, DoNothing),
-                             FACE(DownFace,  DoNothing), FACE(UpFace,    DoNothing),
-                             FACE(BackFace,  DoNothing),
+                             FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                             FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                             FACE(BackFace, DoNothing),
                              FACE(FrontFace,
-                             {
-                               /* Loop over boundary patches to build JC matrix. */
-                               io = SubmatrixEltIndex(J_sub, i, j, iz);
-                               io1 = SubvectorEltIndex(sx_sub, i, j, 0);
-                               itop = SubvectorEltIndex(top_sub, i, j, 0);
+        {
+          /* Loop over boundary patches to build JC matrix. */
+          io = SubmatrixEltIndex(J_sub, i, j, iz);
+          io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+          itop = SubvectorEltIndex(top_sub, i, j, 0);
 
-                               /* Update JC */
-                               ip = SubvectorEltIndex(p_sub, i, j, k);
-                               im = SubmatrixEltIndex(J_sub, i, j, k);
+          /* Update JC */
+          ip = SubvectorEltIndex(p_sub, i, j, k);
+          im = SubmatrixEltIndex(J_sub, i, j, k);
 
-                               /* First put contributions from subsurface diagonal onto diagonal of JC */
-                               cp_c[io] = cp[im];
-                               cp[im] = 0.0;         // update JB
-                               /* Now check off-diagonal nodes to see if any surface-surface connections exist */
-                               /* West */
-                               k1 = (int)top_dat[itop - 1];
+          /* First put contributions from subsurface diagonal onto diagonal of JC */
+          cp_c[io] = cp[im];
+          cp[im] = 0.0;                              // update JB
+          /* Now check off-diagonal nodes to see if any surface-surface connections exist */
+          /* West */
+          k1 = (int)top_dat[itop - 1];
 
-                               if (k1 >= 0)
-                               {
-                                 if (k1 == k)         /*west node is also surface node */
-                                 {
-                                   wp_c[io] += wp[im];
-                                   wp[im] = 0.0;           // update JB
-                                 }
-                               }
-                               /* East */
-                               k1 = (int)top_dat[itop + 1];
-                               if (k1 >= 0)
-                               {
-                                 if (k1 == k)         /*east node is also surface node */
-                                 {
-                                   ep_c[io] += ep[im];
-                                   ep[im] = 0.0;           //update JB
-                                 }
-                               }
-                               /* South */
-                               k1 = (int)top_dat[itop - sy_v];
-                               if (k1 >= 0)
-                               {
-                                 if (k1 == k)         /*south node is also surface node */
-                                 {
-                                   sop_c[io] += sop[im];
-                                   sop[im] = 0.0;           //update JB
-                                 }
-                               }
-                               /* North */
-                               k1 = (int)top_dat[itop + sy_v];
-                               if (k1 >= 0)
-                               {
-                                 if (k1 == k)         /*north node is also surface node */
-                                 {
-                                   np_c[io] += np[im];
-                                   np[im] = 0.0;           // Update JB
-                                 }
-                               }
+          if (k1 >= 0)
+          {
+            if (k1 == k)                              /*west node is also surface node */
+            {
+              wp_c[io] += wp[im];
+              wp[im] = 0.0;                                // update JB
+            }
+          }
+          /* East */
+          k1 = (int)top_dat[itop + 1];
+          if (k1 >= 0)
+          {
+            if (k1 == k)                              /*east node is also surface node */
+            {
+              ep_c[io] += ep[im];
+              ep[im] = 0.0;                                //update JB
+            }
+          }
+          /* South */
+          k1 = (int)top_dat[itop - sy_v];
+          if (k1 >= 0)
+          {
+            if (k1 == k)                              /*south node is also surface node */
+            {
+              sop_c[io] += sop[im];
+              sop[im] = 0.0;                                //update JB
+            }
+          }
+          /* North */
+          k1 = (int)top_dat[itop + sy_v];
+          if (k1 >= 0)
+          {
+            if (k1 == k)                              /*north node is also surface node */
+            {
+              np_c[io] += np[im];
+              np[im] = 0.0;                                // Update JB
+            }
+          }
 
-                               /* Now add overland contributions to JC */
-                               if ((pp[ip]) > 0.0)
-                               {
-                                 /*diagonal term */
-                                 cp_c[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
-                                             + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
-                               }
+          iitmp = (int)patch_dat[io1];
 
-                               /*west term */
-                               wp_c[io] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
+          /* Now add overland contributions to JC */
+          if ((pp[ip]) > 0.0)
+          {
+            /* RMM, switch if seepage face on */
+            if (IsSeepagePatch(&(public_xtra->seepage), iitmp))
+            {
+              cp_c[io] += (vol / dz) * (1.0 + 0.0);
+            }
+            else
+            {
+              /*regular overland diagonal term */
+              cp_c[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                          + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+            }
+          }
 
-                               /*East term */
-                               ep_c[io] += (vol / ffy) * dt * (kw_der[io1 + 1]);
+          /*west term */
+          wp_c[io] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
 
-                               /*south term */
-                               sop_c[io] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
+          /*East term */
+          ep_c[io] += (vol / ffy) * dt * (kw_der[io1 + 1]);
 
-                               /*north term */
-                               np_c[io] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
-                             }),
+          /*south term */
+          sop_c[io] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
+
+          /*north term */
+          np_c[io] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
+        }),
                              CellFinalize(DoNothing),
                              AfterAllCells(DoNothing)
-          ); /* End OverlandKinematicBC */
+                             ); /* End OverlandKinematicBC */
 
         ForPatchCellsPerFace(OverlandDiffusiveBC,
                              BeforeAllCells(DoNothing),
                              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                             Locals(int io, io1, itop, ip, im, k1;),
+                             Locals(int io, io1, itop, ip, im, k1; ),
                              CellSetup(DoNothing),
-                             FACE(LeftFace,  DoNothing), FACE(RightFace, DoNothing),
-                             FACE(DownFace,  DoNothing), FACE(UpFace,    DoNothing),
-                             FACE(BackFace,  DoNothing),
+                             FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                             FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                             FACE(BackFace, DoNothing),
                              FACE(FrontFace,
-                             {
+        {
+          /* Loop over boundary patches to build JC matrix.
+           */
+          io = SubmatrixEltIndex(J_sub, i, j, iz);
+          io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+          itop = SubvectorEltIndex(top_sub, i, j, 0);
 
-                               /* Loop over boundary patches to build JC matrix.
-                                */
-                               io = SubmatrixEltIndex(J_sub, i, j, iz);
-                               io1 = SubvectorEltIndex(sx_sub, i, j, 0);
-                               itop = SubvectorEltIndex(top_sub, i, j, 0);
+          /* Update JC */
+          ip = SubvectorEltIndex(p_sub, i, j, k);
+          im = SubmatrixEltIndex(J_sub, i, j, k);
 
-                               /* Update JC */
-                               ip = SubvectorEltIndex(p_sub, i, j, k);
-                               im = SubmatrixEltIndex(J_sub, i, j, k);
+          /* First put contributions from subsurface diagonal onto diagonal of JC */
+          cp_c[io] = cp[im];
+          cp[im] = 0.0;                              // update JB
+          /* Now check off-diagonal nodes to see if any surface-surface connections exist */
+          /* West */
+          k1 = (int)top_dat[itop - 1];
 
-                               /* First put contributions from subsurface diagonal onto diagonal of JC */
-                               cp_c[io] = cp[im];
-                               cp[im] = 0.0;         // update JB
-                               /* Now check off-diagonal nodes to see if any surface-surface connections exist */
-                               /* West */
-                               k1 = (int)top_dat[itop - 1];
+          if (k1 >= 0)
+          {
+            if (k1 == k)                              /*west node is also surface node */
+            {
+              wp_c[io] += wp[im];
+              wp[im] = 0.0;                                // update JB
+            }
+          }
+          /* East */
+          k1 = (int)top_dat[itop + 1];
+          if (k1 >= 0)
+          {
+            if (k1 == k)                              /*east node is also surface node */
+            {
+              ep_c[io] += ep[im];
+              ep[im] = 0.0;                                //update JB
+            }
+          }
+          /* South */
+          k1 = (int)top_dat[itop - sy_v];
+          if (k1 >= 0)
+          {
+            if (k1 == k)                              /*south node is also surface node */
+            {
+              sop_c[io] += sop[im];
+              sop[im] = 0.0;                                //update JB
+            }
+          }
+          /* North */
+          k1 = (int)top_dat[itop + sy_v];
+          if (k1 >= 0)
+          {
+            if (k1 == k)                              /*north node is also surface node */
+            {
+              np_c[io] += np[im];
+              np[im] = 0.0;                                // Update JB
+            }
+          }
 
-                               if (k1 >= 0)
-                               {
-                                 if (k1 == k)         /*west node is also surface node */
-                                 {
-                                   wp_c[io] += wp[im];
-                                   wp[im] = 0.0;           // update JB
-                                 }
-                               }
-                               /* East */
-                               k1 = (int)top_dat[itop + 1];
-                               if (k1 >= 0)
-                               {
-                                 if (k1 == k)         /*east node is also surface node */
-                                 {
-                                   ep_c[io] += ep[im];
-                                   ep[im] = 0.0;           //update JB
-                                 }
-                               }
-                               /* South */
-                               k1 = (int)top_dat[itop - sy_v];
-                               if (k1 >= 0)
-                               {
-                                 if (k1 == k)         /*south node is also surface node */
-                                 {
-                                   sop_c[io] += sop[im];
-                                   sop[im] = 0.0;           //update JB
-                                 }
-                               }
-                               /* North */
-                               k1 = (int)top_dat[itop + sy_v];
-                               if (k1 >= 0)
-                               {
-                                 if (k1 == k)         /*north node is also surface node */
-                                 {
-                                   np_c[io] += np[im];
-                                   np[im] = 0.0;           // Update JB
-                                 }
-                               }
+          /* Now add overland contributions to JC */
+          if ((pp[ip]) > 0.0)
+          {
+            /*diagonal term */
+            cp_c[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                        + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+          }
+          /*west term */
+          wp_c[io] -= (vol / ffy) * dt * (kwns_der[io1]);
 
-                               /* Now add overland contributions to JC */
-                               if ((pp[ip]) > 0.0)
-                               {
-                                 /*diagonal term */
-                                 cp_c[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
-                                             + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
-                               }
-                               /*west term */
-                               wp_c[io] -= (vol / ffy) * dt * (kwns_der[io1]);
+          /*East term */
+          ep_c[io] += (vol / ffy) * dt * (kens_der[io1]);
 
-                               /*East term */
-                               ep_c[io] += (vol / ffy) * dt * (kens_der[io1]);
+          /*south term */
+          sop_c[io] -= (vol / ffx) * dt * (ksns_der[io1]);
 
-                               /*south term */
-                               sop_c[io] -= (vol / ffx) * dt * (ksns_der[io1]);
-
-                               /*north term */
-                               np_c[io] += (vol / ffx) * dt * (knns_der[io1]);
-                             }),
+          /*north term */
+          np_c[io] += (vol / ffx) * dt * (knns_der[io1]);
+        }),
                              CellFinalize(DoNothing),
                              AfterAllCells(DoNothing)
-          ); /* End OverlandDiffusiveBC */
+                             ); /* End OverlandDiffusiveBC */
 
         ForPatchCellsPerFace(OverlandBC,
                              BeforeAllCells(DoNothing),
                              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                             Locals(int io, io1, itop, ip, im, k1;),
+                             Locals(int io, io1, itop, ip, im, k1; ),
                              CellSetup(DoNothing),
-                             FACE(LeftFace,  DoNothing), FACE(RightFace, DoNothing),
-                             FACE(DownFace,  DoNothing), FACE(UpFace,    DoNothing),
-                             FACE(BackFace,  DoNothing),
+                             FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                             FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                             FACE(BackFace, DoNothing),
                              FACE(FrontFace,
-                             {
-                               /* Loop over boundary patches to build JC matrix.
-                                */
-                               io = SubmatrixEltIndex(J_sub, i, j, iz);
-                               io1 = SubvectorEltIndex(sx_sub, i, j, 0);
-                               itop = SubvectorEltIndex(top_sub, i, j, 0);
+        {
+          /* Loop over boundary patches to build JC matrix.
+           */
+          io = SubmatrixEltIndex(J_sub, i, j, iz);
+          io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+          itop = SubvectorEltIndex(top_sub, i, j, 0);
 
-                               /* Update JC */
-                               ip = SubvectorEltIndex(p_sub, i, j, k);
-                               im = SubmatrixEltIndex(J_sub, i, j, k);
+          /* Update JC */
+          ip = SubvectorEltIndex(p_sub, i, j, k);
+          im = SubmatrixEltIndex(J_sub, i, j, k);
 
-                               /* First put contributions from subsurface diagonal onto diagonal of JC */
-                               cp_c[io] = cp[im];
-                               cp[im] = 0.0;         // update JB
-                               /* Now check off-diagonal nodes to see if any surface-surface connections exist */
-                               /* West */
-                               k1 = (int)top_dat[itop - 1];
+          /* First put contributions from subsurface diagonal onto diagonal of JC */
+          cp_c[io] = cp[im];
+          cp[im] = 0.0;                              // update JB
+          /* Now check off-diagonal nodes to see if any surface-surface connections exist */
+          /* West */
+          k1 = (int)top_dat[itop - 1];
 
-                               if (k1 >= 0)
-                               {
-                                 if (k1 == k)         /*west node is also surface node */
-                                 {
-                                   wp_c[io] += wp[im];
-                                   wp[im] = 0.0;           // update JB
-                                 }
-                               }
-                               /* East */
-                               k1 = (int)top_dat[itop + 1];
-                               if (k1 >= 0)
-                               {
-                                 if (k1 == k)         /*east node is also surface node */
-                                 {
-                                   ep_c[io] += ep[im];
-                                   ep[im] = 0.0;           //update JB
-                                 }
-                               }
-                               /* South */
-                               k1 = (int)top_dat[itop - sy_v];
-                               if (k1 >= 0)
-                               {
-                                 if (k1 == k)         /*south node is also surface node */
-                                 {
-                                   sop_c[io] += sop[im];
-                                   sop[im] = 0.0;           //update JB
-                                 }
-                               }
-                               /* North */
-                               k1 = (int)top_dat[itop + sy_v];
-                               if (k1 >= 0)
-                               {
-                                 if (k1 == k)         /*north node is also surface node */
-                                 {
-                                   np_c[io] += np[im];
-                                   np[im] = 0.0;           // Update JB
-                                 }
-                               }
+          if (k1 >= 0)
+          {
+            if (k1 == k)                              /*west node is also surface node */
+            {
+              wp_c[io] += wp[im];
+              wp[im] = 0.0;                                // update JB
+            }
+          }
+          /* East */
+          k1 = (int)top_dat[itop + 1];
+          if (k1 >= 0)
+          {
+            if (k1 == k)                              /*east node is also surface node */
+            {
+              ep_c[io] += ep[im];
+              ep[im] = 0.0;                                //update JB
+            }
+          }
+          /* South */
+          k1 = (int)top_dat[itop - sy_v];
+          if (k1 >= 0)
+          {
+            if (k1 == k)                              /*south node is also surface node */
+            {
+              sop_c[io] += sop[im];
+              sop[im] = 0.0;                                //update JB
+            }
+          }
+          /* North */
+          k1 = (int)top_dat[itop + sy_v];
+          if (k1 >= 0)
+          {
+            if (k1 == k)                              /*north node is also surface node */
+            {
+              np_c[io] += np[im];
+              np[im] = 0.0;                                // Update JB
+            }
+          }
 
-                               /* Now add overland contributions to JC */
-                               if ((pp[ip]) > 0.0)
-                               {
-                                 /*diagonal term */
-                                 cp_c[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
-                                             + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
-                               }
-                               else
-                               {
-                                 // Laura's version
-                                 cp_c[io] += 0.0 + dt * (vol / dz) * (public_xtra->SpinupDampP1 * exp(pfmin(pp[ip], 0.0) * public_xtra->SpinupDampP1) * public_xtra->SpinupDampP2); //NBE
-                               }
+          /* Now add overland contributions to JC */
+          if ((pp[ip]) > 0.0)
+          {
+            /*diagonal term */
+            cp_c[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                        + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+          }
+          else
+          {
+            // Laura's version
+            cp_c[io] += 0.0 + dt * (vol / dz) * (public_xtra->SpinupDampP1 * exp(pfmin(pp[ip], 0.0) * public_xtra->SpinupDampP1) * public_xtra->SpinupDampP2);                      //NBE
+          }
 
-                               if (diffusive == 0)
-                               {
-                                 /*west term */
-                                 wp_c[io] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
+          if (diffusive == 0)
+          {
+            /*west term */
+            wp_c[io] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
 
-                                 /*East term */
-                                 ep_c[io] += (vol / ffy) * dt * (kw_der[io1 + 1]);
+            /*East term */
+            ep_c[io] += (vol / ffy) * dt * (kw_der[io1 + 1]);
 
-                                 /*south term */
-                                 sop_c[io] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
+            /*south term */
+            sop_c[io] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
 
-                                 /*north term */
-                                 np_c[io] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
-                               }
-                               else
-                               {
-                                 /*west term */
-                                 wp_c[io] -= (vol / ffy) * dt * (kwns_der[io1]);
+            /*north term */
+            np_c[io] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
+          }
+          else
+          {
+            /*west term */
+            wp_c[io] -= (vol / ffy) * dt * (kwns_der[io1]);
 
-                                 /*East term */
-                                 ep_c[io] += (vol / ffy) * dt * (kens_der[io1]);
+            /*East term */
+            ep_c[io] += (vol / ffy) * dt * (kens_der[io1]);
 
-                                 /*south term */
-                                 sop_c[io] -= (vol / ffx) * dt * (ksns_der[io1]);
+            /*south term */
+            sop_c[io] -= (vol / ffx) * dt * (ksns_der[io1]);
 
-                                 /*north term */
-                                 np_c[io] += (vol / ffx) * dt * (knns_der[io1]);
-                               }
-                             }),
+            /*north term */
+            np_c[io] += (vol / ffx) * dt * (knns_der[io1]);
+          }
+        }),
                              CellFinalize(DoNothing),
                              AfterAllCells(DoNothing)
-          ); /* End OverlandBC */
+                             ); /* End OverlandBC */
       } /* End ipatch loop */
     }             /* End subgrid loop */
   }
 
+/* MGSemi Jacobian construction; this should (will) only be active if we have
+ * one of the overland flow cases (KWE, DWE, Overland) and MGSemi chosen as preconditioner.
+ * This is set by the overland_flow variable.  This logic is similar
+ * to the case statements in OverlandKinematic above
+ * for PFMG/SMG/PFMGOctree(case overland_flow) which are split into the surface and
+ * subsurface parts (RMM)*/
 
+/* The MGSemi center part this is  only be active if we have
+ * and MGSemi chosen as preconditioner.  This logic is similar
+ * to, and was patterned after, the case statements in OverlandFlow above
+ * where the FD Jacobian (case no_nonlinear), MGSemi (case simple) and PFMG
+ * (case overland_flow) are enumerated explicitly (RMM)*/
+
+  if (public_xtra->using_MGSemi == 1)
+  {
+    /* begin loop to build J for MGSemi */
+    ForSubgridI(is, GridSubgrids(grid))
+    {
+      subgrid = GridSubgrid(grid, is);
+
+      dx = SubgridDX(subgrid);
+      dy = SubgridDY(subgrid);
+      dz = SubgridDZ(subgrid);
+
+      double vol = dx * dy * dz;
+
+      ffx = dy * dz;
+      ffy = dx * dz;
+      ffz = dx * dy;
+
+      p_sub = VectorSubvector(pressure, is);
+
+      J_sub = MatrixSubmatrix(J, is);
+
+      if ((instance_xtra->using_overland_flow) == TRUE)
+      {
+        kw_sub = VectorSubvector(KW, is);
+        ke_sub = VectorSubvector(KE, is);
+        kn_sub = VectorSubvector(KN, is);
+        ks_sub = VectorSubvector(KS, is);
+        kwns_sub = VectorSubvector(KWns, is);
+        kens_sub = VectorSubvector(KEns, is);
+        knns_sub = VectorSubvector(KNns, is);
+        ksns_sub = VectorSubvector(KSns, is);
+
+        kw_der = SubvectorData(kw_sub);
+        ke_der = SubvectorData(ke_sub);
+        kn_der = SubvectorData(kn_sub);
+        ks_der = SubvectorData(ks_sub);
+        kwns_der = SubvectorData(kwns_sub);
+        kens_der = SubvectorData(kens_sub);
+        knns_der = SubvectorData(knns_sub);
+        ksns_der = SubvectorData(ksns_sub);
+      }
+
+      top_sub = VectorSubvector(top, is);
+      /* RMM added to provide patch access */
+      patch_sub = VectorSubvector(patch, is);
+      sx_sub = VectorSubvector(slope_x, is);
+
+      sy_v = SubvectorNX(sx_sub);
+      nx_m = SubmatrixNX(J_sub);
+      ny_m = SubmatrixNY(J_sub);
+      sy_m = nx_m;
+      sz_m = nx_m * ny_m;
+
+      ix = SubgridIX(subgrid);
+      iy = SubgridIY(subgrid);
+      iz = SubgridIZ(subgrid);
+
+      nx = SubgridNX(subgrid);
+      ny = SubgridNY(subgrid);
+
+      pp = SubvectorData(p_sub);
+      /* for Bmat */
+      cp = SubmatrixStencilData(J_sub, 0);
+      wp = SubmatrixStencilData(J_sub, 1);
+      ep = SubmatrixStencilData(J_sub, 2);
+      sop = SubmatrixStencilData(J_sub, 3);
+      np = SubmatrixStencilData(J_sub, 4);
+      lp = SubmatrixStencilData(J_sub, 5);
+      up = SubmatrixStencilData(J_sub, 6);
+
+      top_dat = SubvectorData(top_sub);
+      patch_dat = SubvectorData(patch_sub);
+
+      ForBCStructNumPatches(ipatch, bc_struct)
+      {
+        ForPatchCellsPerFace(OverlandKinematicBC,
+                             BeforeAllCells(DoNothing),
+                             LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                             Locals(int io1, ip, itop, im, iitmp; ),
+                             CellSetup(DoNothing),
+                             FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                             FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                             FACE(BackFace, DoNothing),
+                             FACE(FrontFace,
+        {
+          /* Loop over boundary patches to build J matrix. */
+          io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+          itop = SubvectorEltIndex(top_sub, i, j, 0);
+
+          /* Update J */
+          ip = SubvectorEltIndex(p_sub, i, j, k);
+          im = SubmatrixEltIndex(J_sub, i, j, k);
+
+          iitmp = (int)patch_dat[itop];
+          /* Now add overland contributions to J similar to JC above */
+          if ((pp[ip]) > 0.0)
+          {
+            /* RMM, switch seepage face on optionally for specified surface patches */
+            if (IsSeepagePatch(&(public_xtra->seepage), iitmp))
+            {
+              cp[im] += dt * (vol / dz) * (1.0 + 0.0);
+            }
+            else
+            {
+              /*diagonal term */
+              cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                        + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+            }
+          }
+
+          /*west term */
+          wp[im] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
+
+          /*East term */
+          ep[im] += (vol / ffy) * dt * (kw_der[io1 + 1]);
+
+          /*south term */
+          sop[im] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
+
+          /*north term */
+          np[im] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
+        }),
+                             CellFinalize(DoNothing),
+                             AfterAllCells(DoNothing)
+                             ); /* End OverlandKinematicBC */
+
+        ForPatchCellsPerFace(OverlandDiffusiveBC,
+                             BeforeAllCells(DoNothing),
+                             LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                             Locals(int io1, ip, im; ),
+                             CellSetup(DoNothing),
+                             FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                             FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                             FACE(BackFace, DoNothing),
+                             FACE(FrontFace,
+        {
+          /* Loop over boundary patches to build J matrix.
+           */
+          io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+          ip = SubvectorEltIndex(p_sub, i, j, k);
+          im = SubmatrixEltIndex(J_sub, i, j, k);
+
+          /* Now add overland contributions */
+          if ((pp[ip]) > 0.0)
+          {
+            /*diagonal term */
+            cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                      + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+          }
+          /*west term */
+          wp[im] -= (vol / ffy) * dt * (kwns_der[io1]);
+
+          /*East term */
+          ep[im] += (vol / ffy) * dt * (kens_der[io1]);
+
+          /*south term */
+          sop[im] -= (vol / ffx) * dt * (ksns_der[io1]);
+
+          /*north term */
+          np[im] += (vol / ffx) * dt * (knns_der[io1]);
+        }),
+                             CellFinalize(DoNothing),
+                             AfterAllCells(DoNothing)
+                             ); /* End OverlandDiffusiveBC */
+
+        ForPatchCellsPerFace(OverlandBC,
+                             BeforeAllCells(DoNothing),
+                             LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                             Locals(int io1, ip, im; ),
+                             CellSetup(DoNothing),
+                             FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                             FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                             FACE(BackFace, DoNothing),
+                             FACE(FrontFace,
+        {
+          /* Loop over boundary patches to build J matrix.
+           */
+          io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+          ip = SubvectorEltIndex(p_sub, i, j, k);
+          im = SubmatrixEltIndex(J_sub, i, j, k);
+
+          /* Now add overland contributions to the jacobian */
+          if ((pp[ip]) > 0.0)
+          {
+            /*diagonal term */
+            /* original preconditioner from KM2006 here for historical reasons; performance is much slower than newer formulation below */
+            //cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
+            cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                      + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+          }
+          else
+          {
+            // Laura's version; old diffusive wave formulation which is now replaced by DWE
+            cp[im] += 0.0 + dt * (vol / dz) * (public_xtra->SpinupDampP1 * exp(pfmin(pp[ip], 0.0) * public_xtra->SpinupDampP1) * public_xtra->SpinupDampP2);                      //NBE
+          }
+
+          if (diffusive == 0)
+          {
+            /*west term */
+            wp[im] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
+
+            //  /*East term */
+            ep[im] += (vol / ffy) * dt * (kw_der[io1 + 1]);
+
+            //  /*south term */
+            sop[im] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
+
+            //  /*north term */
+            np[im] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
+          }
+          else
+          {
+            /*west term */
+            wp[im] -= (vol / ffy) * dt * (kwns_der[io1]);
+
+            /*East term */
+            ep[im] += (vol / ffy) * dt * (kens_der[io1]);
+
+            /*south term */
+            sop[im] -= (vol / ffx) * dt * (ksns_der[io1]);
+
+            /*north term */
+            np[im] += (vol / ffx) * dt * (knns_der[io1]);
+          }
+        }),
+                             CellFinalize(DoNothing),
+                             AfterAllCells(DoNothing)
+                             ); /* End OverlandBC */
+      } /* End ipatch loop */
+    }             /* End subgrid loop */
+  }
 
   /* Set pressures outside domain to zero.
    * Recall: equation to solve is f = 0, so components of f outside
@@ -1939,17 +2194,6 @@ void    RichardsJacobianEval(
 
   FreeBCStruct(bc_struct);
 
-  FreeVector(density_der);
-  FreeVector(saturation_der);
-  FreeVector(KW);
-  FreeVector(KE);
-  FreeVector(KN);
-  FreeVector(KS);
-  FreeVector(KWns);
-  FreeVector(KEns);
-  FreeVector(KNns);
-  FreeVector(KSns);
-
   tfree(ovlnd_flag);
 
   POP_NVTX
@@ -1965,11 +2209,13 @@ void    RichardsJacobianEval(
 PFModule    *RichardsJacobianEvalInitInstanceXtra(
                                                   Problem *    problem,
                                                   Grid *       grid,
+                                                  Grid *       grid2d,
                                                   ProblemData *problem_data,
                                                   double *     temp_data,
                                                   int          symmetric_jac)
 {
   PFModule      *this_module = ThisPFModule;
+  PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
   InstanceXtra  *instance_xtra;
 
   Stencil       *stencil, *stencil_C;
@@ -2041,6 +2287,47 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
       PFModuleNewInstance(ProblemOverlandFlowEvalDiff(problem), ());   //RMM-LEC
     (instance_xtra->overlandflow_module_kin)
       = PFModuleNewInstance(ProblemOverlandFlowEvalKin(problem), ());
+
+    // Allocate vectors for the derivatives
+    (instance_xtra->density_der) = NewVectorType(grid, 1, 1, vector_cell_centered);
+    (instance_xtra->saturation_der) = NewVectorType(grid, 1, 1, vector_cell_centered);
+
+    (instance_xtra->using_overland_flow) = BCPressurePackageUsingOverlandFlow(problem);
+    if (public_xtra->type == not_set)
+    {
+      // Default to simple
+      public_xtra->type = simple;
+      if ((instance_xtra->using_overland_flow) == TRUE)
+      {
+        (public_xtra->type) = overland_flow;
+      }
+      /* If we have MGSemi set as the preconditioner key
+       * we still set the type to overland_flow
+       * but later use the simple/symmetric preconditioner (RMM) */
+    }
+
+    if ((instance_xtra->using_overland_flow) == TRUE)
+    {
+      (instance_xtra->KW) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->KE) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->KN) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->KS) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->KWns) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->KEns) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->KNns) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->KSns) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+    }
+    else
+    {
+      (instance_xtra->KW) = NULL;
+      (instance_xtra->KE) = NULL;
+      (instance_xtra->KN) = NULL;
+      (instance_xtra->KS) = NULL;
+      (instance_xtra->KWns) = NULL;
+      (instance_xtra->KEns) = NULL;
+      (instance_xtra->KNns) = NULL;
+      (instance_xtra->KSns) = NULL;
+    }
   }
   else
   {
@@ -2073,14 +2360,29 @@ void  RichardsJacobianEvalFreeInstanceXtra()
 
   if (instance_xtra)
   {
-    PFModuleFreeInstance(instance_xtra->density_module);
-    PFModuleFreeInstance(instance_xtra->bc_pressure);
-    PFModuleFreeInstance(instance_xtra->saturation_module);
-    PFModuleFreeInstance(instance_xtra->rel_perm_module);
-    PFModuleFreeInstance(instance_xtra->bc_internal);
-    PFModuleFreeInstance(instance_xtra->overlandflow_module);     //DOK
-    PFModuleFreeInstance(instance_xtra->overlandflow_module_diff);       //RMM-LEC
+    if ((instance_xtra->using_overland_flow) == TRUE)
+    {
+      FreeVector(instance_xtra->KSns);
+      FreeVector(instance_xtra->KNns);
+      FreeVector(instance_xtra->KEns);
+      FreeVector(instance_xtra->KWns);
+      FreeVector(instance_xtra->KS);
+      FreeVector(instance_xtra->KN);
+      FreeVector(instance_xtra->KE);
+      FreeVector(instance_xtra->KW);
+    }
+
+    FreeVector(instance_xtra->saturation_der);
+    FreeVector(instance_xtra->density_der);
+
     PFModuleFreeInstance(instance_xtra->overlandflow_module_kin);
+    PFModuleFreeInstance(instance_xtra->overlandflow_module_diff);       //RMM-LEC
+    PFModuleFreeInstance(instance_xtra->overlandflow_module);     //DOK
+    PFModuleFreeInstance(instance_xtra->bc_internal);
+    PFModuleFreeInstance(instance_xtra->rel_perm_module);
+    PFModuleFreeInstance(instance_xtra->saturation_module);
+    PFModuleFreeInstance(instance_xtra->bc_pressure);
+    PFModuleFreeInstance(instance_xtra->density_module);
 
     FreeMatrix(instance_xtra->J);
 
@@ -2104,6 +2406,7 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   int switch_value;
   NameArray switch_na;
   NameArray upwind_switch_na;
+  NameArray precond_switch_na;
 
 
   (void)name;
@@ -2116,11 +2419,30 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   sprintf(key, "OverlandSpinupDampP2");
   public_xtra->SpinupDampP2 = GetDoubleDefault(key, 0.0);    // NBE
 
-  ///* parameters for upwinding formulation for TFG */
+  /* Collect seepage patches from Patch.<name>.BCPressure.Seepage flags. */
+  PopulateSeepagePatchesFromBCPressure(&(public_xtra->seepage));
+
+/* get preconditioner to check for MGSemi to use custom overland flow formulation*/
+  precond_switch_na = NA_NewNameArray("NoPC MGSemi SMG PFMG PFMGOctree");
+  sprintf(key, "Solver.Linear.Preconditioner");
+  switch_name = GetStringDefault(key, "MGSemi");
+  switch_value = NA_NameToIndexExitOnError(precond_switch_na, switch_name, key);
+  if (switch_value == 1)
+  {
+    /* (RMM) Include a variable track if MGSemi=True *and* Jacobian=True */
+    public_xtra->using_MGSemi = 1;
+  }
+  else
+  {
+    public_xtra->using_MGSemi = 0;
+  }
+  NA_FreeNameArray(precond_switch_na);
+
+  /* parameters for upwinding formulation for TFG */
   upwind_switch_na = NA_NewNameArray("Original UpwindSine Upwind");
   sprintf(key, "Solver.TerrainFollowingGrid.SlopeUpwindFormulation");
   switch_name = GetStringDefault(key, "Original");
-  switch_value = NA_NameToIndex(upwind_switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(upwind_switch_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -2143,8 +2465,7 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(upwind_switch_na);
@@ -2152,12 +2473,14 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   switch_na = NA_NewNameArray("False True");
   sprintf(key, "Solver.Nonlinear.UseJacobian");
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
     {
       public_xtra->type = no_nonlinear_jacobian;
+      /*(RMM) set back to zero so that cases like MGSemi with FD jacobian (FALSE) are not affected*/
+      public_xtra->using_MGSemi = 0;
       break;
     }
 
@@ -2169,8 +2492,7 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(switch_na);
@@ -2192,6 +2514,7 @@ void  RichardsJacobianEvalFreePublicXtra()
 
   if (public_xtra)
   {
+    SeepageLookupFree(&(public_xtra->seepage));
     tfree(public_xtra);
   }
 }

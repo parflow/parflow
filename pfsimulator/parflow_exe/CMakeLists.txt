@@ -1,4 +1,11 @@
-add_executable(parflow main.c)
+set(MAIN_SRC main.c)
+
+if( ${PARFLOW_BUILD_WITH_CPP} )
+  set_source_files_properties(${MAIN_SRC}
+    PROPERTIES LANGUAGE CXX)
+endif()
+
+add_executable(parflow ${MAIN_SRC})
 
 target_link_libraries(parflow pfsimulator)
 
@@ -8,18 +15,24 @@ if( ${PARFLOW_HAVE_ETRACE} )
 endif( ${PARFLOW_HAVE_ETRACE} )
 
 if( ${PARFLOW_HAVE_RMM} )
-  target_link_libraries(parflow rmm)
-  target_include_directories(parflow PRIVATE ${RMM_INCLUDE})
-  target_compile_definitions(parflow PRIVATE PARFLOW_HAVE_RMM)
+  target_link_libraries(parflow rmm::rmm)
 endif( ${PARFLOW_HAVE_RMM} )
+
+if( ${PARFLOW_HAVE_UMPIRE} )
+  target_link_libraries(parflow umpire)
+endif( ${PARFLOW_HAVE_UMPIRE} )
 
 if( ${PARFLOW_HAVE_CLM} )
   target_link_libraries(parflow pfclm)
 endif( ${PARFLOW_HAVE_CLM} )
 
 if (${PARFLOW_HAVE_HYPRE})
-  target_link_libraries (parflow ${HYPRE_LIBRARIES})
+  target_link_libraries (parflow Hypre::Hypre)
 endif (${PARFLOW_HAVE_HYPRE})
+
+if (${PARFLOW_HAVE_SUNDIALS})
+  target_link_libraries (parflow ${SUNDIALS_LIBRARIES})
+endif (${PARFLOW_HAVE_SUNDIALS})
 
 if (${PARFLOW_HAVE_MPI})
   # In CMake 3.13 this could be target_link_options
@@ -31,9 +44,14 @@ if (${PARFLOW_HAVE_SILO})
   target_link_libraries (parflow ${SILO_LIBRARIES})
 endif (${PARFLOW_HAVE_SILO})
 
-if (${PARFLOW_HAVE_NETCDF})
-  target_link_libraries (parflow ${NETCDF_LIBRARIES})
+if (${PARFLOW_HAVE_PDI})
+  target_link_libraries (parflow ${PDI_LIBRARIES})
+  target_link_libraries (parflow ${PARACONF_LIBRARIES})
+  target_link_libraries(parflow ${SPDLOG_LIBRARIES})
+endif (${PARFLOW_HAVE_PDI})
 
+if (${PARFLOW_HAVE_NETCDF})
+  target_link_libraries (parflow NetCDF::NetCDF)
   target_link_libraries (parflow ${CURL_LIBRARIES})
 endif (${PARFLOW_HAVE_NETCDF})
 
@@ -57,6 +75,11 @@ endif (${PARFLOW_HAVE_SZLIB})
 if (${PARFLOW_HAVE_SLURM})
   target_link_libraries (parflow ${SLURM_LIBRARIES})
 endif (${PARFLOW_HAVE_SLURM})
+
+# Link the math library if needed
+if(PARFLOW_MATH_LIBRARY)
+    target_link_libraries(parflow ${MATH_LIBRARY})
+endif()
 
 if( ${PARFLOW_ENABLE_PROFILING} )
   set_target_properties(parflow PROPERTIES LINK_FLAGS ${PARFLOW_PROFILE_OPTS})

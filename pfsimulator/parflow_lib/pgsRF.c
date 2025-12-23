@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 /*****************************************************************************
 *
@@ -721,8 +721,27 @@ void         PGSRF(
                   }
 
                   /* Compute b2' = b2 - A21 * A11_inv * b1 and augment b1 */
+
+                  // GCC 15.2.0 Was issuing warning about reading  at offset [-17179869184, -8] into source object of size [8, 17179869176] allocated by ‘calloc’
+                  // Seems related to npts possibly being negative?, could avoid by putting an if (npts >= 0) arount this loop as well.
+
+#if defined(__GNUC__) && !defined(__clang__)
+                  /* GCC version check: major >= 15 */
+  #if __GNUC__ > 15 || (__GNUC__ == 15 && __GNUC_MINOR__ >= 0)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wstringop-overread"
+  #endif
+#endif
                   for (i2 = 0; i2 < cpts; i2++)
                     b2[i2] = b[i2 + npts];
+
+
+#if defined(__GNUC__) && !defined(__clang__)
+  #if __GNUC__ > 15 || (__GNUC__ == 15 && __GNUC_MINOR__ >= 0)
+    #pragma GCC diagnostic pop
+  #endif
+#endif
+
                   for (i2 = 0; i2 < npts; i2++)
                     b_tmp[i2] = b[i2];
                   dposl_(A11, &npts, &npts, b_tmp);
@@ -1010,23 +1029,13 @@ PFModule   *PGSRFNewPublicXtra(char *geom_name)
   log_normal_na = NA_NewNameArray("Normal Log NormalTruncated LogTruncated");
   sprintf(key, "Geom.%s.Perm.LogNormal", geom_name);
   tmp = GetString(key);
-  /* Convert the name to a numeric index */
-  if ((public_xtra->dist_type = NA_NameToIndex(log_normal_na, tmp)) < 0)
-  {
-    InputError("Error: Invalid LogNormal value for key <%s> was <%s>\n",
-               key, tmp);
-  }
+  public_xtra->dist_type = NA_NameToIndexExitOnError(log_normal_na, tmp, key);
   NA_FreeNameArray(log_normal_na);
 
   strat_type_na = NA_NewNameArray("Horizontal Bottom Top");
   sprintf(key, "Geom.%s.Perm.StratType", geom_name);
   tmp = GetString(key);
-  /* Convert the name to a numeric index */
-  if ((public_xtra->strat_type = NA_NameToIndex(strat_type_na, tmp)) < 0)
-  {
-    InputError("Error: Invalid StratType for key <%s> was <%s>\n",
-               key, tmp);
-  }
+  public_xtra->strat_type = NA_NameToIndexExitOnError(strat_type_na, tmp, key);
   NA_FreeNameArray(strat_type_na);
 
 

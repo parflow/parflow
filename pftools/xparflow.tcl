@@ -678,11 +678,11 @@ proc Tolerance {} {
 	set names(AdvectionOrder) SolverImpesadvectionorder
 	set names(MaxIterations) SolverImpesmaxiter
 	set names(CFL) SolverImpesCFL
-	set names(Realative) SolverImpesreltol
+	set names(Relative) SolverImpesreltol
 	set names(Absolute) SolverImpesabstol
 	set names(Drop) SolverImpesdroptol
 
-	foreach i {"SAdvectionOrder" "AdvectionOrder" "CFL" "MaxIterations" "Realative" "Absolute" "Drop"} {
+	foreach i {"SAdvectionOrder" "AdvectionOrder" "CFL" "MaxIterations" "Relative" "Absolute" "Drop"} {
 	    set widget [string tolower $i]
 	    regsub -all " " $widget "" widget
 	    frame $l.$widget -bd 2
@@ -725,7 +725,7 @@ proc SolverSetup {} {
 }
 
 #
-# Output a string that can containg blanks etc to a file
+# Output a string that can containing blanks etc to a file
 #
 proc WriteComplexString {file string} {
     puts $file [string length $string]
@@ -733,7 +733,7 @@ proc WriteComplexString {file string} {
 }
 
 #
-# Read a string that can containg blanks etc to a file
+# Read a string that can containing blanks etc to a file
 #
 proc ReadComplexString {file stringname} {
     upvar $stringname string
@@ -953,7 +953,7 @@ proc ProcessUnknown {inputfilename outputfilename} {
 
     while { [gets $inputfile line] >= 0 } {
 
-	# Store comment lines for unkown variables
+	# Store comment lines for unknown variables
 	if { [string first "#" $line] == 0 } {
 	    if $CommentState { 
 		append comments "$line\n"

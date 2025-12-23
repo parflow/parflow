@@ -14,6 +14,8 @@
 # set the PARFLOW_DIR in the script for users.
 #
 
+
+
 # Appends to path if not path not already present
 function appendToPath {
    echo $PATH | grep -q $1
@@ -49,13 +51,14 @@ module load cray-hdf5-parallel
 module load cray-netcdf-hdf5parallel
 module load cray-tpsl
 module unload darshan
+module load cmake/3.14.4
 
 # Parflow installation directory
 if [[ ${PARFLOW_DIR+x} ]]
 then
    echo "Installing Parflow to $PARFLOW_DIR"
 else
-   echo "ERROR: Set PARFLOW_DIR to install directory befor running, something like:"
+   echo "ERROR: Set PARFLOW_DIR to install directory before running, something like:"
    echo "       export PARFLOW_DIR=/global/project/projectdirs/m2511/parflow/cori-3.6.0-2019-08-01"
    exit
 fi
@@ -63,11 +66,12 @@ fi
 mkdir -p ${PARFLOW_DIR}
 
 # Use some symbols set by Cray modules; hopefully a little more portable this way.
-export PARFLOW_HYPRE_DIR=${CRAY_TPSL_DIR}/INTEL/${PE_TPSL_GENCOMPILERS_INTEL_x86_64}/haswell
-export PARFLOW_SUNDIALS_DIR=${CRAY_TPSL_DIR}/INTEL/${PE_TPSL_GENCOMPILERS_INTEL_x86_64}/haswell
+#export PARFLOW_HYPRE_DIR=${CRAY_TPSL_DIR}/INTEL/${PE_TPSL_GENCOMPILERS_INTEL_x86_64}/haswell
+export PARFLOW_HYPRE_DIR=${PARFLOW_DIR}
 export PARFLOW_NETCDF_DIR=${CRAY_NETCDF_DIR}/INTEL/${PE_TPSL_GENCOMPILERS_INTEL_x86_64}
 export PARFLOW_HDF5_DIR=${CRAY_HDF5_DIR}/INTEL/${PE_TPSL_GENCOMPILERS_INTEL_x86_64}
 export PARFLOW_SILO_DIR=${PARFLOW_DIR}
+export HYPRE_DIR=${PARFLOW_DIR}
 export PARFLOW_SLURM_DIR=/usr
 export PARFLOW_TCL_DIR=/usr
 
@@ -109,9 +113,12 @@ then
    echo "*****************************************************************************"
    echo "Building in Silo"
    echo "*****************************************************************************"
-   
-   wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz
-   tar xf silo-4.10.2.tar.gz
+
+   if [ ! -f silo-4.10.2.tgz ]
+   then
+      wget https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz
+   fi
+   tar xf silo-4.10.2.tgz
    pushd silo-4.10.2
    CC=${PARFLOW_CC} CXX=${PARFLOW_CXX} ./configure --prefix=$PARFLOW_DIR \
      --enable-shared=no \
@@ -119,6 +126,38 @@ then
      --enable-fpzip=no
    make
    make install
+   popd
+fi
+
+if true
+then
+   #-----------------------------------------------------------------------------
+   # HYPRE build
+   #-----------------------------------------------------------------------------
+
+   echo "*****************************************************************************"
+   echo "Building in HYPRE"
+   echo "*****************************************************************************"
+
+   mkdir -p hypre
+   mkdir -p ${HYPRE_DIR}
+
+   pushd hypre
+
+   if [ ! v2.18.2.tar.gz ]
+   then
+      wget https://github.com/hypre-space/hypre/archive/v2.18.2.tar.gz
+   fi
+
+   tar xf v2.18.2.tar.gz 
+
+   pushd hypre-2.18.2/src
+
+   CC=cc ./configure --prefix=${HYPRE_DIR}
+   make 
+   make install
+
+   popd
    popd
 fi
 
@@ -216,6 +255,7 @@ then
 	-DTCL_LIBRARY=${PARFLOW_TCL_DIR}/lib64/libtcl8.6.so \
 	-DPARFLOW_LIBM="-lm" \
 	-DMPIEXEC_EXECUTABLE=$(which srun) \
+	-DPARFLOW_TEST_FORCE_MPIEXEC=true \
 	-DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR}
       
       

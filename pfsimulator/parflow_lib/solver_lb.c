@@ -1,11 +1,30 @@
-/*BHEADER*********************************************************************
-* (c) 1996   The Regents of the University of California
+/*BHEADER**********************************************************************
 *
-* See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
-* notice, contact person, and disclaimer.
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
 *
-* $Revision: 1.1.1.1 $
-*********************************************************************EHEADER*/
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 /****************************************************************************
  *
@@ -53,6 +72,12 @@ typedef struct {
   int print_satur;                           /* print saturations? */
   int print_concen;                          /* print concentrations? */
   int print_wells;                           /* print well data? */
+
+  int write_pdi_subsurf_data;                /* print subsurf data using PDI */
+  int write_pdi_press;                       /* print pressure using PDI */
+  int write_pdi_satur;                       /* print saturation using PDI */
+  int write_pdi_concen;                      /* print concentration using PDI */
+  // int write_pdi_wells;                       /* print wells using PDI */
 
 /* New member variables added for diffusion solver */
 /* double             CFL; */
@@ -261,6 +286,25 @@ void      SolverDiffusion()
     sprintf(file_postfix, "porosity");
     WritePFBinary(file_prefix, file_postfix,
                   ProblemDataPorosity(problem_data));
+  }
+
+  if (public_xtra->write_pdi_subsurf_data)
+  {
+    sprintf(file_postfix, "perm_x");
+    WritePDI(file_prefix, file_postfix, 0,
+             ProblemDataPermeabilityX(problem_data), 0, 0);
+
+    sprintf(file_postfix, "perm_y");
+    WritePDI(file_prefix, file_postfix, 0,
+             ProblemDataPermeabilityY(problem_data), 0, 0);
+
+    sprintf(file_postfix, "perm_y");
+    WritePDI(file_prefix, file_postfix, 0,
+             ProblemDataPermeabilityY(problem_data), 0, 0);
+
+    sprintf(file_postfix, "porosity");
+    WritePDI(file_prefix, file_postfix, 0,
+             ProblemDataPorosity(problem_data), 0, 0);
   }
 
   if (!amps_Rank(amps_CommWorld))
@@ -473,6 +517,16 @@ void      SolverDiffusion()
         any_file_dumped = 1;
       }
 
+      if (public_xtra->write_pdi_satur && dump_files && is_multiphase)
+      {
+        for (phase = 0; phase < ProblemNumPhases(problem); phase++)
+        {
+          sprintf(file_postfix, "satur.%01d.%05d", phase, file_number);
+          WritePDI(file_prefix, file_postfix, file_number, saturations[phase], 0, 0);
+        }
+        any_file_dumped = 1;
+      }
+
       /*-------------------------------------------------------------------
        * Print out the initial concentrations?
        *-------------------------------------------------------------------*/
@@ -488,6 +542,23 @@ void      SolverDiffusion()
                     file_number);
             WritePFSBinary(file_prefix, file_postfix, concentrations[indx],
                            drop_tol);
+            indx++;
+          }
+        }
+        any_file_dumped = 1;
+      }
+
+      if (public_xtra->write_pdi_concen && dump_files)
+      {
+        indx = 0;
+        for (phase = 0; phase < ProblemNumPhases(problem); phase++)
+        {
+          for (concen = 0; concen < ProblemNumContaminants(problem); concen++)
+          {
+            sprintf(file_postfix, "concen.%01d.%02d.%05d", phase, concen,
+                    file_number);
+            WritePDI(file_prefix, file_postfix, file_number,
+                     concentrations[indx], 1, drop_tol);
             indx++;
           }
         }
@@ -748,7 +819,8 @@ void      SolverDiffusion()
                               problem_data,
                               pressure,
                               saturations,
-                              phase));
+                              phase,
+                              t));
 
           phase_maximum = MaxPhaseFieldValue(phase_x_velocity[phase],
                                              phase_y_velocity[phase],
@@ -830,6 +902,12 @@ void      SolverDiffusion()
             WritePFBinary(file_prefix, file_postfix, total_z_velocity);
           }
 #endif
+        }
+
+        if (public_xtra->write_pdi_press)
+        {
+          sprintf(file_postfix, "press.%05d", file_number - 1);
+          WritePDI(file_prefix, file_postfix, file_number - 1, pressure, 0, 0);
         }
       }
     }
@@ -971,7 +1049,10 @@ void      SolverDiffusion()
          * this iteration.
          *--------------------------------------------------------------*/
 
-        if (print_press || print_satur || print_concen || print_wells)
+        if (print_press || print_satur || print_concen || print_wells ||
+            public_xtra->write_pdi_press ||
+            public_xtra->write_pdi_satur ||
+            public_xtra->write_pdi_concen)
         {
           dump_files = 0;
 
@@ -1082,6 +1163,16 @@ void      SolverDiffusion()
             }
             any_file_dumped = 1;
           }
+
+          if (public_xtra->write_pdi_satur && dump_files)
+          {
+            for (phase = 0; phase < ProblemNumPhases(problem); phase++)
+            {
+              sprintf(file_postfix, "satur.%01d.%05d", phase, file_number);
+              WritePDI(file_prefix, file_postfix, file_number, saturations[phase], 0, 0);
+            }
+            any_file_dumped = 1;
+          }
         }
       }
 
@@ -1136,6 +1227,23 @@ void      SolverDiffusion()
           }
           any_file_dumped = 1;
         }
+
+        if (public_xtra->write_pdi_concen && dump_files)
+        {
+          indx = 0;
+          for (phase = 0; phase < ProblemNumPhases(problem); phase++)
+          {
+            for (concen = 0; concen < ProblemNumContaminants(problem); concen++)
+            {
+              sprintf(file_postfix, "concen.%01d.%02d.%05d", phase, concen,
+                      file_number);
+              WritePDI(file_prefix, file_postfix, file_number,
+                       concentrations[indx], 1, drop_tol);
+              indx++;
+            }
+          }
+          any_file_dumped = 1;
+        }
       }
 
       /**********************************************************************/
@@ -1185,6 +1293,12 @@ void      SolverDiffusion()
       {
         sprintf(file_postfix, "press");
         WritePFBinary(file_prefix, file_postfix, pressure);
+      }
+
+      if (public_xtra->write_pdi_press)
+      {
+        sprintf(file_postfix, "press");
+        WritePDI(file_prefix, file_postfix, 0, pressure, 0, 0);
       }
     }
   }
@@ -1327,7 +1441,7 @@ PFModule *SolverDiffusionInitInstanceXtra()
 
   double       *temp_data, *temp_data_placeholder;
   int total_mobility_sz, pressure_sz, velocity_sz, satur_sz = 0,
-    concen_sz, temp_data_size, sz;
+      concen_sz, temp_data_size, sz;
   int is_multiphase;
 
   int i;
@@ -1612,8 +1726,12 @@ PFModule *SolverDiffusionInitInstanceXtra()
   PFModuleReNewInstanceType(AdvectionConcentrationInitInstanceXtraType,
                             (instance_xtra->advect_concen),
                             (NULL, NULL, temp_data_placeholder));
-  temp_data_placeholder += pfmax(PFModuleSizeOfTempData(instance_xtra->retardation),
-                                 PFModuleSizeOfTempData(instance_xtra->advect_concen));
+  int size_retardation = PFModuleSizeOfTempData(instance_xtra->retardation);
+  int size_advect = PFModuleSizeOfTempData(instance_xtra->advect_concen);
+
+  temp_data_placeholder += pfmax(size_retardation,
+                                 size_advect
+                                 );
 
   temp_data += temp_data_size;
 
@@ -1699,7 +1817,7 @@ PFModule   *SolverDiffusionNewPublicXtra(char *name)
   diag_solver_na = NA_NewNameArray("NoDiagScale MatDiagScale");
   sprintf(key, "%s.DiagSolver", name);
   switch_name = GetStringDefault(key, "NoDiagScale");
-  switch_value = NA_NameToIndex(diag_solver_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(diag_solver_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -1718,9 +1836,7 @@ PFModule   *SolverDiffusionNewPublicXtra(char *name)
 
     default:
     {
-      amps_Printf("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                  key);
-      exit(1);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(diag_solver_na);
@@ -1728,7 +1844,7 @@ PFModule   *SolverDiffusionNewPublicXtra(char *name)
   linear_solver_na = NA_NewNameArray("MGSemi PPCG PCG CGHS");
   sprintf(key, "%s.Linear", name);
   switch_name = GetStringDefault(key, "PPCG");
-  switch_value = NA_NameToIndex(linear_solver_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(linear_solver_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -1761,8 +1877,7 @@ PFModule   *SolverDiffusionNewPublicXtra(char *name)
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(linear_solver_na);
@@ -1799,12 +1914,7 @@ PFModule   *SolverDiffusionNewPublicXtra(char *name)
 
   sprintf(key, "%s.CompCompress", name);
   switch_name = GetStringDefault(key, "True");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid flag value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->comp_compress_flag = switch_value;
 
   NA_FreeNameArray(switch_na);

@@ -13,7 +13,7 @@
 # Usage:  extractlog <log_key> [-time] <log_files>
 #
 # This script extracts log file information from the files <log_files>
-# which begin and end with delimeters:
+# which begin and end with delimiters:
 #
 #    BEGIN Log Info (<log_key>)
 #      ...

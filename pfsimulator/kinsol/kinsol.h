@@ -319,7 +319,7 @@ enum { INEXACT_NEWTON, LINESEARCH };   /* globalstrategy */
  *                  less than eta_min = 1.e-4 .                   *
  *                                                                *
  * iopt[NO_MIN_EPS] (input) Set to 1 or greater to remove         *
- *                  protection agains eps becoming too small.     *
+ *                  protection against eps becoming too small.    *
  *                  This option is useful for debugging linear    *
  *                  and nonlinear solver interactions. Set to 0   *
  *                  for standard eps minimum value testing.       *
@@ -447,7 +447,7 @@ enum { INEXACT_NEWTON, LINESEARCH };   /* globalstrategy */
 *                                                                *
 *                                                                *
 *  INPUT_ERROR: one or more input parameters or arrays was in    *
-*               eror. See the listing in msgfp for further info  *
+*               error. See the listing in msgfp for further info *
 *                                                                *
 * LSOLV_NO_MEM: The linear solver memory pointer (lmem) was      *
 *             received as NULL. The return value from the linear *
@@ -562,7 +562,7 @@ typedef struct KINMemRec {
   long int kin_nbcf;       /* number of times the beta condition could not
                             *   be met in LineSearch                      */
   long int kin_nbktrk;     /*  number of backtracks                       */
-  long int kin_ncscmx;     /* number of consecutive max stepl occurences
+  long int kin_ncscmx;     /* number of consecutive max stepl occurrences
                             *   in the global strategy */
 
   /* Vectors of length Neq */

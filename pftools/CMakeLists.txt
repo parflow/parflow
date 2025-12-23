@@ -41,7 +41,7 @@ file (GLOB TCL_SRC *.tcl)
 install(FILES ${TCL_SRC} DESTINATION bin)
 
 set(SCRIPTS pfhelp pfmvio pfbtosa pfbtovis pfbtosilo pfsbtosa pfstrip)
-install(FILES ${SCRIPTS} DESTINATION bin)
+install(PROGRAMS ${SCRIPTS} DESTINATION bin)
 
 add_executable(pfwell_cat pfwell_cat.c well.c)
 install(TARGETS pfwell_cat DESTINATION bin)

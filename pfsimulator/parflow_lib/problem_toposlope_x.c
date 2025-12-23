@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include "parflow.h"
 #include "parflow_netcdf.h"
@@ -158,7 +158,7 @@ void         XSlope(
            * SGS this does not match the loop in nl_function_eval.  That
            * loop is going over more than the inner geom locations.  Is that
            * important?  Originally the x_slope array was not being allocated
-           * by ctalloc, just alloc and unitialized memory reads were being
+           * by ctalloc, just alloc and uninitialized memory reads were being
            * caused.   Switched that to be ctalloc to init to 0 to "hack" a
            * fix but is this really a sign of deeper indexing problems?
            */
@@ -166,7 +166,7 @@ void         XSlope(
            * not ALL nodes (including ghost) as in nl fn eval and now the overland eval
            * routines.  THis is fine in the KW approximation which only needs interior values
            * but for diffusive wave and for the terrain following grid (which uses the surface
-           * topo slopes as subsurface slopes) this can cuase bddy problems.  */
+           * topo slopes as subsurface slopes) this can cause bddy problems.  */
 
           data = SubvectorData(ps_sub);
           GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
@@ -507,7 +507,7 @@ PFModule  *XSlopeNewPublicXtra()
 
   switch_name = GetString("TopoSlopesX.Type");
 
-  public_xtra->type = NA_NameToIndex(type_na, switch_name);
+  public_xtra->type = NA_NameToIndexExitOnError(type_na, switch_name, "TopoSlopesX.Type");
 
   switch ((public_xtra->type))
   {
@@ -546,13 +546,7 @@ PFModule  *XSlopeNewPublicXtra()
       switch_name = GetString("TopoSlopesX.PredefinedFunction");
 
       dummy1->function_type =
-        NA_NameToIndex(function_type_na, switch_name);
-
-      if (dummy1->function_type < 0)
-      {
-        InputError("Error: invalid function <%s> for key <%s>\n",
-                   switch_name, key);
-      }
+        NA_NameToIndexExitOnError(function_type_na, switch_name, "TopoSlopesX.PredefinedFunction");
 
       (public_xtra->data) = (void*)dummy1;
 

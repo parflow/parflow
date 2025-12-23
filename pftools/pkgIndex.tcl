@@ -3,7 +3,8 @@ if {![package vsatisfies [package provide Tcl] 8.5]} {puts "ERROR : pftools requ
 
 package ifneeded parflow 1.0 [list apply {dir {
     uplevel 1 [list source [file join $dir parflow.tcl]]
-    uplevel 1 [list source [file join $dir pfvtk.tcl]] 
+    uplevel 1 [list source [file join $dir pfvtk.tcl]]
+    uplevel 1 [list source [file join $dir pftformat.tcl]] 
     if { [file exists [file join $dir parflow[info sharedlibextension]]] } { 
 	load [file join $dir parflow[info sharedlibextension]]
     } else {

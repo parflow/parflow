@@ -1,6 +1,6 @@
 #BHEADER**********************************************************************
 #
-#  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+#  Copyright (c) 1995-2024, Lawrence Livermore National Security,
 #  LLC. Produced at the Lawrence Livermore National Laboratory. Written
 #  by the Parflow Team (see the CONTRIBUTORS file)
 #  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
@@ -42,7 +42,7 @@
 #
 # Structure of the meta entry:
 #
-# <meta_entry_path>.label     # Label the preceed the entry
+# <meta_entry_path>.label     # Label the precede the entry
 # <meta_entry_path>.entry     # Entry 
 #
 

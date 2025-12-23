@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /*****************************************************************************
 *
 * Header info for the Grid structures
@@ -103,7 +103,7 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 #define SubgridArraySubgrid(subgrid_array, i) \
-  ((Subgrid*)SubregionArraySubregion(subgrid_array, i))
+        ((Subgrid*)SubregionArraySubregion(subgrid_array, i))
 #define SubgridArraySize(subgrid_array)  SubregionArraySize(subgrid_array)
 
 /*--------------------------------------------------------------------------
@@ -128,18 +128,18 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 #define SubgridDX(subgrid) \
-  RealSpaceDX(SubgridRX(subgrid))
+        RealSpaceDX(SubgridRX(subgrid))
 #define SubgridDY(subgrid) \
-  RealSpaceDY(SubgridRY(subgrid))
+        RealSpaceDY(SubgridRY(subgrid))
 #define SubgridDZ(subgrid) \
-  RealSpaceDZ(SubgridRZ(subgrid))
+        RealSpaceDZ(SubgridRZ(subgrid))
 
 #define SubgridX(subgrid) \
-  RealSpaceX(SubgridIX(subgrid), SubgridRX(subgrid))
+        RealSpaceX(SubgridIX(subgrid), SubgridRX(subgrid))
 #define SubgridY(subgrid) \
-  RealSpaceY(SubgridIY(subgrid), SubgridRY(subgrid))
+        RealSpaceY(SubgridIY(subgrid), SubgridRY(subgrid))
 #define SubgridZ(subgrid) \
-  RealSpaceZ(SubgridIZ(subgrid), SubgridRZ(subgrid))
+        RealSpaceZ(SubgridIZ(subgrid), SubgridRZ(subgrid))
 
 /*--------------------------------------------------------------------------
  * Looping macros:
@@ -152,32 +152,32 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 #define NewSubgrid(x, y, z, nx, ny, nz, rx, ry, rz, process) \
-  ((Subgrid*)NewSubregion(x, y, z, nx, ny, nz, 1, 1, 1, rx, ry, rz, process))
+        ((Subgrid*)NewSubregion(x, y, z, nx, ny, nz, 1, 1, 1, rx, ry, rz, process))
 
 #define NewSubgridArray()  ((SubgridArray*)NewSubregionArray())
 
 #define FreeSubgrid(subgrid)  FreeSubregion((Subregion*)subgrid)
 
 #define FreeSubgridArray(subgrid_array) \
-  FreeSubregionArray((SubregionArray*)subgrid_array)
+        FreeSubregionArray((SubregionArray*)subgrid_array)
 
 #define DuplicateSubgrid(subgrid) \
-  ((Subgrid*)DuplicateSubregion((Subregion*)subgrid))
+        ((Subgrid*)DuplicateSubregion((Subregion*)subgrid))
 
 #define AppendSubgrid(subgrid, subgrid_array) \
-  AppendSubregion((Subregion*)subgrid, (SubregionArray*)subgrid_array)
+        AppendSubregion((Subregion*)subgrid, (SubregionArray*)subgrid_array)
 
-#define AppendSubgridArray(subgrid_array_0, subgrid_array_1) \
-  AppendSubregionArray((SubregionArray*)subgrid_array_0,     \
-                       (SubregionArray*)subgrid_array_1)
+#define AppendSubgridArray(subgrid_array_0, subgrid_array_1)       \
+        AppendSubregionArray((SubregionArray*)subgrid_array_0,     \
+                             (SubregionArray*)subgrid_array_1)
 
 #define ConvertToSubregion(subgrid)  ((Subregion*)subgrid)
 
-#define SubgridEltIndex(subgrid, x, y, z) \
-  (((x) - SubgridIX(subgrid)) +           \
-   (((y) - SubgridIY(subgrid)) +          \
-    (((z) - SubgridIZ(subgrid))) *        \
-    SubgridNY(subgrid)) *                 \
-   SubgridNX(subgrid))
+#define SubgridEltIndex(subgrid, x, y, z)       \
+        (((x) - SubgridIX(subgrid)) +           \
+         (((y) - SubgridIY(subgrid)) +          \
+          (((z) - SubgridIZ(subgrid))) *        \
+          SubgridNY(subgrid)) *                 \
+         SubgridNX(subgrid))
 
 #endif

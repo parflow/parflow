@@ -39,6 +39,7 @@
 #include <cassert>
 #include <cmath>
 #include <limits>
+#include <cfloat>
 
 /*
  * The mask directions.
@@ -334,6 +335,7 @@ int main(int argc, char **argv)
   int bottom;
   int side;
   float zTop,zBot;
+  float dx, dy;
 
   try {  
 
@@ -343,10 +345,10 @@ int main(int argc, char **argv)
     TCLAP::ValueArg<string> inFilenameArg("","mask","Mask filename",false,"mask.pfb","string");
     cmd.add( inFilenameArg );
 
-    TCLAP::ValueArg<string> vtkOutFilenameArg("","vtk","VTK ouput filename",false,"output.vtk","string");
+    TCLAP::ValueArg<string> vtkOutFilenameArg("","vtk","VTK output filename",false,"output.vtk","string");
     cmd.add( vtkOutFilenameArg );
 
-    TCLAP::ValueArg<string> pfsolOutFilenameArg("","pfsol","PFSOL ouput filename",true,"output.pfsol","string");
+    TCLAP::ValueArg<string> pfsolOutFilenameArg("","pfsol","PFSOL output filename",true,"output.pfsol","string");
     cmd.add( pfsolOutFilenameArg );
 
     TCLAP::ValueArg<int> bottomArg("","bottom-patch-label","Bottom index",false,2,"int");
@@ -355,11 +357,17 @@ int main(int argc, char **argv)
     TCLAP::ValueArg<int> sideArg("","side-patch-label","Side index",false,3,"int");
     cmd.add( sideArg );
 
-    TCLAP::ValueArg<float> zTopArg("","z-top","Set top of domain",false,NAN,"float");
+    TCLAP::ValueArg<float> zTopArg("","z-top","Set top of domain",false,FLT_MIN,"float");
     cmd.add( zTopArg );
 
-    TCLAP::ValueArg<float> zBotArg("","z-bottom","Set bottom of domain",false,NAN,"float");
+    TCLAP::ValueArg<float> zBotArg("","z-bottom","Set bottom of domain",false,FLT_MIN,"float");
     cmd.add( zBotArg );
+
+    TCLAP::ValueArg<float> dxArg("","dx","Set DX",false,FLT_MIN,"float");
+    cmd.add( dxArg );
+    
+    TCLAP::ValueArg<float> dyArg("","dy","Set DY",false,FLT_MIN,"float");
+    cmd.add( dyArg );
 
     TCLAP::ValueArg<string>* maskFilenamesArgs[g_maskNames.size()];
 
@@ -384,7 +392,7 @@ int main(int argc, char **argv)
     }
     else
     {
-      for(int i = 0; i < g_maskNames.size (); ++i)
+      for(int i = 0; i < g_maskNames.size(); ++i)
       {
 	inFilenames[i] = maskFilenamesArgs[i] -> getValue();
       }
@@ -396,6 +404,8 @@ int main(int argc, char **argv)
     side = sideArg.getValue();;
     zTop = zTopArg.getValue();;
     zBot = zBotArg.getValue();;
+    dx = dxArg.getValue();
+    dy = dyArg.getValue();
 
   }
   catch (TCLAP::ArgException &e)  // catch any exceptions
@@ -405,9 +415,9 @@ int main(int argc, char **argv)
 
   int nx, ny, nz;
   double sx = 0, sy = 0, sz = 0;
-  double dx, dy, dz;
+  double dz;
 
-  std::vector<Databox*> databox(inFilenames[0].size());
+  std::vector<Databox*> databox(inFilenames.size());
 
   // patch_names = GetStringDefault(key,
   // "left right front back bottom top");
@@ -418,7 +428,7 @@ int main(int argc, char **argv)
   } 
   else
   {
-    for(int i = 0; i < inFilenames.size (); ++i)
+    for(int i = 0; i < inFilenames.size(); ++i)
     {
       char* c_filename = strdup(inFilenames[i].c_str());
       databox[i] = loadFile(c_filename);
@@ -432,26 +442,38 @@ int main(int argc, char **argv)
   sx = DataboxX(databox[0]);
   sy = DataboxY(databox[0]);
 
-  dx = DataboxDx(databox[0]);
-  dy = DataboxDy(databox[0]);
+  if(dx == FLT_MIN)
+  {
+    dx = DataboxDx(databox[0]);
+  }
+
+  if(dy == FLT_MIN)
+  {
+    dy = DataboxDy(databox[0]);
+  }
 
   // If user specifies Top/Bottom on command line override defaults
-  if(isnan(zTop))
+  if(zBot == FLT_MIN)
   {
     sz = 0.0;
   }
   else
   {
-    sz = zTop;
+    sz = zBot;
   }
 
-  if(isnan(zBot))
+  if(zTop == FLT_MIN)
   {
     dz = DataboxDz(databox[0]);
   }
   else
   {
-    dz = zBot - sz;
+    if ( zTop < sz )
+    {
+      cerr << "Top must be > bottom (top is " << zTop << " bottom " << sz<< "\n";
+      exit(-2);
+    }
+    dz = zTop - sz;
   }
 
   cout << "Domain Size = (" << nx << "," << ny << "," << nz << ")" << std::endl;
@@ -628,6 +650,7 @@ int main(int argc, char **argv)
 	// Front
 	if ( (j==0) || (indicators[0][ triangleIndex(i,j-1,0) ] == 0) )
 	{
+
 	  Simplify::Triangle triangle;
 	  triangle.patch = indicators[FRONT][ triangleIndex(i,j,0) ];
 	  g_patchLabels.insert(triangle.patch);

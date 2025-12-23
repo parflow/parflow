@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=42.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pftools"
+version = "1.3.14"
+description = "A Python package creating an interface with the ParFlow hydrologic model."
+readme = "README.md"
+license = {text = "BSD"}
+authors = [
+    {name = "HydroFrame", email = "parflow@parflow.org"}
+]
+maintainers = [
+    {name = "HydroFrame", email = "parflow@parflow.org"}
+]
+keywords = ["ParFlow", "groundwater model", "surface water model"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD License",
+]
+requires-python = ">=3.7"
+dependencies = [
+    "pyyaml==6.0.1",
+    "xarray",
+    "pandas",
+    "numba",
+    "numpy",
+    "dask"
+]
+
+[project.optional-dependencies]
+all = [
+    "imageio>=2.9.0",
+    "h5py",
+    "twine",
+    "black"
+]
+pfsol = ["imageio>=2.9.0"]
+pdi = ["h5py"]
+dev = ["twine", "black"]
+
+[project.urls]
+Homepage = "https://github.com/parflow/parflow/tree/master/pftools/python"
+Repository = "https://github.com/parflow/parflow"
+Documentation = "https://parflow.readthedocs.io/en/latest/"
+
+[project.entry-points."xarray.backends"]
+parflow = "parflow.tools.pf_backend:ParflowBackendEntrypoint"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["*"]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"*" = ["*.txt", "*.md", "*.yml", "*.yaml"]

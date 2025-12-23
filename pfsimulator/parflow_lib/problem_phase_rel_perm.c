@@ -1,33 +1,34 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include "parflow.h"
 
+#include <string.h>
 #include <assert.h>
 
 /*--------------------------------------------------------------------------
@@ -196,6 +197,9 @@ VanGTable *VanGComputeTable(
     }
   }
 
+  // GCC 11.3.0 WITH optimization warns that del is possibly used without initialization.
+  // This silences the warning.   Looks like a false warning, what is the opt doing?
+  memset(del, num_sample_points + 1, sizeof(double));
   // begin monotonic spline (see Fritsch and Carlson, SIAM J. Num. Anal., 17 (2), 1980)
   for (index = 0; index < num_sample_points; index++)
   {
@@ -349,6 +353,7 @@ static inline double VanGLookupSpline(
   return rel_perm;
 }
 
+#ifdef PF_PRINT_VG_TABLE
 static inline double VanGLookupLinear(
                                       double     pressure_head,
                                       VanGTable *lookup_table,
@@ -359,6 +364,7 @@ static inline double VanGLookupLinear(
   int num_sample_points = lookup_table->num_sample_points;
   double min_pressure_head = lookup_table->min_pressure_head;
   int max = num_sample_points + 1;
+
   PF_UNUSED(max);
 
   // This table goes from 0 to fabs(min_pressure_head)
@@ -391,6 +397,7 @@ static inline double VanGLookupLinear(
 
   return rel_perm;
 }
+#endif
 
 
 /*--------------------------------------------------------------------------
@@ -498,7 +505,7 @@ void         PhaseRelPerm(
                            nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               prdat[ipr] = values[ir];
             });
           }
@@ -508,7 +515,7 @@ void         PhaseRelPerm(
                            nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               prdat[ipr] = 0.0;
             });
           }     /* End else clause */
@@ -687,11 +694,11 @@ void         PhaseRelPerm(
                       /* Table Lookup */
 
                       int ipr = SubvectorEltIndex(pr_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipp = SubvectorEltIndex(pp_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipd = SubvectorEltIndex(pd_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
 
                       if (ppdat[ipp] >= 0.0)
                         prdat[ipr] = 1.0;
@@ -715,7 +722,7 @@ void         PhaseRelPerm(
                     double min_pressure_head = lookup_table->min_pressure_head;
                     int num_sample_points = lookup_table->num_sample_points;
                     int max = num_sample_points + 1;
-		    PF_UNUSED(max);
+                    PF_UNUSED(max);
 
                     GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                                    nx, ny, nz,
@@ -723,11 +730,11 @@ void         PhaseRelPerm(
                       /* Table Lookup */
 
                       int ipr = SubvectorEltIndex(pr_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipp = SubvectorEltIndex(pp_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipd = SubvectorEltIndex(pd_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
 
                       if (ppdat[ipp] >= 0.0)
                         prdat[ipr] = 1.0;
@@ -761,11 +768,11 @@ void         PhaseRelPerm(
                                nx, ny, nz,
                 {
                   int ipr = SubvectorEltIndex(pr_sub,
-                                          i + fdir[0], j + fdir[1], k + fdir[2]);
+                                              i + fdir[0], j + fdir[1], k + fdir[2]);
                   int ipp = SubvectorEltIndex(pp_sub,
-                                          i + fdir[0], j + fdir[1], k + fdir[2]);
+                                              i + fdir[0], j + fdir[1], k + fdir[2]);
                   int ipd = SubvectorEltIndex(pd_sub,
-                                          i + fdir[0], j + fdir[1], k + fdir[2]);
+                                              i + fdir[0], j + fdir[1], k + fdir[2]);
 
                   if (ppdat[ipp] >= 0.0)
                     prdat[ipr] = 1.0;
@@ -799,11 +806,11 @@ void         PhaseRelPerm(
                       /* Table Lookup */
 
                       int ipr = SubvectorEltIndex(pr_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipp = SubvectorEltIndex(pp_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipd = SubvectorEltIndex(pd_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
 
                       if (ppdat[ipp] >= 0.0)
                         prdat[ipr] = 0.0;
@@ -826,7 +833,7 @@ void         PhaseRelPerm(
                     double min_pressure_head = lookup_table->min_pressure_head;
                     int num_sample_points = lookup_table->num_sample_points;
                     int max = num_sample_points + 1;
-		    PF_UNUSED(max);
+                    PF_UNUSED(max);
 
                     GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                                    nx, ny, nz,
@@ -834,11 +841,11 @@ void         PhaseRelPerm(
                       /* Table Lookup */
 
                       int ipr = SubvectorEltIndex(pr_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipp = SubvectorEltIndex(pp_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipd = SubvectorEltIndex(pd_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
 
                       if (ppdat[ipp] >= 0.0)
                         prdat[ipr] = 0.0;
@@ -878,11 +885,11 @@ void         PhaseRelPerm(
                                nx, ny, nz,
                 {
                   int ipr = SubvectorEltIndex(pr_sub,
-                                          i + fdir[0], j + fdir[1], k + fdir[2]);
+                                              i + fdir[0], j + fdir[1], k + fdir[2]);
                   int ipp = SubvectorEltIndex(pp_sub,
-                                          i + fdir[0], j + fdir[1], k + fdir[2]);
+                                              i + fdir[0], j + fdir[1], k + fdir[2]);
                   int ipd = SubvectorEltIndex(pd_sub,
-                                          i + fdir[0], j + fdir[1], k + fdir[2]);
+                                              i + fdir[0], j + fdir[1], k + fdir[2]);
 
                   if (ppdat[ipp] >= 0.0)
                     prdat[ipr] = 0.0;
@@ -951,11 +958,11 @@ void         PhaseRelPerm(
                            nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipp = SubvectorEltIndex(pp_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipd = SubvectorEltIndex(pd_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
 
               int n_index = SubvectorEltIndex(n_values_sub, i, j, k);
               int alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
@@ -982,11 +989,11 @@ void         PhaseRelPerm(
                            nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipp = SubvectorEltIndex(pp_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipd = SubvectorEltIndex(pd_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
 
               int n_index = SubvectorEltIndex(n_values_sub, i, j, k);
               int alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
@@ -1082,7 +1089,7 @@ void         PhaseRelPerm(
                     double min_pressure_head = lookup_table->min_pressure_head;
                     int num_sample_points = lookup_table->num_sample_points;
                     int max = num_sample_points + 1;
-		    PF_UNUSED(max);
+                    PF_UNUSED(max);
 
                     GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                     {
@@ -1185,7 +1192,7 @@ void         PhaseRelPerm(
                     double min_pressure_head = lookup_table->min_pressure_head;
                     int num_sample_points = lookup_table->num_sample_points;
                     int max = num_sample_points + 1;
-		    PF_UNUSED(max);
+                    PF_UNUSED(max);
 
                     GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                     {
@@ -1397,11 +1404,11 @@ void         PhaseRelPerm(
                            nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipp = SubvectorEltIndex(pp_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipd = SubvectorEltIndex(pd_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
 
               if (ppdat[ipp] >= 0.0)
                 prdat[ipr] = 1.0;
@@ -1419,11 +1426,11 @@ void         PhaseRelPerm(
                            nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipp = SubvectorEltIndex(pp_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipd = SubvectorEltIndex(pd_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
 
               if (ppdat[ipp] >= 0.0)
                 prdat[ipr] = 0.0;
@@ -1562,9 +1569,9 @@ void         PhaseRelPerm(
                            nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipp = SubvectorEltIndex(pp_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               if (ppdat[ipp] == 0.0)
                 prdat[ipr] = region_coeffs[0];
               else
@@ -1583,9 +1590,9 @@ void         PhaseRelPerm(
                            nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipp = SubvectorEltIndex(pp_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               if (ppdat[ipp] == 0.0)
                 prdat[ipr] = 0.0;
               else
@@ -1721,7 +1728,7 @@ PFModule  *PhaseRelPermInitInstanceXtra(
         ReadPFBinary((dummy1->alpha_file),
                      (dummy1->alpha_values));
         handle = InitVectorUpdate(dummy1->alpha_values, VectorUpdateAll);
-        FinalizeVectorUpdate(handle);     // This is needed to initalize ghost cells after reading the pfb
+        FinalizeVectorUpdate(handle);     // This is needed to initialize ghost cells after reading the pfb
 
         ReadPFBinary((dummy1->n_file),
                      (dummy1->n_values));
@@ -1811,7 +1818,7 @@ PFModule   *PhaseRelPermNewPublicXtra()
   public_xtra = ctalloc(PublicXtra, 1);
 
   switch_name = GetString("Phase.RelPerm.Type");
-  public_xtra->type = NA_NameToIndex(type_na, switch_name);
+  public_xtra->type = NA_NameToIndexExitOnError(type_na, switch_name, "Phase.RelPerm.Type");
 
   NA_FreeNameArray(type_na);
 
@@ -1897,14 +1904,7 @@ PFModule   *PhaseRelPermNewPublicXtra()
 
             sprintf(key, "Geom.%s.RelPerm.InterpolationMethod", region);
             switch_name = GetStringDefault(key, "Spline");
-            int interpolation_method = NA_NameToIndex(type_na, switch_name);
-
-            if (interpolation_method < 0)
-            {
-              InputError("Error: invalid type <%s> for key <%s>\n",
-                         switch_name, key);
-            }
-
+            int interpolation_method = NA_NameToIndexExitOnError(type_na, switch_name, key);
             NA_FreeNameArray(type_na);
 
             dummy1->lookup_tables[ir] = VanGComputeTable(
@@ -2032,8 +2032,7 @@ PFModule   *PhaseRelPermNewPublicXtra()
 
     default:
     {
-      InputError("Error: invalid type <%s> for key <%s>\n",
-                 switch_name, key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }      /* End switch */
 

@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /*****************************************************************************
 *
 * The main routine
@@ -54,15 +54,10 @@ using namespace SAMRAI;
 
 #endif
 
-
 #include "Parflow.hxx"
 
-#ifdef HAVE_CEGDB
-#include <cegdb.h>
-#endif
-
-#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
-#include "pf_cudamain.h"
+#if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
+#include "pf_devices.h"
 #endif
 
 #ifdef PARFLOW_HAVE_ETRACE
@@ -103,53 +98,62 @@ int main(int argc, char *argv [])
 #ifdef HAVE_SAMRAI
     if (amps_EmbeddedInit())
     {
-      amps_Printf("Error: amps_EmbeddedInit initalization failed\n");
+      amps_Printf("Error: amps_EmbeddedInit initialization failed\n");
       exit(1);
     }
 #else
     if (amps_Init(&argc, &argv))
     {
-      amps_Printf("Error: amps_Init initalization failed\n");
+      amps_Printf("Error: amps_Init initialization failed\n");
       exit(1);
     }
 #endif
 
-#ifdef HAVE_CEGDB
-    cegdb(&argc, &argv, amps_Rank(MPI_CommWorld));
-#endif
-
-#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
+    /* Set the destination stream for PF output/logging */
+    amps_SetConsole(stdout);
 
 #ifndef NDEBUG
     /*-----------------------------------------------------------------------
-    * Wait for debugger if MPI_DEBUG_RANK environment variable is set
-    *-----------------------------------------------------------------------*/
-    if(getenv("MPI_DEBUG_RANK") != NULL) {
-      const int mpi_debug = atoi(getenv("MPI_DEBUG_RANK"));
-      if(mpi_debug == amps_Rank(amps_CommWorld)){
+     * Wait for debugger if PARFLOW_DEBUG_RANK environment variable is set
+     *-----------------------------------------------------------------------*/
+    if (getenv("PARFLOW_DEBUG_RANK") != NULL)
+    {
+      const int mpi_debug = atoi(getenv("PARFLOW_DEBUG_RANK"));
+      if (mpi_debug == amps_Rank(amps_CommWorld))
+      {
         volatile int i = 0;
-        amps_Printf("MPI_DEBUG_RANK environment variable found.\n");
+        amps_Printf("PARFLOW_DEBUG_RANK environment variable found.\n");
         amps_Printf("Attach debugger to PID %ld (MPI rank %d) and set var i = 1 to continue\n", (long)getpid(), mpi_debug);
-        while(i == 0) {/*  change 'i' in the  debugger  */}
+        while (i == 0)
+        {              /*  change 'i' in the  debugger  */
+        }
       }
       amps_Sync(amps_CommWorld);
     }
 #endif // !NDEBUG
 
     /*-----------------------------------------------------------------------
-    * Check CUDA compute capability, set device, and initialize RMM allocator
-    *-----------------------------------------------------------------------*/
+     * Initialize acceleration architectures
+     *-----------------------------------------------------------------------*/
+#if defined(PARFLOW_HAVE_KOKKOS)
+    kokkosInit();
+#elif defined(PARFLOW_HAVE_CUDA)
+    /*-----------------------------------------------------------------------
+     * Check CUDA compute capability, set device, and initialize RMM allocator
+     *-----------------------------------------------------------------------*/
     {
       // CUDA
       if (!amps_Rank(amps_CommWorld))
       {
-        CUDA_ERR(cudaSetDevice(0));  
-      }else{
+        CUDA_ERR(cudaSetDevice(0));
+      }
+      else
+      {
         int num_devices = 0;
         CUDA_ERR(cudaGetDeviceCount(&num_devices));
         CUDA_ERR(cudaSetDevice(amps_node_rank % num_devices));
       }
-    
+
       int device;
       CUDA_ERR(cudaGetDevice(&device));
 
@@ -162,28 +166,30 @@ int main(int argc, char *argv [])
 
       if (props.major < 6)
       {
-        amps_Printf("\nError: The GPU compute capability %d.%d of %s is not sufficient.\n",props.major,props.minor,props.name);
+        amps_Printf("\nError: The GPU compute capability %d.%d of %s is not sufficient.\n", props.major, props.minor, props.name);
         amps_Printf("\nThe minimum required GPU compute capability is 6.0.\n");
         exit(1);
       }
+    }
+#endif // PARFLOW_HAVE_KOKKOS
+
+    /*-----------------------------------------------------------------------
+     * Initialize RMM pool allocator
+     *-----------------------------------------------------------------------*/
 
 #ifdef PARFLOW_HAVE_RMM
-      // RMM
-      rmmOptions_t rmmOptions;
-      rmmOptions.allocation_mode = (rmmAllocationMode_t) (PoolAllocation | CudaManagedMemory);
-      rmmOptions.initial_pool_size = 1; // size = 0 initializes half the device memory
-      rmmOptions.enable_logging = false;
-      RMM_ERR(rmmInitialize(&rmmOptions));
-#endif // PARFLOW_HAVE_RMM
-    }
-#endif // PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
+    amps_rmmInit();
+#endif
+
+#ifdef PARFLOW_HAVE_UMPIRE
+    amps_umpireInit();
+#endif
 
     wall_clock_time = amps_Clock();
 
     /*-----------------------------------------------------------------------
      * Command line arguments
      *-----------------------------------------------------------------------*/
-
 
     char *restart_read_dirname = NULL;
     int is_from_restart = FALSE;
@@ -238,7 +244,7 @@ int main(int argc, char *argv [])
     {
       char filename[2048];
       sprintf(filename, "%s.%06d.etrace", input_name, amps_Rank(MPI_CommWorld));
-      init_tracefile (filename);
+      init_tracefile(filename);
     }
 #endif
 
@@ -315,7 +321,7 @@ int main(int argc, char *argv [])
       else
       {
         TBOX_ERROR("restart_interval > 0, but key `restart_write_dirname'"
-                   << " not specifed in input file");
+                   << " not specified in input file");
       }
     }
 
@@ -410,7 +416,6 @@ int main(int argc, char *argv [])
 
     wall_clock_time = amps_Clock() - wall_clock_time;
 
-
     IfLogging(0)
     {
       if (!amps_Rank(amps_CommWorld))
@@ -486,10 +491,14 @@ int main(int argc, char *argv [])
 #endif
 
   /*-----------------------------------------------------------------------
-  * Shutdown RMM pool allocator
-  *-----------------------------------------------------------------------*/
-#if (PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA) && defined(PARFLOW_HAVE_RMM)
-    RMM_ERR(rmmFinalize());
+   * Shutdown Kokkos
+   *-----------------------------------------------------------------------*/
+#ifdef PARFLOW_HAVE_RMM
+  amps_rmmFinalize();
+#endif
+
+#ifdef PARFLOW_HAVE_KOKKOS
+  kokkosFinalize();
 #endif
 
   return 0;
