@@ -15,6 +15,7 @@ def project_info():
         "default_dtype": "float64",
         "use_cpu": False,
         "use_cuda": True,
+        "use_manual_exec_cfg_cuda": True,
         "use_openmp": False,
         "target": ps.Target.CUDA,
     }
