@@ -1,8 +1,10 @@
-cmake_minimum_required (VERSION 3.14)
+cmake_minimum_required (VERSION 3.22)
 
-project (PARFLOW LANGUAGES C Fortran CXX)
+project (PARFLOW VERSION 3.14.1 LANGUAGES C Fortran CXX)
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/")
+
+#cmake_policy(SET CMP0144 NEW)
 
 #-----------------------------------------------------------------------------
 # Set standard compiler flagsx
@@ -46,6 +48,7 @@ set_property(CACHE PARFLOW_ACCELERATOR_BACKEND PROPERTY STRINGS none cuda kokkos
 
 if(PARFLOW_ACCELERATOR_BACKEND STREQUAL "none")
 elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
+   message(STATUS "ACCELERATOR: CUDA backend selected")
   set(PARFLOW_HAVE_CUDA "yes")
 
   if(NOT DEFINED KOKKOS_ROOT)
@@ -74,15 +77,42 @@ elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
     set(KOKKOS_INCLUDE "${KOKKOS_ROOT}/include")
     set(PARFLOW_HAVE_KOKKOS "yes")
   endif(NOT DEFINED KOKKOS_ROOT)
+
 elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "kokkos")
+  # Check Kokkos installation root
   if(DEFINED KOKKOS_ROOT)
+     # Find and configure Kokkos
     find_package(Kokkos REQUIRED HINTS ${KOKKOS_ROOT})
     set(KOKKOS_INCLUDE "${KOKKOS_ROOT}/include")
     set(PARFLOW_HAVE_KOKKOS "yes")
-  else(DEFINED KOKKOS_ROOT)
+
+    # Select the active Kokkos backend
+    if(Kokkos_ENABLE_CUDA)
+      message(STATUS "ACCELERATOR: Kokkos-enabled CUDA backend selected")
+      set(KOKKOS_ENABLE_CUDA "yes")
+
+    elseif(Kokkos_ENABLE_HIP)
+      message(STATUS "ACCELERATOR: Kokkos-enabled HIP backend selected")
+      set(KOKKOS_ENABLE_HIP "yes")
+
+    elseif(Kokkos_ENABLE_SYCL)
+      message(STATUS "ACCELERATOR: Kokkos-enabled SYCL backend selected")
+      set(KOKKOS_ENABLE_SYCL "yes")
+
+    elseif(Kokkos_ENABLE_OPENMP_TARGET)
+      message(STATUS "ACCELERATOR: Kokkos-enabled OpenMP target-offload backend selected")
+      set(KOKKOS_ENABLE_OPENMP_TARGET "yes")
+
+    else(Kokkos_ENABLE_CUDA)  # host-only backend
+      message(STATUS "Kokkos host-only backend selected")
+      set(KOKKOS_ENABLE_SERIAL "yes")
+    endif(Kokkos_ENABLE_CUDA)  # end Kokkos active backend select
+
+  else(DEFINED KOKKOS_ROOT)  # KOKKOS_ROOT not set
     message(FATAL_ERROR "ERROR: KOKKOS_ROOT not specified with PARFLOW_ACCELERATOR_BACKEND=kokkos")
-  endif(DEFINED KOKKOS_ROOT)
-elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "omp")
+  endif(DEFINED KOKKOS_ROOT)  # end Kokkos root check
+
+  elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "omp")
   message(STATUS "ACCELERATOR: Compiling ParFlow with backend accelerator OpenMP")
   # Enable C and CXX -fopenmp flag, enable ParFlow defines.
   find_package(OpenMP REQUIRED)
@@ -90,39 +120,33 @@ elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "omp")
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
   set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${OpenMP_Fortran_FLAGS}")
   set(PARFLOW_HAVE_OMP "yes")
-else()
+
+else(PARFLOW_ACCELERATOR_BACKEND STREQUAL "none")
   message(FATAL_ERROR "ERROR: Unknown backend type! PARFLOW_ACCELERATOR_BACKEND=${PARFLOW_ACCELERATOR_BACKEND} does not exist!")
-endif()
+endif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "none")
 
 # Include Umpire or RMM memory manager for pool allocation
-if((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}))
+if(PARFLOW_HAVE_CUDA OR PARFLOW_HAVE_KOKKOS)
 
-  if (DEFINED umpire_ROOT AND DEFINED rmm_ROOT)
+  if (DEFINED umpire_ROOT AND DEFINED RMM_ROOT)
     message(FATAL_ERROR "ERROR: Cannot have both Umpire and RMM enabled at the same time.")
-  endif(DEFINED umpire_ROOT AND DEFINED rmm_ROOT)
+  endif(DEFINED umpire_ROOT AND DEFINED RMM_ROOT)
   
+  # Determine memory manager and print single status message
   if(DEFINED umpire_ROOT)
     find_package(umpire REQUIRED)
     set(PARFLOW_HAVE_UMPIRE "yes")
-    message(STATUS "ACCELERATOR: Compiling with CUDA and Umpire")
-  endif(DEFINED umpire_ROOT)
-  
-  if(DEFINED rmm_ROOT)
+    message(STATUS "MEMORY MANAGER: Umpire is sleceted")
+   
+  elseif(DEFINED rmm_ROOT)
     find_package(rmm REQUIRED)
     set(PARFLOW_HAVE_RMM "yes")
-    if(${PARFLOW_HAVE_CUDA}) 
-      message(STATUS "ACCELERATOR: Compiling with CUDA and RMM")
-    else(${PARFLOW_HAVE_CUDA}) 
-      message(STATUS "ACCELERATOR: Compiling with Kokkos and RMM")
-    endif(${PARFLOW_HAVE_CUDA}) 
-  else(DEFINED rmm_ROOT)
-    if(${PARFLOW_HAVE_CUDA}) 
-      message(STATUS "ACCELERATOR: Compiling with CUDA (RMM not used)")
-    else(${PARFLOW_HAVE_CUDA}) 
-      message(STATUS "ACCELERATOR: Compiling with Kokkos (RMM not used)")
-    endif(${PARFLOW_HAVE_CUDA}) 
-  endif(DEFINED rmm_ROOT)
-endif((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}))
+    message(STATUS "MEMORY MANAGER: RMM is sleceted")
+   
+  else(DEFINED umpire_ROOT)
+    message(STATUS "MEMORY MANAGER: NO memoery manager is sleceted")
+  endif(DEFINED umpire_ROOT)
+endif(PARFLOW_HAVE_CUDA OR PARFLOW_HAVE_KOKKOS)
 
 #-----------------------------------------------------------------------------
 # Version number
@@ -267,7 +291,7 @@ endif (${TCL_FOUND})
 #-----------------------------------------------------------------------------
 option(PARFLOW_ENABLE_SILO "Build with Silo" "OFF")
 if (${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
-  find_package(Silo)
+  find_package(SILO)
   if (${SILO_FOUND})
     set(PARFLOW_HAVE_SILO "yes")
     set(HAVE_SILO ${PARFLOW_HAVE_SILO})
@@ -331,7 +355,7 @@ endif (${PARFLOW_ENABLE_PDI} OR DEFINED PDI_ROOT)
 #-----------------------------------------------------------------------------
 option(PARFLOW_ENABLE_HYPRE "Build with Hypre" "OFF")
 if (${PARFLOW_ENABLE_HYPRE} OR DEFINED HYPRE_ROOT)
-  find_package(Hypre)
+  find_package(HYPRE)
   if (${HYPRE_FOUND})
     set(PARFLOW_HAVE_HYPRE "yes")
     set(HAVE_HYPRE ${PARFLOW_HAVE_HYPRE})
@@ -373,11 +397,13 @@ endif (${PARFLOW_ENABLE_SZLIB} OR DEFINED SZLIB_ROOT)
 #-----------------------------------------------------------------------------
 option(PARFLOW_ENABLE_SUNDIALS "Build with SUNDIALS" "OFF")
 if (${PARFLOW_ENABLE_SUNDIALS} OR DEFINED SUNDIALS_ROOT)
-  find_package(SUNDIALS COMPONENTS sundials_cvode sundials_kinsol)
+  find_package(SUNDIALS COMPONENTS sundials_cvode sundials_kinsol sundials_core sundials_sunlinsolspgmr)
   if (${SUNDIALS_FOUND})
     set(PARFLOW_HAVE_SUNDIALS "yes")
     set(HAVE_SUNDIALS ${PARFLOW_HAVE_SUNDIALS})
   endif (${SUNDIALS_FOUND})
+else ()
+    message (STATUS "Found KINSOL: embedded")
 endif (${PARFLOW_ENABLE_SUNDIALS} OR DEFINED SUNDIALS_ROOT)
 
 #-----------------------------------------------------------------------------
@@ -438,15 +464,13 @@ CHECK_Fortran_SOURCE_COMPILES("      program main
       end" FORTRAN_77_WORKS)
 
 # Check if Fortran 90 compile works with free format
-set(SAVE_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
-set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${CMAKE_Fortran_FORMAT_FREE_FLAG}")
 CHECK_Fortran_SOURCE_COMPILES("program main
   implicit none
 
   write ( *, '(a)' ) '  Hello, world!'
 
   stop
-end" FORTRAN_F90_WORKS)
+end" FORTRAN_F90_WORKS SRC_EXT .F90)
 
 #
 # Determine syntax for writing binary file under Fortran
@@ -458,7 +482,7 @@ CHECK_Fortran_SOURCE_COMPILES("program freeform
    write(10) \"first\"
    write(10) \"second\"
    close(UNIT=10)
- end program freeform" HAVE_FC_ACCESS_STREAM)
+ end program freeform" HAVE_FC_ACCESS_STREAM SRC_EXT .F90)
 
 # Check whether the Fortran compiler supports the access="sequential" open syntax
 CHECK_Fortran_SOURCE_COMPILES("program freeform
@@ -466,12 +490,14 @@ CHECK_Fortran_SOURCE_COMPILES("program freeform
   write(10) \"first\"
   write(10) \"second\"
   close(UNIT=10)
-end program freeform" HAVE_FC_ACCESS_SEQUENTIAL)
+end program freeform" HAVE_FC_ACCESS_SEQUENTIAL SRC_EXT .F90)
 
 #
 # Set implicit none flag on Fortran compiles
 #
 include(CheckFortranCompilerFlag)
+
+set(SAVE_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
 
 set(none_test 0)
 foreach(flag "-implicitnone" "-fimplicit-none" "-u" "-Wimplicit none")
@@ -513,6 +539,7 @@ endif (${HAVE_FC_ACCESS_STREAM})
 include (TestBigEndian)
 include(CheckSymbolExists)
 include(CheckIncludeFiles)
+include(CheckFunctionExists)
 
 test_big_endian(PARFLOW_HAVE_BIG_ENDIAN)
 set(CASC_HAVE_BIGENDIAN ${PARFLOW_HAVE_BIG_ENDIAN})
@@ -531,6 +558,34 @@ endif ( ${PARFLOW_HAVE_MALLOC_H} )
 # Check for mallinfo
 check_symbol_exists(mallinfo2 malloc.h PARFLOW_HAVE_MALLINFO2)
 check_symbol_exists(mallinfo malloc.h PARFLOW_HAVE_MALLINFO)
+
+# Check if libm is required
+
+# Check if acos is available without additional libraries
+check_function_exists(acos HAVE_ACOS)
+
+if(NOT HAVE_ACOS)
+  # Save the current required libraries
+  set(CMAKE_REQUIRED_LIBRARIES_SAVE ${CMAKE_REQUIRED_LIBRARIES})
+  
+  # Try with libm
+  set(CMAKE_REQUIRED_LIBRARIES m)
+  check_function_exists(acos HAVE_ACOS_WITH_LIBM)
+  
+  # Restore the original required libraries
+  set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES_SAVE})
+  
+  if(HAVE_ACOS_WITH_LIBM)
+    set(MATH_LIBRARY m)
+    message(STATUS "Linking with libm math library")
+  else()
+    message(STATUS "acos function not found in libm math library")
+  endif()
+endif()
+
+#-----------------------------------------------------------------------------
+# Check compiling with CLM / ECLM
+#-----------------------------------------------------------------------------
 
 option(PARFLOW_HAVE_CLM "Compile with CLM" "OFF")
 
@@ -558,6 +613,7 @@ if ( ${PARFLOW_HAVE_ECLM} )
     set (HAVE_ECLM ${PARFLOW_HAVE_ECLM})
   endif (HAVE_OAS3)
 endif ( ${PARFLOW_HAVE_ECLM} )
+
 #
 # Parflow specific configuration options
 #

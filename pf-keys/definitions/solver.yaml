@@ -1652,6 +1652,13 @@ Solver:
       domains:
         BoolDomain:
 
+    LateralFlows:
+      help: >
+        [Type: boolean/string] This key enables the use of overland flow lateral fluxes (qx_overland and qy_overland) in the surface predictor water balance calculation. When enabled, the predictor uses actual surface flow values instead of subsurface velocities to compute lateral flux divergence at the land surface.
+      default: False
+      domains:
+        BoolDomain:
+
   OverlandDiffusive:
     __doc__: >
       Setting epsilon value for the diffusive overland flow formulation.
@@ -1876,6 +1883,26 @@ Solver:
       different than most PF data, with the dimension of interest representing interfaces, and the other two dimensions representing cells. E.g. the 
       x-velocity PFB has dimensions [NX+1, NY, NZ]. This key produces files in the format of runname.out.phase<x||y||z>.00.0000.pfb when using ParFlow's
       saturated solver and runname.out.vel<x||y||z>.00000.pfb when using the Richards equation solver.
+    default: False
+    domains:
+      BoolDomain:
+
+  PrintQxOverland:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the x-direction overland flow data. The printing of the data is controlled
+      by values in the timing information section. The data is written as a 2D PFB file with dimensions [NY, NX]. The values represent the
+      x-direction surface flow velocity (ke_) in m/hr at cell centers. To convert to volumetric flux, multiply by dy and dt.
+      This key produces files in the format runname.out.qx_overland.00000.pfb.
+    default: False
+    domains:
+      BoolDomain:
+
+  PrintQyOverland:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the y-direction overland flow data. The printing of the data is controlled
+      by values in the timing information section. The data is written as a 2D PFB file with dimensions [NY, NX]. The values represent the
+      y-direction surface flow velocity (kn_) in m/hr at cell centers. To convert to volumetric flux, multiply by dx and dt.
+      This key produces files in the format runname.out.qy_overland.00000.pfb.
     default: False
     domains:
       BoolDomain:
@@ -2638,6 +2665,26 @@ Solver:
       BoolDomain:
       RequiresModule: SILO
 
+  WriteSiloQxOverland:
+    help: >
+      [Type: boolean/string] This key is used to specify printing of the x-direction overland flow data in silo binary format. 
+      The printing of the data is controlled by values in the timing information section. The values represent x-direction 
+      surface flow velocity (ke_) in m/hr at cell centers.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloQyOverland:
+    help: >
+      [Type: boolean/string] This key is used to specify printing of the y-direction overland flow data in silo binary format. 
+      The printing of the data is controlled by values in the timing information section. The values represent y-direction 
+      surface flow velocity (kn_) in m/hr at cell centers.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
   WriteSiloTop:
     help: >
       [Type: boolean/string] This key is used to turn on printing of the x,y, and z velocity data. The printing of the data is controlled by values in the
@@ -2800,6 +2847,30 @@ Solver:
     help: >
       [Type: boolean/string] This key is used to specify the expousre of
       overland bc flux to PDI library.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: PDI
+
+  WritePDIQxOverland:
+    help: >
+      [Type: boolean/string] This key is used to specify exposure of x-direction
+      overland flow data to PDI library. The values represent x-direction surface
+      flow velocity (ke_) in m/hr at cell centers. The data exposure is controlled
+      by values in the timing information section and is subsequently managed by
+      the PDI plugin according to the specification tree defined in conf.yaml.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: PDI
+
+  WritePDIQyOverland:
+    help: >
+      [Type: boolean/string] This key is used to specify exposure of y-direction
+      overland flow data to PDI library. The values represent y-direction surface
+      flow velocity (kn_) in m/hr at cell centers. The data exposure is controlled
+      by values in the timing information section and is subsequently managed by
+      the PDI plugin according to the specification tree defined in conf.yaml.
     default: False
     domains:
       BoolDomain:

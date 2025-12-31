@@ -53,6 +53,7 @@ set (SRC_FILES_CONST advect.F
   permeability_face.c
   perturb_lb.c
   pf_hypre.c
+  pf_n_vector.c
   pf_pfmg.c
   pf_pfmg_octree.c
   pf_smg.c
@@ -155,6 +156,7 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     problem_saturation.cpp
     rb_GS_point.cpp
     richards_jacobian_eval.cpp
+    seepage.cpp
     vector.cpp
     vector_utilities.cpp
   )
@@ -253,6 +255,7 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}
     rb_GS_point.c
     region.c
     richards_jacobian_eval.c
+    seepage.c
     vector.c
     vector_utilities.c
   )
@@ -265,7 +268,14 @@ if( ${PARFLOW_BUILD_WITH_CPP} )
     PROPERTIES LANGUAGE CXX)
 endif()
 
-target_link_libraries(pfsimulator pfkinsol amps cjson ${PARFLOW_ETRACE_LIBRARY})
+if (${PARFLOW_HAVE_SUNDIALS})
+  target_include_directories (pfsimulator PUBLIC ${SUNDIALS_INCLUDE_DIR})
+  target_link_libraries (pfsimulator ${SUNDIALS_LIBRARIES})
+else ()
+  target_link_libraries(pfsimulator pfkinsol)
+endif (${PARFLOW_HAVE_SUNDIALS})
+
+target_link_libraries(pfsimulator amps cjson ${PARFLOW_ETRACE_LIBRARY})
 target_include_directories(pfsimulator PUBLIC "../third_party/cjson")
 
 if (${PARFLOW_HAVE_MPI})

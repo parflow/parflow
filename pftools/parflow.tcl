@@ -58,7 +58,7 @@ namespace eval Parflow {
 
     variable PARFLOW_DIR [Parflow::FixupFilename $::env(PARFLOW_DIR)]
 
-    namespace export pfget pfset pfrun pfundist
+    namespace export pfget pfset pfunset pfrun pfundist
 
     namespace export pfStructuredPoints
 
@@ -200,6 +200,14 @@ proc Parflow::pfwritedb {name} {
 proc Parflow::pfset { key value } {
 
     set Parflow::PFDB($key) "$value"
+}
+
+#
+# Sets a value in the database
+#
+proc Parflow::pfunset { key } {
+
+    unset Parflow::PFDB($key)
 }
 
 #

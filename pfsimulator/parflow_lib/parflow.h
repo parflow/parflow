@@ -56,6 +56,9 @@
 #include "grid.h"
 #include "matrix.h"
 #include "vector.h"
+#if defined (PARFLOW_HAVE_SUNDIALS)
+#include "pf_n_vector.h"
+#endif
 #include "pf_module.h"
 #include "geometry.h"
 #include "grgeometry.h"

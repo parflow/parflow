@@ -85,6 +85,7 @@ void         KinsolPC(Vector *rhs)
 PFModule  *KinsolPCInitInstanceXtra(
                                     Problem *    problem,
                                     Grid *       grid,
+                                    Grid *       grid2d,
                                     ProblemData *problem_data,
                                     double *     temp_data,
                                     Vector *     pressure,
@@ -130,7 +131,7 @@ PFModule  *KinsolPCInitInstanceXtra(
     (instance_xtra->discretization) =
       PFModuleNewInstanceType(
                               RichardsJacobianEvalInitInstanceXtraInvoke,
-                              discretization, (problem, grid, problem_data, temp_data,
+                              discretization, (problem, grid, grid2d, problem_data, temp_data,
                                                pc_matrix_type));
     (instance_xtra->precond) =
       PFModuleNewInstanceType(PrecondInitInstanceXtraInvoke,
@@ -161,7 +162,7 @@ PFModule  *KinsolPCInitInstanceXtra(
   {
     PFModuleReNewInstanceType(RichardsJacobianEvalInitInstanceXtraInvoke,
                               (instance_xtra->discretization),
-                              (problem, grid, problem_data, temp_data, pc_matrix_type));
+                              (problem, grid, grid2d, problem_data, temp_data, pc_matrix_type));
     PFModuleReNewInstanceType(PrecondInitInstanceXtraInvoke,
                               (instance_xtra->precond),
                               (NULL, NULL, problem_data, NULL, NULL, temp_data));

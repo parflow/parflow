@@ -39,8 +39,12 @@ if(${PARFLOW_HAVE_HYPRE})
     smg
     pfmg_octree
     van-genuchten-file
+    overland_flux
     overland_slopingslab_KWE
     overland_tiltedV_KWE
+    overland_tiltedV_KWE_top_patch
+    overland_tiltedV_KWE_top_patch_2
+    overland_tiltedV_KWE_top_patch_3
     overland_slopingslab_DWE
     overland_tiltedV_DWE
     overland_FlatICP
