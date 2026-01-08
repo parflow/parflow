@@ -403,7 +403,6 @@ var_dz_with_well.Geom.domain.Upper.X = 2.0
 var_dz_with_well.Geom.domain.Upper.Y = 2.0
 
 
-
 var_dz_with_well.Wells.Names = "pressure_well flux_well"
 
 var_dz_with_well.Wells.pressure_well.InputType = "Vertical"
