@@ -57,7 +57,7 @@ var_dz_with_well.Geom.domain.Lower.Y = 0.0
 var_dz_with_well.Geom.domain.Lower.Z = 0.0
 
 var_dz_with_well.Geom.domain.Upper.X = 1.0
-var_dz_with_well.Geom.domain.Upper.Y = 1.0
+var_dz_with_well.Geom.domain.Upper.Y = 144.0
 var_dz_with_well.Geom.domain.Upper.Z = 14
 
 var_dz_with_well.Geom.domain.Patches = "left right front back bottom top"
