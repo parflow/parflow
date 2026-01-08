@@ -253,7 +253,6 @@ void         WellPackage(
 //It would be nice to do only one reduce but we need to result of the reduce above to create the grid we
 // calculate the volume for this reduce from
 #ifdef PARFLOW_HAVE_MPI
-          // here I am making the assumption that indices need to be positive so we can use amps_max
           well_properties_invoice = amps_NewInvoice("%d", &subgrid_volume);
           amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Max);
           amps_FreeInvoice(well_properties_invoice);
