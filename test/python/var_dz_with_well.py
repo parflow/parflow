@@ -5,8 +5,9 @@
 
 from parflow.tools.fs import mkdir, get_absolute_path
 import numpy as np
-
+import sys
 import parflow as pf
+
 
 var_dz_with_well = pf.Run("var_dz_with_well", __file__)
 
@@ -365,7 +366,10 @@ var_dz_with_well.Cell._13.dzScale.Value = 0.1
 var_dz_with_well.run(working_directory=dir_name)
 
 test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-# assert(np.allclose(base_case_pressure, test_case_pressure))
+passed = np.allclose(base_case_pressure, test_case_pressure)
+if not passed:
+    print(f"var_dz_with_well : FAILED")
+    sys.exit(1)
 
 # single column test 2
 dir_name = get_absolute_path("test_output/single_column_3")
@@ -391,7 +395,10 @@ var_dz_with_well.Cell._13.dzScale.Value = 10
 var_dz_with_well.run(working_directory=dir_name)
 
 test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-assert np.allclose(base_case_pressure, test_case_pressure)
+passed = np.allclose(base_case_pressure, test_case_pressure)
+if not passed:
+    print(f"var_dz_with_well : FAILED")
+    sys.exit(1)
 
 # Next we switch to a multicolumn setup and add a flux well in to make sure this works for both types
 # of wells
@@ -477,7 +484,10 @@ var_dz_with_well.Cell._13.dzScale.Value = 0.1
 var_dz_with_well.run(working_directory=dir_name)
 
 test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-assert np.allclose(base_case_pressure, test_case_pressure)
+passed = np.allclose(base_case_pressure, test_case_pressure)
+if not passed:
+    print(f"var_dz_with_well : FAILED")
+    sys.exit(1)
 
 dir_name = get_absolute_path("test_output/multi_column_3")
 mkdir(dir_name)
@@ -503,6 +513,20 @@ var_dz_with_well.run(working_directory=dir_name)
 
 test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
 passed = np.allclose(base_case_pressure, test_case_pressure)
+
+# Here we test if we turn off the correction for variable dz that the outputs no longer match
+dir_name = get_absolute_path("test_output/multi_column_4")
+mkdir(dir_name)
+
+var_dz_with_well.Wells.CorrectForVarDz = 0
+
+var_dz_with_well.run(working_directory=dir_name)
+
+test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
+passed = not np.allclose(base_case_pressure, test_case_pressure)
+if not passed:
+    print(f"var_dz_with_well : FAILED")
+    sys.exit(1)
 
 
 if passed:

@@ -3995,12 +3995,6 @@ corrections being applied. For backwards compatability the default value
 is zero, but the recommendation is to turn this on rather than do the
 corrections yourself.
 
-.. container:: list
-
-   ::
-
-      Wells.Names "test_well inj_well ext_well"
-
 *string* **Wells.\ *well_name*.InputType** no default This key specifies
 the type of well to be defined for the given well, *well_name*. This key
 can be either **Vertical** or **Recirc**. The value **Vertical**
