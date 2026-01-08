@@ -141,14 +141,18 @@ void PrintVersionInfo(FILE *log_file)
   fprintf(log_file, "\tWith F77 flags  : %s\n", FFLAGS);
 #endif
 
-#if defined(PARFLOW_HAVE_KOKKOS) && !defined(PARFLOW_HAVE_RMM)
-  fprintf(log_file, "\tWith acc backend: KOKKOS\n");
+#if defined(PARFLOW_HAVE_KOKKOS) && !defined(PARFLOW_HAVE_RMM) && !defined(PARFLOW_HAVE_UMPIRE)
+  fprintf(log_file, "\tWith acc backend: KOKKOS (no memory pool allocator)\n");
 #elif defined(PARFLOW_HAVE_KOKKOS) && defined(PARFLOW_HAVE_RMM)
   fprintf(log_file, "\tWith acc backend: KOKKOS+RMM\n");
-#elif defined(PARFLOW_HAVE_CUDA) && !defined(PARFLOW_HAVE_RMM)
-  fprintf(log_file, "\tWith acc backend: CUDA\n");
+#elif defined(PARFLOW_HAVE_KOKKOS) && defined(PARFLOW_HAVE_UMPIRE)
+  fprintf(log_file, "\tWith acc backend: KOKKOS+UMPIRE\n");
+#elif defined(PARFLOW_HAVE_CUDA) && !defined(PARFLOW_HAVE_RMM) && !defined(PARFLOW_HAVE_UMPIRE)
+  fprintf(log_file, "\tWith acc backend: CUDA (no memory pool allocator)\n");
 #elif defined(PARFLOW_HAVE_CUDA) && defined(PARFLOW_HAVE_RMM)
   fprintf(log_file, "\tWith acc backend: CUDA+RMM\n");
+#elif defined(PARFLOW_HAVE_CUDA) && defined(PARFLOW_HAVE_UMPIRE)
+  fprintf(log_file, "\tWith acc backend: CUDA+UMPIRE\n");
 #elif defined(PARFLOW_HAVE_OMP)
   fprintf(log_file, "\tWith acc backend: OMP\n");
 #endif

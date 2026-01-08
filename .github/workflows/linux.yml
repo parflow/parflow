@@ -2,6 +2,10 @@ name: Linux CI Tests
 
 on: [push, pull_request]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   style-check:
      # Runs a check on C and Python coding style.  Code
@@ -121,7 +125,21 @@ jobs:
             amps_layer: mpi1,
             netcdf: "true",
             memory_manager: "none",
-            pdi: "false"
+            pdi: "false",
+            sundials: "embedded"
+          }
+        - {
+            name: "Ubuntu 24.04 GCC Sundials",
+            os: ubuntu-24.04,
+            cudaos: 'ubuntu2404',
+            cc: "gcc", cxx: "g++", fc: "gfortran",
+            python: "false",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "true",
+            memory_manager: "none",
+            pdi: "false",
+            sundials: "external"
           }
         - {
             name: "Ubuntu 24.04 LLVM",
@@ -133,7 +151,8 @@ jobs:
             amps_layer: mpi1,
             netcdf: "true",
             memory_manager: "none",
-            pdi: "false"
+            pdi: "false",
+            sundials: "embedded"
           }
         - {
             name: "Ubuntu 22.04 GCC Python",
@@ -145,7 +164,8 @@ jobs:
             amps_layer: mpi1,
             netcdf: "true",
             memory_manager: "none",
-            pdi: "false"
+            pdi: "false",
+            sundials: "embedded"
           }
         - {
             name: "Ubuntu 24.04 GCC Python",
@@ -157,7 +177,8 @@ jobs:
             amps_layer: mpi1,
             netcdf: "false",
             memory_manager: "none",
-            pdi: "false"
+            pdi: "false",
+            sundials: "embedded"
           }
         - {
             name: "Ubuntu 24.04 GCC OMP",
@@ -169,7 +190,8 @@ jobs:
             amps_layer: mpi1,
             netcdf: "false",
             memory_manager: "none",
-            pdi: "false"
+            pdi: "false",
+            sundials: "embedded"
           }
         - {
             name: "Ubuntu 24.04 LLVM OASIS3-MCT Build",
@@ -181,7 +203,8 @@ jobs:
             amps_layer: oas3,
             netcdf: "true",
             memory_manager: "none",
-            pdi: "false"
+            pdi: "false",
+            sundials: "embedded"
           }
 #        - {
 #            name: "Ubuntu 24.04 GCC CUDA/RMM Build",
@@ -204,7 +227,8 @@ jobs:
             amps_layer: mpi1,
             netcdf: "false",
             memory_manager: "umpire",
-            pdi: "false"
+            pdi: "false",
+            sundials: "embedded"
           }
 #        - {
 #            name: "Ubuntu 24.04 GCC Kokkos/RMM Build",
@@ -227,7 +251,8 @@ jobs:
             amps_layer: mpi1,
             netcdf: "false",
             memory_manager: "umpire",
-            pdi: "false"
+            pdi: "false",
+            sundials: "embedded"
           }
         - {
             name: "Ubuntu 24.04 GCC PDI Build",
@@ -239,7 +264,8 @@ jobs:
             amps_layer: mpi1,
             netcdf: "false",
             memory_manager: "none",
-            pdi: "true"
+            pdi: "true",
+            sundials: "embedded"
           }
 
     steps:
@@ -472,11 +498,11 @@ jobs:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          URL=https://github.com/LLNL/Silo/archive/refs/tags/4.11.tar.gz
+          URL=https://github.com/LLNL/Silo/archive/refs/tags/4.11.1.tar.gz
           mkdir silo
           cd silo
           curl -L $URL | tar --strip-components=1 -xz
-          ./configure --disable-silex --disable-hzip --disable-fpzip --prefix=$PARFLOW_DEP_DIR
+          ./configure --disable-silex --disable-hzip --disable-fpzip --enable-shared=yes --prefix=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
 
@@ -499,7 +525,7 @@ jobs:
           fi
 
           # Install Hypre. See https://hypre.readthedocs.io/en/latest/ch-misc.html#build-system-options
-          cmake -S src -B build                                \
+          cmake -S src -B build                              \
                 -DCMAKE_C_COMPILER=mpicc                     \
                 -DCMAKE_CXX_COMPILER=mpicxx                  \
                 -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}"  \
@@ -508,6 +534,25 @@ jobs:
           cmake --build build --parallel 4
           cmake --install build
           echo "" && echo "Successfully built Hypre ${BACKEND}"
+        fi
+
+    - name: Sundials Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: matrix.config.sundials == 'external'
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          # Download
+          wget https://github.com/llnl/sundials/archive/v7.4.0.tar.gz
+          tar xf v7.4.0.tar.gz
+          cd sundials-7.4.0
+          cmake -S . -B build                   \
+                -DCMAKE_C_COMPILER=mpicc                     \
+                -DCMAKE_CXX_COMPILER=mpicxx                  \
+                -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}"
+          cmake --build build --parallel 4
+          cmake --install build
+          echo "SUNDIALS_FLAGS=-DSUNDIALS_ROOT=${PARFLOW_DEP_DIR}" >> $GITHUB_ENV
         fi
 
     - name: PDI Install
@@ -559,7 +604,7 @@ jobs:
            -DSILO_ROOT=$PARFLOW_DEP_DIR                                 \
            -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }}          \
            -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR                          \
-           $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS $UMPIRE_FLAGS $PDI_FLAGS
+           $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS $UMPIRE_FLAGS $PDI_FLAGS $SUNDIALS_FLAGS
 
     - name: ParFlow CMake Build
       run: (cd build; make -j 2 install)

@@ -40,6 +40,7 @@
  */
 
 #include "parflow.h"
+#include "seepage.h"
 #include "llnlmath.h"
 #include "llnltyps.h"
 #include "assert.h"
@@ -63,6 +64,7 @@ typedef struct {
   double SpinupDampP2; // NBE
   int tfgupwind;  // RMM
   int using_MGSemi;  // RMM
+  SeepageLookup seepage;
 } PublicXtra;
 
 typedef struct {
@@ -101,6 +103,20 @@ typedef struct {
 
   Grid         *grid;
   double       *temp_data;
+
+  Vector       *density_der;
+  Vector       *saturation_der;
+
+  // Overland flow variables
+  int using_overland_flow;
+  Vector       *KW;
+  Vector       *KE;
+  Vector       *KN;
+  Vector       *KS;
+  Vector       *KWns;
+  Vector       *KEns;
+  Vector       *KNns;
+  Vector       *KSns;
 } InstanceXtra;
 
 /*--------------------------------------------------------------------------
@@ -133,7 +149,19 @@ int jacobian_stencil_shape_C[5][3] = { { 0, 0, 0 },
 
 /*  This routine provides the interface between KINSOL and ParFlow
  *  for richards' equation jacobian evaluations and matrix-vector multiplies.*/
-
+#if defined (PARFLOW_HAVE_SUNDIALS)
+#include "kinsol/kinsol.h"
+int       KINSolMatVec(
+                       N_Vector pf_n_x,
+                       N_Vector pf_n_y,
+                       N_Vector pf_n_pressure,
+                       int *    recompute,
+                       void *   current_state)
+{
+  Vector      *x = N_VectorData(pf_n_x);
+  Vector      *y = N_VectorData(pf_n_y);
+  Vector      *pressure = N_VectorData(pf_n_pressure);
+#else
 int       KINSolMatVec(
                        void *   current_state,
                        N_Vector x,
@@ -141,6 +169,7 @@ int       KINSolMatVec(
                        int *    recompute,
                        N_Vector pressure)
 {
+#endif
   PFModule    *richards_jacobian_eval = StateJacEval(((State*)current_state));
   Matrix      *J = StateJac(((State*)current_state));
   Matrix      *JC = StateJacC(((State*)current_state));
@@ -221,12 +250,12 @@ void    RichardsJacobianEval(
   Matrix      *J = (instance_xtra->J);
   Matrix      *JC = (instance_xtra->JC);
 
-  Vector      *density_der = NULL;
-  Vector      *saturation_der = NULL;
+  Vector      *density_der = (instance_xtra->density_der);
+  Vector      *saturation_der = (instance_xtra->saturation_der);
 
   /* Reuse vectors to save memory */
-  Vector      *rel_perm = NULL;
-  Vector      *rel_perm_der = NULL;
+  Vector      *rel_perm = saturation;
+  Vector      *rel_perm_der = saturation_der;
 
   Vector      *porosity = ProblemDataPorosity(problem_data);
   Vector      *permeability_x = ProblemDataPermeabilityX(problem_data);
@@ -237,9 +266,16 @@ void    RichardsJacobianEval(
   Vector      *slope_x = ProblemDataTSlopeX(problem_data);                //DOK
 
   /* Overland flow variables */  //DOK
-  Vector      *KW, *KE, *KN, *KS, *KWns, *KEns, *KNns, *KSns;
+  Vector      *KW = (instance_xtra->KW);
+  Vector      *KE = (instance_xtra->KE);
+  Vector      *KN = (instance_xtra->KN);
+  Vector      *KS = (instance_xtra->KS);
+  Vector      *KWns = (instance_xtra->KWns);
+  Vector      *KEns = (instance_xtra->KEns);
+  Vector      *KNns = (instance_xtra->KNns);
+  Vector      *KSns = (instance_xtra->KSns);
   Subvector   *kw_sub, *ke_sub, *kn_sub, *ks_sub, *kwns_sub, *kens_sub, *knns_sub, *ksns_sub, *top_sub, *sx_sub;
-  double      *kw_der, *ke_der, *kn_der, *ks_der, *kwns_der, *kens_der, *knns_der, *ksns_der;
+  double      *kw_der = NULL, *ke_der = NULL, *kn_der = NULL, *ks_der = NULL, *kwns_der = NULL, *kens_der = NULL, *knns_der = NULL, *ksns_der = NULL;
 
   double gravity = ProblemGravity(problem);
   double viscosity = ProblemPhaseViscosity(problem, 0);
@@ -250,18 +286,22 @@ void    RichardsJacobianEval(
   Subvector   *x_ssl_sub, *y_ssl_sub;    //@RMM
   double      *x_ssl_dat = NULL, *y_ssl_dat = NULL;     //@RMM
 
-  /* @RMM variable dz multiplier */
+  /* RMM variable dz multiplier */
   Vector      *z_mult = ProblemDataZmult(problem_data);              //@RMM
   Subvector   *z_mult_sub;    //@RMM
   double      *z_mult_dat;    //@RMM
 
-  /* @RMM Flow Barrier / Boundary values */
+  /* RMM Flow Barrier / Boundary values */
   Vector      *FBx = ProblemDataFBx(problem_data);
   Vector      *FBy = ProblemDataFBy(problem_data);
   Vector      *FBz = ProblemDataFBz(problem_data);
   Subvector   *FBx_sub, *FBy_sub, *FBz_sub;    //@RMM
   double      *FBx_dat, *FBy_dat, *FBz_dat;     //@RMM
 
+/* RMM Top patch indicator for multiple  combined overland BC */
+  Vector      *patch = ProblemDataPatchIndexOfDomainTop(problem_data);
+  Subvector   *patch_sub;
+  double      *patch_dat;
   Subgrid     *subgrid;
 
   Subvector   *p_sub, *d_sub, *s_sub, *po_sub, *rp_sub, *ss_sub;
@@ -306,74 +346,25 @@ void    RichardsJacobianEval(
   CommHandle  *handle;
   VectorUpdateCommHandle  *vector_update_handle;
 
-  // Determine if an overland flow boundary condition is being used.
-  // If so will use the analytic Jacobian.
-  if (public_xtra->type == not_set)
-  {
-    // Default to simple
-    public_xtra->type = simple;
-
-    BCPressureData   *bc_pressure_data
-      = ProblemDataBCPressureData(problem_data);
-    int num_patches = BCPressureDataNumPatches(bc_pressure_data);
-
-    if (num_patches > 0)
-    {
-      int i;
-      for (i = 0; i < num_patches; i++)
-      {
-        int type = BCPressureDataType(bc_pressure_data, i);
-        switch (type)
-        {
-          case OverlandFlow:
-          case OverlandKinematic:
-          case OverlandDiffusive:
-          {
-            public_xtra->type = overland_flow;
-            /*If we have MGSemi set as the preconditioner key
-             * we still set the type to overland_flow
-             * but later use the simple/symmetric preconditioner (RMM) */
-          }
-          break;
-        }
-      }
-    }
-  }
-
-  /*-----------------------------------------------------------------------
-   * Allocate temp vectors
-   *-----------------------------------------------------------------------*/
-  density_der = NewVectorType(grid, 1, 1, vector_cell_centered);
-  saturation_der = NewVectorType(grid, 1, 1, vector_cell_centered);
-
-  /*-----------------------------------------------------------------------
-   * reuse the temp vectors for both saturation and rel_perm calculations.
-   *-----------------------------------------------------------------------*/
-  rel_perm = saturation;
-  rel_perm_der = saturation_der;
-
   /* Pass pressure values to neighbors.  */
   vector_update_handle = InitVectorUpdate(pressure, VectorUpdateAll);
   FinalizeVectorUpdate(vector_update_handle);
 
-/* Define grid for surface contribution */
-  KW = NewVectorType(grid2d, 1, 1, vector_cell_centered);
-  KE = NewVectorType(grid2d, 1, 1, vector_cell_centered);
-  KN = NewVectorType(grid2d, 1, 1, vector_cell_centered);
-  KS = NewVectorType(grid2d, 1, 1, vector_cell_centered);
-  KWns = NewVectorType(grid2d, 1, 1, vector_cell_centered);
-  KEns = NewVectorType(grid2d, 1, 1, vector_cell_centered);
-  KNns = NewVectorType(grid2d, 1, 1, vector_cell_centered);
-  KSns = NewVectorType(grid2d, 1, 1, vector_cell_centered);
+  InitVectorAll(density_der, 0.0);
+  InitVectorAll(saturation_der, 0.0);
 
-  InitVector(KW, 0.0);
-  InitVector(KE, 0.0);
-  InitVector(KN, 0.0);
-  InitVector(KS, 0.0);
-  InitVector(KWns, 0.0);
-  InitVector(KEns, 0.0);
-  InitVector(KNns, 0.0);
-  InitVector(KSns, 0.0);
+  // /* Define grid for surface contribution */
+  if ((instance_xtra->using_overland_flow) == TRUE)
+  {
+    InitVectorAll(KW, 0.0);
+    InitVectorAll(KE, 0.0);
+    InitVectorAll(KN, 0.0);
+    InitVectorAll(KS, 0.0);
+    InitVectorAll(KWns, 0.0);
+    InitVectorAll(KEns, 0.0);
+    InitVectorAll(KNns, 0.0);
+    InitVectorAll(KSns, 0.0);
+  }
 
   // SGS set this to 1 since the off/on behavior does not work in
   // parallel.
@@ -981,14 +972,27 @@ void    RichardsJacobianEval(
     J_sub = MatrixSubmatrix(J, is);
 
     /* overland flow - DOK */
-    kw_sub = VectorSubvector(KW, is);
-    ke_sub = VectorSubvector(KE, is);
-    kn_sub = VectorSubvector(KN, is);
-    ks_sub = VectorSubvector(KS, is);
-    kwns_sub = VectorSubvector(KWns, is);
-    kens_sub = VectorSubvector(KEns, is);
-    knns_sub = VectorSubvector(KNns, is);
-    ksns_sub = VectorSubvector(KSns, is);
+    if ((instance_xtra->using_overland_flow) == TRUE)
+    {
+      kw_sub = VectorSubvector(KW, is);
+      ke_sub = VectorSubvector(KE, is);
+      kn_sub = VectorSubvector(KN, is);
+      ks_sub = VectorSubvector(KS, is);
+      kwns_sub = VectorSubvector(KWns, is);
+      kens_sub = VectorSubvector(KEns, is);
+      knns_sub = VectorSubvector(KNns, is);
+      ksns_sub = VectorSubvector(KSns, is);
+
+      /* overland flow contribution */
+      kw_der = SubvectorData(kw_sub);
+      ke_der = SubvectorData(ke_sub);
+      kn_der = SubvectorData(kn_sub);
+      ks_der = SubvectorData(ks_sub);
+      kwns_der = SubvectorData(kwns_sub);
+      kens_der = SubvectorData(kens_sub);
+      knns_der = SubvectorData(knns_sub);
+      ksns_der = SubvectorData(ksns_sub);
+    }
 
     dx = SubgridDX(subgrid);
     dy = SubgridDY(subgrid);
@@ -1021,16 +1025,6 @@ void    RichardsJacobianEval(
     np = SubmatrixStencilData(J_sub, 4);
     lp = SubmatrixStencilData(J_sub, 5);
     up = SubmatrixStencilData(J_sub, 6);
-
-    /* overland flow contribution */
-    kw_der = SubvectorData(kw_sub);
-    ke_der = SubvectorData(ke_sub);
-    kn_der = SubvectorData(kn_sub);
-    ks_der = SubvectorData(ks_sub);
-    kwns_der = SubvectorData(kwns_sub);
-    kens_der = SubvectorData(kens_sub);
-    knns_der = SubvectorData(knns_sub);
-    ksns_der = SubvectorData(ksns_sub);
 
     pp = SubvectorData(p_sub);
     sp = SubvectorData(s_sub);
@@ -1440,30 +1434,33 @@ void    RichardsJacobianEval(
       FinalizeMatrixUpdate(handle);
     }
 
-    /* Pass KW values to neighbors.  */
-    vector_update_handle = InitVectorUpdate(KW, VectorUpdateAll);
-    FinalizeVectorUpdate(vector_update_handle);
-    /* Pass KE values to neighbors.  */
-    vector_update_handle = InitVectorUpdate(KE, VectorUpdateAll);
-    FinalizeVectorUpdate(vector_update_handle);
-    /* Pass KS values to neighbors.  */
-    vector_update_handle = InitVectorUpdate(KS, VectorUpdateAll);
-    FinalizeVectorUpdate(vector_update_handle);
-    /* Pass KN values to neighbors.  */
-    vector_update_handle = InitVectorUpdate(KN, VectorUpdateAll);
-    FinalizeVectorUpdate(vector_update_handle);
-    /* Pass KWns values to neighbors.  */
-    vector_update_handle = InitVectorUpdate(KWns, VectorUpdateAll);
-    FinalizeVectorUpdate(vector_update_handle);
-    /* Pass KEns values to neighbors.  */
-    vector_update_handle = InitVectorUpdate(KEns, VectorUpdateAll);
-    FinalizeVectorUpdate(vector_update_handle);
-    /* Pass KSns values to neighbors.  */
-    vector_update_handle = InitVectorUpdate(KSns, VectorUpdateAll);
-    FinalizeVectorUpdate(vector_update_handle);
-    /* Pass KNns values to neighbors.  */
-    vector_update_handle = InitVectorUpdate(KNns, VectorUpdateAll);
-    FinalizeVectorUpdate(vector_update_handle);
+    if ((instance_xtra->using_overland_flow) == TRUE)
+    {
+      /* Pass KW values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KW, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+      /* Pass KE values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KE, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+      /* Pass KS values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KS, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+      /* Pass KN values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KN, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+      /* Pass KWns values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KWns, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+      /* Pass KEns values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KEns, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+      /* Pass KSns values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KSns, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+      /* Pass KNns values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KNns, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+    }
   }
 
   /* Build submatrix JC if overland flow case and *not* MGSemi*/
@@ -1497,6 +1494,8 @@ void    RichardsJacobianEval(
       kens_sub = VectorSubvector(KEns, is);
       knns_sub = VectorSubvector(KNns, is);
       ksns_sub = VectorSubvector(KSns, is);
+      /* RMM added to provide patch access */
+      patch_sub = VectorSubvector(patch, is);
 
       top_sub = VectorSubvector(top, is);
       sx_sub = VectorSubvector(slope_x, is);
@@ -1541,13 +1540,14 @@ void    RichardsJacobianEval(
       ksns_der = SubvectorData(ksns_sub);
 
       top_dat = SubvectorData(top_sub);
+      patch_dat = SubvectorData(patch_sub);
 
       ForBCStructNumPatches(ipatch, bc_struct)
       {
         ForPatchCellsPerFace(OverlandKinematicBC,
                              BeforeAllCells(DoNothing),
                              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                             Locals(int io, io1, itop, ip, im, k1; ),
+                             Locals(int io, io1, itop, ip, im, iitmp, k1; ),
                              CellSetup(DoNothing),
                              FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
                              FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
@@ -1609,12 +1609,22 @@ void    RichardsJacobianEval(
             }
           }
 
+          iitmp = (int)patch_dat[io1];
+
           /* Now add overland contributions to JC */
           if ((pp[ip]) > 0.0)
           {
-            /*diagonal term */
-            cp_c[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
-                        + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+            /* RMM, switch if seepage face on */
+            if (IsSeepagePatch(&(public_xtra->seepage), iitmp))
+            {
+              cp_c[io] += (vol / dz) * (1.0 + 0.0);
+            }
+            else
+            {
+              /*regular overland diagonal term */
+              cp_c[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                          + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+            }
           }
 
           /*west term */
@@ -1871,16 +1881,30 @@ void    RichardsJacobianEval(
 
       J_sub = MatrixSubmatrix(J, is);
 
-      kw_sub = VectorSubvector(KW, is);
-      ke_sub = VectorSubvector(KE, is);
-      kn_sub = VectorSubvector(KN, is);
-      ks_sub = VectorSubvector(KS, is);
-      kwns_sub = VectorSubvector(KWns, is);
-      kens_sub = VectorSubvector(KEns, is);
-      knns_sub = VectorSubvector(KNns, is);
-      ksns_sub = VectorSubvector(KSns, is);
+      if ((instance_xtra->using_overland_flow) == TRUE)
+      {
+        kw_sub = VectorSubvector(KW, is);
+        ke_sub = VectorSubvector(KE, is);
+        kn_sub = VectorSubvector(KN, is);
+        ks_sub = VectorSubvector(KS, is);
+        kwns_sub = VectorSubvector(KWns, is);
+        kens_sub = VectorSubvector(KEns, is);
+        knns_sub = VectorSubvector(KNns, is);
+        ksns_sub = VectorSubvector(KSns, is);
+
+        kw_der = SubvectorData(kw_sub);
+        ke_der = SubvectorData(ke_sub);
+        kn_der = SubvectorData(kn_sub);
+        ks_der = SubvectorData(ks_sub);
+        kwns_der = SubvectorData(kwns_sub);
+        kens_der = SubvectorData(kens_sub);
+        knns_der = SubvectorData(knns_sub);
+        ksns_der = SubvectorData(ksns_sub);
+      }
 
       top_sub = VectorSubvector(top, is);
+      /* RMM added to provide patch access */
+      patch_sub = VectorSubvector(patch, is);
       sx_sub = VectorSubvector(slope_x, is);
 
       sy_v = SubvectorNX(sx_sub);
@@ -1906,23 +1930,15 @@ void    RichardsJacobianEval(
       lp = SubmatrixStencilData(J_sub, 5);
       up = SubmatrixStencilData(J_sub, 6);
 
-      kw_der = SubvectorData(kw_sub);
-      ke_der = SubvectorData(ke_sub);
-      kn_der = SubvectorData(kn_sub);
-      ks_der = SubvectorData(ks_sub);
-      kwns_der = SubvectorData(kwns_sub);
-      kens_der = SubvectorData(kens_sub);
-      knns_der = SubvectorData(knns_sub);
-      ksns_der = SubvectorData(ksns_sub);
-
       top_dat = SubvectorData(top_sub);
+      patch_dat = SubvectorData(patch_sub);
 
       ForBCStructNumPatches(ipatch, bc_struct)
       {
         ForPatchCellsPerFace(OverlandKinematicBC,
                              BeforeAllCells(DoNothing),
                              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                             Locals(int io1, ip, im; ),
+                             Locals(int io1, ip, itop, im, iitmp; ),
                              CellSetup(DoNothing),
                              FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
                              FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
@@ -1931,17 +1947,27 @@ void    RichardsJacobianEval(
         {
           /* Loop over boundary patches to build J matrix. */
           io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+          itop = SubvectorEltIndex(top_sub, i, j, 0);
 
           /* Update J */
           ip = SubvectorEltIndex(p_sub, i, j, k);
           im = SubmatrixEltIndex(J_sub, i, j, k);
 
+          iitmp = (int)patch_dat[itop];
           /* Now add overland contributions to J similar to JC above */
           if ((pp[ip]) > 0.0)
           {
-            /*diagonal term */
-            cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
-                      + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+            /* RMM, switch seepage face on optionally for specified surface patches */
+            if (IsSeepagePatch(&(public_xtra->seepage), iitmp))
+            {
+              cp[im] += dt * (vol / dz) * (1.0 + 0.0);
+            }
+            else
+            {
+              /*diagonal term */
+              cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                        + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+            }
           }
 
           /*west term */
@@ -2168,17 +2194,6 @@ void    RichardsJacobianEval(
 
   FreeBCStruct(bc_struct);
 
-  FreeVector(density_der);
-  FreeVector(saturation_der);
-  FreeVector(KW);
-  FreeVector(KE);
-  FreeVector(KN);
-  FreeVector(KS);
-  FreeVector(KWns);
-  FreeVector(KEns);
-  FreeVector(KNns);
-  FreeVector(KSns);
-
   tfree(ovlnd_flag);
 
   POP_NVTX
@@ -2194,11 +2209,13 @@ void    RichardsJacobianEval(
 PFModule    *RichardsJacobianEvalInitInstanceXtra(
                                                   Problem *    problem,
                                                   Grid *       grid,
+                                                  Grid *       grid2d,
                                                   ProblemData *problem_data,
                                                   double *     temp_data,
                                                   int          symmetric_jac)
 {
   PFModule      *this_module = ThisPFModule;
+  PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
   InstanceXtra  *instance_xtra;
 
   Stencil       *stencil, *stencil_C;
@@ -2270,6 +2287,47 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
       PFModuleNewInstance(ProblemOverlandFlowEvalDiff(problem), ());   //RMM-LEC
     (instance_xtra->overlandflow_module_kin)
       = PFModuleNewInstance(ProblemOverlandFlowEvalKin(problem), ());
+
+    // Allocate vectors for the derivatives
+    (instance_xtra->density_der) = NewVectorType(grid, 1, 1, vector_cell_centered);
+    (instance_xtra->saturation_der) = NewVectorType(grid, 1, 1, vector_cell_centered);
+
+    (instance_xtra->using_overland_flow) = BCPressurePackageUsingOverlandFlow(problem);
+    if (public_xtra->type == not_set)
+    {
+      // Default to simple
+      public_xtra->type = simple;
+      if ((instance_xtra->using_overland_flow) == TRUE)
+      {
+        (public_xtra->type) = overland_flow;
+      }
+      /* If we have MGSemi set as the preconditioner key
+       * we still set the type to overland_flow
+       * but later use the simple/symmetric preconditioner (RMM) */
+    }
+
+    if ((instance_xtra->using_overland_flow) == TRUE)
+    {
+      (instance_xtra->KW) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->KE) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->KN) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->KS) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->KWns) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->KEns) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->KNns) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      (instance_xtra->KSns) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+    }
+    else
+    {
+      (instance_xtra->KW) = NULL;
+      (instance_xtra->KE) = NULL;
+      (instance_xtra->KN) = NULL;
+      (instance_xtra->KS) = NULL;
+      (instance_xtra->KWns) = NULL;
+      (instance_xtra->KEns) = NULL;
+      (instance_xtra->KNns) = NULL;
+      (instance_xtra->KSns) = NULL;
+    }
   }
   else
   {
@@ -2302,14 +2360,29 @@ void  RichardsJacobianEvalFreeInstanceXtra()
 
   if (instance_xtra)
   {
-    PFModuleFreeInstance(instance_xtra->density_module);
-    PFModuleFreeInstance(instance_xtra->bc_pressure);
-    PFModuleFreeInstance(instance_xtra->saturation_module);
-    PFModuleFreeInstance(instance_xtra->rel_perm_module);
-    PFModuleFreeInstance(instance_xtra->bc_internal);
-    PFModuleFreeInstance(instance_xtra->overlandflow_module);     //DOK
-    PFModuleFreeInstance(instance_xtra->overlandflow_module_diff);       //RMM-LEC
+    if ((instance_xtra->using_overland_flow) == TRUE)
+    {
+      FreeVector(instance_xtra->KSns);
+      FreeVector(instance_xtra->KNns);
+      FreeVector(instance_xtra->KEns);
+      FreeVector(instance_xtra->KWns);
+      FreeVector(instance_xtra->KS);
+      FreeVector(instance_xtra->KN);
+      FreeVector(instance_xtra->KE);
+      FreeVector(instance_xtra->KW);
+    }
+
+    FreeVector(instance_xtra->saturation_der);
+    FreeVector(instance_xtra->density_der);
+
     PFModuleFreeInstance(instance_xtra->overlandflow_module_kin);
+    PFModuleFreeInstance(instance_xtra->overlandflow_module_diff);       //RMM-LEC
+    PFModuleFreeInstance(instance_xtra->overlandflow_module);     //DOK
+    PFModuleFreeInstance(instance_xtra->bc_internal);
+    PFModuleFreeInstance(instance_xtra->rel_perm_module);
+    PFModuleFreeInstance(instance_xtra->saturation_module);
+    PFModuleFreeInstance(instance_xtra->bc_pressure);
+    PFModuleFreeInstance(instance_xtra->density_module);
 
     FreeMatrix(instance_xtra->J);
 
@@ -2345,6 +2418,9 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   public_xtra->SpinupDampP1 = GetDoubleDefault(key, 0.0);
   sprintf(key, "OverlandSpinupDampP2");
   public_xtra->SpinupDampP2 = GetDoubleDefault(key, 0.0);    // NBE
+
+  /* Collect seepage patches from Patch.<name>.BCPressure.Seepage flags. */
+  PopulateSeepagePatchesFromBCPressure(&(public_xtra->seepage));
 
 /* get preconditioner to check for MGSemi to use custom overland flow formulation*/
   precond_switch_na = NA_NewNameArray("NoPC MGSemi SMG PFMG PFMGOctree");
@@ -2438,6 +2514,7 @@ void  RichardsJacobianEvalFreePublicXtra()
 
   if (public_xtra)
   {
+    SeepageLookupFree(&(public_xtra->seepage));
     tfree(public_xtra);
   }
 }
