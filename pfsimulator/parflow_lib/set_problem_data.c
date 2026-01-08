@@ -104,7 +104,6 @@ void          SetProblemData(
   PFModule      *real_space_z = (instance_xtra->real_space_z);
 
   /* Note: the order in which these modules are called is important */
-
   if ((instance_xtra->site_data_not_formed))
   {
     PFModuleInvokeType(GeometriesInvoke, geometries, (problem_data));
