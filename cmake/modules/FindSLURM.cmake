@@ -25,16 +25,9 @@ find_path(SLURM_INCLUDE_DIR NAMES slurm/slurm.h
                             PATH_SUFFIXES slurm
                             HINTS ${SLURM_ROOT}/include /opt/slurm/default /usr/local)
 
-message(" SLURM_INCLUDE_DIR = ${SLURM_INCLUDE_DIR}")
-
 find_library(SLURM_LIBRARY NAMES slurm
 			    HINTS ${SLURM_ROOT}/lib64 ${SLURM_ROOT}/lib 
 			    PATHS /usr/lib64 /usr/lib)
-
-#find_library(SLURM_LIBRARY NAMES slurm)
-#set(SLURM_LIBRARY /usr/lib64/libslurm.so)
-
-message(" SLURM_LIBRARY = ${SLURM_LIBRARY}")
 
 set(SLURM_INCLUDE_DIRS ${SLURM_INCLUDE_DIR})
 set(SLURM_LIBRARIES ${SLURM_LIBRARY})

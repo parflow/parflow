@@ -41,23 +41,17 @@ void kokkosMemCpy(char *dest, char *src, size_t size){
  * @param ptr Pointer for the data to be set to zero
  * @param size Bytes to be zeroed
  */
-void kokkosMemSet(char *ptr, size_t size){
-  /* Loop style initialization */
-  if(size % sizeof(int))
-  {
-    /* Writing 1 byte / thread is slow */
-    Kokkos::parallel_for(size, KOKKOS_LAMBDA(int i){ptr[i] = 0;});
-  }
-  else
-  {
-    /* Writing 4 bytes / thread is fast */
-    Kokkos::parallel_for(size / sizeof(int), KOKKOS_LAMBDA(int i){((int*)ptr)[i] = 0;});
-  }
-  Kokkos::fence(); 
+void kokkosMemSet(char* ptr, size_t size) {
+  using ExecSpace = Kokkos::DefaultExecutionSpace;
 
-  /* Deep_copy style initialization for char* should be fast in future Kokkos releases */
-  // Kokkos::View<char*> ptr_view(ptr, size);
-  // Kokkos::deep_copy(ptr_view, 0);
+  // Create an unmanaged view over the raw memory
+  Kokkos::View<char*, Kokkos::MemoryUnmanaged> view(ptr, size);
+
+  // Perform efficient parallel zero-initialization
+  Kokkos::deep_copy(ExecSpace(), view, (char)0);
+
+  // Synchronize only the current execution space (e.g., CUDA, HIP, etc.)
+  ExecSpace().fence();
 }
 
 /**

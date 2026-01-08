@@ -50,9 +50,11 @@
 #define PFSOLReadTimingIndex  8
 #define ClusteringTimingIndex 9
 #define NetcdfTimingIndex 10
+#define PDITimingIndex  11
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  11
+#define VectorUpdateTimingIndex  12
 #endif
+
 
 
 #if defined(PF_TIMING)
@@ -147,6 +149,8 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
 #define InitEnd 3
 #define FinalizeStart 4
 #define FinalizeEnd 5
+#define PDIStart 6
+#define PDIEnd 7
 
 #ifdef PARFLOW_GLOBALS
 int NumEvents = 0;

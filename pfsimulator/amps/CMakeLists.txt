@@ -30,20 +30,21 @@ endif()
 
 add_library(amps STATIC ${COMMON_SRC_FILES} ${AMPS_SRC_FILES})
 
-if(${PARFLOW_HAVE_CUDA})
+# AMPS has a dependency on CUDA
+if ( ${PARFLOW_HAVE_CUDA} )
   target_include_directories(amps PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
-endif(${PARFLOW_HAVE_CUDA})
+endif ( ${PARFLOW_HAVE_CUDA} )
 
 if( ${PARFLOW_HAVE_UMPIRE} )
-  target_link_libraries(amps umpire)
+  target_link_libraries(amps PUBLIC umpire)
 endif( ${PARFLOW_HAVE_UMPIRE} )
 
 if( ${PARFLOW_HAVE_RMM} )
-  target_link_libraries(amps rmm::rmm)
+  target_link_libraries(amps PUBLIC rmm::rmm)
 endif( ${PARFLOW_HAVE_RMM} )
 
 if( ${PARFLOW_HAVE_KOKKOS} )
-  target_link_libraries(amps Kokkos::kokkos)
+  target_link_libraries(amps PUBLIC Kokkos::kokkos)
   target_include_directories(amps PUBLIC ${KOKKOS_INCLUDE})
 endif( ${PARFLOW_HAVE_KOKKOS} )
 
@@ -52,11 +53,7 @@ if (${PARFLOW_HAVE_MPI})
 endif (${PARFLOW_HAVE_MPI})
 
 if(${PARFLOW_HAVE_OAS3})
-  target_link_libraries(amps ${OASIS_Fortran_LIBRARY} ${MCT_Fortran_LIBRARY} ${MPEU_Fortran_LIBRARY} ${SCRIP_Fortran_LIBRARY})
-  target_include_directories(amps PUBLIC "${OASIS_Fortran_INCLUDES}")
-  
-  target_link_libraries(amps ${NETCDF_Fortran_LIBRARY})
-  target_include_directories(amps PUBLIC "${NETCDF_Fortran_INCLUDES}")
+  target_link_libraries(amps PUBLIC OASIS3MCT::OASIS3MCT)
 endif(${PARFLOW_HAVE_OAS3})
 
 

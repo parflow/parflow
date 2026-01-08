@@ -1,4 +1,4 @@
-name: ParFlow MacOS CI Test
+name: MacOS CI Tests
 
 #
 # Notes
@@ -45,10 +45,6 @@ jobs:
       run: |
         brew link tcl-tk@8
 
-# Cache dependencies so don't have to rebuild on each test.
-# Can flush caches by resetting the CACHE_VERSION secret on GitHub
-# settings for the project (using date-timestamp for secret).
-
     - name: Cache dependencies
       uses: actions/cache@v4
       id: cache-parflow-dependencies
@@ -57,7 +53,7 @@ jobs:
         cache-parflow-hit: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       with:
         path: "~/depend"
-        key: cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ secrets.CACHE_VERSION }}
+        key: cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ hashfiles('**/.github/workflows/macos.yml') }}
 
     - name: Directory Setup
       run: |
@@ -82,7 +78,7 @@ jobs:
        if [[ "$CACHE_HIT" != 'true' ]]; then
           echo "Installing"
           cd ~/depend
-          echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ secrets.CACHE_VERSION }}" > ~/depend/cache-key
+          echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ hashfiles('**/.github/workflows/macos.yml') }}" > ~/depend/cache-key
           wget -nv --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-x86_64.tar.gz
           tar -xf cmake-3.25.1-linux-x86_64.tar.gz
           $HOME/depend/cmake-3.25.1-linux-x86_64/bin/cmake --version

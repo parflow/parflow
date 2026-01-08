@@ -1,3 +1,166 @@
+# ParFlow Release Notes 3.14.1
+------------------------------
+
+This release contains several bug fixes and minor feature updates.
+
+ParFlow development and bug-fixes would not be possible without contributions of the ParFlow community.  Thank you for all the great contributions.
+
+## Overview of Changes
+
+**Release 3.14.1 was generated due to errors the integrated DOI number generation on Zenodo for the 3.14.0 release.**   3.14.0 does not have an explicit DOI number attatched to it.
+
+## User Visible Changes
+
+### Initial reservoir support added
+
+An initial feature to support reservoirs has been added.   Reservoirs are only supported on problems where the top of domain lies at the top of the grid. This applies to all box domains and some  terrain following grid domains.   See the Reservoirs section of the ParFlow Users Manual for additional information.
+
+### Add CLM transpiration / RZ formulation option
+
+Transpiration / RZ formulation in Ferguson et al EES 2016 as an option.   For backward compatibility with prior formulation is kept as the default.  The key Solver.CLM.RZWaterStress control which formulation is used.  Option 0 (default) will limit transpiration when the top soil layer drops below wilting point, option 1 limits each layer independently.
+
+### Feature predictor Darcy
+
+Updated the predictor capability to include Darcy flux in addition to infiltration flux.  See Solver.SurfacePredictor key in the ParFlow User Manual.
+
+### Mg semi of jacobian preconditioning
+
+The solver has been been updated to run with the true jacobian and MGSemi. This allows efficient overland flow simulation with that preconditioner and now provides full PF capabilities on GPUs namely OverlandFlow, OverlandKinematic, and OverlandDiffusive. This is backwardly compatible and preserves all prior configurations (jacobian false, PFMG and other Hypre preconditions, etc).
+
+### PDI integration 
+
+Preliminary support for PDI has been added to ParFlow.  PDI is a
+library that aims to decouple high-performance simulation codes from
+-input/output concerns. It offers a declarative API that enables codes
+to expose the buffers in which they store data and to notify PDI of
+significant simulation steps. Additionally, it supports a plugin
+system to make existing libraries such as HDF5, NetCDF, or Python
+available to codes—potentially mixing several in a single execution.
+
+### Added key to control output of initial conditions
+
+A input key "PrintInitialConditions" was added to turn off output of initial condition output. Useful for restart to avoid duplication of information on restart.
+
+### Timestep added to the Netcdf reader 
+
+Add optional TimeStep for reading NetCDF files. Allows reading timesteps
+from NetCDF files that contain more than a single timestep. Negative
+TimeSteps are allowed and work like Python indexing (-1 is last
+timestep).   See the TimeStep key in the ParFlow Users Manual.
+
+```
+      <runname>.ICPressure.Type = "NCFile"    ## Python syntax
+      <runname>.Geom.domain.ICPressure.FileName = "initial_condition.nc" ## Python syntax
+      <runname>.Geom.domain.ICPressure.TimeStep = -1 ## Python syntax
+```
+
+### Improved error reporting for output files
+
+Some additional output is provided when opening of output files fails to make it easier to debug failed runs.
+
+
+### Add pfsb reader and fix default_single tests
+
+A `read_pfsb` function was added to the Python pftools for reading ParFlow scattered binary files.
+
+### Hypre support updated
+
+Support for Hypre 2.33.0 has been added.   The default Hypre used for ParFlow testing has been updated to Hypre 2.33.0.
+
+### CMake updates
+
+CMake dependency finding has been improved for CUDA, Hypre, NetCDF, OASIS.
+
+### CUDA architecture can be specified when configuring
+
+The standard -CMAKE_CUDA_ARCHITECTURES CMake variable can be used to set the CUDA architecture by users using NVidia accelerators.
+
+### 
+
+## Bug Fixes
+
+### Update overland flow evaluation
+
+Fix to overlandflow_eval_Kin to correct issue with overland surface boundary and Dirichlet side boundary.
+
+OpenMP compiler flags should now be compiler-dependent to improve portability.
+
+### Compressible storage positive enforcement
+
+The subsurface storage computation previously allowed negative storage
+values when the pressure head was negative, potentially leading to
+physically unrealistic results. This issue occurred in both the Python
+and Tcl pftools scripts. To address this, a minimum value of zero has
+been imposed for compressible storage in both scripts, ensuring that
+negative storage values are avoided. The implementation is backward
+compatible and should not affect existing workflows.
+
+### "undist" Sequential io fixes
+
+Fixed the TCL undist script to undist new output files. Added undist to Python interface.
+
+### Python run.dist() bug
+
+A bug in run.dist() was not correctly files that had been distributed in a way that p, q, r did not exactly divide NX, NY, NZ.
+
+### Fixed bug when printing mask files
+
+The PrintInitialConfiditions flag was preventing mask files from being written when PrintMask was true.   The two flags should now be independent.
+
+### Removed use of relative path for tclsh
+
+Replace hard-coded tclsh command name with TCL_TCLSH found during CMake configuration.
+
+### 
+
+## Internal/Developer Changes
+
+### Python package setup updated.
+
+Update Python to use the more modern pyproject.toml package file.
+
+### Python style check added
+
+Python Black code style format check was added to pfformat.   Checking for proper formatting is part of the CI system and merge requests will not be accepted if style checks fail.
+
+### GitHub CI
+
+Previous method of using variable to force rebuilds was manual and caused issues. Forks can not see the cache variable which also can cause problems. Changed to use hash of the workflow files to trigger cache builds. This is conservative and will cause some unnecessary builds but workflow changes are relatively infrequent.
+
+### Netcdf timing
+
+Timing for Netcdf file I/O was added.
+
+### Channel width enhancements
+
+Input options have been added to read/print Channelwidths.   See "ChannelWidths" section of the ParFlow user manual for additional information.
+
+### Support for using C++ as compiler was added.
+
+ParFlow is moving to using C++ as the compiler for all of ParFlow.   Initial support has been added to CMake for doing this. The PARFLOW_BUILD_WITH_CPP CMake flag will enable use of C++ as the compiler.
+
+### Add GPU execution CI action support
+
+Add support for self-hosted runner at Princeton to test GPU execution of the CI tests.  Currently is testing CUDA.
+
+## Remove local cub dependency
+
+CUB is officially supported as part of the CUDA toolkit.
+
+### CI Updates
+
+Updated most tests to execute under Ubuntu 24.04.   Ubuntu 22.04 testing is retained for base executions only.
+
+### Umpire support added and RMM update to current version 25.10.00a
+
+The CUDA memory managers Umpire and RMM were updated.
+
+
+## Known Issues
+
+See https://github.com/parflow/parflow/issues for current bug/issue reports.
+
+
 # ParFlow Release Notes 3.13.0
 ------------------------------
 
@@ -13,9 +176,11 @@ ParFlow development and bug-fixes would not be possible without contributions of
 
 Configuration flags have been added to support building only ParFlow-CLM for use cases where only CLM is desired.
 
-### Kokkos version support updated to version 4.2.01
+### Kokkos version support updated to version 4.2.01 and performance improved
 
-The Kokkos supported version has been updated to version 4.2.01.  This is the version used in our regression suite.  Other versions may or may not work.
+The Kokkos supported version has been updated to version 4.2.01.  This is the version used in our regression suite. Other versions may or may not work.
+
+Refactors `KokkosMemSet` operations by replacing manual zero-initialization via `parallel_for `with a more efficient and portable. Up to ~38% reduction in solve time compared to the previous loop based implementation.
 
 ### OASIS version support updated to version 5.1.
 
@@ -28,6 +193,11 @@ Improve speed of reading large vegm files in the Python read_vegm function.
 ### Documentation updates
 
 Clarified top flux boundary conditions (e.g., OverlandFlow, SeepageFace) and EvapTrans files sign convention.  Typo in Haverkamp saturation formula: alpha replaced with A.  Key names "TensorByFileX" renamed to the correct "TensorFileX" key name.
+
+ReadTheDocs had the irrigation type key with an 's' at the end but there should not be an 's' there.   This example shows the corrected documentation:
+```
+<runname>.Solver.CLM.IrrigationType "Drip"
+```
 
 ## Bug Fixes
 
