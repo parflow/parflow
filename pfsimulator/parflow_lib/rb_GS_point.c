@@ -209,6 +209,7 @@ void     RedBlackGSPoint(
           x0 = SubvectorElt(x_sub, ix, iy, iz);
           bp = SubvectorElt(b_sub, ix, iy, iz);
 
+          BeginTiming(RbgsZeroOptiTimingIndex);
 #ifdef PARFLOW_HAVE_PYSTENCILS
           PyCodegen_RBGS_ZeroOptimizationKernel(a0, bp, x0,
                                                 nx, ny, nz,
@@ -226,6 +227,7 @@ void     RedBlackGSPoint(
             SKIP_PARALLEL_SYNC;
           });
 #endif
+          EndTiming(RbgsZeroOptiTimingIndex);
         }
       }
     }
@@ -348,6 +350,7 @@ void     RedBlackGSPoint(
 
           bp = SubvectorElt(b_sub, ix, iy, iz);
 
+          BeginTiming(RbgsSevenPointTimingIndex);
 #ifdef PARFLOW_HAVE_PYSTENCILS
           PyCodegen_RBGS_7PtKernel(a0, a1, a2, a3, a4, a5, a6,
                                    bp,
@@ -372,6 +375,7 @@ void     RedBlackGSPoint(
             SKIP_PARALLEL_SYNC;
           });
 #endif
+          EndTiming(RbgsSevenPointTimingIndex);
         }
       }
     }

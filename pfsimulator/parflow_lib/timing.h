@@ -51,12 +51,14 @@
 #define ClusteringTimingIndex 9
 #define NetcdfTimingIndex 10
 #define PDITimingIndex  11
-#define FluxBase 12
-#define FluxCompressibleStorage 13
-#define FluxSourceTerms 14
-#define VDotProduct 15
+#define FluxBaseTimingIndex 12
+#define FluxCompressibleStorageTimingIndex 13
+#define FluxSourceTermsTimingIndex 14
+#define RbgsZeroOptiTimingIndex 15
+#define RbgsSevenPointTimingIndex 16
+#define VDotProductTimingIndex 17
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  16
+#define VectorUpdateTimingIndex  18
 #endif
 
 
