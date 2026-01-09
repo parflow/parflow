@@ -34,6 +34,7 @@
 
 #ifdef HAVE_HYPRE
 #include "hypre_dependences.h"
+#include "HYPRE_utilities.h"
 
 /*
  * Versions of Hypre > 2.10.x require dimension argument for
@@ -196,6 +197,7 @@ void         PFMGOctree(
     IfLogging(1)
     {
       HYPRE_StructPFMGSetLogging(instance_xtra->hypre_pfmg_data, 1);
+      HYPRE_StructPFMGSetPrintLevel(instance_xtra->hypre_pfmg_data, 2);
     }
   }
 
@@ -355,6 +357,9 @@ PFModule  *PFMGOctreeInitInstanceXtra(
 
   (void)problem;
   (void)temp_data;
+
+  /* Set hypre global log level to 2 */
+  HYPRE_SetLogLevel(2);
 
   if (PFModuleInstanceXtra(this_module) == NULL)
     instance_xtra = ctalloc(InstanceXtra, 1);
@@ -1036,6 +1041,13 @@ PFModule  *PFMGOctreeInitInstanceXtra(
 
     HYPRE_StructPFMGSetDxyz(instance_xtra->hypre_pfmg_data,
                             instance_xtra->dxyz);
+
+    /* Set logging and print level for hypre output */
+    IfLogging(1)
+    {
+      HYPRE_StructPFMGSetLogging(instance_xtra->hypre_pfmg_data, 1);
+      HYPRE_StructPFMGSetPrintLevel(instance_xtra->hypre_pfmg_data, 2);
+    }
 
     HYPRE_StructPFMGSetup(instance_xtra->hypre_pfmg_data,
                           instance_xtra->hypre_mat,

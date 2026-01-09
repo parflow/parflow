@@ -98,6 +98,7 @@ void         PFMG(
     IfLogging(1)
     {
       HYPRE_StructPFMGSetLogging(instance_xtra->hypre_pfmg_data, 1);
+      HYPRE_StructPFMGSetPrintLevel(instance_xtra->hypre_pfmg_data, 2);
     }
   }
 
