@@ -2,6 +2,7 @@ import pystencils as ps
 import re
 
 from pystencilssfg import SourceFileGenerator
+from pystencilssfg.lang.gpu import cuda
 
 from pystencils.types.quick import SInt
 
@@ -17,7 +18,7 @@ def get_kernel_cfg(
         )
 
         # cpu optimizations
-        if sfg.context.project_info["use_cpu"]:
+        if sfg.context.project_info.get("use_cpu"):
 
             # vectorization
             if target.is_vector_cpu() and allow_vect:
@@ -25,13 +26,17 @@ def get_kernel_cfg(
                 kernel_cfg.cpu.vectorize.assume_inner_stride_one = True
 
             # OpenMP
-            if sfg.context.project_info["use_openmp"]:
+            if sfg.context.project_info.get("use_openmp"):
                 kernel_cfg.cpu.openmp.enable = True
 
         # gpu optimization: warp level reductions
-        if sfg.context.project_info["use_cuda"]:
+        if sfg.context.project_info.get("use_cuda"):
             kernel_cfg.gpu.assume_warp_aligned_block_size = True
             kernel_cfg.gpu.warp_size = 32
+            kernel_cfg.gpu.indexing_scheme = "gridstrided_linear3d"
+
+            if sfg.context.project_info.get("use_manual_exec_cfg_cuda"):
+                kernel_cfg.gpu.manual_launch_grid = True
 
         return kernel_cfg
     else:
@@ -39,11 +44,22 @@ def get_kernel_cfg(
 
 
 def invoke(sfg: SourceFileGenerator, k):
-    if sfg.context.project_info["use_cuda"]:
+    if sfg.context.project_info.get("use_cuda"):
         sfg.include("<stdio.h>")
 
-        return [
-            sfg.gpu_invoke(k),
+        if sfg.context.project_info.get("use_manual_exec_cfg_cuda"):
+            block_size = cuda.dim3(const=True).var("block_size")
+            grid_size = cuda.dim3(const=True).var("grid_size")
+
+            kernel_call = [
+                sfg.init(block_size)("8", "8", "4"),
+                sfg.init(grid_size)("12", "6", "3"),
+                sfg.gpu_invoke(k, block_size=block_size, grid_size=grid_size)
+            ]
+        else:
+            kernel_call = [sfg.gpu_invoke(k)]
+
+        return kernel_call + [
             "cudaError_t err = cudaPeekAtLastError();",
             sfg.branch("err != cudaSuccess")(
                 'printf("\\n\\n%s in %s at line %d\\n", cudaGetErrorString(err), __FILE__, __LINE__);\n'

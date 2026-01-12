@@ -24,7 +24,7 @@ def create_reduction_kernel_wrapper(
 
     # TODO: code duplication
     target = sfg.context.project_info["target"]
-    use_cuda = sfg.context.project_info["use_cuda"]
+    use_cuda = sfg.context.project_info.get("use_cuda")
 
     if target.is_vector_cpu() and allow_vect:
         for param in kernel_params:

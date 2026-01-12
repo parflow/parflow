@@ -794,7 +794,7 @@ double PFVDotProd(
     xp = SubvectorElt(x_sub, ix, iy, iz);
     yp = SubvectorElt(y_sub, ix, iy, iz);
 
-    BeginTiming(VDotProduct);
+    BeginTiming(VDotProductTimingIndex);
 #ifdef PARFLOW_HAVE_PYSTENCILS
     sum = PyCodegen_VDotProd_wrapper(xp, yp,
                                      nx, ny, nz,
@@ -811,8 +811,8 @@ double PFVDotProd(
       ReduceSum(sum, xp[i_x] * yp[i_y]);
     });
 #endif
+    EndTiming(VDotProductTimingIndex);
   }
-  EndTiming(VDotProduct);
 
   result_invoice = amps_NewInvoice("%d", &sum);
   amps_AllReduce(amps_CommWorld, result_invoice, amps_Add);
