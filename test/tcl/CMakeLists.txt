@@ -2,7 +2,7 @@
 include(ParflowTest)
 
 set(TESTS
- default_single.tcl
+  default_single.tcl
   default_richards_wells.tcl
   forsyth2.tcl
   harvey.flow.tcl
@@ -85,8 +85,7 @@ list(APPEND PARALLEL_2DTOPO_TESTS "")
 
 if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
   list(APPEND PARALLEL_3DTOPO_TESTS
-    default_single.tcl
-  )
+    default_single.tcl)
 
   if(${PARFLOW_HAVE_HYPRE})
     list(APPEND PARALLEL_3DTOPO_TESTS
