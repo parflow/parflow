@@ -34,6 +34,9 @@
 #ifndef _TIMING_HEADER
 #define _TIMING_HEADER
 
+#if defined(PARFLOW_HAVE_LIKWID)
+#include <likwid-marker.h>
+#endif
 
 /*--------------------------------------------------------------------------
  * With timing on
@@ -125,6 +128,7 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
           TimingFLOPS(i) -= TimingFLOPCount;  \
           amps_Sync(amps_CommWorld);          \
           StartTiming();                      \
+          LIKWID_MARKER_START(TimingName(i)); \
         }
 #else
 #define BeginTiming(i)                        \
@@ -134,6 +138,7 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
           TimingCPUTime(i) -= TimingCPUCount; \
           TimingFLOPS(i) -= TimingFLOPCount;  \
           StartTiming();                      \
+          LIKWID_MARKER_START(TimingName(i)); \
         }
 #endif
 
@@ -144,6 +149,7 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
           TimingCPUTime(i) += TimingCPUCount; \
           TimingFLOPS(i) += TimingFLOPCount;  \
           StartTiming();                      \
+          LIKWID_MARKER_STOP(TimingName(i));  \
         }
 
 #ifdef VECTOR_UPDATE_TIMING

@@ -393,6 +393,25 @@ if (${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
   endif (${SLURM_FOUND})
 endif (${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
 
+#-----------------------------------------------------------------------------
+# LIKWID
+#-----------------------------------------------------------------------------
+option(PARFLOW_ENABLE_LIKWID "Build with LIKWID" "OFF")
+if (${PARFLOW_ENABLE_LIKWID})
+  find_library ( LIKWID_LIB likwid HINTS $ENV{LIKWID_LIBDIR}
+          $ENV{LIKWID_ROOT}/lib )
+  find_path ( LIKWID_INCLUDE_DIR likwid.h HINTS $ENV{LIKWID_INCDIR}
+          $ENV{LIKWID_ROOT}/include )
+
+  if ( LIKWID_LIB AND LIKWID_INCLUDE_DIR )
+    set ( PARFLOW_HAVE_LIKWID "yes" )
+    set ( HAVE_LIKWID ${PARFLOW_HAVE_LIKWID} )
+    include_directories ( ${LIKWID_INCLUDE_DIR} )
+    add_definitions ( "-DLIKWID_PERFMON" )
+  else ()
+    message ( WARNING "likwid marker library not found. Set environment variable LIKWID_ROOT" )
+  endif ()
+endif (${PARFLOW_ENABLE_LIKWID})
 
 #-----------------------------------------------------------------------------
 # PYSTENCILS

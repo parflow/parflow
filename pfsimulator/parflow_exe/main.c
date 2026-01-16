@@ -174,6 +174,14 @@ int main(int argc, char *argv [])
 #endif // PARFLOW_HAVE_KOKKOS
 
     /*-----------------------------------------------------------------------
+     * Initialize LIKWID markers
+     *-----------------------------------------------------------------------*/
+
+#if defined(PARFLOW_HAVE_LIKWID)
+    LIKWID_MARKER_INIT;
+#endif
+
+    /*-----------------------------------------------------------------------
      * Initialize RMM pool allocator
      *-----------------------------------------------------------------------*/
 
@@ -405,6 +413,10 @@ int main(int argc, char *argv [])
     /*-----------------------------------------------------------------------
      * Clean up
      *-----------------------------------------------------------------------*/
+
+#if defined(PARFLOW_HAVE_LIKWID)
+    LIKWID_MARKER_CLOSE;
+#endif
 
     FreeLogging();
 
