@@ -34,7 +34,6 @@
 
 #ifdef HAVE_HYPRE
 #include "hypre_dependences.h"
-#include "HYPRE_utilities.h"
 
 void CopyParFlowVectorToHypreVector(Vector *            rhs,
                                     HYPRE_StructVector* hypre_b)
@@ -186,9 +185,6 @@ void HypreInitialize(Matrix*              pf_Bmat,
                      HYPRE_StructVector*  hypre_x
                      )
 {
-  /* Set hypre global log level to 2 */
-  HYPRE_SetLogLevel(2);
-
   int full_ghosts[6] = { 1, 1, 1, 1, 1, 1 };
   int no_ghosts[6] = { 0, 0, 0, 0, 0, 0 };
 

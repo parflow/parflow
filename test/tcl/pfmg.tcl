@@ -332,7 +332,7 @@ pfset Solver.Linear.Preconditioner.PFMG.Smoother         WJacobi
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 pfrun pfmg
-#pfundist pfmg
+pfundist pfmg
 
 #
 # Tests 

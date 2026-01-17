@@ -34,7 +34,6 @@
 
 #ifdef HAVE_HYPRE
 #include "hypre_dependences.h"
-#include "HYPRE_utilities.h"
 
 /*
  * Versions of Hypre > 2.10.x require dimension argument for
@@ -357,9 +356,6 @@ PFModule  *PFMGOctreeInitInstanceXtra(
 
   (void)problem;
   (void)temp_data;
-
-  /* Set hypre global log level to 2 */
-  HYPRE_SetLogLevel(2);
 
   if (PFModuleInstanceXtra(this_module) == NULL)
     instance_xtra = ctalloc(InstanceXtra, 1);
