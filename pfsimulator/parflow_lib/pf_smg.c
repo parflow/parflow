@@ -89,14 +89,6 @@ void         SMG(
 
   EndTiming(public_xtra->time_index_copy_hypre);
 
-  if (tol > 0.0)
-  {
-    IfLogging(1)
-    {
-      HYPRE_StructSMGSetLogging(instance_xtra->hypre_smg_data, 1);
-    }
-  }
-
   /* Invoke the preconditioner using a zero initial guess */
   HYPRE_StructSMGSetZeroGuess(hypre_smg_data);
   HYPRE_StructSMGSetTol(hypre_smg_data, tol);
@@ -107,8 +99,8 @@ void         SMG(
 
   EndTiming(public_xtra->time_index_smg);
 
-  if (tol > 0.0)
-  {
+  // if (tol > 0.0)
+  // {
     IfLogging(1)
     {
       FILE  *log_file;
@@ -122,7 +114,7 @@ void         SMG(
               num_iterations, rel_norm);
       CloseLogFile(log_file);
     }
-  }
+  // }
 
   /* Copy solution from hypre_x vector to the soln vector. */
   BeginTiming(public_xtra->time_index_copy_hypre);
@@ -212,6 +204,13 @@ PFModule  *SMGInitInstanceXtra(
                                   num_pre_relax);
     HYPRE_StructSMGSetNumPostRelax(instance_xtra->hypre_smg_data,
                                    num_post_relax);
+
+    /* Enable logging BEFORE setup so that norms arrays are allocated */
+    IfLogging(1)
+    {
+      HYPRE_StructSMGSetLogging(instance_xtra->hypre_smg_data, 1);
+      HYPRE_StructSMGSetPrintLevel(instance_xtra->hypre_smg_data, 2);
+    }
 
     HYPRE_StructSMGSetup(instance_xtra->hypre_smg_data,
                          instance_xtra->hypre_mat,
