@@ -89,10 +89,8 @@ int  RegisterTiming(
 
   int i;
 
-#if defined(PARFLOW_HAVE_LIKWID)
   // also register timer as a LIKWID marker
   LIKWID_MARKER_REGISTER(name);
-#endif
 
   (timing->time) = ctalloc(amps_Clock_t, (old_size + 1));
   (timing->cpu_time) = ctalloc(amps_CPUClock_t, (old_size + 1));
