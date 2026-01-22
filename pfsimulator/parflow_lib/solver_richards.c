@@ -993,7 +993,8 @@ SetupRichards(PFModule * this_module)
     if (public_xtra->write_silo_qx_overland
         || public_xtra->print_qx_overland
         || public_xtra->write_pdi_qx_overland
-        || public_xtra->write_netcdf_qx_overland)
+        || public_xtra->write_netcdf_qx_overland
+        || public_xtra->surface_predictor))
     {
       instance_xtra->q_overlnd_x =
         NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
@@ -1007,7 +1008,8 @@ SetupRichards(PFModule * this_module)
     if (public_xtra->write_silo_qy_overland
         || public_xtra->print_qy_overland
         || public_xtra->write_pdi_qy_overland
-        || public_xtra->write_netcdf_qy_overland)
+        || public_xtra->write_netcdf_qy_overland
+        || public_xtra->surface_predictor))
     {
       instance_xtra->q_overlnd_y =
         NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
