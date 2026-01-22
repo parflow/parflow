@@ -1491,7 +1491,7 @@ def _read_vegm(file_name):
         in the vegm.dat file except for x/y
     """
     # Assume first two lines are comments and use generic column names
-    df = pd.read_csv(file_name, delim_whitespace=True, skiprows=2, header=None)
+    df = pd.read_csv(file_name, sep='\s+', skiprows=2, header=None)
     df.columns = [f"c{i}" for i in range(df.shape[1])]
 
     # Number of columns and rows determined by last line of file
