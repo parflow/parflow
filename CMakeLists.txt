@@ -125,27 +125,27 @@ else(PARFLOW_ACCELERATOR_BACKEND STREQUAL "none")
   message(FATAL_ERROR "ERROR: Unknown backend type! PARFLOW_ACCELERATOR_BACKEND=${PARFLOW_ACCELERATOR_BACKEND} does not exist!")
 endif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "none")
 
-# Include Umpire or RMM memory manager for pool allocation
+# Include UMPIRE or RMM memory manager for pool allocation
 if(PARFLOW_HAVE_CUDA OR PARFLOW_HAVE_KOKKOS)
 
-  if (DEFINED umpire_ROOT AND DEFINED RMM_ROOT)
-    message(FATAL_ERROR "ERROR: Cannot have both Umpire and RMM enabled at the same time.")
-  endif(DEFINED umpire_ROOT AND DEFINED RMM_ROOT)
+  if (DEFINED UMPIRE_ROOT AND DEFINED RMM_ROOT)
+    message(FATAL_ERROR "ERROR: Cannot have both UMPIRE and RMM enabled at the same time.")
+  endif(DEFINED UMPIRE_ROOT AND DEFINED RMM_ROOT)
   
   # Determine memory manager and print single status message
-  if(DEFINED umpire_ROOT)
-    find_package(umpire REQUIRED)
+  if(DEFINED UMPIRE_ROOT)
+    find_package(UMPIRE REQUIRED)
     set(PARFLOW_HAVE_UMPIRE "yes")
-    message(STATUS "MEMORY MANAGER: Umpire is sleceted")
+    message(STATUS "MEMORY MANAGER: UMPIRE is sleceted")
    
-  elseif(DEFINED rmm_ROOT)
-    find_package(rmm REQUIRED)
+  elseif(DEFINED RMM_ROOT)
+    find_package(RMM REQUIRED)
     set(PARFLOW_HAVE_RMM "yes")
     message(STATUS "MEMORY MANAGER: RMM is sleceted")
    
-  else(DEFINED umpire_ROOT)
+  else(DEFINED UMPIRE_ROOT)
     message(STATUS "MEMORY MANAGER: NO memoery manager is sleceted")
-  endif(DEFINED umpire_ROOT)
+  endif(DEFINED UMPIRE_ROOT)
 endif(PARFLOW_HAVE_CUDA OR PARFLOW_HAVE_KOKKOS)
 
 #-----------------------------------------------------------------------------
