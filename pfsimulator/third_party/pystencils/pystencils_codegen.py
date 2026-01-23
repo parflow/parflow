@@ -6,6 +6,8 @@ from pystencilssfg.lang.gpu import cuda
 
 from pystencils.types.quick import SInt
 
+DEFAULT_BLOCK_SIZE: tuple[int, int, int] = (256, 1, 1)
+
 
 # set up kernel config
 def get_kernel_cfg(
@@ -33,10 +35,15 @@ def get_kernel_cfg(
         if sfg.context.project_info.get("use_cuda"):
             kernel_cfg.gpu.assume_warp_aligned_block_size = True
             kernel_cfg.gpu.warp_size = 32
-            kernel_cfg.gpu.indexing_scheme = "gridstrided_linear3d"
+            kernel_cfg.gpu.default_block_size = DEFAULT_BLOCK_SIZE
+            kernel_cfg.gpu.use_cub_reductions = True
+            #kernel_cfg.gpu.use_shared_mem_reductions = True
 
             if sfg.context.project_info.get("use_manual_exec_cfg_cuda"):
                 kernel_cfg.gpu.manual_launch_grid = True
+                kernel_cfg.gpu.indexing_scheme = "gridstrided_linear3d"
+            else:
+                kernel_cfg.gpu.indexing_scheme = "linear3d"
 
         return kernel_cfg
     else:
@@ -52,8 +59,8 @@ def invoke(sfg: SourceFileGenerator, k):
             grid_size = cuda.dim3(const=True).var("grid_size")
 
             kernel_call = [
-                sfg.init(block_size)("8", "8", "4"),
-                sfg.init(grid_size)("12", "6", "3"),
+                sfg.init(block_size)(*[str(bs) for bs in DEFAULT_BLOCK_SIZE]),
+                sfg.init(grid_size)("1", "24", "18"),
                 sfg.gpu_invoke(k, block_size=block_size, grid_size=grid_size)
             ]
         else:
