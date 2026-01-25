@@ -6337,6 +6337,182 @@ to be active.
    <runname>.Solver.CLM.UseSlopeAspect = True   ## Python syntax
 
 
+.. _CLM Snow Parameterization:
+
+CLM Snow Parameterization
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+These keys control snow physics options for improved snow modeling.
+All keys default to backward-compatible behavior when not set.
+Note that ``CLM`` must be compiled and linked at runtime for these
+options to be active.
+
+**Rain-Snow Partitioning**
+
+Standard ``CLM`` uses air temperature to partition precipitation into rain
+and snow. However, falling hydrometeors cool via evaporation, making
+wet-bulb temperature a better predictor, especially in dry mountain
+climates where snow can persist at air temperatures above 0°C.
+Reference: :cite:p:`Wang2019`.
+
+*string* **Solver.CLM.SnowPartition** CLM Selects the method for
+partitioning precipitation into rain and snow. The valid types for
+this key are **CLM**, **WetbulbThreshold**, **WetbulbLinear**.
+
+**CLM**:
+   Standard air temperature threshold with linear transition (default).
+
+**WetbulbThreshold**:
+   Sharp threshold at wet-bulb temperature. Better for dry mountain climates.
+
+**WetbulbLinear**:
+   Linear transition around wet-bulb temperature threshold.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowPartition "WetbulbThreshold"         ## TCL syntax
+      <runname>.Solver.CLM.SnowPartition = "WetbulbThreshold"   ## Python syntax
+
+*double* **Solver.CLM.WetbulbThreshold** 274.15 Threshold temperature in
+Kelvin for wetbulb partitioning methods. Default 274.15 K (1°C). Only
+used when ``Solver.CLM.SnowPartition`` is ``WetbulbThreshold`` or
+``WetbulbLinear``.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.WetbulbThreshold 274.15         ## TCL syntax
+      <runname>.Solver.CLM.WetbulbThreshold = 274.15   ## Python syntax
+
+**Thin Snow Damping**
+
+Thin early-season snowpacks can experience spurious melt due to warm
+ground heat flux. This option reduces melt energy for shallow snowpacks
+to prevent premature ablation.
+
+*double* **Solver.CLM.ThinSnowDamping** 1.0 Fraction of melt energy
+retained for thin snowpacks. A value of 1.0 means no damping (default,
+backward compatible). A value of 0.1 means only 10% of melt energy is
+applied (90% reduction).
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.ThinSnowDamping 0.3         ## TCL syntax
+      <runname>.Solver.CLM.ThinSnowDamping = 0.3   ## Python syntax
+
+*double* **Solver.CLM.ThinSnowThreshold** 50.0 Snow water equivalent
+threshold in mm below which thin snow damping applies.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.ThinSnowThreshold 50.0         ## TCL syntax
+      <runname>.Solver.CLM.ThinSnowThreshold = 50.0   ## Python syntax
+
+**Albedo Schemes**
+
+Snow albedo controls the radiation balance and strongly influences melt
+timing. Three schemes are available:
+
+*string* **Solver.CLM.AlbedoScheme** CLM Snow albedo calculation method.
+The valid types for this key are **CLM**, **VIC**, **Tarboton**.
+
+**CLM**:
+   Age-based exponential decay using the snowage variable (default).
+
+**VIC**:
+   Separate decay rates for cold (accumulating) and warm (melting)
+   conditions based on ground temperature. Reference: :cite:p:`Andreadis2009`.
+
+**Tarboton**:
+   Arrhenius temperature-dependent aging where decay accelerates near
+   the melting point. Reference: :cite:p:`Tarboton1996`.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoScheme "Tarboton"         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoScheme = "Tarboton"   ## Python syntax
+
+*double* **Solver.CLM.AlbedoVisNew** 0.95 Fresh snow visible-band albedo.
+Physically ranges 0.85-0.98.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoVisNew 0.95         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoVisNew = 0.95   ## Python syntax
+
+*double* **Solver.CLM.AlbedoNirNew** 0.65 Fresh snow near-infrared albedo.
+Physically ranges 0.5-0.7.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoNirNew 0.65         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoNirNew = 0.65   ## Python syntax
+
+*double* **Solver.CLM.AlbedoMin** 0.4 Minimum snow albedo floor for aged
+or dirty snow.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoMin 0.4         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoMin = 0.4   ## Python syntax
+
+*double* **Solver.CLM.AlbedoDecayVis** 0.5 Visible albedo decay coefficient
+for ``CLM`` and ``Tarboton`` schemes.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoDecayVis 0.5         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoDecayVis = 0.5   ## Python syntax
+
+*double* **Solver.CLM.AlbedoDecayNir** 0.2 NIR albedo decay coefficient
+for ``CLM`` and ``Tarboton`` schemes. NIR typically decays faster than visible.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoDecayNir 0.2         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoDecayNir = 0.2   ## Python syntax
+
+*double* **Solver.CLM.AlbedoAccumA** 0.94 VIC scheme cold-phase
+(accumulation) decay base per hour. Should be greater than ``AlbedoThawA``.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoAccumA 0.94         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoAccumA = 0.94   ## Python syntax
+
+*double* **Solver.CLM.AlbedoThawA** 0.82 VIC scheme melt-phase decay base
+per hour. Should be less than ``AlbedoAccumA`` since melt conditions age
+snow faster.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoThawA 0.82         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoThawA = 0.82   ## Python syntax
+
+
 .. _ParFlow NetCDF4 Parallel I/O:
 
 ParFlow NetCDF4 Parallel I/O

@@ -32,6 +32,11 @@ subroutine clm_hydro_canopy (clm)
   use clm_varcon, only : tfrz, istice, istwet, istsoil
   implicit none
 
+  ! Parameters for saturation vapor pressure calculation
+  real(r8), parameter :: es_a = 611.2d0      ! [Pa] reference saturation vapor pressure
+  real(r8), parameter :: es_b = 17.67d0      ! coefficient for Clausius-Clapeyron
+  real(r8), parameter :: es_c = 243.5d0      ! [C] coefficient for Clausius-Clapeyron
+
   !=== Arguments ===========================================================
 
   type (clm1d), intent(inout) :: clm        !CLM 1-D Module
@@ -55,6 +60,15 @@ subroutine clm_hydro_canopy (clm)
 
   real(r8)    :: &
        dewmxi               ! inverse of maximum allowed dew [1/mm]
+
+  ! Variables for wetbulb rain-snow partitioning @RMM 2025
+  real(r8) :: t_c             ! air temperature in Celsius
+  real(r8) :: t_wb            ! wetbulb temperature in Celsius
+  real(r8) :: t_wb_k          ! wetbulb temperature in Kelvin
+  real(r8) :: rh_pct          ! relative humidity in percent
+  real(r8) :: e_sat           ! saturation vapor pressure [Pa]
+  real(r8) :: e_act           ! actual vapor pressure [Pa]
+  real(r8) :: q_sat           ! saturation specific humidity [kg/kg]
 
   !=== End Variable List ===================================================
   
@@ -144,22 +158,80 @@ subroutine clm_hydro_canopy (clm)
      clm%qflx_prec_grnd   = qflx_through  + qflx_candrip  
   endif
 
-  ! 1.3 The percentage of liquid water by mass, which is arbitrarily set to 
+  ! 1.3 The percentage of liquid water by mass, which is arbitrarily set to
   !     vary linearly with air temp, from 0% at 273.16 to 40% max at 275.16.
+  !     @RMM 2025: Only use itypprc shortcut for CLM default method (type 0).
+  !     Wetbulb methods (type 1,2) need to run regardless of itypprc to catch
+  !     cases where air temp is warm but wetbulb is cold (humid conditions).
 
-  if (clm%itypprc <= 1) then
+  if (clm%itypprc <= 1 .and. clm%snow_partition_type == 0) then
      flfall = 1.                              ! fraction of liquid water within falling precip.
      clm%qflx_snow_grnd = 0.                  ! ice onto ground (mm/s)
      clm%qflx_rain_grnd = clm%qflx_prec_grnd  ! liquid water onto ground (mm/s)
      dz_snowf = 0.                            ! rate of snowfall, snow depth/s (m/s)
   else
-     if (clm%forc_t <= tfrz) then
-        flfall = 0.
-     else if (clm%forc_t <= tfrz+2.) then
-        flfall = -54.632 + 0.2*clm%forc_t
-     else
-        flfall = 0.4
-     endif
+     ! @RMM 2025: Select rain-snow partitioning method
+     ! snow_partition_type: 0=CLM linear (air temp), 1=wetbulb threshold, 2=wetbulb linear
+     select case (clm%snow_partition_type)
+
+     case (1, 2)  ! Wetbulb-based methods
+        ! Calculate wetbulb temperature using Stull (2011) psychrometric approximation
+        ! First convert air temp to Celsius
+        t_c = clm%forc_t - tfrz
+
+        ! Calculate saturation vapor pressure using Clausius-Clapeyron
+        e_sat = es_a * exp(es_b * t_c / (t_c + es_c))
+
+        ! Calculate saturation specific humidity
+        q_sat = 0.622d0 * e_sat / (clm%forc_pbot - 0.378d0 * e_sat)
+
+        ! Calculate relative humidity from specific humidity
+        ! Avoid division by zero and cap at 100%
+        if (q_sat > 0.0d0) then
+           rh_pct = min(100.0d0, max(0.0d0, 100.0d0 * clm%forc_q / q_sat))
+        else
+           rh_pct = 100.0d0
+        endif
+
+        ! Stull (2011) wet-bulb temperature approximation (result in Celsius)
+        ! Valid for RH >= 5% and T between -20C and 50C
+        t_wb = t_c * atan(0.151977d0 * sqrt(rh_pct + 8.313659d0)) &
+             + atan(t_c + rh_pct) &
+             - atan(rh_pct - 1.676331d0) &
+             + 0.00391838d0 * (rh_pct**1.5d0) * atan(0.023101d0 * rh_pct) &
+             - 4.686035d0
+
+        ! Convert wetbulb to Kelvin for comparison
+        t_wb_k = t_wb + tfrz
+
+        if (clm%snow_partition_type == 1) then
+           ! Wetbulb threshold method: all snow below threshold, all rain above
+           if (t_wb_k <= clm%tw_threshold) then
+              flfall = 0.0d0  ! all snow
+           else
+              flfall = 1.0d0  ! all rain
+           endif
+        else  ! case 2: wetbulb linear
+           ! Linear transition over 2K range centered on threshold
+           if (t_wb_k <= clm%tw_threshold - 1.0d0) then
+              flfall = 0.0d0
+           else if (t_wb_k >= clm%tw_threshold + 1.0d0) then
+              flfall = 1.0d0
+           else
+              flfall = (t_wb_k - (clm%tw_threshold - 1.0d0)) / 2.0d0
+           endif
+        endif
+
+     case default  ! Case 0: CLM default linear (air temperature)
+        if (clm%forc_t <= tfrz) then
+           flfall = 0.
+        else if (clm%forc_t <= tfrz+2.) then
+           flfall = -54.632 + 0.2*clm%forc_t
+        else
+           flfall = 0.4
+        endif
+
+     end select
 
      ! Use Alta relationship, Anderson(1976); LaChapelle(1961), 
      ! U.S.Department of Agriculture Forest Service, Project F, 

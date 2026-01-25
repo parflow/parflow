@@ -10,7 +10,9 @@ t_soi_pf,clm_dump_interval,clm_1d_out,clm_forc_veg,clm_output_dir,clm_output_dir
 write_CLM_binary,slope_accounting_CLM,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,                 &
 res_satpf,irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thresholdpf,               &
 qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z,clm_next,clm_write_logs,                    &
-clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak)
+clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak,                            &
+snow_partition_typepf,tw_thresholdpf,thin_snow_dampingpf,thin_snow_thresholdpf,                       &
+albedo_schemepf,albedo_vis_newpf,albedo_nir_newpf,albedo_minpf,albedo_decay_vispf,albedo_decay_nirpf,albedo_accum_apf,albedo_thaw_apf)
 
   !=========================================================================
   !
@@ -146,6 +148,22 @@ clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak)
   real(r8) :: irr_stoppf                         ! irrigation daily stop tie for constant cycle
   real(r8) :: irr_thresholdpf                    ! irrigation threshold criteria for deficit cycle (units of soil moisture content)
   integer  :: irr_thresholdtypepf                ! irrigation threshold criteria type -- top layer, bottom layer, column avg
+
+  ! snow parameterization keys @RMM 2025
+  integer  :: snow_partition_typepf              ! rain-snow partition: 0=CLM, 1=wetbulb threshold, 2=wetbulb linear
+  real(r8) :: tw_thresholdpf                     ! wetbulb temperature threshold for snow [K]
+  real(r8) :: thin_snow_dampingpf                ! thin snow energy damping factor [0-1]
+  real(r8) :: thin_snow_thresholdpf              ! SWE threshold for damping [kg/m2]
+
+  ! snow albedo parameterization keys @RMM 2025
+  integer  :: albedo_schemepf                    ! albedo scheme: 0=CLM, 1=VIC, 2=Tarboton
+  real(r8) :: albedo_vis_newpf                   ! fresh snow VIS albedo [0-1]
+  real(r8) :: albedo_nir_newpf                   ! fresh snow NIR albedo [0-1]
+  real(r8) :: albedo_minpf                       ! minimum albedo floor [0-1]
+  real(r8) :: albedo_decay_vispf                 ! VIS decay coefficient [0-1]
+  real(r8) :: albedo_decay_nirpf                 ! NIR decay coefficient [0-1]
+  real(r8) :: albedo_accum_apf                   ! VIC cold-phase decay base
+  real(r8) :: albedo_thaw_apf                    ! VIC melt-phase decay base
 
   ! local indices & counters
   integer  :: i,j,k,k1,j1,l1                     ! indices for local looping
@@ -486,6 +504,22 @@ clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak)
            clm(t)%wilting_point      = wilting_pointpf
            clm(t)%field_capacity     = field_capacitypf
            clm(t)%res_sat            = res_satpf
+
+           ! for snow parameterization @RMM 2025
+           clm(t)%snow_partition_type  = snow_partition_typepf
+           clm(t)%tw_threshold         = tw_thresholdpf
+           clm(t)%thin_snow_damping    = thin_snow_dampingpf
+           clm(t)%thin_snow_threshold  = thin_snow_thresholdpf
+
+           ! for snow albedo parameterization @RMM 2025
+           clm(t)%albedo_scheme        = albedo_schemepf
+           clm(t)%albedo_vis_new       = albedo_vis_newpf
+           clm(t)%albedo_nir_new       = albedo_nir_newpf
+           clm(t)%albedo_min           = albedo_minpf
+           clm(t)%albedo_decay_vis     = albedo_decay_vispf
+           clm(t)%albedo_decay_nir     = albedo_decay_nirpf
+           clm(t)%albedo_accum_a       = albedo_accum_apf
+           clm(t)%albedo_thaw_a        = albedo_thaw_apf
 
            ! for irrigation
            clm(t)%irr_type           = irr_typepf
