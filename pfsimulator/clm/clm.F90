@@ -12,7 +12,8 @@ res_satpf,irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thre
 qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z,clm_next,clm_write_logs,                    &
 clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak,                            &
 snow_partition_typepf,tw_thresholdpf,thin_snow_dampingpf,thin_snow_thresholdpf,                       &
-albedo_schemepf,albedo_vis_newpf,albedo_nir_newpf,albedo_minpf,albedo_decay_vispf,albedo_decay_nirpf,albedo_accum_apf,albedo_thaw_apf)
+albedo_schemepf,albedo_vis_newpf,albedo_nir_newpf,albedo_minpf,                                        &
+albedo_decay_vispf,albedo_decay_nirpf,albedo_accum_apf,albedo_thaw_apf)
 
   !=========================================================================
   !
