@@ -191,14 +191,14 @@ void         PFMGOctree(
 
   EndTiming(public_xtra->time_index_copy_hypre);
 
-  if (tol > 0.0)
-  {
+  //if (tol > 0.0)
+//  {
     IfLogging(1)
     {
       HYPRE_StructPFMGSetLogging(instance_xtra->hypre_pfmg_data, 1);
       HYPRE_StructPFMGSetPrintLevel(instance_xtra->hypre_pfmg_data, 2);
     }
-  }
+//  }
 
   /* Invoke the preconditioner using a zero initial guess */
   HYPRE_StructPFMGSetZeroGuess(hypre_pfmg_data);
@@ -209,8 +209,8 @@ void         PFMGOctree(
 
   EndTiming(public_xtra->time_index_pfmg);
 
-  if (tol > 0.0)
-  {
+//  if (tol > 0.0)
+//  {
     IfLogging(1)
     {
       FILE  *log_file;
@@ -224,7 +224,7 @@ void         PFMGOctree(
               num_iterations, rel_norm);
       CloseLogFile(log_file);
     }
-  }
+//  }
 
   /* Copy solution from hypre_x vector to the soln vector. */
   BeginTiming(public_xtra->time_index_copy_hypre);
