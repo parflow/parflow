@@ -76,6 +76,11 @@ if( ${PARFLOW_ENABLE_PROFILING} )
   set_target_properties(parflow PROPERTIES LINK_FLAGS ${PARFLOW_PROFILE_OPTS})
 endif( ${PARFLOW_ENABLE_PROFILING} )
 
+if (${PARFLOW_HAVE_LIKWID})
+  target_include_directories (parflow PUBLIC "${LIKWID_INCLUDE_DIRS}")
+  target_link_libraries (parflow ${LIKWID_LIBRARIES})
+endif (${PARFLOW_HAVE_LIKWID})
+
 if ( DEFINED PARFLOW_LINKER_FLAGS)
    set_target_properties(parflow PROPERTIES LINK_FLAGS ${PARFLOW_LINKER_FLAGS})
 endif ( DEFINED PARFLOW_LINKER_FLAGS)

@@ -276,6 +276,11 @@ if(${PARFLOW_HAVE_PYSTENCILS})
   target_include_directories(pfsimulator PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../third_party/pystencils/generated_kernels")
 endif(${PARFLOW_HAVE_PYSTENCILS})
 
+if (${PARFLOW_HAVE_LIKWID})
+  target_link_libraries (pfsimulator ${LIKWID_LIBRARIES} )
+  target_include_directories (pfsimulator PUBLIC "${LIKWID_INCLUDE_DIRS}")
+endif (${PARFLOW_HAVE_LIKWID})
+
 target_link_libraries(pfsimulator pfkinsol amps cjson ${PARFLOW_ETRACE_LIBRARY})
 target_include_directories(pfsimulator PUBLIC "../third_party/cjson")
 
