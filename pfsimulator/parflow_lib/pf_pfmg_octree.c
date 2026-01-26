@@ -191,15 +191,6 @@ void         PFMGOctree(
 
   EndTiming(public_xtra->time_index_copy_hypre);
 
-  //if (tol > 0.0)
-//  {
-    IfLogging(1)
-    {
-      HYPRE_StructPFMGSetLogging(instance_xtra->hypre_pfmg_data, 1);
-      HYPRE_StructPFMGSetPrintLevel(instance_xtra->hypre_pfmg_data, 2);
-    }
-//  }
-
   /* Invoke the preconditioner using a zero initial guess */
   HYPRE_StructPFMGSetZeroGuess(hypre_pfmg_data);
 
