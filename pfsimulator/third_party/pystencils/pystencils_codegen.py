@@ -1,3 +1,6 @@
+import operator
+from functools import reduce
+
 import pystencils as ps
 import re
 
@@ -50,8 +53,38 @@ def get_kernel_cfg(
         raise ValueError("Target not specified in platform file.")
 
 
-def invoke(sfg: SourceFileGenerator, k):
-    if sfg.context.project_info.get("use_cuda"):
+def create_kernel_func(
+    sfg: SourceFileGenerator, assign, func_name: str, allow_vect: bool = True
+):
+    target = sfg.context.project_info["target"]
+    func_name = f"PyCodegen_{func_name}"
+    kernel_name = f"{func_name}_gen"
+    kernel = sfg.kernels.create(assign, kernel_name, get_kernel_cfg(sfg, allow_vect))
+
+    if target.is_cpu():
+        if target.is_vector_cpu() and allow_vect:
+            # extend parameter list with missing _stride_XYZ_0 parameters
+            params = []
+            missing_strides = []
+            for i, param in enumerate(kernel.parameters):
+                pattern = re.compile("_stride_(.*)_1")
+                match = pattern.findall(param.name)
+
+                if match:
+                    stride = sfg.var(f"_stride_{match[0]}_0", SInt(64, const=True))
+                    params += [stride]
+                    missing_strides += [stride]
+                params += [param]
+
+            sfg.function(func_name).params(*params)(
+                # TODO: mark _stride_XYZ_0 params as unused via void cast
+                sfg.call(kernel)
+            )
+        else:
+            # no extra handling needed -> just call the kernel
+            sfg.function(func_name)(sfg.call(kernel))
+    elif target.is_gpu() and sfg.context.project_info.get("use_cuda"):
+        # invocation for GPUs with (potentially manual) specification of CUDA grid/block size
         sfg.include("<stdio.h>")
 
         if sfg.context.project_info.get("use_manual_exec_cfg_cuda"):
@@ -61,49 +94,23 @@ def invoke(sfg: SourceFileGenerator, k):
             kernel_call = [
                 sfg.init(block_size)(*[str(bs) for bs in DEFAULT_BLOCK_SIZE]),
                 sfg.init(grid_size)("1", "24", "18"),
-                sfg.gpu_invoke(k, block_size=block_size, grid_size=grid_size)
+                sfg.gpu_invoke(kernel, block_size=block_size, grid_size=grid_size)
             ]
         else:
-            kernel_call = [sfg.gpu_invoke(k)]
+            kernel_call = [sfg.gpu_invoke(kernel)]
 
-        return kernel_call + [
-            "cudaError_t err = cudaPeekAtLastError();",
-            sfg.branch("err != cudaSuccess")(
-                'printf("\\n\\n%s in %s at line %d\\n", cudaGetErrorString(err), __FILE__, __LINE__);\n'
-                "exit(1);"
-            ),
-        ]
-    else:
-        return [sfg.call(k)]
-
-
-def create_kernel_func(
-    sfg: SourceFileGenerator, assign, func_name: str, allow_vect: bool = True
-):
-    target = sfg.context.project_info["target"]
-    func_name = f"PyCodegen_{func_name}"
-    kernel_name = f"{func_name}_gen"
-    kernel = sfg.kernels.create(assign, kernel_name, get_kernel_cfg(sfg, allow_vect))
-    if target.is_vector_cpu() and allow_vect:
-        # extend parameter list with missing _stride_XYZ_0 parameters
-        params = []
-        missing_strides = []
-        for i, param in enumerate(kernel.parameters):
-            pattern = re.compile("_stride_(.*)_1")
-            match = pattern.findall(param.name)
-
-            if match:
-                stride = sfg.var(f"_stride_{match[0]}_0", SInt(64, const=True))
-                params += [stride]
-                missing_strides += [stride]
-            params += [param]
-
-        sfg.function(func_name).params(*params)(
-            # TODO: mark _stride_XYZ_0 params as unused via void cast
-            *invoke(sfg, kernel)
+        # automatically extend kernel call with error handling
+        sfg.function(func_name)(
+            *(kernel_call + [
+                "cudaError_t err = cudaPeekAtLastError();",
+                sfg.branch("err != cudaSuccess")(
+                    'printf("\\n\\n%s in %s at line %d\\n", cudaGetErrorString(err), __FILE__, __LINE__);\n'
+                    "exit(1);"
+                ),
+            ])
         )
     else:
-        # no extra handling needed -> just invoke the kernel
-        sfg.function(func_name)(*invoke(sfg, kernel))
+        ValueError(f"Invalid target {target}. Only (vector) CPU and CUDA targets are "
+                   f"available for pystencils code generation.")
 
     return kernel
