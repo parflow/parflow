@@ -134,12 +134,12 @@ if(PARFLOW_HAVE_CUDA OR PARFLOW_HAVE_KOKKOS)
   
   # Determine memory manager and print single status message
   if(DEFINED UMPIRE_ROOT)
-    find_package(UMPIRE REQUIRED)
+    find_package(umpire REQUIRED HINTS ${UMPIRE_ROOT})
     set(PARFLOW_HAVE_UMPIRE "yes")
     message(STATUS "MEMORY MANAGER: UMPIRE is sleceted")
    
   elseif(DEFINED RMM_ROOT)
-    find_package(RMM REQUIRED)
+    find_package(rmm REQUIRED HINTS ${RMM_ROOT})
     set(PARFLOW_HAVE_RMM "yes")
     message(STATUS "MEMORY MANAGER: RMM is sleceted")
    
