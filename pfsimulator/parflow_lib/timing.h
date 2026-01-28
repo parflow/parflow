@@ -128,6 +128,12 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
 #define StopTiming()      TimingTimeCount += amps_Clock(); \
         TimingCPUCount += amps_CPUClock()
 
+#ifdef PARFLOW_HAVE_CUDA
+#   define DEVICE_SYNC CUDA_ERR(cudaStreamSynchronize(0))
+#else
+#   define DEVICE_SYNC
+#endif
+
 #ifdef TIMING_WITH_SYNC
 #define BeginTiming(i)                        \
         {                                     \
@@ -135,6 +141,7 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
           TimingTime(i) -= TimingTimeCount;   \
           TimingCPUTime(i) -= TimingCPUCount; \
           TimingFLOPS(i) -= TimingFLOPCount;  \
+          DEVICE_SYNC;                        \
           amps_Sync(amps_CommWorld);          \
           StartTiming();                      \
           LIKWID_MARKER_START(TimingName(i)); \
