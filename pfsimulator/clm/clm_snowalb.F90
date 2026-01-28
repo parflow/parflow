@@ -2,20 +2,27 @@
 
 subroutine clm_snowalb (clm, coszen, nband, ind, alb)
 
-!----------------------------------------------------------------------- 
-! 
-! Purpose: 
-! Determine snow albedos
-! 
+!-----------------------------------------------------------------------
+!
+! Purpose:
+! Determine snow albedos with configurable parameterization schemes
+!
+! Schemes available:
+!   0 = CLM (default) - age-based decay with configurable parameters
+!   1 = VIC - dual cold/warm decay rates based on ground temperature
+!   2 = Tarboton - Arrhenius temperature-dependent aging
+!
 !-----------------------------------------------------------------------
 ! $Id: clm_snowalb.F90,v 1.1.1.1 2006/02/14 23:05:52 kollet Exp $
+! Modified @RMM 2025 - configurable albedo parameters and alternative schemes
 !-----------------------------------------------------------------------
 
   use precision
   use clmtype
+  use clm_varcon, only : tfrz
   implicit none
 
-! ------------------------ arguments ------------------------------ 
+! ------------------------ arguments ------------------------------
   type (clm1d), intent(inout) :: clm       !CLM 1-D Module
   real(r8)    , intent(in) :: coszen       !cosine solar zenith angle for next time step
   integer     , intent(in) :: nband        !number of solar radiation waveband classes
@@ -27,19 +34,28 @@ subroutine clm_snowalb (clm, coszen, nband, ind, alb)
 
   integer  :: ib           !waveband class
 
-  real(r8) :: snal0 = 0.95 !vis albedo of new snow for sza<60
-  real(r8) :: snal1 = 0.65 !nir albedo of new snow for sza<60
-  real(r8) :: conn  = 0.5  !constant for visible snow alb calculation [-]
-  real(r8) :: cons  = 0.2  !constant (=0.2) for nir snow albedo calculation [-]
   real(r8) :: sl    = 2.0  !factor that helps control alb zenith dependence [-]
 
+  real(r8) :: snal0        !vis albedo of new snow (from clm state)
+  real(r8) :: snal1        !nir albedo of new snow (from clm state)
+  real(r8) :: conn         !constant for visible snow alb calculation (from clm state)
+  real(r8) :: cons         !constant for nir snow albedo calculation (from clm state)
+
   real(r8) :: age          !factor to reduce visible snow alb due to snow age [-]
+  real(r8) :: age_days     !snow age in days for VIC/Tarboton schemes
+  real(r8) :: decay_factor !temperature-dependent decay factor for Tarboton scheme
   real(r8) :: albs         !temporary vis snow albedo
   real(r8) :: albl         !temporary nir snow albedo
   real(r8) :: cff          !snow alb correction factor for zenith angle > 60 [-]
   real(r8) :: czf          !solar zenith correction for new snow albedo [-]
 
 ! -----------------------------------------------------------------
+
+! Use configurable parameters from clm state
+  snal0 = clm%albedo_vis_new     ! default 0.95
+  snal1 = clm%albedo_nir_new     ! default 0.65
+  conn  = clm%albedo_decay_vis   ! default 0.5
+  cons  = clm%albedo_decay_nir   ! default 0.2
 
 ! zero albedos
 
@@ -48,27 +64,93 @@ subroutine clm_snowalb (clm, coszen, nband, ind, alb)
   end do
 
 ! =========================================================================
-! CLM Albedo for snow cover.
-! Snow albedo depends on snow-age, zenith angle, and thickness of snow age
-! gives reduction of visible radiation
+! Snow albedo calculation based on selected scheme
 ! =========================================================================
 
-! Correction for snow age
+  select case (clm%albedo_scheme)
 
-  age = 1.-1./(1.+clm%snowage)
-  albs = snal0*(1.-cons*age)
-  albl = snal1*(1.-conn*age)
+  case (0)  ! CLM default - age-based decay
+    ! =====================================================================
+    ! CLM Albedo for snow cover.
+    ! Snow albedo depends on snow-age, zenith angle, and thickness of snow age
+    ! gives reduction of visible radiation
+    ! =====================================================================
+
+    ! Correction for snow age
+    age = 1._r8 - 1._r8/(1._r8 + clm%snowage)
+    albs = snal0*(1._r8 - cons*age)
+    albl = snal1*(1._r8 - conn*age)
+
+  case (1)  ! VIC - dual cold/warm decay rates
+    ! =====================================================================
+    ! VIC-style albedo decay with different rates for cold vs warm conditions
+    ! Cold (accumulating): slower decay, albedo_accum_a base
+    ! Warm (melting): faster decay, albedo_thaw_a base
+    ! Reference: Andreadis et al. (2009), VIC snow model documentation
+    ! =====================================================================
+
+    ! Convert snow age to days (snowage is in seconds in CLM)
+    age_days = clm%snowage / 86400.0_r8
+    age_days = max(age_days, 0.001_r8)  ! Prevent zero/negative values
+
+    if (clm%t_grnd < tfrz) then
+      ! Cold/accumulating conditions - slow decay
+      albs = snal0 * (clm%albedo_accum_a ** (age_days ** 0.58_r8))
+      albl = snal1 * (clm%albedo_accum_a ** (age_days ** 0.58_r8))
+    else
+      ! Warm/melting conditions - fast decay
+      albs = snal0 * (clm%albedo_thaw_a ** (age_days ** 0.46_r8))
+      albl = snal1 * (clm%albedo_thaw_a ** (age_days ** 0.46_r8))
+    endif
+
+  case (2)  ! Tarboton - Arrhenius temperature dependence
+    ! =====================================================================
+    ! Tarboton-style temperature-dependent albedo decay
+    ! Aging rate increases exponentially as temperature approaches freezing
+    ! Reference: Tarboton & Luce (1996), Utah Energy Balance Snow Model
+    ! =====================================================================
+
+    ! Temperature-dependent aging rate (faster near melting point)
+    ! Uses Arrhenius-type formulation
+    decay_factor = exp(5000.0_r8 * (1.0_r8/tfrz - 1.0_r8/max(clm%t_grnd, 200.0_r8)))
+    decay_factor = min(decay_factor, 10.0_r8)  ! Cap to prevent extreme values
+
+    ! Convert snow age to days
+    age_days = clm%snowage / 86400.0_r8
+
+    ! Modified age factor with temperature dependence
+    age = (age_days * decay_factor) / (1.0_r8 + age_days * decay_factor)
+
+    albs = snal0 * (1.0_r8 - cons * age)
+    albl = snal1 * (1.0_r8 - conn * age)
+
+  case default
+    ! Fallback to CLM default
+    age = 1._r8 - 1._r8/(1._r8 + clm%snowage)
+    albs = snal0*(1._r8 - cons*age)
+    albl = snal1*(1._r8 - conn*age)
+
+  end select
+
+! =========================================================================
+! Apply minimum albedo floor (prevents unrealistically low values)
+! =========================================================================
+  albs = max(clm%albedo_min, albs)
+  albl = max(clm%albedo_min, albl)
+
+! =========================================================================
+! Zenith angle correction (applied to all schemes)
+! =========================================================================
 
   if (ind == 0) then
 
-! Czf corrects albedo of new snow for solar zenith
-
-    cff    = ((1.+1./sl)/(1.+max(dble(0.001),coszen)*2.*sl )- 1./sl)
-    cff    = max(cff,dble(0.))
-    czf    = 0.4*cff*(1.-albs)
-    albs = albs+czf
-    czf    = 0.4*cff*(1.-albl)
-    albl = albl+czf
+    ! Czf corrects albedo of new snow for solar zenith
+    cff    = ((1._r8 + 1._r8/sl)/(1._r8 + max(0.001_r8, coszen)*2._r8*sl) - 1._r8/sl)
+    cff    = max(cff, 0.0_r8)
+    czf    = 0.4_r8*cff*(1._r8 - albs)
+    albs = albs + czf
+    czf    = 0.4_r8*cff*(1._r8 - albl)
+    albl = albl + czf
 
   endif
 

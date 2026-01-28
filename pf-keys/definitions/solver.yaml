@@ -495,6 +495,146 @@ Solver:
         RequiresModule: CLM
 
     # -----------------------------------------------------------------------------
+    # CLM Snow Parameterization Keys
+    # -----------------------------------------------------------------------------
+
+    SnowPartition:
+      help: >
+        [Type: string] Selects the rain-snow partitioning method. CLM uses air
+        temperature threshold, while wetbulb methods account for evaporative
+        cooling of falling hydrometeors. Reference: Wang et al. (2019) GRL.
+      default: CLM
+      domains:
+        EnumDomain:
+          enum_list:
+            - CLM
+            - WetbulbThreshold
+            - WetbulbLinear
+        RequiresModule: CLM
+
+    WetbulbThreshold:
+      help: >
+        [Type: double] Threshold temperature (K) for wetbulb rain-snow partitioning.
+        Default 274.15 K (1 degree C). Only used when SnowPartition is WetbulbThreshold
+        or WetbulbLinear.
+      default: 274.15
+      domains:
+        DoubleValue:
+          min_value: 268.15
+          max_value: 278.15
+        RequiresModule: CLM
+
+    ThinSnowDamping:
+      help: >
+        [Type: double] Fraction of melt energy retained for thin snowpacks.
+        1.0 = no damping (default, backward compatible), 0.1 = 90% energy reduction.
+        Prevents spurious early-season melt from warm ground heat flux.
+      default: 1.0
+      domains:
+        DoubleValue:
+          min_value: 0.0
+          max_value: 1.0
+        RequiresModule: CLM
+
+    ThinSnowThreshold:
+      help: >
+        [Type: double] SWE threshold (mm) below which thin snow damping applies.
+      default: 50.0
+      domains:
+        DoubleValue:
+          min_value: 1.0
+          max_value: 500.0
+        RequiresModule: CLM
+
+    AlbedoScheme:
+      help: >
+        [Type: string] Snow albedo calculation method. CLM uses age-based decay,
+        VIC uses separate cold/melt decay rates based on ground temperature,
+        Tarboton uses Arrhenius temperature-dependent aging.
+        References: Andreadis et al. (2009), Tarboton and Luce (1996).
+      default: CLM
+      domains:
+        EnumDomain:
+          enum_list:
+            - CLM
+            - VIC
+            - Tarboton
+        RequiresModule: CLM
+
+    AlbedoVisNew:
+      help: >
+        [Type: double] Fresh snow visible-band albedo. Physically ranges 0.85-0.98.
+      default: 0.95
+      domains:
+        DoubleValue:
+          min_value: 0.80
+          max_value: 0.99
+        RequiresModule: CLM
+
+    AlbedoNirNew:
+      help: >
+        [Type: double] Fresh snow near-infrared albedo. Physically ranges 0.5-0.7.
+      default: 0.65
+      domains:
+        DoubleValue:
+          min_value: 0.40
+          max_value: 0.85
+        RequiresModule: CLM
+
+    AlbedoMin:
+      help: >
+        [Type: double] Minimum snow albedo floor for aged or dirty snow.
+      default: 0.4
+      domains:
+        DoubleValue:
+          min_value: 0.2
+          max_value: 0.7
+        RequiresModule: CLM
+
+    AlbedoDecayVis:
+      help: >
+        [Type: double] Visible albedo decay coefficient for CLM and Tarboton schemes.
+      default: 0.5
+      domains:
+        DoubleValue:
+          min_value: 0.1
+          max_value: 2.0
+        RequiresModule: CLM
+
+    AlbedoDecayNir:
+      help: >
+        [Type: double] NIR albedo decay coefficient for CLM and Tarboton schemes.
+        NIR typically decays faster than visible.
+      default: 0.2
+      domains:
+        DoubleValue:
+          min_value: 0.05
+          max_value: 1.0
+        RequiresModule: CLM
+
+    AlbedoAccumA:
+      help: >
+        [Type: double] VIC scheme cold-phase (accumulation) decay base per hour.
+        Should be greater than AlbedoThawA.
+      default: 0.94
+      domains:
+        DoubleValue:
+          min_value: 0.80
+          max_value: 0.99
+        RequiresModule: CLM
+
+    AlbedoThawA:
+      help: >
+        [Type: double] VIC scheme melt-phase decay base per hour.
+        Should be less than AlbedoAccumA since melt conditions age snow faster.
+      default: 0.82
+      domains:
+        DoubleValue:
+          min_value: 0.70
+          max_value: 0.95
+        RequiresModule: CLM
+
+    # -----------------------------------------------------------------------------
     # CLM input variables to write drv_clmin.dat (Input) and drv_vegp.dat (VegParams) files
     # -----------------------------------------------------------------------------
 

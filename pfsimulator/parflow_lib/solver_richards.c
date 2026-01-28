@@ -197,6 +197,22 @@ typedef struct {
   double clm_irr_threshold;     /* CLM irrigation schedule -- soil moisture threshold for deficit cycle */
   int clm_irr_thresholdtype;    /* Deficit-based saturation criteria (top, bottom, column avg) */
 
+  /* Snow parameterization options @RMM 2025 */
+  int clm_snow_partition;       /* CLM snow partition type: 0=linear, 1=wetbulb threshold, 2=wetbulb linear */
+  double clm_tw_threshold;      /* CLM wetbulb temperature threshold for snow [K] */
+  double clm_thin_snow_damping; /* CLM thin snow energy damping factor [0-1] */
+  double clm_thin_snow_threshold; /* CLM SWE threshold for damping [kg/m2] */
+
+  /* Snow albedo parameterization options @RMM 2025 */
+  int clm_albedo_scheme;        /* CLM albedo scheme: 0=CLM, 1=VIC, 2=Tarboton */
+  double clm_albedo_vis_new;    /* Fresh snow VIS albedo [0-1] */
+  double clm_albedo_nir_new;    /* Fresh snow NIR albedo [0-1] */
+  double clm_albedo_min;        /* Minimum albedo floor [0-1] */
+  double clm_albedo_decay_vis;  /* VIS decay coefficient [0-1] */
+  double clm_albedo_decay_nir;  /* NIR decay coefficient [0-1] */
+  double clm_albedo_accum_a;    /* VIC cold-phase decay base */
+  double clm_albedo_thaw_a;     /* VIC melt-phase decay base */
+
   int clm_reuse_count;          /* NBE: Number of times to use each CLM input */
   int clm_write_logs;           /* NBE: Write the processor logs for CLM or not */
   int clm_last_rst;             /* NBE: Only write/overwrite one rst file or write a lot of them */
@@ -2767,7 +2783,19 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          clm_daily_rst,
                          clm_water_stress_type,
                          public_xtra->clm_nz,
-                         public_xtra->clm_nz);
+                         public_xtra->clm_nz,
+                         public_xtra->clm_snow_partition,
+                         public_xtra->clm_tw_threshold,
+                         public_xtra->clm_thin_snow_damping,
+                         public_xtra->clm_thin_snow_threshold,
+                         public_xtra->clm_albedo_scheme,
+                         public_xtra->clm_albedo_vis_new,
+                         public_xtra->clm_albedo_nir_new,
+                         public_xtra->clm_albedo_min,
+                         public_xtra->clm_albedo_decay_vis,
+                         public_xtra->clm_albedo_decay_nir,
+                         public_xtra->clm_albedo_accum_a,
+                         public_xtra->clm_albedo_thaw_a);
 
             break;
           }
@@ -5600,6 +5628,102 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "%s.CLM.FieldCapacity", name);
   public_xtra->clm_veg_fieldc = GetDoubleDefault(key, 1.0);
+
+  /* @RMM 2025 Snow parameterization options */
+  NameArray snow_switch_na;
+  snow_switch_na = NA_NewNameArray("CLM WetbulbThreshold WetbulbLinear");
+  sprintf(key, "%s.CLM.SnowPartition", name);
+  switch_name = GetStringDefault(key, "CLM");
+  switch_value = NA_NameToIndexExitOnError(snow_switch_na, switch_name, key);
+  switch (switch_value)
+  {
+    case 0:
+    {
+      public_xtra->clm_snow_partition = 0;
+      break;
+    }
+
+    case 1:
+    {
+      public_xtra->clm_snow_partition = 1;
+      break;
+    }
+
+    case 2:
+    {
+      public_xtra->clm_snow_partition = 2;
+      break;
+    }
+
+    default:
+    {
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+    }
+  }
+  NA_FreeNameArray(snow_switch_na);
+
+  sprintf(key, "%s.CLM.WetbulbThreshold", name);
+  public_xtra->clm_tw_threshold = GetDoubleDefault(key, 274.15);
+
+  sprintf(key, "%s.CLM.ThinSnowDamping", name);
+  public_xtra->clm_thin_snow_damping = GetDoubleDefault(key, 0.0);
+
+  sprintf(key, "%s.CLM.ThinSnowThreshold", name);
+  public_xtra->clm_thin_snow_threshold = GetDoubleDefault(key, 50.0);
+
+  /* @RMM 2025 Snow albedo parameterization options */
+  NameArray albedo_switch_na;
+  albedo_switch_na = NA_NewNameArray("CLM VIC Tarboton");
+  sprintf(key, "%s.CLM.AlbedoScheme", name);
+  switch_name = GetStringDefault(key, "CLM");
+  switch_value = NA_NameToIndexExitOnError(albedo_switch_na, switch_name, key);
+  switch (switch_value)
+  {
+    case 0:
+    {
+      public_xtra->clm_albedo_scheme = 0;
+      break;
+    }
+
+    case 1:
+    {
+      public_xtra->clm_albedo_scheme = 1;
+      break;
+    }
+
+    case 2:
+    {
+      public_xtra->clm_albedo_scheme = 2;
+      break;
+    }
+
+    default:
+    {
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+    }
+  }
+  NA_FreeNameArray(albedo_switch_na);
+
+  sprintf(key, "%s.CLM.AlbedoVisNew", name);
+  public_xtra->clm_albedo_vis_new = GetDoubleDefault(key, 0.95);
+
+  sprintf(key, "%s.CLM.AlbedoNirNew", name);
+  public_xtra->clm_albedo_nir_new = GetDoubleDefault(key, 0.65);
+
+  sprintf(key, "%s.CLM.AlbedoMin", name);
+  public_xtra->clm_albedo_min = GetDoubleDefault(key, 0.4);
+
+  sprintf(key, "%s.CLM.AlbedoDecayVis", name);
+  public_xtra->clm_albedo_decay_vis = GetDoubleDefault(key, 0.5);
+
+  sprintf(key, "%s.CLM.AlbedoDecayNir", name);
+  public_xtra->clm_albedo_decay_nir = GetDoubleDefault(key, 0.2);
+
+  sprintf(key, "%s.CLM.AlbedoAccumA", name);
+  public_xtra->clm_albedo_accum_a = GetDoubleDefault(key, 0.94);
+
+  sprintf(key, "%s.CLM.AlbedoThawA", name);
+  public_xtra->clm_albedo_thaw_a = GetDoubleDefault(key, 0.82);
 
   /* IMF Write CLM as Silo (default=False) */
   sprintf(key, "%s.WriteSiloCLM", name);

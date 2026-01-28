@@ -62,7 +62,10 @@ subroutine clm_meltfreeze (fact,     brr,       hs,     dhsdT,  &
        temp1                            ! temporary variables [kg/m2]
 
   real(r8), dimension(clm%snl+1 : nlevsoi) :: wmass0, wice0, wliq0
-  real(r8)  propor,tinc  
+  real(r8)  propor,tinc
+
+  ! @RMM 2025: Thin snow damping variables
+  real(r8) :: damping_factor    ! factor to reduce melt energy for thin snowpacks
 
 !=== End Variable List ===================================================
 
@@ -118,6 +121,29 @@ subroutine clm_meltfreeze (fact,     brr,       hs,     dhsdT,  &
         endif
      endif
   enddo
+
+! @RMM 2025: Apply thin snow damping to snow layer melt energy
+! This reduces energy available for melting when snowpack is thin,
+! preventing premature melt of shallow snowpacks
+  if (clm%thin_snow_damping > 0.0d0 .and. clm%thin_snow_damping < 1.0d0) then
+     do j = clm%snl+1, 0  ! Only snow layers (indices <= 0)
+        if (clm%imelt(j) == 1 .and. hm(j) > 0.0d0) then  ! Only for melting
+           ! Calculate damping factor: linear interpolation from damping at SWE=0
+           ! to 1.0 at SWE=threshold
+           if (clm%h2osno <= 0.0d0) then
+              damping_factor = clm%thin_snow_damping
+           else if (clm%h2osno >= clm%thin_snow_threshold) then
+              damping_factor = 1.0d0
+           else
+              damping_factor = clm%thin_snow_damping + &
+                   (1.0d0 - clm%thin_snow_damping) * &
+                   (clm%h2osno / clm%thin_snow_threshold)
+           endif
+           ! Apply damping to melt energy
+           hm(j) = hm(j) * damping_factor
+        endif
+     enddo
+  endif
 
 ! These two errors were checked carefully.  They result from the the computed error
 ! of "Tridiagonal-Matrix" in subroutine "thermal".
