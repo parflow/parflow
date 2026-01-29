@@ -9,9 +9,6 @@ from pystencilssfg.lang.gpu import cuda
 
 from pystencils.types.quick import SInt
 
-DEFAULT_BLOCK_SIZE: tuple[int, int, int] = (256, 1, 1)
-
-
 # set up kernel config
 def get_kernel_cfg(
     sfg: SourceFileGenerator,
@@ -36,17 +33,39 @@ def get_kernel_cfg(
 
         # gpu optimization: warp level reductions
         if sfg.context.project_info.get("use_cuda"):
-            kernel_cfg.gpu.assume_warp_aligned_block_size = True
-            kernel_cfg.gpu.warp_size = 32
-            kernel_cfg.gpu.default_block_size = DEFAULT_BLOCK_SIZE
-            kernel_cfg.gpu.use_cub_reductions = True
-            #kernel_cfg.gpu.use_shared_mem_reductions = True
+            # sets default block size for kernel invocation
+            if default_bs := sfg.context.project_info.get("default_block_size"):
+                kernel_cfg.gpu.default_block_size = default_bs
 
+            # get corresponding reduction configuration. defaults to atomics if all configurations are disabled
+            use_warp_reductions = sfg.context.project_info.get("use_warp_reductions")
+            use_shared_mem_reductions = sfg.context.project_info.get("use_shared_mem_reductions")
+            use_cub_reductions = sfg.context.project_info.get("use_cub_reductions")
+
+            # ensures that block sizes are divisible by warp size for faster reductions
+            if use_warp_reductions or use_shared_mem_reductions or use_cub_reductions:
+                kernel_cfg.gpu.assume_warp_aligned_block_size = True
+                kernel_cfg.gpu.warp_size = 32
+
+            # extend warp-level reductions with an additional shared memory reduction for further speedup
+            if use_shared_mem_reductions:
+                kernel_cfg.gpu.use_shared_mem_reductions = True
+
+            # use CUB back-end for fast reductions
+            if use_cub_reductions:
+                kernel_cfg.gpu.use_cub_reductions = True
+
+            # sets GPU indexing scheme
+            if indexing_scheme := sfg.context.project_info.get("gpu_indexing_scheme"):
+                if indexing_scheme in ("linear1d", "linear3d", "gridstrided_linear3d"):
+                    kernel_cfg.gpu.indexing_scheme = indexing_scheme
+                else:
+                    raise ValueError(f"Unsupported indexing scheme: {indexing_scheme}")
+
+            # makes user responsible for setting GPU block/grid size.
+            # this can be well combined with the "gridstrided_linear3d" indexing scheme
             if sfg.context.project_info.get("use_manual_exec_cfg_cuda"):
                 kernel_cfg.gpu.manual_launch_grid = True
-                kernel_cfg.gpu.indexing_scheme = "gridstrided_linear3d"
-            else:
-                kernel_cfg.gpu.indexing_scheme = "linear3d"
 
         return kernel_cfg
     else:
@@ -91,9 +110,13 @@ def create_kernel_func(
             block_size = cuda.dim3(const=True).var("block_size")
             grid_size = cuda.dim3(const=True).var("grid_size")
 
+            # get manual block and grid sizes from user configuration
+            default_bs = sfg.context.project_info.get("default_block_size")
+            manual_gs = sfg.context.project_info.get("manual_grid_size")
+
             kernel_call = [
-                sfg.init(block_size)(*[str(bs) for bs in DEFAULT_BLOCK_SIZE]),
-                sfg.init(grid_size)("1", "24", "18"),
+                sfg.init(block_size)(*[str(bs) for bs in default_bs]),
+                sfg.init(grid_size)(*[str(bs) for bs in manual_gs]),
                 sfg.gpu_invoke(kernel, block_size=block_size, grid_size=grid_size)
             ]
         else:
