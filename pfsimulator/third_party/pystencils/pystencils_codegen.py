@@ -4,10 +4,13 @@ from functools import reduce
 import pystencils as ps
 import re
 
-from pystencilssfg import SourceFileGenerator
+from pystencilssfg import SourceFileGenerator, AugExpr
 from pystencilssfg.lang.gpu import cuda
 
-from pystencils.types.quick import SInt
+from pystencils.codegen.properties import FieldShape
+
+from pystencils.types.quick import UInt
+from pystencils.types import deconstify
 
 # set up kernel config
 def get_kernel_cfg(
@@ -107,6 +110,18 @@ def create_kernel_func(
         sfg.include("<stdio.h>")
 
         if sfg.context.project_info.get("use_manual_exec_cfg_cuda"):
+            index_type = UInt(32)
+            index_type_c_str = deconstify(index_type).c_string()
+
+            def _div_ceil(a, b):
+                return AugExpr(index_type).format("( {a} + {b} - 1 ) / {b}", a=a, b=b)
+
+            def _uint_cast(a):
+                return AugExpr(index_type).format("{t} ( {a} )", t=index_type_c_str, a=a)
+
+            def _min(a, b):
+                return AugExpr(index_type).format("min( {a}, {b} )", a=a, b=b)
+
             block_size = cuda.dim3(const=True).var("block_size")
             grid_size = cuda.dim3(const=True).var("grid_size")
 
@@ -114,9 +129,22 @@ def create_kernel_func(
             default_bs = sfg.context.project_info.get("default_block_size")
             manual_gs = sfg.context.project_info.get("manual_grid_size")
 
+            # convert block/grid sizes to sfg expressions
+            block_sizes = [AugExpr.format(str(bs)) for bs in default_bs]
+            manual_grid_sizes = [AugExpr.format(str(gs)) for gs in manual_gs]
+
+            # get work items from kernel parameters and determine automatic grid size via ceiling divide
+            work_items = [pw for pw in kernel.parameters if pw.wrapped.get_properties(FieldShape)]
+            automatic_grid_sizes = [_div_ceil(_uint_cast(wit), bs) for wit, bs in zip(work_items, default_bs)]
+
+            # final grid size is minimum of automatic and manual grid sizes
+            final_grid_sizes = [
+                _min(a_gs, m_gs) for a_gs, m_gs in zip(automatic_grid_sizes, manual_grid_sizes)
+            ]
+
             kernel_call = [
-                sfg.init(block_size)(*[str(bs) for bs in default_bs]),
-                sfg.init(grid_size)(*[str(bs) for bs in manual_gs]),
+                sfg.init(block_size)(*block_sizes),
+                sfg.init(grid_size)(*final_grid_sizes),
                 sfg.gpu_invoke(kernel, block_size=block_size, grid_size=grid_size)
             ]
         else:
