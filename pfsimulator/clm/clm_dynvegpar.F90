@@ -79,7 +79,18 @@ subroutine clm_dynvegpar (clm,clm_forc_veg)
   endif
   
 ! Fraction of soil covered by snow
+! @RMM 2025: Added configurable frac_sno schemes and adjustable roughness parameter
 
-  clm%frac_sno = clm%snowdp/(10.*clm%zlnd + clm%snowdp)  
+  select case (clm%frac_sno_type)
+
+  case (0)  ! CLM default
+     ! Use configurable roughness parameter (defaults to zlnd for backward compatibility)
+     clm%frac_sno = clm%snowdp / (10.0d0 * clm%frac_sno_roughness + clm%snowdp)
+
+  case default  ! Future formulations TBD
+     ! Default to CLM formulation
+     clm%frac_sno = clm%snowdp / (10.0d0 * clm%frac_sno_roughness + clm%snowdp)
+
+  end select
 
 end subroutine clm_dynvegpar

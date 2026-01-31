@@ -198,10 +198,26 @@ typedef struct {
   int clm_irr_thresholdtype;    /* Deficit-based saturation criteria (top, bottom, column avg) */
 
   /* Snow parameterization options @RMM 2025 */
-  int clm_snow_partition;       /* CLM snow partition type: 0=linear, 1=wetbulb threshold, 2=wetbulb linear */
+  int clm_snow_partition;       /* CLM snow partition type: 0=CLM, 1=wetbulb thresh, 2=wetbulb linear, 3=Dai, 4=Jennings */
   double clm_tw_threshold;      /* CLM wetbulb temperature threshold for snow [K] */
   double clm_thin_snow_damping; /* CLM thin snow energy damping factor [0-1] */
   double clm_thin_snow_threshold; /* CLM SWE threshold for damping [kg/m2] */
+  double clm_snow_tcrit;        /* Initial T classification threshold above tfrz [K], default 2.5 */
+  double clm_snow_t_low;        /* CLM method lower T threshold [K], default 273.16 */
+  double clm_snow_t_high;       /* CLM method upper T threshold [K], default 275.16 */
+  double clm_snow_transition_width; /* WetbulbLinear half-width [K], default 1.0 */
+  double clm_dai_a;             /* Dai (2008) coefficient a, default -48.2292 */
+  double clm_dai_b;             /* Dai (2008) coefficient b, default 0.7205 */
+  double clm_dai_c;             /* Dai (2008) coefficient c, default 1.1662 */
+  double clm_dai_d;             /* Dai (2008) coefficient d, default 1.0223 */
+  double clm_jennings_a;        /* Jennings (2018) intercept, default -10.04 */
+  double clm_jennings_b;        /* Jennings (2018) T coefficient, default 1.41 */
+  double clm_jennings_g;        /* Jennings (2018) RH coefficient, default 0.09 */
+
+  /* SZA-based snow damping parameters @RMM 2025 */
+  double clm_sza_snow_damping;      /* SZA damping factor [0-1], 1.0=disabled */
+  double clm_sza_damping_coszen_ref; /* Reference coszen for damping onset (0.5 = 60 deg) */
+  double clm_sza_damping_coszen_min; /* Coszen at maximum damping (0.1 = 84 deg) */
 
   /* Snow albedo parameterization options @RMM 2025 */
   int clm_albedo_scheme;        /* CLM albedo scheme: 0=CLM, 1=VIC, 2=Tarboton */
@@ -212,6 +228,10 @@ typedef struct {
   double clm_albedo_decay_nir;  /* NIR decay coefficient [0-1] */
   double clm_albedo_accum_a;    /* VIC cold-phase decay base */
   double clm_albedo_thaw_a;     /* VIC melt-phase decay base */
+
+  /* Fractional snow covered area (frac_sno) options @RMM 2025 */
+  int clm_frac_sno_type;        /* frac_sno scheme: 0=CLM (default), others TBD */
+  double clm_frac_sno_roughness; /* roughness length for frac_sno [m], default=0.01 (zlnd) */
 
   int clm_reuse_count;          /* NBE: Number of times to use each CLM input */
   int clm_write_logs;           /* NBE: Write the processor logs for CLM or not */
@@ -2788,6 +2808,20 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          public_xtra->clm_tw_threshold,
                          public_xtra->clm_thin_snow_damping,
                          public_xtra->clm_thin_snow_threshold,
+                         public_xtra->clm_snow_tcrit,
+                         public_xtra->clm_snow_t_low,
+                         public_xtra->clm_snow_t_high,
+                         public_xtra->clm_snow_transition_width,
+                         public_xtra->clm_dai_a,
+                         public_xtra->clm_dai_b,
+                         public_xtra->clm_dai_c,
+                         public_xtra->clm_dai_d,
+                         public_xtra->clm_jennings_a,
+                         public_xtra->clm_jennings_b,
+                         public_xtra->clm_jennings_g,
+                         public_xtra->clm_sza_snow_damping,
+                         public_xtra->clm_sza_damping_coszen_ref,
+                         public_xtra->clm_sza_damping_coszen_min,
                          public_xtra->clm_albedo_scheme,
                          public_xtra->clm_albedo_vis_new,
                          public_xtra->clm_albedo_nir_new,
@@ -2795,7 +2829,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          public_xtra->clm_albedo_decay_vis,
                          public_xtra->clm_albedo_decay_nir,
                          public_xtra->clm_albedo_accum_a,
-                         public_xtra->clm_albedo_thaw_a);
+                         public_xtra->clm_albedo_thaw_a,
+                         public_xtra->clm_frac_sno_type,
+                         public_xtra->clm_frac_sno_roughness);
 
             break;
           }
@@ -5631,7 +5667,7 @@ SolverRichardsNewPublicXtra(char *name)
 
   /* @RMM 2025 Snow parameterization options */
   NameArray snow_switch_na;
-  snow_switch_na = NA_NewNameArray("CLM WetbulbThreshold WetbulbLinear");
+  snow_switch_na = NA_NewNameArray("CLM WetbulbThreshold WetbulbLinear Dai Jennings");
   sprintf(key, "%s.CLM.SnowPartition", name);
   switch_name = GetStringDefault(key, "CLM");
   switch_value = NA_NameToIndexExitOnError(snow_switch_na, switch_name, key);
@@ -5655,6 +5691,18 @@ SolverRichardsNewPublicXtra(char *name)
       break;
     }
 
+    case 3:
+    {
+      public_xtra->clm_snow_partition = 3;
+      break;
+    }
+
+    case 4:
+    {
+      public_xtra->clm_snow_partition = 4;
+      break;
+    }
+
     default:
     {
       InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
@@ -5665,11 +5713,54 @@ SolverRichardsNewPublicXtra(char *name)
   sprintf(key, "%s.CLM.WetbulbThreshold", name);
   public_xtra->clm_tw_threshold = GetDoubleDefault(key, 274.15);
 
+  sprintf(key, "%s.CLM.SnowTCrit", name);
+  public_xtra->clm_snow_tcrit = GetDoubleDefault(key, 2.5);
+
+  sprintf(key, "%s.CLM.SnowTLow", name);
+  public_xtra->clm_snow_t_low = GetDoubleDefault(key, 273.16);
+
+  sprintf(key, "%s.CLM.SnowTHigh", name);
+  public_xtra->clm_snow_t_high = GetDoubleDefault(key, 275.16);
+
+  sprintf(key, "%s.CLM.SnowTransitionWidth", name);
+  public_xtra->clm_snow_transition_width = GetDoubleDefault(key, 1.0);
+
+  sprintf(key, "%s.CLM.DaiCoeffA", name);
+  public_xtra->clm_dai_a = GetDoubleDefault(key, -48.2292);
+
+  sprintf(key, "%s.CLM.DaiCoeffB", name);
+  public_xtra->clm_dai_b = GetDoubleDefault(key, 0.7205);
+
+  sprintf(key, "%s.CLM.DaiCoeffC", name);
+  public_xtra->clm_dai_c = GetDoubleDefault(key, 1.1662);
+
+  sprintf(key, "%s.CLM.DaiCoeffD", name);
+  public_xtra->clm_dai_d = GetDoubleDefault(key, 1.0223);
+
+  sprintf(key, "%s.CLM.JenningsCoeffA", name);
+  public_xtra->clm_jennings_a = GetDoubleDefault(key, -10.04);
+
+  sprintf(key, "%s.CLM.JenningsCoeffB", name);
+  public_xtra->clm_jennings_b = GetDoubleDefault(key, 1.41);
+
+  sprintf(key, "%s.CLM.JenningsCoeffG", name);
+  public_xtra->clm_jennings_g = GetDoubleDefault(key, 0.09);
+
   sprintf(key, "%s.CLM.ThinSnowDamping", name);
   public_xtra->clm_thin_snow_damping = GetDoubleDefault(key, 0.0);
 
   sprintf(key, "%s.CLM.ThinSnowThreshold", name);
   public_xtra->clm_thin_snow_threshold = GetDoubleDefault(key, 50.0);
+
+  /* @RMM 2025 SZA-based snow melt damping */
+  sprintf(key, "%s.CLM.SZASnowDamping", name);
+  public_xtra->clm_sza_snow_damping = GetDoubleDefault(key, 1.0);
+
+  sprintf(key, "%s.CLM.SZADampingCoszenRef", name);
+  public_xtra->clm_sza_damping_coszen_ref = GetDoubleDefault(key, 0.5);
+
+  sprintf(key, "%s.CLM.SZADampingCoszenMin", name);
+  public_xtra->clm_sza_damping_coszen_min = GetDoubleDefault(key, 0.1);
 
   /* @RMM 2025 Snow albedo parameterization options */
   NameArray albedo_switch_na;
@@ -5724,6 +5815,30 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "%s.CLM.AlbedoThawA", name);
   public_xtra->clm_albedo_thaw_a = GetDoubleDefault(key, 0.82);
+
+  /* @RMM 2025 Fractional snow covered area (frac_sno) options */
+  NameArray frac_sno_switch_na;
+  frac_sno_switch_na = NA_NewNameArray("CLM");
+  sprintf(key, "%s.CLM.FracSnoScheme", name);
+  switch_name = GetStringDefault(key, "CLM");
+  switch_value = NA_NameToIndexExitOnError(frac_sno_switch_na, switch_name, key);
+  switch (switch_value)
+  {
+    case 0:
+    {
+      public_xtra->clm_frac_sno_type = 0;
+      break;
+    }
+
+    default:
+    {
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+    }
+  }
+  NA_FreeNameArray(frac_sno_switch_na);
+
+  sprintf(key, "%s.CLM.FracSnoRoughness", name);
+  public_xtra->clm_frac_sno_roughness = GetDoubleDefault(key, 0.01);
 
   /* IMF Write CLM as Silo (default=False) */
   sprintf(key, "%s.WriteSiloCLM", name);

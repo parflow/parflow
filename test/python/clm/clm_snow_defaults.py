@@ -6,18 +6,33 @@
 # This ensures backward compatibility for existing workflows.
 #
 # New keys tested (all at defaults):
-#   Solver.CLM.SnowPartition = "CLM"
-#   Solver.CLM.WetbulbThreshold = 274.15
-#   Solver.CLM.ThinSnowDamping = 1.0
-#   Solver.CLM.ThinSnowThreshold = 50.0
-#   Solver.CLM.AlbedoScheme = "CLM"
-#   Solver.CLM.AlbedoVisNew = 0.95
-#   Solver.CLM.AlbedoNirNew = 0.65
-#   Solver.CLM.AlbedoMin = 0.4
-#   Solver.CLM.AlbedoDecayVis = 0.5
-#   Solver.CLM.AlbedoDecayNir = 0.2
-#   Solver.CLM.AlbedoAccumA = 0.94
-#   Solver.CLM.AlbedoThawA = 0.82
+#   Rain-snow partitioning:
+#     Solver.CLM.SnowPartition = "CLM"
+#     Solver.CLM.WetbulbThreshold = 274.15
+#     Solver.CLM.SnowTCrit = 2.5
+#     Solver.CLM.SnowTLow = 273.16
+#     Solver.CLM.SnowTHigh = 275.16
+#     Solver.CLM.SnowTransitionWidth = 1.0
+#     Solver.CLM.DaiCoeffA/B/C/D (Dai 2008 method)
+#     Solver.CLM.JenningsCoeffA/B/G (Jennings 2018 method)
+#   Melt damping:
+#     Solver.CLM.ThinSnowDamping = 0.0
+#     Solver.CLM.ThinSnowThreshold = 50.0
+#     Solver.CLM.SZASnowDamping = 1.0 (disabled)
+#     Solver.CLM.SZADampingCoszenRef = 0.5
+#     Solver.CLM.SZADampingCoszenMin = 0.1
+#   Albedo:
+#     Solver.CLM.AlbedoScheme = "CLM"
+#     Solver.CLM.AlbedoVisNew = 0.95
+#     Solver.CLM.AlbedoNirNew = 0.65
+#     Solver.CLM.AlbedoMin = 0.4
+#     Solver.CLM.AlbedoDecayVis = 0.5
+#     Solver.CLM.AlbedoDecayNir = 0.2
+#     Solver.CLM.AlbedoAccumA = 0.94
+#     Solver.CLM.AlbedoThawA = 0.82
+#   Fractional snow cover:
+#     Solver.CLM.FracSnoScheme = "CLM"
+#     Solver.CLM.FracSnoRoughness = 0.01
 # -----------------------------------------------------------------------------
 
 import sys
