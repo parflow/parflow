@@ -1,6 +1,6 @@
 # Richards Equation Physics
 
-This document describes the physics equations solved by ParFlow's Richards solver, derived directly from the source code. All equations include code references for verification.
+This document describes the physics equations solved by ParFlow's Richards solver.  It starts with a summary of the model equations (e.g. Jones and Woodward, 2003; Kollet and Maxwell, 2006; Maxwell, 2013) similar to the User Manual, and then presents them in the residual, finite-volume form formulated the in source code. All equations include code references.
 
 ## Overview
 
@@ -23,17 +23,17 @@ This section presents the continuous governing equations in standard form before
 
 ### Conceptual Model
 
-ParFlow solves integrated surface-subsurface flow on either orthogonal or terrain-following grids. The figure below illustrates the key components using a terrain-following grid:
+ParFlow solves integrated surface-subsurface flow using the mixed form of the 3D Richards equation and kinematic or diffusive approximations of the shallow water equations on either orthogonal or terrain-following grids. The figure below illustrates the key components using a terrain-following grid which is the most commonly used for watershed type applications:
 
 ![ParFlow Conceptual Model](figures/parflow_conceptual.png)
 
 *Figure: ParFlow terrain-following grid showing the land surface, vadose zone, and saturated subsurface. Grid layers conform to topography, with pressure head ($P$) and hydraulic head ($H = P + z$) defined at cell centers. Overland flow occurs at the land surface when pressure head exceeds zero; infiltration and exfiltration exchange water between surface and subsurface. Lateral subsurface flow is driven by hydraulic head gradients. (Adapted from Maxwell and Condon, 2016)*
 
-**Key features:**
-- **Flexible gridding**: Supports both orthogonal grids and terrain-following grids (TFG) where layers parallel the land surface
-- **Continuous pressure**: The same variable $h$ represents subsurface pressure head and surface ponding depth
+**Things to note about ParFlow running in this mode for watershed applications:**
 - **Integrated surface-subsurface flow**: The 3D Richards equation (subsurface) and 2D shallow water equations (overland flow) are solved implicitly together—all interactions are captured within a single timestep
+- **Continuous pressure**: The same variable $h$ represents subsurface pressure head and surface ponding depth
 - **Coupled land surface processes**: When using CLM, land-atmosphere exchanges (radiation, evapotranspiration, snow) are coupled via information passing at each timestep
+- **Flexible gridding**: Supports both orthogonal grids and terrain-following grids (TFG) where layers parallel the land surface
 
 ### Notation and Sign Conventions
 
@@ -60,7 +60,7 @@ where $\gamma = \rho g$ is the specific weight of water. In unsaturated conditio
 
 This convention is standard for single-phase, isothermal groundwater applications where relative density and viscosity variations are negligible.
 
-**Key insight:** The variables $h$ and $\psi$ represent the same physical quantity at the land surface, but $\psi$ extracts only the ponded portion. When $h > 0$, water ponds at the surface and $\psi = h$. When $h < 0$, the surface is unsaturated and $\psi = 0$. This allows the same pressure variable to seamlessly transition between subsurface and surface flow regimes.
+**Key insight:** The variables $h$ and $\psi$ represent the same physical quantity at the land surface, but $\psi$ extracts only the ponded portion. When $h > 0$, water ponds at the surface and $\psi = h$. When $h < 0$, the surface is unsaturated and $\psi = 0$. This allows the same pressure variable to seamlessly transition between subsurface and surface flow regimes.  Note that we follow this convention and write Richards' Equation using $h$ and the Surface Water Equations using $\psi$.
 
 ### Richards' Equation
 
@@ -82,7 +82,7 @@ The two storage terms represent:
 
 ### Darcy Flux
 
-The subsurface flux follows Darcy's law:
+The subsurface flux follows the unsaturated Darcy's law (often called Darcy-Buckingham):
 
 $$\mathbf{q} = -K_s(\mathbf{x}) \, k_r(h) \, \nabla(h + z)$$
 
@@ -94,7 +94,7 @@ where:
 
 ### Terrain-Following Grid (TFG)
 
-For domains with significant topography, ParFlow supports a terrain-following coordinate transformation. In TFG coordinates, the flux becomes:
+For domains with significant topography, ParFlow supports a terrain-following coordinate transformation. In TFG coordinates, the flux formulation becomes:
 
 $$\mathbf{q} = -K_s(\mathbf{x}) \, k_r(h) \left[ \nabla(h + z) \cos\beta + \sin\beta \right]$$
 
@@ -156,7 +156,7 @@ where $|S_f| = \sqrt{S_{f,x}^2 + S_{f,y}^2}$ is the friction slope magnitude.
 
 ### Integrated Overland Flow Boundary Condition
 
-ParFlow integrates overland flow with subsurface flow through a **switchable boundary condition** at the land surface. When enabled, the top boundary of the Richards equation domain becomes:
+ParFlow integrates overland flow with subsurface flow through a **switchable boundary condition** at the land surface. When enabled, the top boundary of the Richards equation at the upper boundary becomes:
 
 $$\mathbf{k} \cdot \left( -K_s \, k_r(h) \, \nabla(h + z) \right) = \frac{\partial \|\psi\|}{\partial t} - \nabla \cdot (\|\psi\| \, \mathbf{v}) + q_r(\mathbf{x})$$
 

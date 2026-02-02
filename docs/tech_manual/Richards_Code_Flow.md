@@ -1,6 +1,6 @@
 # Richards Solver Code Flow
 
-This document describes the code progression and control flow for ParFlow's Richards equation solver, the primary solver for variably saturated groundwater flow with optional land surface model (CLM) coupling.
+This document describes the code progression and control flow for ParFlow's Richards equation solver, the primary solver for variably saturated groundwater flow with optional land surface model (CLM) coupling.  This is the primary solver used for watershed type applications from small to large scale (e.g. EU-CORDEX, CONUS, CONCN domains).  
 
 ## Overview
 
