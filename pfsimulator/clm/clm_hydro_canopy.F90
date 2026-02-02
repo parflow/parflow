@@ -69,6 +69,8 @@ subroutine clm_hydro_canopy (clm)
   real(r8) :: e_sat           ! saturation vapor pressure [Pa]
   real(r8) :: e_act           ! actual vapor pressure [Pa]
   real(r8) :: q_sat           ! saturation specific humidity [kg/kg]
+  real(r8) :: psnow           ! probability/fraction of snow [-]
+  real(r8) :: exponent        ! exponent for logistic function
 
   !=== End Variable List ===================================================
   
@@ -171,7 +173,7 @@ subroutine clm_hydro_canopy (clm)
      dz_snowf = 0.                            ! rate of snowfall, snow depth/s (m/s)
   else
      ! @RMM 2025: Select rain-snow partitioning method
-     ! snow_partition_type: 0=CLM linear (air temp), 1=wetbulb threshold, 2=wetbulb linear
+     ! snow_partition_type: 0=CLM linear, 1=wetbulb thresh, 2=wetbulb linear, 3=Dai, 4=Jennings
      select case (clm%snow_partition_type)
 
      case (1, 2)  ! Wetbulb-based methods
@@ -212,23 +214,60 @@ subroutine clm_hydro_canopy (clm)
               flfall = 1.0d0  ! all rain
            endif
         else  ! case 2: wetbulb linear
-           ! Linear transition over 2K range centered on threshold
-           if (t_wb_k <= clm%tw_threshold - 1.0d0) then
+           ! Linear transition over configurable range centered on threshold
+           if (t_wb_k <= clm%tw_threshold - clm%snow_transition_width) then
               flfall = 0.0d0
-           else if (t_wb_k >= clm%tw_threshold + 1.0d0) then
+           else if (t_wb_k >= clm%tw_threshold + clm%snow_transition_width) then
               flfall = 1.0d0
            else
-              flfall = (t_wb_k - (clm%tw_threshold - 1.0d0)) / 2.0d0
+              flfall = (t_wb_k - (clm%tw_threshold - clm%snow_transition_width)) / &
+                       (2.0d0 * clm%snow_transition_width)
            endif
         endif
 
-     case default  ! Case 0: CLM default linear (air temperature)
-        if (clm%forc_t <= tfrz) then
-           flfall = 0.
-        else if (clm%forc_t <= tfrz+2.) then
-           flfall = -54.632 + 0.2*clm%forc_t
+     case (3)  ! Dai (2008) sigmoidal method
+        ! F(%) = a * [tanh(b*(T-c)) - d], converted to fraction by /100
+        ! T in Celsius, coefficients from Table 1a (Land, ANN)
+        ! Reference: Dai (2008) GRL doi:10.1029/2008GL033295
+        t_c = clm%forc_t - tfrz
+        psnow = (clm%dai_a / 100.0d0) * &
+                (tanh(clm%dai_b * (t_c - clm%dai_c)) - clm%dai_d)
+        psnow = max(0.0d0, min(1.0d0, psnow))
+        flfall = 1.0d0 - psnow
+
+     case (4)  ! Jennings et al. (2018) bivariate logistic method
+        ! psnow = 1 / (1 + exp(a + b*T + g*RH))
+        ! T in Celsius, RH in percent
+        ! Reference: Jennings et al. (2018) Nat Commun doi:10.1038/s41467-018-03629-7
+        t_c = clm%forc_t - tfrz
+
+        ! Calculate saturation vapor pressure using Clausius-Clapeyron
+        e_sat = es_a * exp(es_b * t_c / (t_c + es_c))
+
+        ! Calculate saturation specific humidity
+        q_sat = 0.622d0 * e_sat / (clm%forc_pbot - 0.378d0 * e_sat)
+
+        ! Calculate relative humidity from specific humidity
+        if (q_sat > 0.0d0) then
+           rh_pct = min(100.0d0, max(0.0d0, 100.0d0 * clm%forc_q / q_sat))
         else
-           flfall = 0.4
+           rh_pct = 100.0d0
+        endif
+
+        ! Bivariate logistic regression
+        exponent = clm%jennings_a + clm%jennings_b * t_c + clm%jennings_g * rh_pct
+        psnow = 1.0d0 / (1.0d0 + exp(exponent))
+        flfall = 1.0d0 - psnow
+
+     case default  ! Case 0: CLM default linear (air temperature) with configurable thresholds
+        ! Now uses configurable snow_t_low and snow_t_high instead of hardcoded values
+        if (clm%forc_t <= clm%snow_t_low) then
+           flfall = 0.0d0
+        else if (clm%forc_t >= clm%snow_t_high) then
+           flfall = 0.4d0
+        else
+           flfall = 0.4d0 * (clm%forc_t - clm%snow_t_low) / &
+                    (clm%snow_t_high - clm%snow_t_low)
         endif
 
      end select
