@@ -14,6 +14,8 @@ This technical manual complements the [User Manual](https://parflow.readthedocs.
 
 ## CLM
 
+- Code Flow and Structure for CLM *(coming soon)*
+- CLM Evaporation and Transpiration *(coming soon)*
 - [CLM Snow Physics](CLM_SNOW_Code_Flow.md)
 
 ---
