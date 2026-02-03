@@ -4,9 +4,9 @@ cmake_minimum_required ( VERSION 3.24 )
 
 if ( NOT DEFINED PystencilsSfg_CONFIG_MODULE )
         if ( ${PARFLOW_HAVE_CUDA} )
-                set ( PystencilsSfg_CONFIG_MODULE gpu_config_cuda.py)
+                set ( PystencilsSfg_CONFIG_MODULE sfg_modules/gpu_config_cuda.py)
         else ()
-                set ( PystencilsSfg_CONFIG_MODULE cpu_config.py )
+                set ( PystencilsSfg_CONFIG_MODULE sfg_modules/cpu_config.py)
         endif ()
 endif ()
 

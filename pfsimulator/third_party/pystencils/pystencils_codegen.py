@@ -1,6 +1,3 @@
-import operator
-from functools import reduce
-
 import pystencils as ps
 import re
 
