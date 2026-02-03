@@ -57,7 +57,7 @@ def get_kernel_cfg(
 
             # sets GPU indexing scheme
             if indexing_scheme := sfg.context.project_info.get("gpu_indexing_scheme"):
-                if indexing_scheme in ("linear1d", "linear3d", "gridstrided_linear3d"):
+                if indexing_scheme in ("linear1d", "linear3d", "blockwise4d", "gridstrided_linear3d"):
                     kernel_cfg.gpu.indexing_scheme = indexing_scheme
                 else:
                     raise ValueError(f"Unsupported indexing scheme: {indexing_scheme}")
