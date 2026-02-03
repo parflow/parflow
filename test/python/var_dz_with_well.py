@@ -332,14 +332,21 @@ var_dz_with_well.Wells.pressure_well.alltime.Saturation.water.Value = 1.0
 # dz causes tiny differences from floating point arithmatic. These changes make
 # total sense and are unavoidable.
 
-pressure_file = "var_dz_with_well.out.press.00010.pfb"
 
+pressure_file = "var_dz_with_well.out.press.00010.pfb"
 # base case single column
 dir_name = get_absolute_path("test_output/single_column_1")
 mkdir(dir_name)
 var_dz_with_well.run(working_directory=dir_name)
 
-base_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
+test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
+
+correct_pressure_file = "../correct_output/var_dz_with_well_single_column.out.press.00010.pfb"
+correct_pressure = pf.read_pfb(get_absolute_path(correct_pressure_file))
+
+passed = np.allclose(test_case_pressure, correct_pressure)
+if not passed:
+    print("var_dz_with_well subtest 1: FAILED")
 
 # single column test 1
 dir_name = get_absolute_path("test_output/single_column_2")
@@ -365,11 +372,13 @@ var_dz_with_well.Cell._13.dzScale.Value = 0.1
 
 var_dz_with_well.run(working_directory=dir_name)
 
+all_tests_passed = True
 test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-passed = np.allclose(base_case_pressure, test_case_pressure)
+passed = np.allclose(correct_pressure, test_case_pressure)
 if not passed:
-    print(f"var_dz_with_well : FAILED")
-    sys.exit(1)
+    print("var_dz_with_well subtest 2: FAILED")
+
+all_tests_passed = all_tests_passed and passed
 
 # single column test 2
 dir_name = get_absolute_path("test_output/single_column_3")
@@ -395,10 +404,11 @@ var_dz_with_well.Cell._13.dzScale.Value = 10
 var_dz_with_well.run(working_directory=dir_name)
 
 test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-passed = np.allclose(base_case_pressure, test_case_pressure)
+passed = np.allclose(correct_pressure, test_case_pressure)
 if not passed:
-    print(f"var_dz_with_well : FAILED")
-    sys.exit(1)
+    print("var_dz_with_well subtest 3: FAILED")
+
+all_tests_passed = all_tests_passed and passed
 
 # Next we switch to a multicolumn setup and add a flux well in to make sure this works for both types
 # of wells
@@ -435,6 +445,8 @@ var_dz_with_well.Wells.flux_well.ZUpper = 10.5
 var_dz_with_well.Wells.flux_well.Method = "Standard"
 var_dz_with_well.Wells.flux_well.alltime.Flux.water.Value = 7.5
 
+
+
 # Multi column  base case
 dir_name = get_absolute_path("test_output/multi_column_1")
 mkdir(dir_name)
@@ -458,7 +470,14 @@ var_dz_with_well.Cell._12.dzScale.Value = 1
 var_dz_with_well.Cell._13.dzScale.Value = 1
 
 var_dz_with_well.run(working_directory=dir_name)
-base_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
+correct_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
+
+correct_pressure_file = "../correct_output/var_dz_with_well_multi_column.out.press.00010.pfb"
+correct_pressure = pf.read_pfb(get_absolute_path(correct_pressure_file))
+
+passed = np.allclose(correct_pressure, test_case_pressure)
+if not passed:
+    print("var_dz_with_well subtest 4: FAILED")
 
 dir_name = get_absolute_path("test_output/multi_column_2")
 mkdir(dir_name)
@@ -484,11 +503,11 @@ var_dz_with_well.Cell._13.dzScale.Value = 0.1
 var_dz_with_well.run(working_directory=dir_name)
 
 test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-passed = np.allclose(base_case_pressure, test_case_pressure)
+passed = np.allclose(correct_pressure, test_case_pressure)
 if not passed:
-    print(f"var_dz_with_well : FAILED")
-    sys.exit(1)
+    print("var_dz_with_well subtest 5: FAILED")
 
+all_tests_passed = all_tests_passed and passed
 dir_name = get_absolute_path("test_output/multi_column_3")
 mkdir(dir_name)
 
@@ -512,7 +531,7 @@ var_dz_with_well.Cell._13.dzScale.Value = 10
 var_dz_with_well.run(working_directory=dir_name)
 
 test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-passed = np.allclose(base_case_pressure, test_case_pressure)
+passed = np.allclose(correct_pressure, test_case_pressure)
 
 # Here we test if we turn off the correction for variable dz that the outputs no longer match
 dir_name = get_absolute_path("test_output/multi_column_4")
@@ -523,13 +542,14 @@ var_dz_with_well.Wells.CorrectForVarDz = 0
 var_dz_with_well.run(working_directory=dir_name)
 
 test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-passed = not np.allclose(base_case_pressure, test_case_pressure)
+passed = not np.allclose(correct_pressure, test_case_pressure)
 if not passed:
-    print(f"var_dz_with_well : FAILED")
-    sys.exit(1)
+    print("var_dz_with_well subtest 6: FAILED")
+all_tests_passed = all_tests_passed and passed
 
 
 if passed:
-    print(f"vardz_with_well : PASSED")
+    print("vardz_with_well : PASSED")
 else:
-    print(f"vardz_with_well : FAILED")
+    print("vardz_with_well : FAILED")
+    sys.exit(1)
