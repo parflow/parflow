@@ -233,6 +233,15 @@ typedef struct {
   int clm_frac_sno_type;        /* frac_sno scheme: 0=CLM (default), others TBD */
   double clm_frac_sno_roughness; /* roughness length for frac_sno [m], default=0.01 (zlnd) */
 
+  /* Snow age parameterization - VIS/NIR separation @RMM 2025 */
+  double clm_snowage_tau0_vis;        /* VIS e-folding time [s] */
+  double clm_snowage_tau0_nir;        /* NIR e-folding time [s] */
+  double clm_snowage_grain_growth_vis; /* VIS grain growth factor [K] */
+  double clm_snowage_grain_growth_nir; /* NIR grain growth factor [K] */
+  double clm_snowage_dirt_soot_vis;   /* VIS dirt/soot factor [-] */
+  double clm_snowage_dirt_soot_nir;   /* NIR dirt/soot factor [-] */
+  double clm_snowage_reset_factor;    /* fresh snow reset factor [-] */
+
   int clm_reuse_count;          /* NBE: Number of times to use each CLM input */
   int clm_write_logs;           /* NBE: Write the processor logs for CLM or not */
   int clm_last_rst;             /* NBE: Only write/overwrite one rst file or write a lot of them */
@@ -2831,7 +2840,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          public_xtra->clm_albedo_accum_a,
                          public_xtra->clm_albedo_thaw_a,
                          public_xtra->clm_frac_sno_type,
-                         public_xtra->clm_frac_sno_roughness);
+                         public_xtra->clm_frac_sno_roughness,
+                         public_xtra->clm_snowage_tau0_vis,
+                         public_xtra->clm_snowage_tau0_nir,
+                         public_xtra->clm_snowage_grain_growth_vis,
+                         public_xtra->clm_snowage_grain_growth_nir,
+                         public_xtra->clm_snowage_dirt_soot_vis,
+                         public_xtra->clm_snowage_dirt_soot_nir,
+                         public_xtra->clm_snowage_reset_factor);
 
             break;
           }
@@ -5839,6 +5855,28 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "%s.CLM.FracSnoRoughness", name);
   public_xtra->clm_frac_sno_roughness = GetDoubleDefault(key, 0.01);
+
+  /* @RMM 2025 Snow age VIS/NIR separation parameters */
+  sprintf(key, "%s.CLM.SnowAgeTau0Vis", name);
+  public_xtra->clm_snowage_tau0_vis = GetDoubleDefault(key, 1.0e6);
+
+  sprintf(key, "%s.CLM.SnowAgeTau0Nir", name);
+  public_xtra->clm_snowage_tau0_nir = GetDoubleDefault(key, 1.0e6);
+
+  sprintf(key, "%s.CLM.SnowAgeGrainGrowthVis", name);
+  public_xtra->clm_snowage_grain_growth_vis = GetDoubleDefault(key, 5000.0);
+
+  sprintf(key, "%s.CLM.SnowAgeGrainGrowthNir", name);
+  public_xtra->clm_snowage_grain_growth_nir = GetDoubleDefault(key, 5000.0);
+
+  sprintf(key, "%s.CLM.SnowAgeDirtSootVis", name);
+  public_xtra->clm_snowage_dirt_soot_vis = GetDoubleDefault(key, 0.3);
+
+  sprintf(key, "%s.CLM.SnowAgeDirtSootNir", name);
+  public_xtra->clm_snowage_dirt_soot_nir = GetDoubleDefault(key, 0.3);
+
+  sprintf(key, "%s.CLM.SnowAgeResetFactor", name);
+  public_xtra->clm_snowage_reset_factor = GetDoubleDefault(key, 0.1);
 
   /* IMF Write CLM as Silo (default=False) */
   sprintf(key, "%s.WriteSiloCLM", name);

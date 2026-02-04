@@ -291,9 +291,11 @@ subroutine clm_hydro_canopy (clm)
      clm%h2osno = clm%h2osno + clm%qflx_snow_grnd*clm%dtime      ! snow water equivalent (mm)
 
      if (clm%itypwat==istwet .AND. clm%t_grnd>=tfrz) then
-        clm%h2osno=0. 
-        clm%snowdp=0. 
+        clm%h2osno=0.
+        clm%snowdp=0.
         clm%snowage=0.
+        clm%snowage_vis=0.   ! @RMM 2025
+        clm%snowage_nir=0.   ! @RMM 2025
      endif
 
   endif
@@ -334,6 +336,8 @@ subroutine clm_hydro_canopy (clm)
      clm%z(0) = -0.5*clm%dz(0)
      clm%zi(-1) = -clm%dz(0)
      clm%snowage = 0.                             ! snow age
+     clm%snowage_vis = 0.                         ! VIS band snow age @RMM 2025
+     clm%snowage_nir = 0.                         ! NIR band snow age @RMM 2025
      clm%t_soisno (0) = min(tfrz, clm%forc_t)     ! K
      clm%h2osoi_ice(0) = clm%h2osno               ! kg/m2
      clm%h2osoi_liq(0) = 0.                       ! kg/m2

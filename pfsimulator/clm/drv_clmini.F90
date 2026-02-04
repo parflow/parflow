@@ -273,7 +273,9 @@ subroutine drv_clmini (drv, grid,pf_porosity, tile, clm, istep_pf, clm_forc_veg)
 ! set water and temperatures to constant values: all points
 
   clm%h2ocan  = 0.
-  clm%snowage = 0. 
+  clm%snowage = 0.
+  clm%snowage_vis = 0.   ! VIS band snow age @RMM 2025
+  clm%snowage_nir = 0.   ! NIR band snow age @RMM 2025
   clm%h2osno  = drv%h2osno_ini
   clm%snowdp  = drv%h2osno_ini/250.  !the arbitary snow density = 250 kg/m3
   clm%t_veg   = drv%t_ini
