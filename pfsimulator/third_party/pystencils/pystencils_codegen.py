@@ -6,7 +6,7 @@ from pystencilssfg.lang.gpu import cuda
 
 from pystencils.codegen.properties import FieldShape
 
-from pystencils.types.quick import UInt
+from pystencils.types.quick import UInt, SInt
 from pystencils.types import deconstify
 
 # set up kernel config
