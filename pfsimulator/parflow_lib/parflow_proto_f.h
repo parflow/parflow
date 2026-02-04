@@ -120,31 +120,43 @@ void SADVECT(double *s, double *sn,
 #define CLM_LSM clm_lsm_
 #endif
 
-#define CALL_CLM_LSM(pressure_data, saturation_data, evap_trans_data, top, bottom, porosity_data,                                                                                                           \
-                     dz_mult_data, istep, dt, t, start_time, dx, dy, dz, ix, iy, nx, ny, nz,                                                                                                                \
-                     nx_f, ny_f, nz_f, nz_rz, ip, p, q, r, gnx, gny, rank,                                                                                                                                  \
-                     sw_data, lw_data, prcp_data, tas_data, u_data, v_data, patm_data, qatm_data,                                                                                                           \
-                     lai_data, sai_data, z0m_data, displa_data,                                                                                                                                             \
-                     slope_x_data, slope_y_data,                                                                                                                                                            \
-                     eflx_lh_tot_data, eflx_lwrad_out_data, eflx_sh_tot_data, eflx_soil_grnd_data,                                                                                                          \
-                     qflx_evap_tot_data, qflx_evap_grnd_data, qflx_evap_soi_data, qflx_evap_veg_data, qflx_tran_veg_data,                                                                                   \
-                     qflx_infl_data, swe_out_data, t_grnd_data, t_soil_data,                                                                                                                                \
-                     clm_dump_interval, clm_1d_out, clm_forc_veg, clm_file_dir, clm_file_dir_length, clm_bin_out_dir, write_CLM_binary, slope_accounting_CLM,                                               \
-                     clm_beta_function, clm_veg_function, clm_veg_wilting, clm_veg_fieldc, clm_res_sat,                                                                                                     \
-                     clm_irr_type, clm_irr_cycle, clm_irr_rate, clm_irr_start, clm_irr_stop,                                                                                                                \
-                     clm_irr_threshold, qirr, qirr_inst, iflag, clm_irr_thresholdtype, soi_z, clm_next, clm_write_logs, clm_last_rst, clm_daily_rst, clm_water_stress_type, clm_nlevsoi, clm_nlevlak)       \
-        CLM_LSM(pressure_data, saturation_data, evap_trans_data, top, bottom, porosity_data,                                                                                                                \
-                dz_mult_data, &istep, &dt, &t, &start_time, &dx, &dy, &dz, &ix, &iy, &nx, &ny, &nz, &nx_f, &ny_f, &nz_f, &nz_rz, &ip, &p, &q, &r, &gnx, &gny, &rank,                                        \
-                sw_data, lw_data, prcp_data, tas_data, u_data, v_data, patm_data, qatm_data,                                                                                                                \
-                lai_data, sai_data, z0m_data, displa_data,                                                                                                                                                  \
-                slope_x_data, slope_y_data,                                                                                                                                                                 \
-                eflx_lh_tot_data, eflx_lwrad_out_data, eflx_sh_tot_data, eflx_soil_grnd_data,                                                                                                               \
-                qflx_evap_tot_data, qflx_evap_grnd_data, qflx_evap_soi_data, qflx_evap_veg_data, qflx_tran_veg_data,                                                                                        \
-                qflx_infl_data, swe_out_data, t_grnd_data, t_soil_data,                                                                                                                                     \
-                &clm_dump_interval, &clm_1d_out, &clm_forc_veg, clm_file_dir, &clm_file_dir_length, &clm_bin_out_dir,                                                                                       \
-                &write_CLM_binary, &slope_accounting_CLM, &clm_beta_function, &clm_veg_function, &clm_veg_wilting, &clm_veg_fieldc,                                                                         \
-                &clm_res_sat, &clm_irr_type, &clm_irr_cycle, &clm_irr_rate, &clm_irr_start, &clm_irr_stop,                                                                                                  \
-                &clm_irr_threshold, qirr, qirr_inst, iflag, &clm_irr_thresholdtype, &soi_z, &clm_next, &clm_write_logs, &clm_last_rst, &clm_daily_rst, &clm_water_stress_type, &clm_nlevsoi, &clm_nlevlak);
+#define CALL_CLM_LSM(pressure_data, saturation_data, evap_trans_data, top, bottom, porosity_data,                                                                                                            \
+                     dz_mult_data, istep, dt, t, start_time, dx, dy, dz, ix, iy, nx, ny, nz,                                                                                                                 \
+                     nx_f, ny_f, nz_f, nz_rz, ip, p, q, r, gnx, gny, rank,                                                                                                                                   \
+                     sw_data, lw_data, prcp_data, tas_data, u_data, v_data, patm_data, qatm_data,                                                                                                            \
+                     lai_data, sai_data, z0m_data, displa_data,                                                                                                                                              \
+                     slope_x_data, slope_y_data,                                                                                                                                                             \
+                     eflx_lh_tot_data, eflx_lwrad_out_data, eflx_sh_tot_data, eflx_soil_grnd_data,                                                                                                           \
+                     qflx_evap_tot_data, qflx_evap_grnd_data, qflx_evap_soi_data, qflx_evap_veg_data, qflx_tran_veg_data,                                                                                    \
+                     qflx_infl_data, swe_out_data, t_grnd_data, t_soil_data,                                                                                                                                 \
+                     clm_dump_interval, clm_1d_out, clm_forc_veg, clm_file_dir, clm_file_dir_length, clm_bin_out_dir, write_CLM_binary, slope_accounting_CLM,                                                \
+                     clm_beta_function, clm_veg_function, clm_veg_wilting, clm_veg_fieldc, clm_res_sat,                                                                                                      \
+                     clm_irr_type, clm_irr_cycle, clm_irr_rate, clm_irr_start, clm_irr_stop,                                                                                                                 \
+                     clm_irr_threshold, qirr, qirr_inst, iflag, clm_irr_thresholdtype, soi_z, clm_next, clm_write_logs, clm_last_rst, clm_daily_rst, clm_water_stress_type, clm_nlevsoi, clm_nlevlak,        \
+                     clm_snow_partition, clm_tw_threshold, clm_thin_snow_damping, clm_thin_snow_threshold,                                                                                                   \
+                     clm_snow_tcrit, clm_snow_t_low, clm_snow_t_high, clm_snow_transition_width,                                                                                                             \
+                     clm_dai_a, clm_dai_b, clm_dai_c, clm_dai_d, clm_jennings_a, clm_jennings_b, clm_jennings_g,                                                                                             \
+                     clm_sza_snow_damping, clm_sza_damping_coszen_ref, clm_sza_damping_coszen_min,                                                                                                           \
+                     clm_albedo_scheme, clm_albedo_vis_new, clm_albedo_nir_new, clm_albedo_min, clm_albedo_decay_vis, clm_albedo_decay_nir, clm_albedo_accum_a, clm_albedo_thaw_a,                           \
+                     clm_frac_sno_type, clm_frac_sno_roughness)                                                                                                                                              \
+        CLM_LSM(pressure_data, saturation_data, evap_trans_data, top, bottom, porosity_data,                                                                                                                 \
+                dz_mult_data, &istep, &dt, &t, &start_time, &dx, &dy, &dz, &ix, &iy, &nx, &ny, &nz, &nx_f, &ny_f, &nz_f, &nz_rz, &ip, &p, &q, &r, &gnx, &gny, &rank,                                         \
+                sw_data, lw_data, prcp_data, tas_data, u_data, v_data, patm_data, qatm_data,                                                                                                                 \
+                lai_data, sai_data, z0m_data, displa_data,                                                                                                                                                   \
+                slope_x_data, slope_y_data,                                                                                                                                                                  \
+                eflx_lh_tot_data, eflx_lwrad_out_data, eflx_sh_tot_data, eflx_soil_grnd_data,                                                                                                                \
+                qflx_evap_tot_data, qflx_evap_grnd_data, qflx_evap_soi_data, qflx_evap_veg_data, qflx_tran_veg_data,                                                                                         \
+                qflx_infl_data, swe_out_data, t_grnd_data, t_soil_data,                                                                                                                                      \
+                &clm_dump_interval, &clm_1d_out, &clm_forc_veg, clm_file_dir, &clm_file_dir_length, &clm_bin_out_dir,                                                                                        \
+                &write_CLM_binary, &slope_accounting_CLM, &clm_beta_function, &clm_veg_function, &clm_veg_wilting, &clm_veg_fieldc,                                                                          \
+                &clm_res_sat, &clm_irr_type, &clm_irr_cycle, &clm_irr_rate, &clm_irr_start, &clm_irr_stop,                                                                                                   \
+                &clm_irr_threshold, qirr, qirr_inst, iflag, &clm_irr_thresholdtype, &soi_z, &clm_next, &clm_write_logs, &clm_last_rst, &clm_daily_rst, &clm_water_stress_type, &clm_nlevsoi, &clm_nlevlak,   \
+                &clm_snow_partition, &clm_tw_threshold, &clm_thin_snow_damping, &clm_thin_snow_threshold,                                                                                                    \
+                &clm_snow_tcrit, &clm_snow_t_low, &clm_snow_t_high, &clm_snow_transition_width,                                                                                                              \
+                &clm_dai_a, &clm_dai_b, &clm_dai_c, &clm_dai_d, &clm_jennings_a, &clm_jennings_b, &clm_jennings_g,                                                                                           \
+                &clm_sza_snow_damping, &clm_sza_damping_coszen_ref, &clm_sza_damping_coszen_min,                                                                                                             \
+                &clm_albedo_scheme, &clm_albedo_vis_new, &clm_albedo_nir_new, &clm_albedo_min, &clm_albedo_decay_vis, &clm_albedo_decay_nir, &clm_albedo_accum_a, &clm_albedo_thaw_a,                        \
+                &clm_frac_sno_type, &clm_frac_sno_roughness);
 
 void CLM_LSM(double *pressure_data, double *saturation_data, double *evap_trans_data, double *top, double *bottom, double *porosity_data,
              double *dz_mult_data, int *istep, double *dt, double *t, double *start_time,
@@ -160,7 +172,15 @@ void CLM_LSM(double *pressure_data, double *saturation_data, double *evap_trans_
              int *clm_veg_function, double *clm_veg_wilting, double *clm_veg_fieldc, double *clm_res_sat,
              int *clm_irr_type, int *clm_irr_cycle, double *clm_irr_rate, double *clm_irr_start, double *clm_irr_stop,
              double *clm_irr_threshold, double *qirr, double *qirr_inst, double *iflag, int *clm_irr_thresholdtype, int *soi_z,
-             int *clm_next, int *clm_write_logs, int *clm_last_rst, int *clm_daily_rst, int *clm_water_stress_type, int *clm_nlevsoi, int *clm_nlevlak);
+             int *clm_next, int *clm_write_logs, int *clm_last_rst, int *clm_daily_rst, int *clm_water_stress_type, int *clm_nlevsoi, int *clm_nlevlak,
+             int *clm_snow_partition, double *clm_tw_threshold, double *clm_thin_snow_damping, double *clm_thin_snow_threshold,
+             double *clm_snow_tcrit, double *clm_snow_t_low, double *clm_snow_t_high, double *clm_snow_transition_width,
+             double *clm_dai_a, double *clm_dai_b, double *clm_dai_c, double *clm_dai_d,
+             double *clm_jennings_a, double *clm_jennings_b, double *clm_jennings_g,
+             double *clm_sza_snow_damping, double *clm_sza_damping_coszen_ref, double *clm_sza_damping_coszen_min,
+             int *clm_albedo_scheme, double *clm_albedo_vis_new, double *clm_albedo_nir_new, double *clm_albedo_min,
+             double *clm_albedo_decay_vis, double *clm_albedo_decay_nir, double *clm_albedo_accum_a, double *clm_albedo_thaw_a,
+             int *clm_frac_sno_type, double *clm_frac_sno_roughness);
 
 /* @RMM CRUNCHFLOW.F90*/
 //#define CRUNCHFLOW crunchflow_

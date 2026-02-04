@@ -34,11 +34,11 @@ all = [
     "imageio>=2.9.0",
     "h5py",
     "twine",
-    "black"
+    "black==25.12.0"
 ]
 pfsol = ["imageio>=2.9.0"]
 pdi = ["h5py"]
-dev = ["twine", "black"]
+dev = ["twine", "black==25.12.0"]
 
 [project.urls]
 Homepage = "https://github.com/parflow/parflow/tree/master/pftools/python"

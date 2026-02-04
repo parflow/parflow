@@ -184,6 +184,9 @@ subroutine clm_main (clm,day,gmt,clm_forc_veg)
 
   call clm_coszen (clm,day,coszen)
 
+  ! @RMM 2025: Store coszen for use in meltfreeze SZA damping
+  clm%coszen = coszen
+
   call clm_surfalb (clm,coszen)
 
   ! -----------------------------------------------------------------
