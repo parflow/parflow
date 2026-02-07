@@ -397,7 +397,7 @@ jobs:
           make -j
           make install
         fi
-        echo "RMM_FLAGS=-Drmm_ROOT=$PARFLOW_DEP_DIR/rmm" >> $GITHUB_ENV
+        echo "RMM_FLAGS=-DRMM_ROOT=$PARFLOW_DEP_DIR/rmm" >> $GITHUB_ENV
 
     - name: Umpire Install
       env:
@@ -414,7 +414,7 @@ jobs:
           cmake --build build --parallel 4
           cmake --install build
         fi
-        echo "UMPIRE_FLAGS=-Dumpire_ROOT=$PARFLOW_DEP_DIR/Umpire" >> $GITHUB_ENV
+        echo "UMPIRE_FLAGS=-DUMPIRE_ROOT=$PARFLOW_DEP_DIR/Umpire" >> $GITHUB_ENV
 
     - name: Kokkos Install
       env:
