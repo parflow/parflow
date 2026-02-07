@@ -506,7 +506,7 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
 #endif
 
   FILE                  *kinsol_file;
-  char filename[1024];
+  char filename[PATH_MAX];
 
   if (PFModuleInstanceXtra(this_module) == NULL)
     instance_xtra = ctalloc(InstanceXtra, 1);

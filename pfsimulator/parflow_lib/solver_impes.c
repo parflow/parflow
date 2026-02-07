@@ -219,7 +219,7 @@ void      SolverImpes()
   VectorUpdateCommHandle   *handle;
 
   char dt_info;
-  char file_prefix[2048], file_type[2048], file_postfix[2048];
+  char file_prefix[PATH_MAX], file_type[2048], file_postfix[2048];
 
   double       *time_log = NULL, *dt_log = NULL;
   int          *seq_log = NULL, *dumped_log = NULL;
