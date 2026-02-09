@@ -365,20 +365,20 @@ clm.Solver.CLM.AlbedoScheme = "CLM"
 # -----------------------------------------------------------------------------
 
 # VIS band ages slower (longer e-folding time)
-clm.Solver.CLM.SnowAgeTau0Vis = 3.05e6       # AR2022 optimal (default: 1e6)
+clm.Solver.CLM.SnowAgeTau0Vis = 3.05e6  # AR2022 optimal (default: 1e6)
 # NIR band ages faster (shorter e-folding time)
-clm.Solver.CLM.SnowAgeTau0Nir = 5.29e5       # AR2022 optimal (default: 1e6)
+clm.Solver.CLM.SnowAgeTau0Nir = 5.29e5  # AR2022 optimal (default: 1e6)
 
 # Grain growth temperature sensitivity
 clm.Solver.CLM.SnowAgeGrainGrowthVis = 9287  # AR2022 optimal (default: 5000)
 clm.Solver.CLM.SnowAgeGrainGrowthNir = 7715  # AR2022 optimal (default: 5000)
 
 # Dirt/soot contamination effect
-clm.Solver.CLM.SnowAgeDirtSootVis = 0.25     # AR2022 optimal (default: 0.3)
-clm.Solver.CLM.SnowAgeDirtSootNir = 0.11     # AR2022 optimal (default: 0.3)
+clm.Solver.CLM.SnowAgeDirtSootVis = 0.25  # AR2022 optimal (default: 0.3)
+clm.Solver.CLM.SnowAgeDirtSootNir = 0.11  # AR2022 optimal (default: 0.3)
 
 # Fresh snow reset factor (keep at default)
-clm.Solver.CLM.SnowAgeResetFactor = 0.1      # default
+clm.Solver.CLM.SnowAgeResetFactor = 0.1  # default
 
 # -----------------------------------------------------------------------------
 # Initial conditions: water pressure
