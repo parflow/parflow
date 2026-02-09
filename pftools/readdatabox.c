@@ -388,8 +388,11 @@ Databox         *ReadParflowB(
     for (k = 0; k < nz; k++)
       for (j = 0; j < ny; j++)
       {
-        ptr = DataboxCoeff(v, x, (y + j), (z + k));
+        size_t size = (z + k) * DataboxNy(v) * DataboxNx(v) + (y + j) * DataboxNx(v) + x;
+        ptr = (DataboxCoeffs(v) + size);
+        // ptr = DataboxCoeff(v, x, (y + j), (z + k));
         tools_ReadDouble(fp, ptr, nx);
+        fflush(fp);
       }
   }
 
