@@ -77,9 +77,6 @@ void         SMG(
 
   HYPRE_StructSolver hypre_smg_data = instance_xtra->hypre_smg_data;
 
-  int num_iterations;
-  double rel_norm;
-
   (void)zero;
 
   /* Copy rhs to hypre_b vector. */
@@ -102,6 +99,8 @@ void         SMG(
 #if defined(PARFLOW_ENABLE_HYPRE_LOGGING)
   IfLogging(1)
   {
+    int num_iterations;
+    double rel_norm;
     FILE  *log_file;
 
     HYPRE_StructSMGGetNumIterations(hypre_smg_data, &num_iterations);
