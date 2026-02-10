@@ -108,9 +108,6 @@ void         PFMGOctree(
   int i, j, k;
   int num_i, num_j, num_k;
 
-  int num_iterations;
-  double rel_norm;
-
   int box_size_power = public_xtra->box_size_power;
 
   GrGeomSolid        *gr_domain = ProblemDataGrDomain(instance_xtra->problem_data);
@@ -205,6 +202,9 @@ void         PFMGOctree(
 //  {
   IfLogging(1)
   {
+    int   num_iterations;
+    double rel_norm;
+
     FILE  *log_file;
 
     HYPRE_StructPFMGGetNumIterations(hypre_pfmg_data, &num_iterations);

@@ -83,9 +83,6 @@ void         PFMG(
 
   HYPRE_StructSolver hypre_pfmg_data = instance_xtra->hypre_pfmg_data;
 
-  int num_iterations;
-  double rel_norm;
-
   /* Copy rhs to hypre_b vector. */
   BeginTiming(public_xtra->time_index_copy_hypre);
 
@@ -107,6 +104,9 @@ void         PFMG(
   //  {
   IfLogging(1)
   {
+    int   num_iterations;
+    double rel_norm;
+
     FILE  *log_file;
 
     HYPRE_StructPFMGGetNumIterations(hypre_pfmg_data, &num_iterations);
