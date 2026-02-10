@@ -102,7 +102,7 @@ void         PFMG(
 #if defined(PARFLOW_ENABLE_HYPRE_LOGGING)
   IfLogging(1)
   {
-    int   num_iterations;
+    int num_iterations;
     double rel_norm;
 
     FILE  *log_file;

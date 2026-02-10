@@ -202,7 +202,7 @@ void         PFMGOctree(
 //  {
   IfLogging(1)
   {
-    int   num_iterations;
+    int num_iterations;
     double rel_norm;
 
     FILE  *log_file;
