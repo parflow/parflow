@@ -200,6 +200,8 @@ library which provides greater file output formats'' \code{-DHDF5_ROOT=$(PARFLOW
 \item to include the \emph{Hypre} library which provides greater solver
 flexibility and options and also needs to be downloaded and built separately:
 \code{-DHYPRE_ROOT=$(PARFLOW_HYPRE_DIR)}
+\item to enable detailed Hypre logging and residual output (requires Hypre):
+\code{-DPARFLOW_ENABLE_HYPRE_LOGGING=ON}
 \item to write a single, undistributed \parflow{} binary file:
 \code{-DPARFLOW_AMPS_SEQUENTIAL_IO=true}
 \item to write timing information in the log file: \code{-DPARFLOW_ENABLE_TIMING=true }
