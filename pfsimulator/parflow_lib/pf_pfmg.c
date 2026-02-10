@@ -100,8 +100,6 @@ void         PFMG(
   EndTiming(public_xtra->time_index_pfmg);
 
 #if defined(PARFLOW_ENABLE_HYPRE_LOGGING)
-  //  if (tol > 0.0)
-  //  {
   IfLogging(1)
   {
     int   num_iterations;
