@@ -102,22 +102,23 @@ void         PFMG(
 
   EndTiming(public_xtra->time_index_pfmg);
 
+#if defined(PARFLOW_ENABLE_HYPRE_LOGGING)
   //  if (tol > 0.0)
   //  {
   IfLogging(1)
-    {
-      FILE  *log_file;
+  {
+    FILE  *log_file;
 
-      HYPRE_StructPFMGGetNumIterations(hypre_pfmg_data, &num_iterations);
-      HYPRE_StructPFMGGetFinalRelativeResidualNorm(hypre_pfmg_data,
-                                                   &rel_norm);
+    HYPRE_StructPFMGGetNumIterations(hypre_pfmg_data, &num_iterations);
+    HYPRE_StructPFMGGetFinalRelativeResidualNorm(hypre_pfmg_data,
+                                                 &rel_norm);
 
-      log_file = OpenLogFile("PFMG");
-      fprintf(log_file, "PFMG num. its: %i  PFMG Final norm: %12.4e\n",
-              num_iterations, rel_norm);
-      CloseLogFile(log_file);
-    }
-  //  }
+    log_file = OpenLogFile("PFMG");
+    fprintf(log_file, "PFMG num. its: %i  PFMG Final norm: %12.4e\n",
+            num_iterations, rel_norm);
+    CloseLogFile(log_file);
+  }
+#endif
 
   /* Copy solution from hypre_x vector to the soln vector. */
   BeginTiming(public_xtra->time_index_copy_hypre);
@@ -217,11 +218,13 @@ PFModule  *PFMGInitInstanceXtra(
                             instance_xtra->dxyz);
 
     /* Enable logging BEFORE setup so that norms arrays are allocated */
+#if defined(PARFLOW_ENABLE_HYPRE_LOGGING)
     IfLogging(1)
     {
       HYPRE_StructPFMGSetLogging(instance_xtra->hypre_pfmg_data, 1);
       HYPRE_StructPFMGSetPrintLevel(instance_xtra->hypre_pfmg_data, 2);
     }
+#endif
 
     HYPRE_StructPFMGSetup(instance_xtra->hypre_pfmg_data,
                           instance_xtra->hypre_mat,

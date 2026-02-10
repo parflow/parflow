@@ -354,6 +354,7 @@ endif (${PARFLOW_ENABLE_PDI} OR DEFINED PDI_ROOT)
 # Hypre
 #-----------------------------------------------------------------------------
 option(PARFLOW_ENABLE_HYPRE "Build with Hypre" "OFF")
+option(PARFLOW_ENABLE_HYPRE_LOGGING "Enable detailed Hypre logging and residual output" "OFF")
 if (${PARFLOW_ENABLE_HYPRE} OR DEFINED HYPRE_ROOT)
   find_package(HYPRE)
   if (${HYPRE_FOUND})
@@ -366,6 +367,10 @@ if (${PARFLOW_ENABLE_HYPRE} OR DEFINED HYPRE_ROOT)
     list(GET hypreConfig 2 PARFLOW_HYPRE_VERSION)
 
     version_create_variables (PARFLOW_HYPRE)
+
+    if (PARFLOW_ENABLE_HYPRE_LOGGING)
+      set(PARFLOW_ENABLE_HYPRE_LOGGING ${PARFLOW_ENABLE_HYPRE_LOGGING})
+    endif()
 
   endif (${HYPRE_FOUND})
 endif (${PARFLOW_ENABLE_HYPRE} OR DEFINED HYPRE_ROOT)

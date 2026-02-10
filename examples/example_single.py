@@ -6,7 +6,6 @@ from parflow.tools.fs import mkdir, get_absolute_path
 from parflow.tools.compare import pf_test_file, pf_test_file_with_abs
 import sys
 
-
 run_name = "example_single"
 
 example_single = Run(run_name, __file__)

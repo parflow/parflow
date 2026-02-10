@@ -71,6 +71,8 @@
 
 #cmakedefine PARFLOW_HAVE_RMM
 
+#cmakedefine PARFLOW_ENABLE_HYPRE_LOGGING
+
 /* 
 is not defined here because because it is only set 
    for the compilation of parflow_exe, parflow_lib, and kinsol sources. 

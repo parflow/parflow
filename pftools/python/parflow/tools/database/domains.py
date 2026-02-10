@@ -11,7 +11,6 @@ import traceback
 from ..terminal import Colors as term
 from ..terminal import Symbols as term_symbol
 
-
 # -----------------------------------------------------------------------------
 # Validation helper functions
 # -----------------------------------------------------------------------------

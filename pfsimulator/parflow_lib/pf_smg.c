@@ -99,22 +99,21 @@ void         SMG(
 
   EndTiming(public_xtra->time_index_smg);
 
-  // if (tol > 0.0)
-  // {
-    IfLogging(1)
-    {
-      FILE  *log_file;
+#if defined(PARFLOW_ENABLE_HYPRE_LOGGING)
+  IfLogging(1)
+  {
+    FILE  *log_file;
 
-      HYPRE_StructSMGGetNumIterations(hypre_smg_data, &num_iterations);
-      HYPRE_StructSMGGetFinalRelativeResidualNorm(hypre_smg_data,
-                                                  &rel_norm);
+    HYPRE_StructSMGGetNumIterations(hypre_smg_data, &num_iterations);
+    HYPRE_StructSMGGetFinalRelativeResidualNorm(hypre_smg_data,
+                                                &rel_norm);
 
-      log_file = OpenLogFile("SMG");
-      fprintf(log_file, "SMG num. its: %i  SMG Final norm: %12.4e\n",
-              num_iterations, rel_norm);
-      CloseLogFile(log_file);
-    }
-  // }
+    log_file = OpenLogFile("SMG");
+    fprintf(log_file, "SMG num. its: %i  SMG Final norm: %12.4e\n",
+            num_iterations, rel_norm);
+    CloseLogFile(log_file);
+  }
+#endif
 
   /* Copy solution from hypre_x vector to the soln vector. */
   BeginTiming(public_xtra->time_index_copy_hypre);
@@ -206,11 +205,13 @@ PFModule  *SMGInitInstanceXtra(
                                    num_post_relax);
 
     /* Enable logging BEFORE setup so that norms arrays are allocated */
+#if defined(PARFLOW_ENABLE_HYPRE_LOGGING)
     IfLogging(1)
     {
       HYPRE_StructSMGSetLogging(instance_xtra->hypre_smg_data, 1);
       HYPRE_StructSMGSetPrintLevel(instance_xtra->hypre_smg_data, 2);
     }
+#endif
 
     HYPRE_StructSMGSetup(instance_xtra->hypre_smg_data,
                          instance_xtra->hypre_mat,
