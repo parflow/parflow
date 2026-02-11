@@ -17,7 +17,9 @@ dai_apf,dai_bpf,dai_cpf,dai_dpf,jennings_apf,jennings_bpf,jennings_gpf,         
 sza_snow_dampingpf,sza_damping_coszen_refpf,sza_damping_coszen_minpf,                                 &
 albedo_schemepf,albedo_vis_newpf,albedo_nir_newpf,albedo_minpf,                                        &
 albedo_decay_vispf,albedo_decay_nirpf,albedo_accum_apf,albedo_thaw_apf,                               &
-frac_sno_typepf,frac_sno_roughnesspf)
+frac_sno_typepf,frac_sno_roughnesspf,                                                               &
+snowage_tau0_vispf,snowage_tau0_nirpf,snowage_grain_growth_vispf,snowage_grain_growth_nirpf,        &
+snowage_dirt_soot_vispf,snowage_dirt_soot_nirpf,snowage_reset_factorpf)
 
   !=========================================================================
   !
@@ -189,6 +191,15 @@ frac_sno_typepf,frac_sno_roughnesspf)
   ! frac_sno parameterization keys @RMM 2025
   integer  :: frac_sno_typepf                    ! frac_sno scheme: 0=CLM (default), others TBD
   real(r8) :: frac_sno_roughnesspf               ! roughness length for frac_sno [m]
+
+  ! snow age VIS/NIR separation keys @RMM 2025
+  real(r8) :: snowage_tau0_vispf                 ! VIS e-folding time [s]
+  real(r8) :: snowage_tau0_nirpf                 ! NIR e-folding time [s]
+  real(r8) :: snowage_grain_growth_vispf         ! VIS grain growth factor [K]
+  real(r8) :: snowage_grain_growth_nirpf         ! NIR grain growth factor [K]
+  real(r8) :: snowage_dirt_soot_vispf            ! VIS dirt/soot factor [-]
+  real(r8) :: snowage_dirt_soot_nirpf            ! NIR dirt/soot factor [-]
+  real(r8) :: snowage_reset_factorpf             ! fresh snow reset factor [-]
 
   ! local indices & counters
   integer  :: i,j,k,k1,j1,l1                     ! indices for local looping
@@ -566,6 +577,15 @@ frac_sno_typepf,frac_sno_roughnesspf)
            ! for frac_sno parameterization @RMM 2025
            clm(t)%frac_sno_type        = frac_sno_typepf
            clm(t)%frac_sno_roughness   = frac_sno_roughnesspf
+
+           ! for snow age VIS/NIR separation @RMM 2025
+           clm(t)%snowage_tau0_vis        = snowage_tau0_vispf
+           clm(t)%snowage_tau0_nir        = snowage_tau0_nirpf
+           clm(t)%snowage_grain_growth_vis = snowage_grain_growth_vispf
+           clm(t)%snowage_grain_growth_nir = snowage_grain_growth_nirpf
+           clm(t)%snowage_dirt_soot_vis   = snowage_dirt_soot_vispf
+           clm(t)%snowage_dirt_soot_nir   = snowage_dirt_soot_nirpf
+           clm(t)%snowage_reset_factor    = snowage_reset_factorpf
 
            ! for irrigation
            clm(t)%irr_type           = irr_typepf
