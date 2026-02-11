@@ -829,6 +829,110 @@ Solver:
         RequiresModule: CLM
 
     # -----------------------------------------------------------------------------
+    # Snow Age VIS/NIR Separation Parameters (Abolafia-Rosenzweig et al. 2022)
+    # -----------------------------------------------------------------------------
+
+    SnowAgeTau0Vis:
+      help: >
+        [Type: double] VIS band snow age e-folding time in seconds. Controls the
+        rate of snow aging for visible albedo decay. Larger values = slower aging.
+        Default 1.0e6 s matches original CLM hardcoded value.
+        AR2022 optimal for WUS: 3.05e6 s.
+        Reference: Abolafia-Rosenzweig et al. (2022) J. Hydrometeorol.
+      default: 1000000.0
+      domains:
+        DoubleValue:
+          min_value: 10000.0
+          max_value: 100000000.0
+        RequiresModule: CLM
+
+    SnowAgeTau0Nir:
+      help: >
+        [Type: double] NIR band snow age e-folding time in seconds. Controls the
+        rate of snow aging for near-infrared albedo decay. Larger values = slower aging.
+        Default 1.0e6 s matches original CLM hardcoded value.
+        AR2022 optimal for WUS: 5.29e5 s (faster aging than VIS).
+        Reference: Abolafia-Rosenzweig et al. (2022) J. Hydrometeorol.
+      default: 1000000.0
+      domains:
+        DoubleValue:
+          min_value: 10000.0
+          max_value: 100000000.0
+        RequiresModule: CLM
+
+    SnowAgeGrainGrowthVis:
+      help: >
+        [Type: double] VIS band grain growth activation energy factor [K].
+        Controls temperature dependence of snow aging for visible albedo.
+        Larger values = stronger temperature sensitivity.
+        Default 5000 K matches original CLM hardcoded value.
+        AR2022 optimal for WUS: 9287 K.
+        Reference: Abolafia-Rosenzweig et al. (2022) J. Hydrometeorol.
+      default: 5000.0
+      domains:
+        DoubleValue:
+          min_value: 1000.0
+          max_value: 15000.0
+        RequiresModule: CLM
+
+    SnowAgeGrainGrowthNir:
+      help: >
+        [Type: double] NIR band grain growth activation energy factor [K].
+        Controls temperature dependence of snow aging for NIR albedo.
+        Larger values = stronger temperature sensitivity.
+        Default 5000 K matches original CLM hardcoded value.
+        AR2022 optimal for WUS: 7715 K.
+        Reference: Abolafia-Rosenzweig et al. (2022) J. Hydrometeorol.
+      default: 5000.0
+      domains:
+        DoubleValue:
+          min_value: 1000.0
+          max_value: 15000.0
+        RequiresModule: CLM
+
+    SnowAgeDirtSootVis:
+      help: >
+        [Type: double] VIS band dirt/soot aging factor [-]. Represents
+        background aging from contaminant accumulation on snow surface.
+        Default 0.3 matches original CLM hardcoded value.
+        AR2022 optimal for WUS: 0.25.
+        Reference: Abolafia-Rosenzweig et al. (2022) J. Hydrometeorol.
+      default: 0.3
+      domains:
+        DoubleValue:
+          min_value: 0.0
+          max_value: 1.0
+        RequiresModule: CLM
+
+    SnowAgeDirtSootNir:
+      help: >
+        [Type: double] NIR band dirt/soot aging factor [-]. Represents
+        background aging from contaminant accumulation on snow surface.
+        Default 0.3 matches original CLM hardcoded value.
+        AR2022 optimal for WUS: 0.11 (lower than VIS, contaminants less absorbing in NIR).
+        Reference: Abolafia-Rosenzweig et al. (2022) J. Hydrometeorol.
+      default: 0.3
+      domains:
+        DoubleValue:
+          min_value: 0.0
+          max_value: 1.0
+        RequiresModule: CLM
+
+    SnowAgeResetFactor:
+      help: >
+        [Type: double] Fresh snow age reset rate [-]. Controls how much new
+        snowfall resets snow age. Default 0.1 means 10 mm SWE accumulation
+        resets age by (1 - 0.1*10) = 0%. Larger values = faster age reset.
+        Default 0.1 matches original CLM hardcoded value.
+        Reference: BATS snow aging formulation (Dickinson et al. 1993).
+      default: 0.1
+      domains:
+        DoubleValue:
+          min_value: 0.01
+          max_value: 1.0
+        RequiresModule: CLM
+
+    # -----------------------------------------------------------------------------
     # CLM input variables to write drv_clmin.dat (Input) and drv_vegp.dat (VegParams) files
     # -----------------------------------------------------------------------------
 

@@ -6654,6 +6654,104 @@ snow faster.
       pfset Solver.CLM.AlbedoThawA 0.82         ## TCL syntax
       <runname>.Solver.CLM.AlbedoThawA = 0.82   ## Python syntax
 
+**Snow Age VIS/NIR Parameters**
+
+The BATS snow aging scheme uses three physical processes (grain growth,
+dirt/soot accumulation, and fresh snow reset) to evolve a dimensionless
+snow age variable that controls albedo decay. By default, VIS and NIR
+bands share the same aging parameters. These keys allow independent
+calibration of VIS and NIR aging rates, following :cite:p:`AbolafiaRosenzweig2022`
+who found that VIS and NIR bands require different aging parameters for
+Western US snowpacks.
+
+*double* **Solver.CLM.SnowAgeTau0Vis** 1.0e6 VIS band snow age e-folding
+time [s]. Controls the rate of snow aging for visible albedo decay.
+Larger values produce slower aging. Default matches original CLM
+hardcoded value. AR2022 optimal for WUS: 3.05e6 s.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeTau0Vis 3.05e6         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeTau0Vis = 3.05e6   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeTau0Nir** 1.0e6 NIR band snow age e-folding
+time [s]. Controls the rate of snow aging for near-infrared albedo decay.
+Larger values produce slower aging. Default matches original CLM
+hardcoded value. AR2022 optimal for WUS: 5.29e5 s (faster aging than VIS).
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeTau0Nir 5.29e5         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeTau0Nir = 5.29e5   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeGrainGrowthVis** 5000.0 VIS band grain growth
+activation energy factor [K]. Controls temperature dependence of snow
+aging for visible albedo. Larger values produce stronger temperature
+sensitivity. Default matches original CLM hardcoded value.
+AR2022 optimal for WUS: 9287 K.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeGrainGrowthVis 9287.0         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeGrainGrowthVis = 9287.0   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeGrainGrowthNir** 5000.0 NIR band grain growth
+activation energy factor [K]. Controls temperature dependence of snow
+aging for NIR albedo. Larger values produce stronger temperature
+sensitivity. Default matches original CLM hardcoded value.
+AR2022 optimal for WUS: 7715 K.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeGrainGrowthNir 7715.0         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeGrainGrowthNir = 7715.0   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeDirtSootVis** 0.3 VIS band dirt/soot aging
+factor [-]. Represents background aging from contaminant accumulation on
+the snow surface. Default matches original CLM hardcoded value.
+AR2022 optimal for WUS: 0.25.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeDirtSootVis 0.25         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeDirtSootVis = 0.25   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeDirtSootNir** 0.3 NIR band dirt/soot aging
+factor [-]. Represents background aging from contaminant accumulation on
+the snow surface. Contaminants are less absorbing in the NIR, so this
+value is typically lower than the VIS counterpart. Default matches
+original CLM hardcoded value. AR2022 optimal for WUS: 0.11.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeDirtSootNir 0.11         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeDirtSootNir = 0.11   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeResetFactor** 0.1 Fresh snow age reset rate
+[-]. Controls how much new snowfall resets snow age toward zero. Larger
+values produce faster age reset with fresh snowfall. Default matches
+original CLM hardcoded value (BATS formulation,
+:cite:p:`Dickinson1993`).
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeResetFactor 0.1         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeResetFactor = 0.1   ## Python syntax
+
 **Fractional Snow Cover**
 
 The fractional snow covered area (frac_sno) affects surface energy balance
