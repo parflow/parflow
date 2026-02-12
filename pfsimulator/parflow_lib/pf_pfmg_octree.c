@@ -54,6 +54,8 @@ typedef struct {
 
   int box_size_power;
 
+  int hypre_logging;
+
   int time_index_pfmg;
   int time_index_copy_hypre;
 } PublicXtra;
@@ -107,9 +109,6 @@ void         PFMGOctree(
   int nx_v, ny_v, nz_v;
   int i, j, k;
   int num_i, num_j, num_k;
-
-  int num_iterations;
-  double rel_norm;
 
   int box_size_power = public_xtra->box_size_power;
 
@@ -191,14 +190,6 @@ void         PFMGOctree(
 
   EndTiming(public_xtra->time_index_copy_hypre);
 
-  if (tol > 0.0)
-  {
-    IfLogging(1)
-    {
-      HYPRE_StructPFMGSetLogging(instance_xtra->hypre_pfmg_data, 1);
-    }
-  }
-
   /* Invoke the preconditioner using a zero initial guess */
   HYPRE_StructPFMGSetZeroGuess(hypre_pfmg_data);
 
@@ -208,10 +199,13 @@ void         PFMGOctree(
 
   EndTiming(public_xtra->time_index_pfmg);
 
-  if (tol > 0.0)
+  if (public_xtra->hypre_logging)
   {
     IfLogging(1)
     {
+      int num_iterations;
+      double rel_norm;
+
       FILE  *log_file;
 
       HYPRE_StructPFMGGetNumIterations(hypre_pfmg_data, &num_iterations);
@@ -1037,6 +1031,16 @@ PFModule  *PFMGOctreeInitInstanceXtra(
     HYPRE_StructPFMGSetDxyz(instance_xtra->hypre_pfmg_data,
                             instance_xtra->dxyz);
 
+    /* Set logging and print level for hypre output */
+    if (public_xtra->hypre_logging)
+    {
+      IfLogging(1)
+      {
+        HYPRE_StructPFMGSetLogging(instance_xtra->hypre_pfmg_data, 1);
+        HYPRE_StructPFMGSetPrintLevel(instance_xtra->hypre_pfmg_data, 2);
+      }
+    }
+
     HYPRE_StructPFMGSetup(instance_xtra->hypre_pfmg_data,
                           instance_xtra->hypre_mat,
                           instance_xtra->hypre_b, instance_xtra->hypre_x);
@@ -1108,6 +1112,11 @@ PFModule  *PFMGOctreeNewPublicXtra(char *name)
   smoother_name = GetStringDefault(key, "RBGaussSeidelNonSymmetric");
   public_xtra->smoother = NA_NameToIndexExitOnError(smoother_switch_na, smoother_name, key);
   NA_FreeNameArray(smoother_switch_na);
+
+  {
+    char *hypre_logging_str = GetStringDefault("Solver.Linear.Preconditioner.HypreLogging", "False");
+    public_xtra->hypre_logging = (!strcmp(hypre_logging_str, "True")) ? 1 : 0;
+  }
 
   public_xtra->time_index_pfmg = RegisterTiming("PFMGOctree");
   public_xtra->time_index_copy_hypre = RegisterTiming("HYPRE_Copies");
