@@ -41,9 +41,9 @@
  *-----------------------------------------------------------------------*/
 
 Databox         *NewDatabox(
-                            size_t    nx,
-                            size_t    ny,
-                            size_t    nz,
+                            size_t nx,
+                            size_t ny,
+                            size_t nz,
                             double x,
                             double y,
                             double z,
