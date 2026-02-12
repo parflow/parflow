@@ -1938,8 +1938,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 #ifdef HAVE_CLM
   Grid *grid = (instance_xtra->grid);
   Subgrid *subgrid;
-  Subvector *p_sub, *s_sub, *et_sub, *po_sub, *dz_sub;
-  double *pp, *sp, *et, *po_dat, *dz_dat;
+  Subvector *p_sub, *s_sub, *et_sub, *m_sub, *po_sub, *dz_sub;
+  double *pp, *sp, *et, *ms, *po_dat, *dz_dat;
 
   /* IMF: For CLM met forcing (local to AdvanceRichards) */
   int istep;                    // IMF: counter for clm output times
@@ -2568,6 +2568,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         p_sub = VectorSubvector(instance_xtra->pressure, is);
         s_sub = VectorSubvector(instance_xtra->saturation, is);
         et_sub = VectorSubvector(evap_trans, is);
+        m_sub = VectorSubvector(instance_xtra->mask, is);
         top_sub = VectorSubvector(top, is);
         bot_sub = VectorSubvector(bot, is);
         po_sub = VectorSubvector(porosity, is);
@@ -2646,6 +2647,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         sp = SubvectorData(s_sub);
         pp = SubvectorData(p_sub);
         et = SubvectorData(et_sub);
+        ms = SubvectorData(m_sub);
         top_dat = SubvectorData(top_sub);
         bot_dat = SubvectorData(bot_sub);
         po_dat = SubvectorData(po_sub);
@@ -2852,6 +2854,49 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
             break;
           }
 
+          case 2:
+          {
+            /*C. Yang*/
+            clm_file_dir_length = strlen(public_xtra->clm_file_dir);
+            CALL_CoLM_LSM(pp, sp, et, ms, po_dat, dz_dat, istep,
+                         cdt, t, start_time, dx, dy, dz, ix, iy, nx, ny, nz,
+                         nx_f, ny_f, nz_f, nz_rz, ip, p, q, r, gnx,
+                         gny, rank, sw_data, lw_data, prcp_data,
+                         tas_data, u_data, v_data, patm_data,
+                         qatm_data, lai_data, sai_data, z0m_data, displa_data,
+                         slope_x_data, slope_y_data,
+                         eflx_lh, eflx_lwrad, eflx_sh,
+                         eflx_grnd, qflx_tot, qflx_grnd, qflx_soi,
+                         qflx_eveg, qflx_tveg, qflx_in, swe, t_g,
+                         t_soi, public_xtra->clm_dump_interval,
+                         public_xtra->clm_1d_out,
+                         public_xtra->clm_forc_veg,
+                         public_xtra->clm_file_dir,
+                         clm_file_dir_length,
+                         public_xtra->clm_bin_out_dir,
+                         public_xtra->write_CLM_binary,
+                         public_xtra->slope_accounting_CLM,
+                         public_xtra->clm_beta_function,
+                         public_xtra->clm_veg_function,
+                         public_xtra->clm_veg_wilting,
+                         public_xtra->clm_veg_fieldc,
+                         public_xtra->clm_res_sat,
+                         public_xtra->clm_irr_type,
+                         public_xtra->clm_irr_cycle,
+                         public_xtra->clm_irr_rate,
+                         public_xtra->clm_irr_start,
+                         public_xtra->clm_irr_stop,
+                         public_xtra->clm_irr_threshold, qirr,
+                         qirr_inst, iflag,
+                         public_xtra->clm_irr_thresholdtype, soi_z,
+                         clm_next, clm_write_logs, clm_last_rst,
+                         clm_daily_rst,
+                         public_xtra->clm_nz,
+                         public_xtra->clm_nz);
+
+            break;
+          }
+
           default:
           {
             amps_Printf("Calling unknown LSM model");
@@ -3046,6 +3091,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         }
 
         case 1:
+        case 2:
         {
           // Note ct is time we want to advance to at this point
           if (t + dt > ct)
@@ -5487,7 +5533,7 @@ SolverRichardsNewPublicXtra(char *name)
   }
   NA_FreeNameArray(nonlin_switch_na);
 
-  lsm_switch_na = NA_NewNameArray("none CLM");
+  lsm_switch_na = NA_NewNameArray("none CLM CoLM");
   sprintf(key, "%s.LSM", name);
   switch_name = GetStringDefault(key, "none");
   switch_value = NA_NameToIndexExitOnError(lsm_switch_na, switch_name, key);
@@ -5506,6 +5552,18 @@ SolverRichardsNewPublicXtra(char *name)
 #else
       InputError
         ("Error: <%s> used for key <%s> but this version of Parflow is compiled without CLM\n",
+        switch_name, key);
+#endif
+      break;
+    }
+//C. Yang
+    case 2:
+    {
+#ifdef HAVE_CLM
+      public_xtra->lsm = 2;
+#else
+      InputError
+        ("Error: <%s> used for key <%s> but this version of Parflow is compiled without CoLM\n",
         switch_name, key);
 #endif
       break;
