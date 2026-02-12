@@ -41,6 +41,8 @@ typedef struct {
   int num_pre_relax;
   int num_post_relax;
 
+  int hypre_logging;
+
   int time_index_smg;
   int time_index_copy_hypre;
 } PublicXtra;
@@ -96,23 +98,24 @@ void         SMG(
 
   EndTiming(public_xtra->time_index_smg);
 
-#if defined(PARFLOW_ENABLE_HYPRE_LOGGING)
-  IfLogging(1)
+  if (public_xtra->hypre_logging)
   {
-    int num_iterations;
-    double rel_norm;
-    FILE  *log_file;
+    IfLogging(1)
+    {
+      int num_iterations;
+      double rel_norm;
+      FILE  *log_file;
 
-    HYPRE_StructSMGGetNumIterations(hypre_smg_data, &num_iterations);
-    HYPRE_StructSMGGetFinalRelativeResidualNorm(hypre_smg_data,
-                                                &rel_norm);
+      HYPRE_StructSMGGetNumIterations(hypre_smg_data, &num_iterations);
+      HYPRE_StructSMGGetFinalRelativeResidualNorm(hypre_smg_data,
+                                                  &rel_norm);
 
-    log_file = OpenLogFile("SMG");
-    fprintf(log_file, "SMG num. its: %i  SMG Final norm: %12.4e\n",
-            num_iterations, rel_norm);
-    CloseLogFile(log_file);
+      log_file = OpenLogFile("SMG");
+      fprintf(log_file, "SMG num. its: %i  SMG Final norm: %12.4e\n",
+              num_iterations, rel_norm);
+      CloseLogFile(log_file);
+    }
   }
-#endif
 
   /* Copy solution from hypre_x vector to the soln vector. */
   BeginTiming(public_xtra->time_index_copy_hypre);
@@ -204,13 +207,14 @@ PFModule  *SMGInitInstanceXtra(
                                    num_post_relax);
 
     /* Enable logging BEFORE setup so that norms arrays are allocated */
-#if defined(PARFLOW_ENABLE_HYPRE_LOGGING)
-    IfLogging(1)
+    if (public_xtra->hypre_logging)
     {
-      HYPRE_StructSMGSetLogging(instance_xtra->hypre_smg_data, 1);
-      HYPRE_StructSMGSetPrintLevel(instance_xtra->hypre_smg_data, 2);
+      IfLogging(1)
+      {
+        HYPRE_StructSMGSetLogging(instance_xtra->hypre_smg_data, 1);
+        HYPRE_StructSMGSetPrintLevel(instance_xtra->hypre_smg_data, 2);
+      }
     }
-#endif
 
     HYPRE_StructSMGSetup(instance_xtra->hypre_smg_data,
                          instance_xtra->hypre_mat,
@@ -277,6 +281,11 @@ PFModule  *SMGNewPublicXtra(char *name)
 
   sprintf(key, "%s.NumPostRelax", name);
   public_xtra->num_post_relax = GetIntDefault(key, 0);
+
+  {
+    char *hypre_logging_str = GetStringDefault("Solver.Linear.Preconditioner.HypreLogging", "False");
+    public_xtra->hypre_logging = (!strcmp(hypre_logging_str, "True")) ? 1 : 0;
+  }
 
   public_xtra->time_index_smg = RegisterTiming("SMG");
   public_xtra->time_index_copy_hypre = RegisterTiming("HYPRE_Copies");

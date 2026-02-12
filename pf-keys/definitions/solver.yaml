@@ -2591,6 +2591,15 @@ Solver:
               - FullJacobian
               - PFSymmetric
 
+      HypreLogging:
+        help: >
+          [Type: boolean/string] This key enables detailed Hypre logging and residual output for all Hypre-based preconditioners (SMG, PFMG, PFMGOctree).
+          When set to True, Hypre will output detailed logging information including iteration counts and residual norms.
+          This key is only relevant when Hypre is enabled and a Hypre-based preconditioner is used.
+        default: False
+        domains:
+          BoolDomain:
+
       # defining key for Solver.Linear.Preconditioner.{precond_method}... keys
       .{precond_method}:
         __class__: PrecondMethodItem
