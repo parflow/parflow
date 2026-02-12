@@ -390,9 +390,7 @@ Databox         *ReadParflowB(
       {
         size_t size = (z + k) * DataboxNy(v) * DataboxNx(v) + (y + j) * DataboxNx(v) + x;
         ptr = (DataboxCoeffs(v) + size);
-        // ptr = DataboxCoeff(v, x, (y + j), (z + k));
         tools_ReadDouble(fp, ptr, nx);
-        fflush(fp);
       }
   }
 
