@@ -48,7 +48,7 @@ jobs:
         cmake .. -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/depend/rmm -DBUILD_TESTS=OFF
         make -j
         make install
-        echo "RMM_FLAGS=-Drmm_ROOT=$GITHUB_WORKSPACE/depend/rmm" >> $GITHUB_ENV
+        echo "RMM_FLAGS=-DRMM_ROOT=$GITHUB_WORKSPACE/depend/rmm" >> $GITHUB_ENV
 
     - name: Install Umpire
       if: matrix.config.memory_manager == 'umpire'
@@ -63,7 +63,7 @@ jobs:
         cmake .. -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/depend/Umpire -DENABLE_CUDA=On
         make -j
         make install
-        echo "UMPIRE_FLAGS=-Dumpire_ROOT=$GITHUB_WORKSPACE/depend/Umpire" >> $GITHUB_ENV
+        echo "UMPIRE_FLAGS=-DUMPIRE_ROOT=$GITHUB_WORKSPACE/depend/Umpire" >> $GITHUB_ENV
 
     - name: Configure ParFlow
       run: |

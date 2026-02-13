@@ -10,7 +10,16 @@ t_soi_pf,clm_dump_interval,clm_1d_out,clm_forc_veg,clm_output_dir,clm_output_dir
 write_CLM_binary,slope_accounting_CLM,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,                 &
 res_satpf,irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thresholdpf,               &
 qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z,clm_next,clm_write_logs,                    &
-clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak)
+clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak,                            &
+snow_partition_typepf,tw_thresholdpf,thin_snow_dampingpf,thin_snow_thresholdpf,                       &
+snow_tcritpf,snow_t_lowpf,snow_t_highpf,snow_transition_widthpf,                                     &
+dai_apf,dai_bpf,dai_cpf,dai_dpf,jennings_apf,jennings_bpf,jennings_gpf,                              &
+sza_snow_dampingpf,sza_damping_coszen_refpf,sza_damping_coszen_minpf,                                 &
+albedo_schemepf,albedo_vis_newpf,albedo_nir_newpf,albedo_minpf,                                        &
+albedo_decay_vispf,albedo_decay_nirpf,albedo_accum_apf,albedo_thaw_apf,                               &
+frac_sno_typepf,frac_sno_roughnesspf,                                                               &
+snowage_tau0_vispf,snowage_tau0_nirpf,snowage_grain_growth_vispf,snowage_grain_growth_nirpf,        &
+snowage_dirt_soot_vispf,snowage_dirt_soot_nirpf,snowage_reset_factorpf)
 
   !=========================================================================
   !
@@ -146,6 +155,51 @@ clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak)
   real(r8) :: irr_stoppf                         ! irrigation daily stop tie for constant cycle
   real(r8) :: irr_thresholdpf                    ! irrigation threshold criteria for deficit cycle (units of soil moisture content)
   integer  :: irr_thresholdtypepf                ! irrigation threshold criteria type -- top layer, bottom layer, column avg
+
+  ! snow parameterization keys @RMM 2025
+  integer  :: snow_partition_typepf              ! rain-snow partition: 0=CLM, 1=wb thresh, 2=wb lin, 3=Dai, 4=Jennings
+  real(r8) :: tw_thresholdpf                     ! wetbulb temperature threshold for snow [K]
+  real(r8) :: thin_snow_dampingpf                ! thin snow energy damping factor [0-1]
+  real(r8) :: thin_snow_thresholdpf              ! SWE threshold for damping [kg/m2]
+  real(r8) :: snow_tcritpf                       ! initial T classification threshold above tfrz [K], default 2.5
+  real(r8) :: snow_t_lowpf                       ! CLM method lower T threshold [K], default 273.16
+  real(r8) :: snow_t_highpf                      ! CLM method upper T threshold [K], default 275.16
+  real(r8) :: snow_transition_widthpf            ! WetbulbLinear half-width [K], default 1.0
+  real(r8) :: dai_apf                            ! Dai (2008) coefficient a, default -48.2292
+  real(r8) :: dai_bpf                            ! Dai (2008) coefficient b, default 0.7205
+  real(r8) :: dai_cpf                            ! Dai (2008) coefficient c, default 1.1662
+  real(r8) :: dai_dpf                            ! Dai (2008) coefficient d, default 1.0223
+  real(r8) :: jennings_apf                       ! Jennings (2018) intercept, default -10.04
+  real(r8) :: jennings_bpf                       ! Jennings (2018) T coefficient, default 1.41
+  real(r8) :: jennings_gpf                       ! Jennings (2018) RH coefficient, default 0.09
+
+  ! SZA snow damping keys @RMM 2025
+  real(r8) :: sza_snow_dampingpf                 ! SZA damping factor [0-1], 1.0=disabled
+  real(r8) :: sza_damping_coszen_refpf           ! reference coszen for damping onset
+  real(r8) :: sza_damping_coszen_minpf           ! coszen at max damping
+
+  ! snow albedo parameterization keys @RMM 2025
+  integer  :: albedo_schemepf                    ! albedo scheme: 0=CLM, 1=VIC, 2=Tarboton
+  real(r8) :: albedo_vis_newpf                   ! fresh snow VIS albedo [0-1]
+  real(r8) :: albedo_nir_newpf                   ! fresh snow NIR albedo [0-1]
+  real(r8) :: albedo_minpf                       ! minimum albedo floor [0-1]
+  real(r8) :: albedo_decay_vispf                 ! VIS decay coefficient [0-1]
+  real(r8) :: albedo_decay_nirpf                 ! NIR decay coefficient [0-1]
+  real(r8) :: albedo_accum_apf                   ! VIC cold-phase decay base
+  real(r8) :: albedo_thaw_apf                    ! VIC melt-phase decay base
+
+  ! frac_sno parameterization keys @RMM 2025
+  integer  :: frac_sno_typepf                    ! frac_sno scheme: 0=CLM (default), others TBD
+  real(r8) :: frac_sno_roughnesspf               ! roughness length for frac_sno [m]
+
+  ! snow age VIS/NIR separation keys @RMM 2025
+  real(r8) :: snowage_tau0_vispf                 ! VIS e-folding time [s]
+  real(r8) :: snowage_tau0_nirpf                 ! NIR e-folding time [s]
+  real(r8) :: snowage_grain_growth_vispf         ! VIS grain growth factor [K]
+  real(r8) :: snowage_grain_growth_nirpf         ! NIR grain growth factor [K]
+  real(r8) :: snowage_dirt_soot_vispf            ! VIS dirt/soot factor [-]
+  real(r8) :: snowage_dirt_soot_nirpf            ! NIR dirt/soot factor [-]
+  real(r8) :: snowage_reset_factorpf             ! fresh snow reset factor [-]
 
   ! local indices & counters
   integer  :: i,j,k,k1,j1,l1                     ! indices for local looping
@@ -486,6 +540,52 @@ clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak)
            clm(t)%wilting_point      = wilting_pointpf
            clm(t)%field_capacity     = field_capacitypf
            clm(t)%res_sat            = res_satpf
+
+           ! for snow parameterization @RMM 2025
+           clm(t)%snow_partition_type  = snow_partition_typepf
+           clm(t)%tw_threshold         = tw_thresholdpf
+           clm(t)%thin_snow_damping    = thin_snow_dampingpf
+           clm(t)%thin_snow_threshold  = thin_snow_thresholdpf
+           clm(t)%snow_tcrit           = snow_tcritpf
+           clm(t)%snow_t_low           = snow_t_lowpf
+           clm(t)%snow_t_high          = snow_t_highpf
+           clm(t)%snow_transition_width = snow_transition_widthpf
+           clm(t)%dai_a                = dai_apf
+           clm(t)%dai_b                = dai_bpf
+           clm(t)%dai_c                = dai_cpf
+           clm(t)%dai_d                = dai_dpf
+           clm(t)%jennings_a           = jennings_apf
+           clm(t)%jennings_b           = jennings_bpf
+           clm(t)%jennings_g           = jennings_gpf
+
+           ! for SZA snow damping @RMM 2025
+           clm(t)%sza_snow_damping        = sza_snow_dampingpf
+           clm(t)%sza_damping_coszen_ref  = sza_damping_coszen_refpf
+           clm(t)%sza_damping_coszen_min  = sza_damping_coszen_minpf
+           clm(t)%coszen                  = 0.5d0  ! initialize to reference value
+
+           ! for snow albedo parameterization @RMM 2025
+           clm(t)%albedo_scheme        = albedo_schemepf
+           clm(t)%albedo_vis_new       = albedo_vis_newpf
+           clm(t)%albedo_nir_new       = albedo_nir_newpf
+           clm(t)%albedo_min           = albedo_minpf
+           clm(t)%albedo_decay_vis     = albedo_decay_vispf
+           clm(t)%albedo_decay_nir     = albedo_decay_nirpf
+           clm(t)%albedo_accum_a       = albedo_accum_apf
+           clm(t)%albedo_thaw_a        = albedo_thaw_apf
+
+           ! for frac_sno parameterization @RMM 2025
+           clm(t)%frac_sno_type        = frac_sno_typepf
+           clm(t)%frac_sno_roughness   = frac_sno_roughnesspf
+
+           ! for snow age VIS/NIR separation @RMM 2025
+           clm(t)%snowage_tau0_vis        = snowage_tau0_vispf
+           clm(t)%snowage_tau0_nir        = snowage_tau0_nirpf
+           clm(t)%snowage_grain_growth_vis = snowage_grain_growth_vispf
+           clm(t)%snowage_grain_growth_nir = snowage_grain_growth_nirpf
+           clm(t)%snowage_dirt_soot_vis   = snowage_dirt_soot_vispf
+           clm(t)%snowage_dirt_soot_nir   = snowage_dirt_soot_nirpf
+           clm(t)%snowage_reset_factor    = snowage_reset_factorpf
 
            ! for irrigation
            clm(t)%irr_type           = irr_typepf

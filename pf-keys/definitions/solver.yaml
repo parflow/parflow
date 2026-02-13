@@ -495,6 +495,444 @@ Solver:
         RequiresModule: CLM
 
     # -----------------------------------------------------------------------------
+    # CLM Snow Parameterization Keys
+    # -----------------------------------------------------------------------------
+
+    SnowPartition:
+      help: >
+        [Type: string] Selects the rain-snow partitioning method. CLM uses air
+        temperature threshold, while wetbulb methods account for evaporative
+        cooling of falling hydrometeors. Dai (2008) uses a sigmoidal function
+        of air temperature. Jennings (2018) uses bivariate logistic regression
+        with air temperature and relative humidity.
+        References: Wang et al. (2019) GRL, Dai (2008) JAMC, Jennings et al. (2018) Nat Commun.
+      default: CLM
+      domains:
+        EnumDomain:
+          enum_list:
+            - CLM
+            - WetbulbThreshold
+            - WetbulbLinear
+            - Dai
+            - Jennings
+        RequiresModule: CLM
+
+    SnowTCrit:
+      help: >
+        [Type: double] Initial classification threshold above tfrz (K) for determining
+        precipitation type in drv_getforce. Default 2.5 K matches hardcoded CLM value.
+        If T > tfrz + SnowTCrit, precipitation is initially classified as rain.
+        Further partitioning occurs in clm_hydro_canopy based on SnowPartition method.
+      default: 2.5
+      domains:
+        DoubleValue:
+          min_value: 0.0
+          max_value: 5.0
+        RequiresModule: CLM
+
+    SnowTLow:
+      help: >
+        [Type: double] CLM method lower temperature threshold (K) below which all
+        precipitation is snow. Default 273.16 K (freezing point).
+      default: 273.16
+      domains:
+        DoubleValue:
+          min_value: 268.16
+          max_value: 278.16
+        RequiresModule: CLM
+
+    SnowTHigh:
+      help: >
+        [Type: double] CLM method upper temperature threshold (K) above which
+        liquid fraction reaches maximum (40%). Default 275.16 K (tfrz + 2).
+      default: 275.16
+      domains:
+        DoubleValue:
+          min_value: 270.16
+          max_value: 280.16
+        RequiresModule: CLM
+
+    SnowTransitionWidth:
+      help: >
+        [Type: double] WetbulbLinear method half-width (K) of transition zone.
+        Transition spans threshold +/- this value. Default 1.0 K for 2K total range.
+      default: 1.0
+      domains:
+        DoubleValue:
+          min_value: 0.1
+          max_value: 5.0
+        RequiresModule: CLM
+
+    DaiCoeffA:
+      help: >
+        [Type: double] Dai (2008) coefficient a (scaling factor, negative).
+        F(%) = a * [tanh(b*(T-c)) - d]. Default -48.2292 from Table 1a (Land, ANN).
+        Reference: Dai (2008) GRL doi:10.1029/2008GL033295
+      default: -48.2292
+      domains:
+        DoubleValue:
+          min_value: -100.0
+          max_value: 0.0
+        RequiresModule: CLM
+
+    DaiCoeffB:
+      help: >
+        [Type: double] Dai (2008) coefficient b (slope at half-frequency T).
+        F(%) = a * [tanh(b*(T-c)) - d]. Default 0.7205 from Table 1a (Land, ANN).
+      default: 0.7205
+      domains:
+        DoubleValue:
+          min_value: 0.1
+          max_value: 2.0
+        RequiresModule: CLM
+
+    DaiCoeffC:
+      help: >
+        [Type: double] Dai (2008) coefficient c (half-frequency temperature in C).
+        F(%) = a * [tanh(b*(T-c)) - d]. Default 1.1662 C from Table 1a (Land, ANN).
+        This is the temperature at which snow probability is approximately 50%.
+      default: 1.1662
+      domains:
+        DoubleValue:
+          min_value: -2.0
+          max_value: 5.0
+        RequiresModule: CLM
+
+    DaiCoeffD:
+      help: >
+        [Type: double] Dai (2008) coefficient d (asymmetry parameter).
+        F(%) = a * [tanh(b*(T-c)) - d]. Default 1.0223 from Table 1a (Land, ANN).
+        Values close to 1.0 indicate symmetric transition.
+      default: 1.0223
+      domains:
+        DoubleValue:
+          min_value: 0.5
+          max_value: 1.5
+        RequiresModule: CLM
+
+    JenningsCoeffA:
+      help: >
+        [Type: double] Jennings et al. (2018) bivariate logistic intercept.
+        psnow = 1 / (1 + exp(a + b*T + g*RH)). Default from Jennings Table 1.
+      default: -10.04
+      domains:
+        DoubleValue:
+          min_value: -20.0
+          max_value: 0.0
+        RequiresModule: CLM
+
+    JenningsCoeffB:
+      help: >
+        [Type: double] Jennings et al. (2018) bivariate logistic temperature coefficient.
+        psnow = 1 / (1 + exp(a + b*T + g*RH)). T in Celsius. Default from Jennings Table 1.
+      default: 1.41
+      domains:
+        DoubleValue:
+          min_value: 0.1
+          max_value: 3.0
+        RequiresModule: CLM
+
+    JenningsCoeffG:
+      help: >
+        [Type: double] Jennings et al. (2018) bivariate logistic relative humidity coefficient.
+        psnow = 1 / (1 + exp(a + b*T + g*RH)). RH in percent. Default from Jennings Table 1.
+      default: 0.09
+      domains:
+        DoubleValue:
+          min_value: 0.01
+          max_value: 0.5
+        RequiresModule: CLM
+
+    WetbulbThreshold:
+      help: >
+        [Type: double] Threshold temperature (K) for wetbulb rain-snow partitioning.
+        Default 274.15 K (1 degree C). Only used when SnowPartition is WetbulbThreshold
+        or WetbulbLinear.
+      default: 274.15
+      domains:
+        DoubleValue:
+          min_value: 268.15
+          max_value: 278.15
+        RequiresModule: CLM
+
+    ThinSnowDamping:
+      help: >
+        [Type: double] Fraction of melt energy retained for thin snowpacks.
+        1.0 = no damping (default, backward compatible), 0.1 = 90% energy reduction.
+        Prevents spurious early-season melt from warm ground heat flux.
+      default: 1.0
+      domains:
+        DoubleValue:
+          min_value: 0.0
+          max_value: 1.0
+        RequiresModule: CLM
+
+    ThinSnowThreshold:
+      help: >
+        [Type: double] SWE threshold (mm) below which thin snow damping applies.
+      default: 50.0
+      domains:
+        DoubleValue:
+          min_value: 1.0
+          max_value: 500.0
+        RequiresModule: CLM
+
+    SZASnowDamping:
+      help: >
+        [Type: double] Fraction of melt energy retained at high solar zenith angles.
+        1.0 = no damping (default, disabled), 0.8 = 20% energy reduction at high SZA.
+        Compensates for CLM underestimating albedo at SZA > 60 degrees.
+        Physical basis: CLM narrowband parameters assume SZA=60 deg.
+        Reference: Dang et al. (2019) The Cryosphere.
+      default: 1.0
+      domains:
+        DoubleValue:
+          min_value: 0.0
+          max_value: 1.0
+        RequiresModule: CLM
+
+    SZADampingCoszenRef:
+      help: >
+        [Type: double] Reference cosine of solar zenith angle below which SZA damping
+        applies. Default 0.5 corresponds to SZA=60 degrees (CLM assumption).
+        Damping scales linearly from 1.0 at this coszen to SZASnowDamping at CoszenMin.
+      default: 0.5
+      domains:
+        DoubleValue:
+          min_value: 0.2
+          max_value: 1.0
+        RequiresModule: CLM
+
+    SZADampingCoszenMin:
+      help: >
+        [Type: double] Cosine of solar zenith angle at which maximum SZA damping applies.
+        Default 0.1 corresponds to SZA of approximately 84 degrees.
+        Must be less than SZADampingCoszenRef.
+      default: 0.1
+      domains:
+        DoubleValue:
+          min_value: 0.0
+          max_value: 0.5
+        RequiresModule: CLM
+
+    AlbedoScheme:
+      help: >
+        [Type: string] Snow albedo calculation method. CLM uses age-based decay,
+        VIC uses separate cold/melt decay rates based on ground temperature,
+        Tarboton uses Arrhenius temperature-dependent aging.
+        References: Andreadis et al. (2009), Tarboton and Luce (1996).
+      default: CLM
+      domains:
+        EnumDomain:
+          enum_list:
+            - CLM
+            - VIC
+            - Tarboton
+        RequiresModule: CLM
+
+    AlbedoVisNew:
+      help: >
+        [Type: double] Fresh snow visible-band albedo. Physically ranges 0.85-0.98.
+      default: 0.95
+      domains:
+        DoubleValue:
+          min_value: 0.80
+          max_value: 0.99
+        RequiresModule: CLM
+
+    AlbedoNirNew:
+      help: >
+        [Type: double] Fresh snow near-infrared albedo. Physically ranges 0.5-0.7.
+      default: 0.65
+      domains:
+        DoubleValue:
+          min_value: 0.40
+          max_value: 0.85
+        RequiresModule: CLM
+
+    AlbedoMin:
+      help: >
+        [Type: double] Minimum snow albedo floor for aged or dirty snow.
+      default: 0.4
+      domains:
+        DoubleValue:
+          min_value: 0.2
+          max_value: 0.7
+        RequiresModule: CLM
+
+    AlbedoDecayVis:
+      help: >
+        [Type: double] Visible albedo decay coefficient for CLM and Tarboton schemes.
+      default: 0.5
+      domains:
+        DoubleValue:
+          min_value: 0.1
+          max_value: 2.0
+        RequiresModule: CLM
+
+    AlbedoDecayNir:
+      help: >
+        [Type: double] NIR albedo decay coefficient for CLM and Tarboton schemes.
+        NIR typically decays faster than visible.
+      default: 0.2
+      domains:
+        DoubleValue:
+          min_value: 0.05
+          max_value: 1.0
+        RequiresModule: CLM
+
+    AlbedoAccumA:
+      help: >
+        [Type: double] VIC scheme cold-phase (accumulation) decay base per hour.
+        Should be greater than AlbedoThawA.
+      default: 0.94
+      domains:
+        DoubleValue:
+          min_value: 0.80
+          max_value: 0.99
+        RequiresModule: CLM
+
+    AlbedoThawA:
+      help: >
+        [Type: double] VIC scheme melt-phase decay base per hour.
+        Should be less than AlbedoAccumA since melt conditions age snow faster.
+      default: 0.82
+      domains:
+        DoubleValue:
+          min_value: 0.70
+          max_value: 0.95
+        RequiresModule: CLM
+
+    FracSnoScheme:
+      help: >
+        [Type: string] Selects the fractional snow covered area (frac_sno) calculation method.
+        CLM uses the standard formulation: frac_sno = snowdp / (10*roughness + snowdp).
+        Additional formulations may be added in future versions.
+      default: CLM
+      domains:
+        EnumDomain:
+          enum_list:
+            - CLM
+        RequiresModule: CLM
+
+    FracSnoRoughness:
+      help: >
+        [Type: double] Roughness length scale for fractional snow cover calculation [m].
+        Default 0.01 m matches CLM's zlnd parameter for backward compatibility.
+        Larger values reduce snow cover fraction for a given snow depth.
+        Formula: frac_sno = snowdp / (10*FracSnoRoughness + snowdp)
+      default: 0.01
+      domains:
+        DoubleValue:
+          min_value: 0.001
+          max_value: 0.1
+        RequiresModule: CLM
+
+    # -----------------------------------------------------------------------------
+    # Snow Age VIS/NIR Separation Parameters (Abolafia-Rosenzweig et al. 2022)
+    # -----------------------------------------------------------------------------
+
+    SnowAgeTau0Vis:
+      help: >
+        [Type: double] VIS band snow age e-folding time in seconds. Controls the
+        rate of snow aging for visible albedo decay. Larger values = slower aging.
+        Default 1.0e6 s matches original CLM hardcoded value.
+        AR2022 optimal for WUS: 3.05e6 s.
+        Reference: Abolafia-Rosenzweig et al. (2022) J. Hydrometeorol.
+      default: 1000000.0
+      domains:
+        DoubleValue:
+          min_value: 10000.0
+          max_value: 100000000.0
+        RequiresModule: CLM
+
+    SnowAgeTau0Nir:
+      help: >
+        [Type: double] NIR band snow age e-folding time in seconds. Controls the
+        rate of snow aging for near-infrared albedo decay. Larger values = slower aging.
+        Default 1.0e6 s matches original CLM hardcoded value.
+        AR2022 optimal for WUS: 5.29e5 s (faster aging than VIS).
+        Reference: Abolafia-Rosenzweig et al. (2022) J. Hydrometeorol.
+      default: 1000000.0
+      domains:
+        DoubleValue:
+          min_value: 10000.0
+          max_value: 100000000.0
+        RequiresModule: CLM
+
+    SnowAgeGrainGrowthVis:
+      help: >
+        [Type: double] VIS band grain growth activation energy factor [K].
+        Controls temperature dependence of snow aging for visible albedo.
+        Larger values = stronger temperature sensitivity.
+        Default 5000 K matches original CLM hardcoded value.
+        AR2022 optimal for WUS: 9287 K.
+        Reference: Abolafia-Rosenzweig et al. (2022) J. Hydrometeorol.
+      default: 5000.0
+      domains:
+        DoubleValue:
+          min_value: 1000.0
+          max_value: 15000.0
+        RequiresModule: CLM
+
+    SnowAgeGrainGrowthNir:
+      help: >
+        [Type: double] NIR band grain growth activation energy factor [K].
+        Controls temperature dependence of snow aging for NIR albedo.
+        Larger values = stronger temperature sensitivity.
+        Default 5000 K matches original CLM hardcoded value.
+        AR2022 optimal for WUS: 7715 K.
+        Reference: Abolafia-Rosenzweig et al. (2022) J. Hydrometeorol.
+      default: 5000.0
+      domains:
+        DoubleValue:
+          min_value: 1000.0
+          max_value: 15000.0
+        RequiresModule: CLM
+
+    SnowAgeDirtSootVis:
+      help: >
+        [Type: double] VIS band dirt/soot aging factor [-]. Represents
+        background aging from contaminant accumulation on snow surface.
+        Default 0.3 matches original CLM hardcoded value.
+        AR2022 optimal for WUS: 0.25.
+        Reference: Abolafia-Rosenzweig et al. (2022) J. Hydrometeorol.
+      default: 0.3
+      domains:
+        DoubleValue:
+          min_value: 0.0
+          max_value: 1.0
+        RequiresModule: CLM
+
+    SnowAgeDirtSootNir:
+      help: >
+        [Type: double] NIR band dirt/soot aging factor [-]. Represents
+        background aging from contaminant accumulation on snow surface.
+        Default 0.3 matches original CLM hardcoded value.
+        AR2022 optimal for WUS: 0.11 (lower than VIS, contaminants less absorbing in NIR).
+        Reference: Abolafia-Rosenzweig et al. (2022) J. Hydrometeorol.
+      default: 0.3
+      domains:
+        DoubleValue:
+          min_value: 0.0
+          max_value: 1.0
+        RequiresModule: CLM
+
+    SnowAgeResetFactor:
+      help: >
+        [Type: double] Fresh snow age reset rate [-]. Controls how much new
+        snowfall resets snow age. Default 0.1 means 10 mm SWE accumulation
+        resets age by (1 - 0.1*10) = 0%. Larger values = faster age reset.
+        Default 0.1 matches original CLM hardcoded value.
+        Reference: BATS snow aging formulation (Dickinson et al. 1993).
+      default: 0.1
+      domains:
+        DoubleValue:
+          min_value: 0.01
+          max_value: 1.0
+        RequiresModule: CLM
+
+    # -----------------------------------------------------------------------------
     # CLM input variables to write drv_clmin.dat (Input) and drv_vegp.dat (VegParams) files
     # -----------------------------------------------------------------------------
 
@@ -2152,6 +2590,15 @@ Solver:
             enum_list:
               - FullJacobian
               - PFSymmetric
+
+      HypreLogging:
+        help: >
+          [Type: boolean/string] This key enables detailed Hypre logging and residual output for all Hypre-based preconditioners (SMG, PFMG, PFMGOctree).
+          When set to True, Hypre will output detailed logging information including iteration counts and residual norms.
+          This key is only relevant when Hypre is enabled and a Hypre-based preconditioner is used.
+        default: False
+        domains:
+          BoolDomain:
 
       # defining key for Solver.Linear.Preconditioner.{precond_method}... keys
       .{precond_method}:

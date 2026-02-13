@@ -1149,7 +1149,7 @@ def precalculate_subgrid_info(nx, ny, nz, p, q, r):
         off += 36 + (8 * (sg_nx * sg_ny * sg_nz))
         subgrid_offsets.append(off)
 
-        (mg_nx, mg_ny, mg_nz, rm_nx, rm_ny, rm_nz) = get_maingrid_and_remainder(
+        mg_nx, mg_ny, mg_nz, rm_nx, rm_ny, rm_nz = get_maingrid_and_remainder(
             nx, ny, nz, p, q, r
         )
         sg_p, sg_q, sg_r = get_subgrid_loc(sg_num, p, q, r)
@@ -1491,7 +1491,7 @@ def _read_vegm(file_name):
         in the vegm.dat file except for x/y
     """
     # Assume first two lines are comments and use generic column names
-    df = pd.read_csv(file_name, delim_whitespace=True, skiprows=2, header=None)
+    df = pd.read_csv(file_name, sep="\s+", skiprows=2, header=None)
     df.columns = [f"c{i}" for i in range(df.shape[1])]
 
     # Number of columns and rows determined by last line of file

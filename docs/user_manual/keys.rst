@@ -6343,6 +6343,454 @@ to be active.
    <runname>.Solver.CLM.UseSlopeAspect = True   ## Python syntax
 
 
+.. _CLM Snow Parameterization:
+
+CLM Snow Parameterization
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+These keys control snow physics options for improved snow modeling.
+All keys default to backward-compatible behavior when not set.
+Note that ``CLM`` must be compiled and linked at runtime for these
+options to be active.
+
+**Rain-Snow Partitioning**
+
+Standard ``CLM`` uses air temperature to partition precipitation into rain
+and snow. However, falling hydrometeors cool via evaporation, making
+wet-bulb temperature a better predictor, especially in dry mountain
+climates where snow can persist at air temperatures above 0°C.
+Reference: :cite:p:`Wang2019`.
+
+*string* **Solver.CLM.SnowPartition** CLM Selects the method for
+partitioning precipitation into rain and snow. The valid types for
+this key are **CLM**, **WetbulbThreshold**, **WetbulbLinear**, **Dai**, **Jennings**.
+
+**CLM**:
+   Standard air temperature threshold with linear transition (default).
+   Uses configurable SnowTLow and SnowTHigh thresholds.
+
+**WetbulbThreshold**:
+   Sharp threshold at wet-bulb temperature. Better for dry mountain climates.
+
+**WetbulbLinear**:
+   Linear transition around wet-bulb temperature threshold.
+   Uses configurable SnowTransitionWidth for transition zone.
+
+**Dai**:
+   Sigmoidal function of air temperature from :cite:p:`Dai2008`.
+   Uses configurable DaiCoeffA/B/C/D coefficients.
+
+**Jennings**:
+   Bivariate logistic regression with air temperature and relative humidity
+   from :cite:p:`Jennings2018`. Uses configurable JenningsCoeffA/B/G coefficients.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowPartition "Dai"         ## TCL syntax
+      <runname>.Solver.CLM.SnowPartition = "Dai"   ## Python syntax
+
+*double* **Solver.CLM.SnowTCrit** 2.5 Initial classification threshold
+above freezing (K) for determining precipitation type in drv_getforce.
+If air temperature exceeds tfrz + SnowTCrit, precipitation is initially
+classified as rain. Default 2.5 K matches the hardcoded CLM value.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowTCrit 2.5         ## TCL syntax
+      <runname>.Solver.CLM.SnowTCrit = 2.5   ## Python syntax
+
+*double* **Solver.CLM.SnowTLow** 273.16 CLM method lower temperature
+threshold (K) below which all precipitation is snow. Default 273.16 K (freezing).
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowTLow 273.16         ## TCL syntax
+      <runname>.Solver.CLM.SnowTLow = 273.16   ## Python syntax
+
+*double* **Solver.CLM.SnowTHigh** 275.16 CLM method upper temperature
+threshold (K) above which the liquid fraction reaches maximum (40%).
+Default 275.16 K (tfrz + 2).
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowTHigh 275.16         ## TCL syntax
+      <runname>.Solver.CLM.SnowTHigh = 275.16   ## Python syntax
+
+*double* **Solver.CLM.SnowTransitionWidth** 1.0 WetbulbLinear method
+half-width (K) of transition zone. Transition spans threshold +/- this value.
+Default 1.0 K for 2K total range.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowTransitionWidth 1.0         ## TCL syntax
+      <runname>.Solver.CLM.SnowTransitionWidth = 1.0   ## Python syntax
+
+*double* **Solver.CLM.WetbulbThreshold** 274.15 Threshold temperature in
+Kelvin for wetbulb partitioning methods. Default 274.15 K (1°C). Only
+used when ``Solver.CLM.SnowPartition`` is ``WetbulbThreshold`` or
+``WetbulbLinear``.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.WetbulbThreshold 274.15         ## TCL syntax
+      <runname>.Solver.CLM.WetbulbThreshold = 274.15   ## Python syntax
+
+**Dai Coefficients**
+
+The Dai (2008) method uses a hyperbolic tangent function fitted to 30 years
+of global weather station observations. Reference: :cite:p:`Dai2008`.
+
+Formula: F(%) = a * [tanh(b*(T-c)) - d], where T is in Celsius.
+Defaults are from Table 1a (Land, annual) of Dai (2008).
+
+*double* **Solver.CLM.DaiCoeffA** -48.2292 Dai coefficient a (scaling factor, negative).
+
+*double* **Solver.CLM.DaiCoeffB** 0.7205 Dai coefficient b (slope at half-frequency T).
+
+*double* **Solver.CLM.DaiCoeffC** 1.1662 Dai coefficient c (half-frequency temperature in C,
+where snow probability is ~50%).
+
+*double* **Solver.CLM.DaiCoeffD** 1.0223 Dai coefficient d (asymmetry parameter, ~1.0).
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.DaiCoeffA -48.2292         ## TCL syntax
+      <runname>.Solver.CLM.DaiCoeffA = -48.2292   ## Python syntax
+
+**Jennings Coefficients**
+
+The Jennings (2018) method uses bivariate logistic regression:
+psnow = 1 / (1 + exp(a + b*T + g*RH)), where T is in Celsius and RH in percent.
+
+*double* **Solver.CLM.JenningsCoeffA** -10.04 Jennings intercept coefficient.
+
+*double* **Solver.CLM.JenningsCoeffB** 1.41 Jennings temperature coefficient.
+
+*double* **Solver.CLM.JenningsCoeffG** 0.09 Jennings relative humidity coefficient.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.JenningsCoeffA -10.04         ## TCL syntax
+      <runname>.Solver.CLM.JenningsCoeffA = -10.04   ## Python syntax
+
+**Thin Snow Damping**
+
+Thin early-season snowpacks can experience spurious melt due to warm
+ground heat flux. This option reduces melt energy for shallow snowpacks
+to prevent premature ablation.
+
+*double* **Solver.CLM.ThinSnowDamping** 1.0 Fraction of melt energy
+retained for thin snowpacks. A value of 1.0 means no damping (default,
+backward compatible). A value of 0.1 means only 10% of melt energy is
+applied (90% reduction).
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.ThinSnowDamping 0.3         ## TCL syntax
+      <runname>.Solver.CLM.ThinSnowDamping = 0.3   ## Python syntax
+
+*double* **Solver.CLM.ThinSnowThreshold** 50.0 Snow water equivalent
+threshold in mm below which thin snow damping applies.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.ThinSnowThreshold 50.0         ## TCL syntax
+      <runname>.Solver.CLM.ThinSnowThreshold = 50.0   ## Python syntax
+
+**SZA-Based Snow Damping**
+
+CLM's narrowband snow optical parameters are computed assuming a solar
+zenith angle (SZA) of 60 degrees. At higher zenith angles, actual snow
+albedo is higher than CLM assumes, meaning less energy should be available
+for melt. This is particularly relevant for high-latitude sites during
+accumulation season. Reference: :cite:p:`Dang2019`.
+
+*double* **Solver.CLM.SZASnowDamping** 1.0 Fraction of melt energy
+retained at high solar zenith angles. A value of 1.0 means no damping
+(default, disabled). A value of 0.8 means 20% energy reduction at high SZA.
+Damping varies linearly with cosine of zenith angle between the reference
+and minimum thresholds.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SZASnowDamping 0.8         ## TCL syntax
+      <runname>.Solver.CLM.SZASnowDamping = 0.8   ## Python syntax
+
+*double* **Solver.CLM.SZADampingCoszenRef** 0.5 Reference cosine of solar
+zenith angle below which SZA damping applies. Default 0.5 corresponds to
+SZA of 60 degrees (matching CLM's assumption for optical parameters).
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SZADampingCoszenRef 0.5         ## TCL syntax
+      <runname>.Solver.CLM.SZADampingCoszenRef = 0.5   ## Python syntax
+
+*double* **Solver.CLM.SZADampingCoszenMin** 0.1 Cosine of solar zenith
+angle at which maximum SZA damping applies. Default 0.1 corresponds to
+SZA of approximately 84 degrees. Must be less than SZADampingCoszenRef.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SZADampingCoszenMin 0.1         ## TCL syntax
+      <runname>.Solver.CLM.SZADampingCoszenMin = 0.1   ## Python syntax
+
+Note: Both thin snow damping and SZA damping can be enabled simultaneously.
+When both are active, they combine multiplicatively.
+
+**Albedo Schemes**
+
+Snow albedo controls the radiation balance and strongly influences melt
+timing. Three schemes are available:
+
+*string* **Solver.CLM.AlbedoScheme** CLM Snow albedo calculation method.
+The valid types for this key are **CLM**, **VIC**, **Tarboton**.
+
+**CLM**:
+   Age-based exponential decay using the snowage variable (default).
+
+**VIC**:
+   Separate decay rates for cold (accumulating) and warm (melting)
+   conditions based on ground temperature. Reference: :cite:p:`Andreadis2009`.
+
+**Tarboton**:
+   Arrhenius temperature-dependent aging where decay accelerates near
+   the melting point. Reference: :cite:p:`Tarboton1996`.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoScheme "Tarboton"         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoScheme = "Tarboton"   ## Python syntax
+
+*double* **Solver.CLM.AlbedoVisNew** 0.95 Fresh snow visible-band albedo.
+Physically ranges 0.85-0.98.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoVisNew 0.95         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoVisNew = 0.95   ## Python syntax
+
+*double* **Solver.CLM.AlbedoNirNew** 0.65 Fresh snow near-infrared albedo.
+Physically ranges 0.5-0.7.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoNirNew 0.65         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoNirNew = 0.65   ## Python syntax
+
+*double* **Solver.CLM.AlbedoMin** 0.4 Minimum snow albedo floor for aged
+or dirty snow.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoMin 0.4         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoMin = 0.4   ## Python syntax
+
+*double* **Solver.CLM.AlbedoDecayVis** 0.5 Visible albedo decay coefficient
+for ``CLM`` and ``Tarboton`` schemes.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoDecayVis 0.5         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoDecayVis = 0.5   ## Python syntax
+
+*double* **Solver.CLM.AlbedoDecayNir** 0.2 NIR albedo decay coefficient
+for ``CLM`` and ``Tarboton`` schemes. NIR typically decays faster than visible.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoDecayNir 0.2         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoDecayNir = 0.2   ## Python syntax
+
+*double* **Solver.CLM.AlbedoAccumA** 0.94 VIC scheme cold-phase
+(accumulation) decay base per hour. Should be greater than ``AlbedoThawA``.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoAccumA 0.94         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoAccumA = 0.94   ## Python syntax
+
+*double* **Solver.CLM.AlbedoThawA** 0.82 VIC scheme melt-phase decay base
+per hour. Should be less than ``AlbedoAccumA`` since melt conditions age
+snow faster.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoThawA 0.82         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoThawA = 0.82   ## Python syntax
+
+**Snow Age VIS/NIR Parameters**
+
+The BATS snow aging scheme uses three physical processes (grain growth,
+dirt/soot accumulation, and fresh snow reset) to evolve a dimensionless
+snow age variable that controls albedo decay. By default, VIS and NIR
+bands share the same aging parameters. These keys allow independent
+calibration of VIS and NIR aging rates, following :cite:p:`AbolafiaRosenzweig2022`
+who found that VIS and NIR bands require different aging parameters for
+Western US snowpacks.
+
+*double* **Solver.CLM.SnowAgeTau0Vis** 1.0e6 VIS band snow age e-folding
+time [s]. Controls the rate of snow aging for visible albedo decay.
+Larger values produce slower aging. Default matches original CLM
+hardcoded value. AR2022 optimal for WUS: 3.05e6 s.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeTau0Vis 3.05e6         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeTau0Vis = 3.05e6   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeTau0Nir** 1.0e6 NIR band snow age e-folding
+time [s]. Controls the rate of snow aging for near-infrared albedo decay.
+Larger values produce slower aging. Default matches original CLM
+hardcoded value. AR2022 optimal for WUS: 5.29e5 s (faster aging than VIS).
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeTau0Nir 5.29e5         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeTau0Nir = 5.29e5   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeGrainGrowthVis** 5000.0 VIS band grain growth
+activation energy factor [K]. Controls temperature dependence of snow
+aging for visible albedo. Larger values produce stronger temperature
+sensitivity. Default matches original CLM hardcoded value.
+AR2022 optimal for WUS: 9287 K.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeGrainGrowthVis 9287.0         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeGrainGrowthVis = 9287.0   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeGrainGrowthNir** 5000.0 NIR band grain growth
+activation energy factor [K]. Controls temperature dependence of snow
+aging for NIR albedo. Larger values produce stronger temperature
+sensitivity. Default matches original CLM hardcoded value.
+AR2022 optimal for WUS: 7715 K.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeGrainGrowthNir 7715.0         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeGrainGrowthNir = 7715.0   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeDirtSootVis** 0.3 VIS band dirt/soot aging
+factor [-]. Represents background aging from contaminant accumulation on
+the snow surface. Default matches original CLM hardcoded value.
+AR2022 optimal for WUS: 0.25.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeDirtSootVis 0.25         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeDirtSootVis = 0.25   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeDirtSootNir** 0.3 NIR band dirt/soot aging
+factor [-]. Represents background aging from contaminant accumulation on
+the snow surface. Contaminants are less absorbing in the NIR, so this
+value is typically lower than the VIS counterpart. Default matches
+original CLM hardcoded value. AR2022 optimal for WUS: 0.11.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeDirtSootNir 0.11         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeDirtSootNir = 0.11   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeResetFactor** 0.1 Fresh snow age reset rate
+[-]. Controls how much new snowfall resets snow age toward zero. Larger
+values produce faster age reset with fresh snowfall. Default matches
+original CLM hardcoded value (BATS formulation,
+:cite:p:`Dickinson1993`).
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeResetFactor 0.1         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeResetFactor = 0.1   ## Python syntax
+
+**Fractional Snow Cover**
+
+The fractional snow covered area (frac_sno) affects surface energy balance
+by weighting snow and bare ground contributions. The CLM formulation uses
+a tanh-like relationship with snow depth and surface roughness.
+
+*string* **Solver.CLM.FracSnoScheme** CLM Selects the fractional snow cover
+calculation method. Currently only CLM is available; extensible for future
+formulations.
+
+**CLM**:
+   Standard formulation: frac_sno = snowdp / (10*roughness + snowdp)
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FracSnoScheme "CLM"         ## TCL syntax
+      <runname>.Solver.CLM.FracSnoScheme = "CLM"   ## Python syntax
+
+*double* **Solver.CLM.FracSnoRoughness** 0.01 Roughness length scale for
+fractional snow cover calculation [m]. Default 0.01 m matches CLM's zlnd
+parameter for backward compatibility. Larger values reduce snow cover
+fraction for a given snow depth.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FracSnoRoughness 0.01         ## TCL syntax
+      <runname>.Solver.CLM.FracSnoRoughness = 0.01   ## Python syntax
+
+
 .. _ParFlow NetCDF4 Parallel I/O:
 
 ParFlow NetCDF4 Parallel I/O
