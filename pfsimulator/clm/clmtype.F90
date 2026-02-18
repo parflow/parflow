@@ -130,7 +130,9 @@ module clmtype
      real(r8) :: frac_sno        ! fractional snow cover
      real(r8) :: t_veg           ! leaf temperature [K]
      real(r8) :: h2ocan          ! depth of water on foliage [kg/m2/s]
-     real(r8) :: snowage         ! non dimensional snow age [-]
+     real(r8) :: snowage         ! non dimensional snow age [-] (legacy: average of VIS/NIR)
+     real(r8) :: snowage_vis     ! VIS band snow age [-] @RMM 2025
+     real(r8) :: snowage_nir     ! NIR band snow age [-] @RMM 2025
      real(r8) :: h2osno          ! snow mass (kg/m2)
      real(r8) :: h2osno_old      ! snow mass for previous time step (kg/m2)
      real(r8) :: snowdp          ! snow depth (m)
@@ -287,6 +289,15 @@ module clmtype
 ! Fractional snow covered area (frac_sno) options @RMM 2025
      integer  :: frac_sno_type         ! frac_sno scheme: 0=CLM (default), others TBD
      real(r8) :: frac_sno_roughness    ! roughness length for frac_sno [m], default=zlnd
+
+! Snow age configurable parameters - VIS/NIR separation @RMM 2025
+     real(r8) :: snowage_tau0_vis        ! VIS e-folding time [s], default 1e6
+     real(r8) :: snowage_tau0_nir        ! NIR e-folding time [s], default 1e6
+     real(r8) :: snowage_grain_growth_vis ! VIS grain growth factor [K], default 5000
+     real(r8) :: snowage_grain_growth_nir ! NIR grain growth factor [K], default 5000
+     real(r8) :: snowage_dirt_soot_vis   ! VIS dirt/soot factor [-], default 0.3
+     real(r8) :: snowage_dirt_soot_nir   ! NIR dirt/soot factor [-], default 0.3
+     real(r8) :: snowage_reset_factor    ! fresh snow reset factor [-], default 0.1
 
      real(r8) :: eflx_snomelt   ! added to be consistent with lsm hybrid code
      real(r8) :: eflx_impsoil   ! implicit evaporation for soil temperature equation (W/m**2)

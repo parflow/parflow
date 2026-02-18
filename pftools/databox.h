@@ -65,7 +65,7 @@ extern "C" {
 typedef struct {
   double         *coeffs;
 
-  int nx, ny, nz;
+  size_t nx, ny, nz;
 
   /* other info that may not be available */
   double x, y, z;
@@ -110,8 +110,8 @@ typedef enum {
  *-----------------------------------------------------------------------*/
 
 /* databox.c */
-Databox *NewDatabox(int nx, int ny, int nz, double x, double y, double z, double dx, double dy, double dz);
-Databox *NewDataboxDefault(int nx, int ny, int nz, double x, double y, double z, double dx, double dy, double dz,
+Databox *NewDatabox(size_t nx, size_t ny, size_t nz, double x, double y, double z, double dx, double dy, double dz);
+Databox *NewDataboxDefault(size_t nx, size_t ny, size_t nz, double x, double y, double z, double dx, double dy, double dz,
                            double default_value);
 void GetDataboxGrid(Tcl_Interp *interp, Databox *databox);
 void SetDataboxGrid(Databox *databox, int nx, int ny, int nz, double x, double y, double z,

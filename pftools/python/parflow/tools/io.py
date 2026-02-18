@@ -1149,7 +1149,7 @@ def precalculate_subgrid_info(nx, ny, nz, p, q, r):
         off += 36 + (8 * (sg_nx * sg_ny * sg_nz))
         subgrid_offsets.append(off)
 
-        (mg_nx, mg_ny, mg_nz, rm_nx, rm_ny, rm_nz) = get_maingrid_and_remainder(
+        mg_nx, mg_ny, mg_nz, rm_nx, rm_ny, rm_nz = get_maingrid_and_remainder(
             nx, ny, nz, p, q, r
         )
         sg_p, sg_q, sg_r = get_subgrid_loc(sg_num, p, q, r)

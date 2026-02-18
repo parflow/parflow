@@ -289,6 +289,8 @@ subroutine clm_main (clm,day,gmt,clm_forc_veg)
 
         if (clm%snl > -nlevsno) then
            clm%snowage = 0.
+           clm%snowage_vis = 0.   ! @RMM 2025
+           clm%snowage_nir = 0.   ! @RMM 2025
            do j = -nlevsno+1, clm%snl
               clm%h2osoi_ice(j) = 0.
               clm%h2osoi_liq(j) = 0.

@@ -13,7 +13,8 @@ if (${PARFLOW_HAVE_CLM})
       clm_snow_albedo
       clm_snow_dai
       clm_snow_jennings
-      clm_snow_sza_damping)
+      clm_snow_sza_damping
+      clm_snow_age_params)
 
     list(APPEND CLM_2D_TESTS
       clm_slope)

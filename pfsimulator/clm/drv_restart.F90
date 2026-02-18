@@ -60,7 +60,9 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
   real(r8), pointer :: t_grnd(:)      ! CLM Soil Surface Temperature [K]
   real(r8), pointer :: t_veg(:)       ! CLM Leaf Temperature [K]
   real(r8), pointer :: h2osno(:)      ! CLM Snow Cover, Water Equivalent [mm]
-  real(r8), pointer :: snowage(:)     ! CLM Non-dimensional snow age [-] 
+  real(r8), pointer :: snowage(:)     ! CLM Non-dimensional snow age [-]
+  real(r8), pointer :: snowage_vis(:) ! CLM VIS band snow age [-] @RMM 2025
+  real(r8), pointer :: snowage_nir(:) ! CLM NIR band snow age [-] @RMM 2025
   real(r8), pointer :: snowdp(:)      ! CLM Snow Depth [m] 
   real(r8), pointer :: h2ocan(:)      ! CLM Depth of Water on Foliage [mm]
 
@@ -91,7 +93,9 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
   real(r8) :: g_t_grnd(drv%nc,drv%nr)         ! CLM Soil Surface Temperature [K]
   real(r8) :: g_t_veg(drv%nc,drv%nr)          ! CLM Leaf Temperature [K] 
   real(r8) :: g_h2osno(drv%nc,drv%nr)         ! CLM Snow Cover, Water Equivalent [mm] 
-  real(r8) :: g_snowage(drv%nc,drv%nr)        ! CLM Non-dimensional snow age [-] 
+  real(r8) :: g_snowage(drv%nc,drv%nr)        ! CLM Non-dimensional snow age [-]
+  real(r8) :: g_snowage_vis(drv%nc,drv%nr)   ! CLM VIS band snow age [-] @RMM 2025
+  real(r8) :: g_snowage_nir(drv%nc,drv%nr)   ! CLM NIR band snow age [-] @RMM 2025
   real(r8) :: g_snowdp(drv%nc,drv%nr)         ! CLM Snow Depth [m] 
   real(r8) :: g_h2ocan(drv%nc,drv%nr)         ! CLM Depth of Water on Foliage [mm]
   real(r8) :: g_frac_sno(drv%nc,drv%nr)       ! CLM Fractional Snow Cover [-]
@@ -132,6 +136,7 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
 
      allocate (col(nch),row(nch),fgrd(nch),vegt(nch))
      allocate (t_grnd(nch),t_veg(nch),h2osno(nch),snowage(nch),         &
+          snowage_vis(nch),snowage_nir(nch),                            &
           snowdp(nch),h2ocan(nch),frac_sno(nch))
      allocate (elai(nch), esai(nch), snl(nch),xerr(nch),zerr(nch))
      allocate (dz(nch,-nlevsno+1:nlevsoi),        &
@@ -151,7 +156,10 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
      read(40) t_grnd               !CLM Soil Surface Temperature [K] 
      read(40) t_veg                !CLM Leaf Temperature [K] 
      read(40) h2osno               !CLM Snow Cover, Water Equivalent [mm] 
-     read(40) snowage              !CLM Non-dimensional snow age [-] 
+     read(40) snowage              !CLM Non-dimensional snow age [-]
+     ! Initialize VIS/NIR snow ages from legacy - will be overwritten if new format @RMM 2025
+     snowage_vis = snowage
+     snowage_nir = snowage
      read(40) snowdp               !CLM Snow Depth [m]
      read(40) h2ocan               !CLM Depth of Water on Foliage [mm]
      read(40) frac_sno             !CLM Fractional Snow Cover [-]
@@ -252,6 +260,8 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
            call drv_t2gr(t_veg          ,g_t_veg          ,drv%nc,drv%nr,nch,fgrd,col,row)
            call drv_t2gr(h2osno         ,g_h2osno         ,drv%nc,drv%nr,nch,fgrd,col,row)
            call drv_t2gr(snowage        ,g_snowage        ,drv%nc,drv%nr,nch,fgrd,col,row)
+           call drv_t2gr(snowage_vis    ,g_snowage_vis    ,drv%nc,drv%nr,nch,fgrd,col,row)
+           call drv_t2gr(snowage_nir    ,g_snowage_nir    ,drv%nc,drv%nr,nch,fgrd,col,row)
            call drv_t2gr(snowdp         ,g_snowdp         ,drv%nc,drv%nr,nch,fgrd,col,row)
            call drv_t2gr(h2ocan         ,g_h2ocan         ,drv%nc,drv%nr,nch,fgrd,col,row)
            call drv_t2gr(frac_sno       ,g_frac_sno       ,drv%nc,drv%nr,nch,fgrd,col,row)
@@ -302,6 +312,8 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
                     clm(t)%t_veg = t_veg(n)
                     clm(t)%h2osno = h2osno(n)
                     clm(t)%snowage = snowage(n)
+                    clm(t)%snowage_vis = snowage_vis(n)  ! @RMM 2025
+                    clm(t)%snowage_nir = snowage_nir(n)  ! @RMM 2025
                     clm(t)%snowdp = snowdp(n)
                     clm(t)%h2ocan = h2ocan(n)
                     clm(t)%frac_sno = frac_sno(n)
@@ -332,11 +344,13 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
                  endif
               enddo
 
-              if(found.eq.0)then        
+              if(found.eq.0)then
                  clm(t)%t_grnd = g_t_grnd(tile(t)%col,tile(t)%row)
                  clm(t)%t_veg = g_t_veg(tile(t)%col,tile(t)%row)
                  clm(t)%h2osno = g_h2osno(tile(t)%col,tile(t)%row)
                  clm(t)%snowage = g_snowage(tile(t)%col,tile(t)%row)
+                 clm(t)%snowage_vis = g_snowage_vis(tile(t)%col,tile(t)%row)  ! @RMM 2025
+                 clm(t)%snowage_nir = g_snowage_nir(tile(t)%col,tile(t)%row)  ! @RMM 2025
                  clm(t)%snowdp = g_snowdp(tile(t)%col,tile(t)%row)
                  clm(t)%h2ocan = g_h2ocan(tile(t)%col,tile(t)%row)
                  clm(t)%frac_sno = g_frac_sno(tile(t)%col,tile(t)%row)
@@ -377,6 +391,8 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
                  clm(t)%t_veg = t_veg(t)
                  clm(t)%h2osno = h2osno(t)
                  clm(t)%snowage = snowage(t)
+                 clm(t)%snowage_vis = snowage_vis(t)  ! @RMM 2025
+                 clm(t)%snowage_nir = snowage_nir(t)  ! @RMM 2025
                  clm(t)%snowdp = snowdp(t)
                  clm(t)%h2ocan = h2ocan(t)
                  clm(t)%frac_sno = frac_sno(t)
@@ -469,6 +485,8 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
         write(40) clm%t_veg                 !CLM Leaf Temperature [K]
         write(40) clm%h2osno                !CLM Snow Cover, Water Equivalent [mm]
         write(40) clm%snowage               !CLM Non-dimensional snow age [-]
+        write(40) clm%snowage_vis           !CLM VIS band snow age [-] @RMM 2025
+        write(40) clm%snowage_nir           !CLM NIR band snow age [-] @RMM 2025
         write(40) clm%snowdp                !CLM Snow Depth [m]
         write(40) clm%h2ocan                !CLM Depth of Water on Foliage [mm]
         write(40) clm%frac_sno              !CLM Fractional Snow Cover [-]

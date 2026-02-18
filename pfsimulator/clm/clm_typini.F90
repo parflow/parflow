@@ -143,6 +143,8 @@ subroutine clm_typini (ntiles, clm, istep_pf)
      clm(k)%t_veg              = NaN   ! leaf temperature [K]
      clm(k)%h2ocan             = NaN   ! depth of water on foliage [kg/m2/s]
      clm(k)%snowage            = NaN   ! non dimensional snow age [-]
+     clm(k)%snowage_vis        = NaN   ! VIS band snow age [-] @RMM 2025
+     clm(k)%snowage_nir        = NaN   ! NIR band snow age [-] @RMM 2025
      clm(k)%h2osno             = NaN   ! snow mass (kg/m2)
      clm(k)%h2osno_old         = NaN   ! snow mass for previous time step (kg/m2)
      clm(k)%snowdp             = NaN   ! snow depth (m)

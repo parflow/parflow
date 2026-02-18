@@ -330,6 +330,7 @@ pfset Solver.Linear.Preconditioner.PFMGOctree.BoxSizePowerOf2 2
 #pfset Solver.Linear.Preconditioner.PFMG.NumPostRelax     100
 #pfset Solver.Linear.Preconditioner.PFMG.Smoother         100
 
+pfset Solver.Linear.Preconditioner.HypreLogging           True
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
