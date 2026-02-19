@@ -28,8 +28,18 @@
 
 #define PADDING 256
 
-#include <rmm/mr/device/pool_memory_resource.hpp>
-#include <rmm/mr/device/managed_memory_resource.hpp>
+#if __has_include(<rmm/mr/pool_memory_resource.hpp>)
+
+  #include <rmm/mr/pool_memory_resource.hpp>
+  #include <rmm/mr/managed_memory_resource.hpp>
+
+#else
+
+  #include <rmm/mr/device/pool_memory_resource.hpp>
+  #include <rmm/mr/device/managed_memory_resource.hpp>
+
+#endif
+
 
 static rmm::mr::managed_memory_resource cuda_mr;
 static rmm::mr::pool_memory_resource<rmm::mr::managed_memory_resource>* pool_mr = nullptr;
