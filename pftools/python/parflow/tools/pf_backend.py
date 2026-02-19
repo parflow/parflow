@@ -1,18 +1,15 @@
-import contextlib
-import dask
+import dask.array as da
 import json
 import numpy as np
 import pandas as pd
 import os
 import warnings
 import xarray as xr
-import yaml
 
-from pprint import pprint
 from . import util
 from .io import ParflowBinaryReader, read_pfb_sequence, read_pfb
 from collections.abc import Iterable
-from typing import Mapping, List, Union
+from typing import Mapping
 from xarray.backends import BackendEntrypoint, BackendArray
 from xarray.core import indexing
 from dask import delayed
@@ -355,8 +352,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         )
         if not dims:
             dims = data.array.dims
-        if not shape:
-            shape = data.array.shape
+
         var = xr.Variable(
             dims,
             data,
@@ -378,8 +374,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         )
         if not dims:
             dims = data.array.dims
-        if not shape:
-            shape = data.array.shape
+
         var = xr.Variable(dims, data)
         return var
 
@@ -459,15 +454,14 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is="z"):
     :return:
         A numpy array of the data
     """
+    accessor = {d: util._key_to_explicit_accessor(k) for d, k in zip(dims, key)}
     if mode == "single":
-        accessor = {d: util._key_to_explicit_accessor(k) for d, k in zip(dims, key)}
         sub = read_pfb(
             file_or_seq,
             keys=accessor,
             z_first=z_first,
         )
     elif mode == "sequence":
-        accessor = {d: util._key_to_explicit_accessor(k) for d, k in zip(dims, key)}
         t_start = accessor["time"]["start"]
         t_end = accessor["time"]["stop"]
         if z_is == "time":
@@ -644,13 +638,12 @@ class ParflowBackendArray(BackendArray):
 
     def _getitem(self, key: tuple) -> np.ndarray:
         """Mapping between keys to the actual data"""
-        real_size = self._size_from_key(key)
         sub = delayed(_getitem_no_state)(
             self.file_or_seq, key, self.dims, self.mode, self.z_first, self.z_is
         )
-        sub = dask.array.from_delayed(sub, self.pfb_shape, dtype=np.float64)
+        sub = da.from_delayed(sub, self.pfb_shape, dtype=np.float64)
         if self.shape != sub.shape:
-            sub = dask.array.squeeze(sub, axis=self.squeeze_dims)
+            sub = da.squeeze(sub, axis=self.squeeze_dims)
         return sub
 
     def _size_from_key(self, key):
