@@ -58,7 +58,7 @@
           struct cudaMemLocation location = {};                                \
           location.type = cudaMemLocationTypeHost;                             \
           location.id = deviceIndex;                                           \
-          CUDA_ERR(cudaMemPrefetchAsync(ptr, size, location, 0 , 0));          \
+          CUDA_ERR(cudaMemPrefetchAsync(ptr, size, location, 0, 0));           \
           CUDA_ERR(cudaStreamSynchronize(stream));                             \
         }
 #define MemPrefetchHostToDevice_cuda(ptr, size, stream)                        \
@@ -68,7 +68,7 @@
           struct cudaMemLocation location = {};                                \
           location.type = cudaMemLocationTypeDevice;                           \
           location.id = deviceIndex;                                           \
-          CUDA_ERR(cudaMemPrefetchAsync(ptr, size, location, 0 , 0));          \
+          CUDA_ERR(cudaMemPrefetchAsync(ptr, size, location, 0, 0));           \
         }
 #else
 #define MemPrefetchDeviceToHost_cuda(ptr, size, stream)                        \

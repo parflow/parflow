@@ -407,9 +407,9 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
     // Compute the block-wide sum for thread0
 
 #if CUDART_VERSION >= 13000
-  T aggregate = BlockReduce(temp_storage).Reduce(thread_data, cuda::maximum());
+    T aggregate = BlockReduce(temp_storage).Reduce(thread_data, cuda::maximum());
 #else
-  T aggregate = BlockReduce(temp_storage).Reduce(thread_data, cub::Max());
+    T aggregate = BlockReduce(temp_storage).Reduce(thread_data, cub::Max());
 #endif
     // Store aggregate
     if (threadIdx.x == 0)
