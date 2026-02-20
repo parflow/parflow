@@ -41,6 +41,10 @@
 
 #include "cJSON.h"
 
+#ifdef PARFLOW_HAVE_TORCH
+#include "torch_wrapper.h"
+#endif
+
 #ifdef HAVE_SLURM
 #include <slurm/slurm.h>
 #endif
@@ -281,6 +285,13 @@ typedef struct {
 
   int nc_evap_trans_file_transient;     /* read NetCDF evap_trans as a transient file before advance richards timestep */
   char *nc_evap_trans_filename; /* NetCDF File name for evap trans */
+  int enable_torch_accelerator;       /* Enable the ML Torch accelerator between timesteps */
+  char *torch_model_filepath;         /* Path to the .pth file containing the trained Torch model */
+  int print_predicted_pressure;       /* Print the predicted pressure from the ML Accelerator at each step. */
+  int torch_debug;                    /* Print scaled pressure, evaptrans and statics that are passed to ML Accelerator. */
+  char *torch_device;                 /* Device for the torch model ("cpu" or "cuda") */
+  char *torch_model_dtype;            /* Data type for the torch model */
+  int torch_include_ghost_nodes;      /* Include ghost nodes in x and y directions when passing data to torch model */
 } PublicXtra;
 
 typedef struct {
@@ -454,7 +465,7 @@ SetupRichards(PFModule * this_module)
   double stop_time = ProblemStopTime(problem);
   int start_count = ProblemStartCount(problem);
 
-  char file_prefix[2048], file_type[2048], file_postfix[2048];
+  char file_prefix[PATH_MAX], file_type[2048], file_postfix[2048];
   char nc_postfix[2048];
 
   int take_more_time_steps;
@@ -469,7 +480,7 @@ SetupRichards(PFModule * this_module)
 
   int any_file_dumped;
 
-  char filename[128];
+  char filename[PATH_MAX];
 
 #ifdef HAVE_CLM
   /* IMF: for CLM met forcings (local to SetupRichards) */
@@ -1431,6 +1442,88 @@ SetupRichards(PFModule * this_module)
     handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
     FinalizeVectorUpdate(handle);
 
+#ifdef PARFLOW_HAVE_TORCH
+    if (public_xtra->enable_torch_accelerator)
+    {
+      BeginTiming(TorchTimingIndex);
+      // Read sres, ssat, n, alpha from file. Ideally, these will be read in from
+      // fields of problem_saturation (see commented lines in the grid loop.)
+      Vector *sres = NewVectorType(grid, 1, 1, vector_cell_centered);
+      InitVectorAll(sres, 0.0);
+      sprintf(filename, "%s.sres.pfb", file_prefix);
+      ReadPFBinary(filename, sres);
+      Vector *ssat = NewVectorType(grid, 1, 1, vector_cell_centered);
+      InitVectorAll(ssat, 0.0);
+      sprintf(filename, "%s.ssat.pfb", file_prefix);
+      ReadPFBinary(filename, ssat);
+      Vector *alpha = NewVectorType(grid, 1, 1, vector_cell_centered);
+      InitVectorAll(alpha, 0.0);
+      sprintf(filename, "%s.alpha.pfb", file_prefix);
+      ReadPFBinary(filename, alpha);
+      Vector *n = NewVectorType(grid, 1, 1, vector_cell_centered);
+      InitVectorAll(n, 0.0);
+      sprintf(filename, "%s.n.pfb", file_prefix);
+      ReadPFBinary(filename, n);
+
+      Subgrid *subgrid;
+      int is, nx, ny, nz;
+      ForSubgridI(is, GridSubgrids(grid))
+      {
+        subgrid = GridSubgrid(grid, is);
+        Vector *porosity = ProblemDataPorosity(problem_data);
+        Subvector *po_sub = VectorSubvector(porosity, is);
+        double *po_dat = SubvectorData(po_sub);
+        Vector *mannings = ProblemDataMannings(problem_data);
+        Subvector* mann_sub = VectorSubvector(mannings, is);
+        double *mann_dat = SubvectorData(mann_sub);
+        Vector *slope_x = ProblemDataTSlopeX(problem_data);
+        Subvector *slopex_sub = VectorSubvector(slope_x, is);
+        double *slopex_dat = SubvectorData(slopex_sub);
+        Vector *slope_y = ProblemDataTSlopeY(problem_data);
+        Subvector *slopey_sub = VectorSubvector(slope_y, is);
+        double *slopey_dat = SubvectorData(slopey_sub);
+        Vector *perm_x = ProblemDataPermeabilityX(problem_data);
+        Subvector *permx_sub = VectorSubvector(perm_x, is);
+        double *permx_dat = SubvectorData(permx_sub);
+        Vector *perm_y = ProblemDataPermeabilityY(problem_data);
+        Subvector *permy_sub = VectorSubvector(perm_y, is);
+        double *permy_dat = SubvectorData(permy_sub);
+        Vector *perm_z = ProblemDataPermeabilityZ(problem_data);
+        Subvector *permz_sub = VectorSubvector(perm_z, is);
+        double *permz_dat = SubvectorData(permz_sub);
+        //Vector* sres = ProblemSaturationGetSres(problem_saturation);
+        Subvector *sres_sub = VectorSubvector(sres, is);
+        double *sres_dat = SubvectorData(sres_sub);
+        //Vector* ssat = ProblemSaturationGetSsat(problem_saturation);
+        Subvector *ssat_sub = VectorSubvector(ssat, is);
+        double *ssat_dat = SubvectorData(ssat_sub);
+        Vector *fbz = ProblemDataFBz(problem_data);
+        Subvector *fbz_sub = VectorSubvector(fbz, is);
+        double *fbz_dat = SubvectorData(fbz_sub);
+        Vector *specific_storage = ProblemDataSpecificStorage(problem_data);
+        Subvector *specific_storage_sub = VectorSubvector(specific_storage, is);
+        double *specific_storage_dat = SubvectorData(specific_storage_sub);
+        Subvector *alpha_sub = VectorSubvector(alpha, is);
+        double *alpha_dat = SubvectorData(alpha_sub);
+        Subvector *n_sub = VectorSubvector(n, is);
+        double *n_dat = SubvectorData(n_sub);
+        // Get the nz from n as it 3D
+        nx = SubvectorNX(n_sub);
+        ny = SubvectorNY(n_sub);
+        nz = SubvectorNZ(n_sub);
+                
+        init_torch_model(public_xtra->torch_model_filepath, nx, ny, nz, po_dat, mann_dat, slopex_dat,
+                         slopey_dat, permx_dat, permy_dat, permz_dat, sres_dat, ssat_dat, fbz_dat,
+                         specific_storage_dat, alpha_dat, n_dat, public_xtra->torch_debug, public_xtra->torch_device,
+                         public_xtra->torch_model_dtype, public_xtra->torch_include_ghost_nodes);
+      }
+      FreeVector(sres);
+      FreeVector(ssat);
+      FreeVector(n);
+      FreeVector(alpha);
+      EndTiming(TorchTimingIndex);
+    }
+#endif
 
     /*****************************************************************/
     /*          Print out any of the requested initial data          */
@@ -1925,7 +2018,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     evap_trans = instance_xtra->evap_trans;
   }
 
-  char filename[2048];          // IMF: 1D input file name *or* 2D/3D input file base name
+  char filename[PATH_MAX];          // IMF: 1D input file name *or* 2D/3D input file base name
 #ifdef HAVE_OAS3
   Grid *grid = (instance_xtra->grid);
   Subgrid *subgrid;
@@ -2019,7 +2112,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   VectorUpdateCommHandle *handle;
 
   char dt_info;
-  char file_prefix[2048], file_type[2048], file_postfix[2048];
+  char file_prefix[PATH_MAX], file_type[2048], file_postfix[2048];
   char nc_postfix[2048];
 
   int first_tstep = 1;
@@ -3213,6 +3306,39 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
       t += dt;
 
+#ifdef PARFLOW_HAVE_TORCH
+      if (public_xtra->enable_torch_accelerator)
+      {
+        BeginTiming(TorchTimingIndex);
+        Subgrid *subgrid;
+        Grid *grid = VectorGrid(evap_trans_sum);
+        Subvector *p_sub;
+        double *pp;
+        int is, nx, ny, nz;
+
+        ForSubgridI(is, GridSubgrids(grid))
+        {
+          subgrid = GridSubgrid(grid, is);
+          p_sub = VectorSubvector(instance_xtra->pressure, is);
+          nx = SubvectorNX(p_sub);
+          ny = SubvectorNY(p_sub);
+          nz = SubvectorNZ(p_sub);
+          pp = SubvectorData(p_sub);
+          et_sub = VectorSubvector(evap_trans, is);
+          et = SubvectorData(et_sub);
+          SubvectorData(p_sub) = predict_next_pressure_step(pp, et, nx, ny, nz, instance_xtra->file_number, public_xtra->torch_debug, public_xtra->torch_include_ghost_nodes);
+        }
+        handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
+        FinalizeVectorUpdate(handle);
+        if (public_xtra->print_predicted_pressure)
+        {
+          sprintf(file_postfix, "predicted_press.%05d", instance_xtra->file_number);
+          WritePFBinary(file_prefix, file_postfix, instance_xtra->pressure);
+        }
+        EndTiming(TorchTimingIndex);
+      }
+#endif
+
       /*  experiment with a predictor to adjust land surface pressures to be >0 if rainfall*/
       if (public_xtra->surface_predictor == 1)
       {
@@ -3340,6 +3466,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                        );
         }
       }
+
 
       /*******************************************************************/
       /*          Solve the nonlinear system for this time step          */
@@ -6920,6 +7047,37 @@ SolverRichardsNewPublicXtra(char *name)
   {
     WriteSiloPMPIOInit(GlobalsOutFileName);
   }
+
+#ifdef PARFLOW_HAVE_TORCH
+  sprintf(key, "%s.TorchEnableAccelerator", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->enable_torch_accelerator = switch_value;
+
+  sprintf(key, "%s.TorchModelFilePath", name);
+  public_xtra->torch_model_filepath = GetStringDefault(key, "");
+
+  sprintf(key, "%s.TorchPrintPredictedPressure", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->print_predicted_pressure = switch_value;
+
+  sprintf(key, "%s.TorchDebug", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->torch_debug = switch_value;
+
+  sprintf(key, "%s.TorchDevice", name);
+  public_xtra->torch_device = GetStringDefault(key, "cpu");
+
+  sprintf(key, "%s.TorchModelDtype", name);
+  public_xtra->torch_model_dtype = GetStringDefault(key, "kDouble");
+
+  sprintf(key, "%s.TorchIncludeGhostNodes", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->torch_include_ghost_nodes = switch_value;
+#endif
 
   NA_FreeNameArray(switch_na);
   PFModulePublicXtra(this_module) = public_xtra;

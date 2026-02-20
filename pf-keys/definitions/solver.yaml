@@ -3149,6 +3149,71 @@ Solver:
       BoolDomain:
       RequiresModule: SILO
 
+  TorchEnableAccelerator:
+    help: >
+      [Type: boolean/string] This key specifies whether the Torch ML Accelerator is turned on or off. Choices for
+      this key include True and False. Note that the Torch library must be compiled and linked at runtime for this option to be active.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: TORCH
+
+  TorchModelFilePath:
+    help: > 
+      [Type: string] This key specifies the location of the Torch file that contains the trained ML model for the accelerator. This must
+      be an absolute path. Note that the Torch libary must be compiled and linked at runtime for this option to be active.
+    domains:
+      AnyString:
+      RequiresModule: TORCH
+
+  TorchPrintPredictedPressure:
+    help: > 
+      [Type: boolean/string] This key specifies whether the predicted pressure from the Torch ML Accelerator will be printed for each step.
+      Note that the Torch libary must be compiled and linked at runtime for this option to be active.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: TORCH
+      
+  TorchDebug:
+    help: > 
+      [Type: boolean/string] When this key is set to True, it will print information about the ML Accelerator: the scaled statics, evaptrans
+      and pressure that are used to predict the pressure at each step. Note that the Torch libary must be compiled and linked at runtime for
+      this option to be active.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: TORCH
+
+  TorchDevice:
+    help: > 
+      [Type: string] This key specifies the device that the torch model is going to run on. Options are 'cpu' or 'cuda'. Default is 'cpu'.
+      Note that the Torch libary must be compiled and linked at runtime for this option to be active.
+    default: 'cpu'
+    domains:
+      AnyString:
+      RequiresModule: TORCH
+
+  TorchModelDtype:
+    help: >
+      [Type: string] This key specifies the data type for the torch model. Options are 'kFloat' or 'kDouble'. Default is 'kDouble'.
+      Note that the Torch libary must be compiled and linked at runtime for this option to be active.
+    default: 'kDouble'
+    domains:
+      AnyString:
+      RequiresModule: TORCH
+
+  TorchIncludeGhostNodes:
+    help: >
+      [Type: boolean/string] This key controls whether ghost nodes are included in the x and y directions when passing data to the Torch ML Accelerator.
+      When set to True, ghost nodes in the x and y directions are included in the input data, while ghost nodes in the z direction are always excluded.
+      When set to False (default), ghost nodes are excluded in all directions. This allows the ML model to have access to boundary information
+      in the horizontal directions. Note that the Torch library must be compiled and linked at runtime for this option to be active.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: TORCH
+
   # PDI outputs
   WritePDISubsurfData:
     help: >
@@ -3408,3 +3473,4 @@ KnownSolution:
       [Type: double] This key specifies the constant value of the known solution for type Constant known solutions.
     domains:
       DoubleValue:
+

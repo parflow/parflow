@@ -370,6 +370,18 @@ if (${PARFLOW_ENABLE_HYPRE} OR DEFINED HYPRE_ROOT)
   endif (${HYPRE_FOUND})
 endif (${PARFLOW_ENABLE_HYPRE} OR DEFINED HYPRE_ROOT)
 
+
+#-----------------------------------------------------------------------------
+# TORCH
+#-----------------------------------------------------------------------------
+option(PARFLOW_ENABLE_TORCH "Build with Torch" "OFF")
+if (DEFINED Torch_ROOT)
+  find_package(Torch REQUIRED)
+  if (${TORCH_FOUND})
+    set(PARFLOW_HAVE_TORCH "yes")
+  endif (${TORCH_FOUND})
+endif (DEFINED Torch_ROOT)
+
 #-----------------------------------------------------------------------------
 # ZLIB
 #-----------------------------------------------------------------------------

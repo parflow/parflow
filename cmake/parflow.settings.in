@@ -40,6 +40,7 @@ NetCDF Support:         @PARFLOW_HAVE_NETCDF@
 HDF5 Support:           @PARFLOW_HAVE_HDF5@
 Zlib Support:           @PARFLOW_HAVE_ZLIB@
 SZlib Support:          @PARFLOW_HAVE_SZLIB@
+Torch Support:          @PARFLOW_HAVE_TORCH@
 
 Backend:                @PARFLOW_ACCELERATOR_BACKEND@
 OMP Support:            @PARFLOW_HAVE_OMP@

@@ -573,10 +573,20 @@ jobs:
           cmake .. -DCMAKE_INSTALL_PREFIX=${PARFLOW_DEP_DIR}
           make -j 2 install
         fi
-
+        
         export LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/pdi/install/lib:${LD_LIBRARY_PATH}
         echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
         echo "PDI_FLAGS=-DPDI_ROOT=${PARFLOW_DEP_DIR}/pdi/install" >> $GITHUB_ENV
+
+    - name: Torch Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          cd $PARFLOW_DEP_DIR
+          wget --quiet https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.6.0%2Bcpu.zip
+          unzip libtorch-cxx11-abi-shared-with-deps-2.6.0+cpu.zip
+        fi
 
     - name: ParFlow CMake Configure
       run: |
@@ -604,6 +614,7 @@ jobs:
            -DSILO_ROOT=$PARFLOW_DEP_DIR                                 \
            -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }}          \
            -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR                          \
+           -DTorch_ROOT=$PARFLOW_DEP_DIR/libtorch                       \
            $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS $UMPIRE_FLAGS $PDI_FLAGS $SUNDIALS_FLAGS
 
     - name: ParFlow CMake Build

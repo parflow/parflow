@@ -130,7 +130,7 @@ void WriteReservoirs(
   FILE             *file;
 
   char file_suffix[5] = "csv";
-  char filename[255];
+  char filename[PATH_MAX];
 
   int p;
 

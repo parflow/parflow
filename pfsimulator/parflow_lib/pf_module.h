@@ -343,10 +343,10 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * @param pf_module The module instance
  * @param args Arguments for the output method
  */
-#define PFModuleOutputStaticType(type, pf_module, args)                                         \
-        (                                                                                       \
-         ThisPFModule = pf_module,                                                              \
-         (*(type (*)(char file_prefix[2048], ProblemData *))(ThisPFModule->output_static)) args \
+#define PFModuleOutputStaticType(type, pf_module, args)                                             \
+        (                                                                                           \
+         ThisPFModule = pf_module,                                                                  \
+         (*(type (*)(char file_prefix[PATH_MAX], ProblemData *))(ThisPFModule->output_static)) args \
         )
 
 /**
