@@ -47,9 +47,6 @@
 #define tmemcpy_cuda(dest, src, bytes) \
         CUDA_ERR(cudaMemcpy(dest, src, bytes, cudaMemcpyDeviceToDevice))
 
-//
-// TODO: Verify location type and IDs for CPU and GPU!
-//
 #if CUDART_VERSION >= 13000
 #define MemPrefetchDeviceToHost_cuda(ptr, size, stream)                        \
         {                                                                      \
