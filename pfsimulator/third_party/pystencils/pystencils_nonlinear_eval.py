@@ -101,10 +101,10 @@ for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {{
 
 
 def create_kernel_func_and_wrapper(
-    sfg: SourceFileGenerator, assign, func_name: str, allow_vect: bool = True
+    sfg: SourceFileGenerator, assign, func_name: str, optimize: bool = False, allow_vect: bool = True
 ):
     # create kernel func
-    kernel = create_kernel_func(sfg, assign, func_name, allow_vect)
+    kernel = create_kernel_func(sfg, assign, func_name, optimize, allow_vect)
 
     # create wrapper func
     create_kernel_wrapper(kernel)

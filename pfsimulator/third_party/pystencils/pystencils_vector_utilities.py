@@ -9,8 +9,9 @@ from pystencils_codegen import *
 
 def create_reduction_kernel_wrapper(
     sfg: SourceFileGenerator,
-    allow_vect: bool,
     kernel: Kernel,
+    optimize: bool,
+    allow_vect: bool,
     has_init_val: bool = False,
 ):
     kernel_params = [
@@ -26,7 +27,7 @@ def create_reduction_kernel_wrapper(
     target = sfg.context.project_info["target"]
     use_cuda = sfg.context.project_info.get("use_cuda")
 
-    if target.is_vector_cpu() and allow_vect:
+    if target.is_vector_cpu() and optimize and allow_vect:
         for param in kernel_params:
             pattern = re.compile("_stride_(.*)_1")
             match = pattern.findall(param.name)
@@ -87,14 +88,15 @@ def create_kernel_func_and_reduction_wrapper(
     sfg: SourceFileGenerator,
     assign,
     func_name: str,
+    optimize: bool = False,
     allow_vect: bool = True,
     has_init_val: bool = False,
 ):
     # create kernel func
-    kernel = create_kernel_func(sfg, assign, func_name, allow_vect)
+    kernel = create_kernel_func(sfg, assign, func_name, optimize, allow_vect)
 
     # create reduction wrapper func
-    create_reduction_kernel_wrapper(sfg, allow_vect, kernel, has_init_val)
+    create_reduction_kernel_wrapper(sfg, kernel, optimize, allow_vect, has_init_val)
 
 
 with SourceFileGenerator() as sfg:
@@ -145,7 +147,7 @@ with SourceFileGenerator() as sfg:
 
     # Returns x dot y (PFVDotProd)
     create_kernel_func_and_reduction_wrapper(
-        sfg, ps.AddReductionAssignment(r, x.center() * y.center()), "VDotProd"
+        sfg, ps.AddReductionAssignment(r, x.center() * y.center()), "VDotProd", optimize=True
     )
 
     # Returns ||x||_{max} (PFVMaxNorm)
