@@ -68,6 +68,8 @@ def create_reduction_kernel_wrapper(
     {kernel.name[:-4]}(
         {", ".join(args)}, {rptr_name}
     );
+    
+    {"cudaStreamSynchronize(0);" if use_cuda else ""}
 
     {f"MemPrefetchDeviceToHost_cuda({rptr_name}, sizeof(double), 0);" if use_cuda else ""}
 
