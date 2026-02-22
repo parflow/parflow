@@ -17,6 +17,6 @@ def project_info():
         "use_cuda": True,
         "use_openmp": False,
         "target": ps.Target.CUDA,
-        "default_block_size": (32, 4, 2),
+        "default_block_size": (32, 1, 32),
         "use_cub_reductions": True,
     }

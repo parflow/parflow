@@ -17,7 +17,7 @@ def project_info():
         "use_cuda": True,
         "use_openmp": False,
         "target": ps.Target.CUDA,
-        "default_block_size": (32, 4, 2),
+        "default_block_size": (32, 1, 32),
         "use_warp_reductions": True,
         "use_manual_exec_cfg_cuda": True,
         "manual_grid_size": (12, 9, 8),
