@@ -86,6 +86,7 @@ typedef struct {
   amps_Clock_t     *time;
   amps_CPUClock_t  *cpu_time;
   FLOPType         *flops;
+  int              *num_completions;
   char            **name;
 
   int size;
@@ -107,16 +108,17 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
  * Accessor functions
  *--------------------------------------------------------------------------*/
 
-#define TimingTime(i)    (timing->time[(i)])
-#define TimingCPUTime(i) (timing->cpu_time[(i)])
-#define TimingFLOPS(i)   (timing->flops[(i)])
-#define TimingName(i)    (timing->name[(i)])
+#define TimingTime(i)      (timing->time[(i)])
+#define TimingCPUTime(i)   (timing->cpu_time[(i)])
+#define TimingFLOPS(i)     (timing->flops[(i)])
+#define TimingCompleted(i) (timing->num_completions[(i)])
+#define TimingName(i)      (timing->name[(i)])
 
-#define TimingSize       (timing->size)
+#define TimingSize         (timing->size)
 
-#define TimingTimeCount  (timing->time_count)
-#define TimingCPUCount   (timing->CPU_count)
-#define TimingFLOPCount  (timing->FLOP_count)
+#define TimingTimeCount    (timing->time_count)
+#define TimingCPUCount     (timing->CPU_count)
+#define TimingFLOPCount    (timing->FLOP_count)
 
 /*--------------------------------------------------------------------------
  * Timing macros
@@ -164,6 +166,7 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
           TimingTime(i) += TimingTimeCount;   \
           TimingCPUTime(i) += TimingCPUCount; \
           TimingFLOPS(i) += TimingFLOPCount;  \
+          TimingCompleted(i) += 1;            \
           StartTiming();                      \
           LIKWID_MARKER_STOP(TimingName(i));  \
         }

@@ -84,6 +84,7 @@ int  RegisterTiming(
   amps_Clock_t     *old_time = (timing->time);
   amps_CPUClock_t  *old_cpu_time = (timing->cpu_time);
   FLOPType         *old_flops = (timing->flops);
+  int              *old_num_completions = (timing->num_completions);
   char            **old_name = (timing->name);
   int old_size = (timing->size);
 
@@ -95,6 +96,7 @@ int  RegisterTiming(
   (timing->time) = ctalloc(amps_Clock_t, (old_size + 1));
   (timing->cpu_time) = ctalloc(amps_CPUClock_t, (old_size + 1));
   (timing->flops) = ctalloc(FLOPType, (old_size + 1));
+  (timing->num_completions) = ctalloc(int, (old_size + 1));
   (timing->name) = ctalloc(char *, (old_size + 1));
 
   (timing->size)++;
@@ -104,12 +106,14 @@ int  RegisterTiming(
     (timing->time)[i] = old_time[i];
     (timing->cpu_time)[i] = old_cpu_time[i];
     (timing->flops)[i] = old_flops[i];
+    (timing->num_completions)[i] = old_num_completions[i];
     (timing->name)[i] = old_name[i];
   }
 
   tfree(old_time);
   tfree(old_cpu_time);
   tfree(old_flops);
+  tfree(old_num_completions);
   tfree(old_name);
 
   (timing->name)[old_size] = ctalloc(char, 50);
@@ -131,6 +135,7 @@ void  PrintTiming()
   double time_ticks[timing->size];
   double cpu_ticks[timing->size];
   double mflops[timing->size];
+  int num_timings[timing->size];
 
   int i;
 
@@ -140,6 +145,7 @@ void  PrintTiming()
   {
     time_ticks[i] = (double)((timing->time)[i]);
     cpu_ticks[i] = (double)((timing->cpu_time)[i]);
+    num_timings[i] = (int)((timing->num_completions)[i]);
   }
 
   amps_AllReduce(amps_CommWorld, max_invoice, amps_Max);
@@ -162,6 +168,7 @@ void  PrintTiming()
                    time_ticks[i] / AMPS_TICKS_PER_SEC);
       amps_Fprintf(file, "  wall MFLOPS = %f (%g)\n", mflops[i],
                    (timing->flops)[i]);
+      amps_Fprintf(file, "  num timings = %d\n", num_timings[i]);
 #ifdef CPUTiming
       if (AMPS_CPU_TICKS_PER_SEC)
       {
@@ -185,12 +192,13 @@ void  PrintTiming()
       InputError("Error: can't open output file %s%s\n", filename, "");
     }
 
-    fprintf(file, "Timer,Time (s),MFLOPS (mops/s),FLOP (op)\n");
+    fprintf(file, "Timer,Time (s),MFLOPS (mops/s),FLOP (op),NumTimings\n");
     for (i = 0; i < (timing->size); i++)
     {
-      fprintf(file, "%s,%f,%f,%g\n", timing->name[i],
+      fprintf(file, "%s,%f,%f,%g,%d\n", timing->name[i],
               time_ticks[i] / AMPS_TICKS_PER_SEC,
-              mflops[i], (timing->flops)[i]);
+              mflops[i], (timing->flops)[i],
+              num_timings[i]);
     }
 
     fclose(file);
@@ -240,6 +248,7 @@ void  FreeTiming()
   tfree(timing->time);
   tfree(timing->cpu_time);
   tfree(timing->flops);
+  tfree(timing->num_completions);
   tfree(timing->name);
 
   tfree(timing);
