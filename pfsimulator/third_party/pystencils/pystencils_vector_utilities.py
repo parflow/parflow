@@ -55,17 +55,18 @@ def create_reduction_kernel_wrapper(
 
         # only init ptr if initial value is provided by user, otherwise set to 0
         init_reduction_ptr = f"*{rptr_name} = {initval_name};"
+    else:
+        init_reduction_ptr = f"*{rptr_name} = 0.0;"
 
     sfg.include("parflow.h")
     if use_cuda:
         sfg.include("pf_cudamalloc.h")
 
     code = f"""
-    double* {rptr_name} = {("c" if not has_init_val else "") + ("talloc_cuda" if use_cuda else "talloc")}(double, 1);
+    double* {rptr_name} = {("talloc_cuda" if use_cuda else "talloc")}(double, 1);
     
-    {f"MemPrefetchDeviceToHost_cuda({rptr_name}, sizeof(double), 0);" if use_cuda and has_init_val else ""}
+    {f"MemPrefetchDeviceToHost_cuda({rptr_name}, sizeof(double), 0);" if use_cuda else ""}
     {init_reduction_ptr}
-    
     {f"MemPrefetchHostToDevice_cuda({rptr_name}, sizeof(double), 0);" if use_cuda else ""}
 
     {kernel.name[:-4]}(
