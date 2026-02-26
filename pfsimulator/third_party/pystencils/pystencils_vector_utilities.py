@@ -62,9 +62,11 @@ def create_reduction_kernel_wrapper(
 
     code = f"""
     double* {rptr_name} = {("c" if not has_init_val else "") + ("talloc_cuda" if use_cuda else "talloc")}(double, 1);
+    
+    {f"MemPrefetchDeviceToHost_cuda({rptr_name}, sizeof(double), 0);" if use_cuda and has_init_val else ""}
     {init_reduction_ptr}
     
-    {f"MemPrefetchHostToDevice_cuda({rptr_name}, sizeof(double), 0);" if use_cuda and has_init_val else ""}
+    {f"MemPrefetchHostToDevice_cuda({rptr_name}, sizeof(double), 0);" if use_cuda else ""}
 
     {kernel.name[:-4]}(
         {", ".join(args)}, {rptr_name}
