@@ -341,7 +341,9 @@ var_dz_with_well.run(working_directory=dir_name)
 
 test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
 
-correct_pressure_file = "../correct_output/var_dz_with_well_single_column.out.press.00010.pfb"
+correct_pressure_file = (
+    "../correct_output/var_dz_with_well_single_column.out.press.00010.pfb"
+)
 correct_pressure = pf.read_pfb(get_absolute_path(correct_pressure_file))
 
 passed = np.allclose(test_case_pressure, correct_pressure)
@@ -446,7 +448,6 @@ var_dz_with_well.Wells.flux_well.Method = "Standard"
 var_dz_with_well.Wells.flux_well.alltime.Flux.water.Value = 7.5
 
 
-
 # Multi column  base case
 dir_name = get_absolute_path("test_output/multi_column_1")
 mkdir(dir_name)
@@ -472,7 +473,9 @@ var_dz_with_well.Cell._13.dzScale.Value = 1
 var_dz_with_well.run(working_directory=dir_name)
 correct_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
 
-correct_pressure_file = "../correct_output/var_dz_with_well_multi_column.out.press.00010.pfb"
+correct_pressure_file = (
+    "../correct_output/var_dz_with_well_multi_column.out.press.00010.pfb"
+)
 correct_pressure = pf.read_pfb(get_absolute_path(correct_pressure_file))
 
 passed = np.allclose(correct_pressure, test_case_pressure)
