@@ -17,6 +17,6 @@ def project_info():
         "use_cuda": True,
         "use_openmp": False,
         "target": ps.Target.CUDA,
-        "default_block_size": (32, 1, 32),
+        "default_block_size": (128, 2, 1),
         "use_shared_mem_reductions": True,
     }
