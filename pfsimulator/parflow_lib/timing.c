@@ -66,8 +66,9 @@ void  NewTiming()
   RegisterTiming("Flux Compressible Storage");
   RegisterTiming("Flux Source Terms");
   RegisterTiming("RBGS Zero Optimization");
-  RegisterTiming("RBGS 7pt Kernel");
-  RegisterTiming("Vector dot product");
+  RegisterTiming("RBGS 7pt");
+  RegisterTiming("VDotProduct");
+  RegisterTiming("VDotProduct Kernel");
 #ifdef VECTOR_UPDATE_TIMING
   RegisterTiming("VectorUpdate");
 #endif

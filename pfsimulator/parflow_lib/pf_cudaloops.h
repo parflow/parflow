@@ -739,6 +739,62 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
           (void)i; (void)j; (void)k;                                                                                                               \
         }
 
+/** HACK: loop definition for CUDA with timing of kernel. */
+#define TimedBoxLoopReduceI2_cuda(rslt, i, j, k,                                                                                                   \
+                             ix, iy, iz, nx, ny, nz,                                                                                               \
+                             i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                                                     \
+                             i2, nx2, ny2, nz2, sx2, sy2, sz2,                                                                                     \
+                             loop_body,                                                                                                            \
+                             timing_idx)                                                                                                           \
+        {                                                                                                                                          \
+          if (nx > 0 && ny > 0 && nz > 0)                                                                                                          \
+          {                                                                                                                                        \
+            DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);                                                            \
+            DeclareInc(PV_jinc_2, PV_kinc_2, nx, ny, nz, nx2, ny2, nz2, sx2, sy2, sz2);                                                            \
+                                                                                                                                                   \
+            int block = BLOCKSIZE_MAX;                                                                                                             \
+            int grid = ((nx * ny * nz - 1) + block) / block;                                                                                       \
+                                                                                                                                                   \
+            const auto &ref_rslt = rslt;                                                                                                           \
+            const auto &ref_i1 = i1;                                                                                                               \
+            const auto &ref_i2 = i2;                                                                                                               \
+                                                                                                                                                   \
+            auto lambda_body =                                                                                                                     \
+              GPU_LAMBDA(int i, int j, int k)                                                                                                      \
+            {                                                                                                                                      \
+              auto rslt = ref_rslt;                                                                                                                \
+              const int i1 = k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                                                                              \
+                             + (k * ny * nx + j * nx + i) * sx1 + ref_i1;                                                                          \
+              const int i2 = k * PV_kinc_2 + (k * ny + j) * PV_jinc_2                                                                              \
+                             + (k * ny * nx + j * nx + i) * sx2 + ref_i2;                                                                          \
+                                                                                                                                                   \
+              i += ix;                                                                                                                             \
+              j += iy;                                                                                                                             \
+              k += iz;                                                                                                                             \
+                                                                                                                                                   \
+              loop_body;                                                                                                                           \
+            };                                                                                                                                     \
+                                                                                                                                                   \
+            decltype(rslt) * ptr_rslt = (decltype(rslt)*)_talloc_device(sizeof(decltype(rslt)));                                                   \
+            MemPrefetchDeviceToHost_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);                                                                     \
+            *ptr_rslt = rslt;                                                                                                                      \
+            MemPrefetchHostToDevice_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);                                                                     \
+                                                                                                                                                   \
+            BeginTiming(timing_idx);                                                                                                               \
+            typedef function_traits < decltype(lambda_body) > traits;                                                                              \
+            DotKernel < traits::result_type > << < grid, block >> > (lambda_body,                                                                  \
+                                                                     rslt, ptr_rslt, nx, ny, nz);                                                  \
+            EndTiming(timing_idx);                                                                                                                 \
+            CUDA_ERR(cudaPeekAtLastError());                                                                                                       \
+            CUDA_ERR(cudaStreamSynchronize(0));                                                                                                    \
+                                                                                                                                                   \
+            MemPrefetchDeviceToHost_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);                                                                     \
+            rslt = *ptr_rslt;                                                                                                                      \
+            _tfree_device(ptr_rslt);                                                                                                               \
+          }                                                                                                                                        \
+          (void)i; (void)j; (void)k;                                                                                                               \
+        }
+
 /** Loop definition for CUDA. */
 #define GrGeomInLoopBoxes_cuda(i, j, k,                                                                          \
                                grgeom, ix, iy, iz, nx, ny, nz, loop_body)                                        \
