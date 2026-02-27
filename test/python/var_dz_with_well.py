@@ -342,7 +342,7 @@ var_dz_with_well.run(working_directory=dir_name)
 test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
 
 correct_pressure_file = (
-    "../correct_output/var_dz_with_well_single_column.out.press.00010.pfb"
+    "$PF_SRC/test/correct_output/var_dz_with_well_single_column.out.press.00010.pfb"
 )
 correct_pressure = pf.read_pfb(get_absolute_path(correct_pressure_file))
 
@@ -474,7 +474,7 @@ var_dz_with_well.run(working_directory=dir_name)
 correct_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
 
 correct_pressure_file = (
-    "../correct_output/var_dz_with_well_multi_column.out.press.00010.pfb"
+    "$PF_SRC/test/correct_output/var_dz_with_well_multi_column.out.press.00010.pfb"
 )
 correct_pressure = pf.read_pfb(get_absolute_path(correct_pressure_file))
 
