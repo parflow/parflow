@@ -224,7 +224,7 @@ void printMaxMemory(FILE *log_file)
 #ifdef __linux__
   if (!amps_Rank(amps_CommWorld))
   {
-    char procfilename[2056];
+    char procfilename[PATH_MAX];
 
     sprintf(procfilename, "/proc/%d/status", getpid());
 
