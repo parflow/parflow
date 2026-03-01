@@ -807,6 +807,9 @@ double PFVDotProd(
         *reduction_writeback_ptr = 0.0;
     #endif
 
+#ifdef PARFLOW_HAVE_CUDA
+    CUDA_ERR(cudaStreamSynchronize(0));
+#endif
     BeginTiming(VDotProductKernelTimingIndex);
     PyCodegen_VDotProd(xp, yp,
           nx, ny, nz,
@@ -814,7 +817,16 @@ double PFVDotProd(
           1, nx_y, nx_y * ny_y,
           reduction_writeback_ptr
     );
+#ifdef PARFLOW_HAVE_CUDA
+    CUDA_ERR(cudaStreamSynchronize(0));
+#endif
     EndTiming(VDotProductKernelTimingIndex);
+
+    #ifdef PARFLOW_HAVE_CUDA
+        CUDA_ERR(cudaPeekAtLastError());
+        CUDA_ERR(cudaStreamSynchronize(0));
+        MemPrefetchDeviceToHost_cuda(reduction_writeback_ptr, sizeof(double), 0);
+    #endif
 
     sum = *reduction_writeback_ptr;
     tfree(reduction_writeback_ptr);

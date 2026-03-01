@@ -780,10 +780,12 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
             *ptr_rslt = rslt;                                                                                                                      \
             MemPrefetchHostToDevice_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);                                                                     \
                                                                                                                                                    \
+            CUDA_ERR(cudaStreamSynchronize(0));                                                                                                    \
             BeginTiming(timing_idx);                                                                                                               \
             typedef function_traits < decltype(lambda_body) > traits;                                                                              \
             DotKernel < traits::result_type > << < grid, block >> > (lambda_body,                                                                  \
                                                                      rslt, ptr_rslt, nx, ny, nz);                                                  \
+            CUDA_ERR(cudaStreamSynchronize(0));                                                                                                    \
             EndTiming(timing_idx);                                                                                                                 \
             CUDA_ERR(cudaPeekAtLastError());                                                                                                       \
             CUDA_ERR(cudaStreamSynchronize(0));                                                                                                    \
