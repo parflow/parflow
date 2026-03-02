@@ -165,7 +165,7 @@ void  PrintTiming()
     for (i = 0; i < (timing->size); i++)
     {
       amps_Fprintf(file, "%s:\n", (timing->name)[i]);
-      amps_Fprintf(file, "  wall clock time   = %f seconds\n",
+      amps_Fprintf(file, "  wall clock time   = %.17g seconds\n",
                    time_ticks[i] / AMPS_TICKS_PER_SEC);
       amps_Fprintf(file, "  wall MFLOPS = %f (%g)\n", mflops[i],
                    (timing->flops)[i]);
@@ -173,7 +173,7 @@ void  PrintTiming()
 #ifdef CPUTiming
       if (AMPS_CPU_TICKS_PER_SEC)
       {
-        amps_Fprintf(file, "  CPU  clock time   = %f seconds\n",
+        amps_Fprintf(file, "  CPU  clock time   = %.17g seconds\n",
                      cpu_ticks[i] / AMPS_CPU_TICKS_PER_SEC);
         if (cpu_ticks[i])
           amps_Fprintf(file, "  cpu  MFLOPS = %f (%g)\n",
@@ -196,7 +196,7 @@ void  PrintTiming()
     fprintf(file, "Timer,Time (s),MFLOPS (mops/s),FLOP (op),NumTimings\n");
     for (i = 0; i < (timing->size); i++)
     {
-      fprintf(file, "%s,%f,%f,%g,%d\n", timing->name[i],
+      fprintf(file, "%s,%.17g,%f,%g,%d\n", timing->name[i],
               time_ticks[i] / AMPS_TICKS_PER_SEC,
               mflops[i], (timing->flops)[i],
               num_timings[i]);
