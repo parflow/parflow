@@ -797,6 +797,7 @@ double PFVDotProd(
     BeginTiming(VDotProductTimingIndex);
     // TODO: ad-hoc solution to get accurate kernel timings
 #ifdef PARFLOW_HAVE_PYSTENCILS
+    if (nx > 0 && ny > 0 && nz > 0) {
     #ifdef PARFLOW_HAVE_CUDA
         double* reduction_writeback_ptr = (double*)_talloc_device(sizeof(double));
         MemPrefetchDeviceToHost_cuda(reduction_writeback_ptr, sizeof(double), 0);
@@ -807,20 +808,20 @@ double PFVDotProd(
         *reduction_writeback_ptr = 0.0;
     #endif
 
-#ifdef PARFLOW_HAVE_CUDA
-    CUDA_ERR(cudaStreamSynchronize(0));
-#endif
-    BeginTiming(VDotProductKernelTimingIndex);
-    PyCodegen_VDotProd(xp, yp,
+    #ifdef PARFLOW_HAVE_CUDA
+        CUDA_ERR(cudaStreamSynchronize(0));
+    #endif
+        BeginTiming(VDotProductKernelTimingIndex);
+        PyCodegen_VDotProd(xp, yp,
           nx, ny, nz,
           1, nx_x, nx_x * ny_x,
           1, nx_y, nx_y * ny_y,
           reduction_writeback_ptr
-    );
-#ifdef PARFLOW_HAVE_CUDA
-    CUDA_ERR(cudaStreamSynchronize(0));
-#endif
-    EndTiming(VDotProductKernelTimingIndex);
+        );
+    #ifdef PARFLOW_HAVE_CUDA
+        CUDA_ERR(cudaStreamSynchronize(0));
+    #endif
+        EndTiming(VDotProductKernelTimingIndex);
 
     #ifdef PARFLOW_HAVE_CUDA
         CUDA_ERR(cudaPeekAtLastError());
@@ -828,8 +829,9 @@ double PFVDotProd(
         MemPrefetchDeviceToHost_cuda(reduction_writeback_ptr, sizeof(double), 0);
     #endif
 
-    sum = *reduction_writeback_ptr;
-    tfree(reduction_writeback_ptr);
+        sum = *reduction_writeback_ptr;
+        tfree(reduction_writeback_ptr);
+    }
 #else
     i_x = 0;
     i_y = 0;
