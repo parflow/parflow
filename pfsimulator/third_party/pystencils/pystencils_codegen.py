@@ -115,6 +115,12 @@ def create_kernel_func(
             def _div_ceil(a, b):
                 return AugExpr(index_type).format("( {a} + {b} - 1 ) / {b}", a=a, b=b)
 
+            def _prod_list(l):
+                e = l[0]
+                for ll in l[1:]:
+                    e = AugExpr(index_type).format("( {a} * {b} )", a=e, b=ll)
+                return e
+
             def _uint_cast(a):
                 return AugExpr(index_type).format("{t} ( {a} )", t=index_type_c_str, a=a)
 
@@ -127,6 +133,7 @@ def create_kernel_func(
             # get manual block and grid sizes from user configuration
             default_bs = sfg.context.project_info.get("default_block_size")
             manual_gs = sfg.context.project_info.get("manual_grid_size")
+            indexing_scheme = sfg.context.project_info.get("gpu_indexing_scheme")
 
             # convert block/grid sizes to sfg expressions
             block_sizes = [AugExpr.format(str(bs)) for bs in default_bs]
@@ -134,7 +141,10 @@ def create_kernel_func(
 
             # get work items from kernel parameters and determine automatic grid size via ceiling divide
             work_items = [pw for pw in kernel.parameters if pw.wrapped.get_properties(FieldShape)]
-            automatic_grid_sizes = [_div_ceil(_uint_cast(wit), bs) for wit, bs in zip(work_items, default_bs)]
+            if indexing_scheme == "gridstrided_linear1d" or indexing_scheme == "linear1d":
+                automatic_grid_sizes = [_div_ceil(_uint_cast(_prod_list(work_items)), default_bs[0]), "1", "1"]
+            else:
+                automatic_grid_sizes = [_div_ceil(_uint_cast(wit), bs) for wit, bs in zip(work_items, default_bs)]
 
             # final grid size is minimum of automatic and manual grid sizes
             final_grid_sizes = [
