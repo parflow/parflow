@@ -297,8 +297,10 @@ var_dz_with_well.Solver.MaxIter = 2500
 
 var_dz_with_well.Solver.Nonlinear.MaxIter = 200
 var_dz_with_well.Solver.Nonlinear.ResidualTol = 1e-9
-var_dz_with_well.Solver.Nonlinear.EtaChoice = "Walker1"
-var_dz_with_well.Solver.Nonlinear.EtaValue = 1e-5
+var_dz_with_well.Solver.Nonlinear.EtaChoice = "EtaConstant"
+# Default EtaGamma yields differences between the embedded Kinsol and current external Sundials library.
+var_dz_with_well.Solver.Nonlinear.EtaGamma = 0.100000
+
 var_dz_with_well.Solver.Nonlinear.UseJacobian = True
 var_dz_with_well.Solver.Nonlinear.DerivativeEpsilon = 1e-10
 
