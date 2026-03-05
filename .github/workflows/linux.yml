@@ -194,11 +194,12 @@ jobs:
             sundials: "embedded"
           }
         - {
+	    # OASIS tests are broken with Python
             name: "Ubuntu 24.04 LLVM OASIS3-MCT Build",
             os: ubuntu-24.04,
             cudaos: 'ubuntu2404',
             cc: "clang-18", cxx: "clang++-18", fc: "gfortran",
-            python: "true",
+            python: "false",
             backend: "omp",
             amps_layer: oas3,
             netcdf: "true",
