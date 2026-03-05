@@ -47,7 +47,7 @@ extern "C++" {
  * --maxrregcount 64 compiler flag, but NVIDIA recommends specifying
  * this kernel-by-kernel basis by __launch_bounds__() identifier.
  */
-#define BLOCKSIZE_MAX 1024
+#define BLOCKSIZE_MAX 256
 
 /**
  * The blocksize for the x-dimension. This is is set to 32,
