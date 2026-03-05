@@ -135,7 +135,7 @@ if(${PARFLOW_HAVE_OAS3})
   set(TESTS "")
   set(PARALLEL_3DTOPO_TESTS "")
   set(PARALLEL_2DTOPO_TESTS "")
-  list(APPEND TESTS default_single.tcl)
+  list(APPEND TESTS default_single)
 endif()
 
 
