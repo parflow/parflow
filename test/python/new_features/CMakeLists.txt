@@ -32,6 +32,12 @@ if(${PARFLOW_HAVE_HYPRE})
     simple-mask)
 endif()
 
+if(${PARFLOW_HAVE_OAS3})
+  # Exclude tests that use Richards solver
+  set(TESTS "")
+endif()
+
+
 foreach(inputfile ${TESTS})
   pf_add_py_test(${inputfile})
 endforeach()
