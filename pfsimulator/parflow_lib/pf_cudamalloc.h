@@ -47,17 +47,37 @@
 #define tmemcpy_cuda(dest, src, bytes) \
         CUDA_ERR(cudaMemcpy(dest, src, bytes, cudaMemcpyDeviceToDevice))
 
-#define MemPrefetchDeviceToHost_cuda(ptr, size, stream)                       \
-        {                                                                     \
-          CUDA_ERR(cudaMemPrefetchAsync(ptr, size, cudaCpuDeviceId, stream)); \
-          CUDA_ERR(cudaStreamSynchronize(stream));                            \
+#if CUDART_VERSION >= 13000
+#define MemPrefetchDeviceToHost_cuda(ptr, size, stream)                        \
+        {                                                                      \
+          int deviceIndex;                                                     \
+          CUDA_ERR(cudaGetDevice(&deviceIndex));                               \
+          struct cudaMemLocation location = {};                                \
+          location.type = cudaMemLocationTypeHost;                             \
+          location.id = deviceIndex;                                           \
+          CUDA_ERR(cudaMemPrefetchAsync(ptr, size, location, 0, 0));           \
+          CUDA_ERR(cudaStreamSynchronize(stream));                             \
         }
-
-#define MemPrefetchHostToDevice_cuda(ptr, size, stream)                      \
-        {                                                                    \
-          int device;                                                        \
-          CUDA_ERR(cudaGetDevice(&device));                                  \
-          CUDA_ERR(cudaMemPrefetchAsync(ptr, size, device, stream))          \
+#define MemPrefetchHostToDevice_cuda(ptr, size, stream)                        \
+        {                                                                      \
+          int deviceIndex;                                                     \
+          CUDA_ERR(cudaGetDevice(&deviceIndex));                               \
+          struct cudaMemLocation location = {};                                \
+          location.type = cudaMemLocationTypeDevice;                           \
+          location.id = deviceIndex;                                           \
+          CUDA_ERR(cudaMemPrefetchAsync(ptr, size, location, 0, 0));           \
         }
-
+#else
+#define MemPrefetchDeviceToHost_cuda(ptr, size, stream)                        \
+        {                                                                      \
+          CUDA_ERR(cudaMemPrefetchAsync(ptr, size, cudaCpuDeviceId, stream));  \
+          CUDA_ERR(cudaStreamSynchronize(stream));                             \
+        }
+#define MemPrefetchHostToDevice_cuda(ptr, size, stream)                        \
+        {                                                                      \
+          int device;                                                          \
+          CUDA_ERR(cudaGetDevice(&device));                                    \
+          CUDA_ERR(cudaMemPrefetchAsync(ptr, size, device, stream));           \
+        }
+#endif
 #endif // PF_CUDAMALLOC_H
