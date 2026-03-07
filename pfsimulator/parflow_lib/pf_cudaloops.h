@@ -361,12 +361,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
           const int nx, const int ny, const int nz)
 {
   // Specialize BlockReduce for a 1D block of BLOCKSIZE_X * 1 * 1 threads on type T
-#ifdef __CUDA_ARCH__
   typedef cub::BlockReduce < T, BLOCKSIZE_MAX, cub::BLOCK_REDUCE_RAKING_COMMUTATIVE_ONLY, 1, 1 > BlockReduce;
-#else
-  typedef cub::BlockReduce < T, BLOCKSIZE_MAX, cub::BLOCK_REDUCE_RAKING_COMMUTATIVE_ONLY, 1, 1 > BlockReduce;
-#endif
-
   __shared__ typename BlockReduce::TempStorage temp_storage;
 
   const int idx = ((blockIdx.x * blockDim.x) + threadIdx.x);
