@@ -1990,6 +1990,7 @@ Solver:
         enum_list:
           - none
           - CLM
+          - CoLM
 
   MaxConvergenceFailures:
     help: >
