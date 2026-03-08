@@ -230,8 +230,12 @@ typedef struct {
   double clm_albedo_thaw_a;     /* VIC melt-phase decay base */
 
   /* Fractional snow covered area (frac_sno) options @RMM 2025 */
-  int clm_frac_sno_type;        /* frac_sno scheme: 0=CLM (default), others TBD */
-  double clm_frac_sno_roughness; /* roughness length for frac_sno [m], default=0.01 (zlnd) */
+  int clm_frac_sno_type;            /* frac_sno scheme: 0=CLM (default), 1=SZA-modulated */
+  double clm_frac_sno_roughness;    /* roughness length for frac_sno [m], default=0.01 (case 0) */
+  double clm_frac_sno_roughness_min; /* min roughness for SZA interp [m], default=1e-8 (case 1) */
+  double clm_frac_sno_roughness_max; /* max roughness for SZA interp [m], default=0.2 (case 1) */
+  double clm_frac_sno_gamma_sza;    /* SZA power-law exponent [-], default=4.0 (case 1) */
+  double clm_frac_sno_tau_sza;      /* EMA smoothing window [hours], default 72.0 */
 
   /* Snow age parameterization - VIS/NIR separation @RMM 2025 */
   double clm_snowage_tau0_vis;        /* VIS e-folding time [s] */
@@ -2841,6 +2845,10 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          public_xtra->clm_albedo_thaw_a,
                          public_xtra->clm_frac_sno_type,
                          public_xtra->clm_frac_sno_roughness,
+                         public_xtra->clm_frac_sno_roughness_min,
+                         public_xtra->clm_frac_sno_roughness_max,
+                         public_xtra->clm_frac_sno_gamma_sza,
+                         public_xtra->clm_frac_sno_tau_sza,
                          public_xtra->clm_snowage_tau0_vis,
                          public_xtra->clm_snowage_tau0_nir,
                          public_xtra->clm_snowage_grain_growth_vis,
@@ -5834,7 +5842,7 @@ SolverRichardsNewPublicXtra(char *name)
 
   /* @RMM 2025 Fractional snow covered area (frac_sno) options */
   NameArray frac_sno_switch_na;
-  frac_sno_switch_na = NA_NewNameArray("CLM");
+  frac_sno_switch_na = NA_NewNameArray("CLM SZA");
   sprintf(key, "%s.CLM.FracSnoScheme", name);
   switch_name = GetStringDefault(key, "CLM");
   switch_value = NA_NameToIndexExitOnError(frac_sno_switch_na, switch_name, key);
@@ -5843,6 +5851,12 @@ SolverRichardsNewPublicXtra(char *name)
     case 0:
     {
       public_xtra->clm_frac_sno_type = 0;
+      break;
+    }
+
+    case 1:
+    {
+      public_xtra->clm_frac_sno_type = 1;
       break;
     }
 
@@ -5855,6 +5869,18 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "%s.CLM.FracSnoRoughness", name);
   public_xtra->clm_frac_sno_roughness = GetDoubleDefault(key, 0.01);
+
+  sprintf(key, "%s.CLM.FracSnoRoughnessMin", name);
+  public_xtra->clm_frac_sno_roughness_min = GetDoubleDefault(key, 1e-8);
+
+  sprintf(key, "%s.CLM.FracSnoRoughnessMax", name);
+  public_xtra->clm_frac_sno_roughness_max = GetDoubleDefault(key, 0.2);
+
+  sprintf(key, "%s.CLM.FracSnoGammaSZA", name);
+  public_xtra->clm_frac_sno_gamma_sza = GetDoubleDefault(key, 4.0);
+
+  sprintf(key, "%s.CLM.FracSnoAvgWindow", name);
+  public_xtra->clm_frac_sno_tau_sza = GetDoubleDefault(key, 72.0);
 
   /* @RMM 2025 Snow age VIS/NIR separation parameters */
   sprintf(key, "%s.CLM.SnowAgeTau0Vis", name);

@@ -807,25 +807,80 @@ Solver:
       help: >
         [Type: string] Selects the fractional snow covered area (frac_sno) calculation method.
         CLM uses the standard formulation: frac_sno = snowdp / (10*roughness + snowdp).
-        Additional formulations may be added in future versions.
+        SZA interpolates the effective roughness between FracSnoRoughnessMin and
+        FracSnoRoughnessMax using w = coszen_avg^GammaSZA, creating an energy-driven
+        accumulation/melt asymmetry in fractional snow cover, naturally latitude-aware.
       default: CLM
       domains:
         EnumDomain:
           enum_list:
             - CLM
+            - SZA
         RequiresModule: CLM
 
     FracSnoRoughness:
       help: >
         [Type: double] Roughness length scale for fractional snow cover calculation [m].
-        Default 0.01 m matches CLM's zlnd parameter for backward compatibility.
-        Larger values reduce snow cover fraction for a given snow depth.
+        Used by FracSnoScheme CLM (case 0). Default 0.01 m matches CLM's zlnd
+        parameter for backward compatibility. Larger values reduce snow cover
+        fraction for a given snow depth.
         Formula: frac_sno = snowdp / (10*FracSnoRoughness + snowdp)
       default: 0.01
       domains:
         DoubleValue:
           min_value: 0.001
           max_value: 0.1
+        RequiresModule: CLM
+
+    FracSnoRoughnessMin:
+      help: >
+        [Type: double] Minimum effective roughness length for SZA-modulated
+        fractional snow cover [m]. Used by FracSnoScheme SZA (case 1).
+        The effective roughness interpolates between this value (at low sun)
+        and FracSnoRoughnessMax (at high sun) using coszen_avg^GammaSZA.
+      default: 1.0e-8
+      domains:
+        DoubleValue:
+          min_value: 0.0
+          max_value: 0.1
+        RequiresModule: CLM
+
+    FracSnoRoughnessMax:
+      help: >
+        [Type: double] Maximum effective roughness length for SZA-modulated
+        fractional snow cover [m]. Used by FracSnoScheme SZA (case 1).
+        The effective roughness interpolates between FracSnoRoughnessMin
+        (at low sun) and this value (at high sun) using coszen_avg^GammaSZA.
+      default: 0.2
+      domains:
+        DoubleValue:
+          min_value: 0.001
+          max_value: 1.0
+        RequiresModule: CLM
+
+    FracSnoGammaSZA:
+      help: >
+        [Type: double] Power-law exponent for the SZA interpolation weight
+        w = coszen_avg^GammaSZA in fractional snow cover when FracSnoScheme
+        is SZA. Higher values sharpen the transition between min and max
+        roughness. Dimensionless.
+      default: 4.0
+      domains:
+        DoubleValue:
+          min_value: 0.1
+          max_value: 20.0
+        RequiresModule: CLM
+
+    FracSnoAvgWindow:
+      help: >
+        [Type: double] Exponential moving average window for smoothed cos(SZA) [hours].
+        Used by FracSnoScheme SZA to prevent diurnal artifacts in fractional snow cover.
+        Typical range 48-96 hours.
+      default: 72.0
+      domains:
+        DoubleValue:
+          min_value: 1.0
+          max_value: 720.0
         RequiresModule: CLM
 
     # -----------------------------------------------------------------------------

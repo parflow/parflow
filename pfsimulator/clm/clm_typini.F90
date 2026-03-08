@@ -140,6 +140,7 @@ subroutine clm_typini (ntiles, clm, istep_pf)
      clm(k)%h2osoi_liq(:)      = NaN   ! liquid water (kg/m2)
      clm(k)%h2osoi_ice(:)      = NaN   ! ice lens (kg/m2)
      clm(k)%frac_sno           = NaN   ! fractional snow cover
+     clm(k)%coszen_avg         = 0.0d0 ! exponentially smoothed cos(SZA) for SZA frac_sno
      clm(k)%t_veg              = NaN   ! leaf temperature [K]
      clm(k)%h2ocan             = NaN   ! depth of water on foliage [kg/m2/s]
      clm(k)%snowage            = NaN   ! non dimensional snow age [-]
