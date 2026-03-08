@@ -6661,11 +6661,18 @@ by weighting snow and bare ground contributions. The CLM formulation uses
 a tanh-like relationship with snow depth and surface roughness.
 
 *string* **Solver.CLM.FracSnoScheme** CLM Selects the fractional snow cover
-calculation method. Currently only CLM is available; extensible for future
-formulations.
+calculation method.
 
 **CLM**:
-   Standard formulation: frac_sno = snowdp / (10*roughness + snowdp)
+   Standard formulation: frac_sno = snowdp / (10*roughness + snowdp),
+   using FracSnoRoughness as the roughness length.
+
+**SZA**:
+   SZA-modulated formulation that interpolates the effective roughness
+   between FracSnoRoughnessMin and FracSnoRoughnessMax using a power-law
+   weight w = coszen_avg^GammaSZA, creating a continuous energy-driven
+   accumulation/melt asymmetry in fractional snow cover. Naturally
+   latitude-aware.
 
 .. container:: list
 
@@ -6675,9 +6682,9 @@ formulations.
       <runname>.Solver.CLM.FracSnoScheme = "CLM"   ## Python syntax
 
 *double* **Solver.CLM.FracSnoRoughness** 0.01 Roughness length scale for
-fractional snow cover calculation [m]. Default 0.01 m matches CLM's zlnd
-parameter for backward compatibility. Larger values reduce snow cover
-fraction for a given snow depth.
+fractional snow cover calculation [m]. Used by FracSnoScheme=CLM (case 0).
+Default 0.01 m matches CLM's zlnd parameter for backward compatibility.
+Larger values reduce snow cover fraction for a given snow depth.
 
 .. container:: list
 
@@ -6685,6 +6692,53 @@ fraction for a given snow depth.
 
       pfset Solver.CLM.FracSnoRoughness 0.01         ## TCL syntax
       <runname>.Solver.CLM.FracSnoRoughness = 0.01   ## Python syntax
+
+*double* **Solver.CLM.FracSnoRoughnessMin** 1.0e-8 Minimum effective
+roughness length for SZA-modulated fractional snow cover [m]. Used by
+FracSnoScheme=SZA (case 1). At low sun angles (small coszen_avg), the
+effective roughness approaches this value, yielding higher frac_sno.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FracSnoRoughnessMin 1.0e-8       ## TCL syntax
+      <runname>.Solver.CLM.FracSnoRoughnessMin = 1.0e-8  ## Python syntax
+
+*double* **Solver.CLM.FracSnoRoughnessMax** 0.2 Maximum effective
+roughness length for SZA-modulated fractional snow cover [m]. Used by
+FracSnoScheme=SZA (case 1). At high sun angles (large coszen_avg), the
+effective roughness approaches this value, yielding lower frac_sno.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FracSnoRoughnessMax 0.2           ## TCL syntax
+      <runname>.Solver.CLM.FracSnoRoughnessMax = 0.2     ## Python syntax
+
+*double* **Solver.CLM.FracSnoGammaSZA** 4.0 Power-law exponent for the SZA
+interpolation weight w = coszen_avg^GammaSZA in fractional snow cover when
+FracSnoScheme=SZA. Higher values sharpen the transition between min and max
+roughness. Dimensionless.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FracSnoGammaSZA 4.0             ## TCL syntax
+      <runname>.Solver.CLM.FracSnoGammaSZA = 4.0       ## Python syntax
+
+*double* **Solver.CLM.FracSnoAvgWindow** 72.0 Exponential moving average
+window for smoothed cos(SZA) [hours]. Used by FracSnoScheme=SZA to prevent
+diurnal artifacts in fractional snow cover. Typical range 48-96 hours.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FracSnoAvgWindow 72.0           ## TCL syntax
+      <runname>.Solver.CLM.FracSnoAvgWindow = 72.0     ## Python syntax
 
 
 .. _ParFlow NetCDF4 Parallel I/O:

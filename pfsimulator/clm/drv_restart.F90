@@ -48,6 +48,7 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
 
   integer :: c,t,l,n       ! Loop counters
   integer :: found         ! Counting variable
+  integer :: ios           ! iostat for backward-compatible restart reads
 
   !=== Temporary tile space transfer files (different than in DRV_module)
 
@@ -65,6 +66,7 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
   real(r8), pointer :: h2ocan(:)      ! CLM Depth of Water on Foliage [mm]
 
   real(r8), pointer :: frac_sno(:)            ! CLM Fractional Snow Cover [-]
+  real(r8), pointer :: coszen_avg(:)          ! CLM Smoothed cos(SZA) for SZA frac_sno [-]
   real(r8), pointer :: elai(:)                ! CLM Leaf Area Index
   real(r8), pointer :: esai(:)                ! CLM Stem Area Index
 
@@ -95,6 +97,7 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
   real(r8) :: g_snowdp(drv%nc,drv%nr)         ! CLM Snow Depth [m] 
   real(r8) :: g_h2ocan(drv%nc,drv%nr)         ! CLM Depth of Water on Foliage [mm]
   real(r8) :: g_frac_sno(drv%nc,drv%nr)       ! CLM Fractional Snow Cover [-]
+  real(r8) :: g_coszen_avg(drv%nc,drv%nr)     ! CLM Smoothed cos(SZA) [-]
   real(r8) :: g_elai(drv%nc,drv%nr)           ! CLM Leaf + Stem Area Index
   real(r8) :: g_esai(drv%nc,drv%nr)           ! CLM Leaf + Stem Area Index
 
@@ -132,7 +135,7 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
 
      allocate (col(nch),row(nch),fgrd(nch),vegt(nch))
      allocate (t_grnd(nch),t_veg(nch),h2osno(nch),snowage(nch),         &
-          snowdp(nch),h2ocan(nch),frac_sno(nch))
+          snowdp(nch),h2ocan(nch),frac_sno(nch),coszen_avg(nch))
      allocate (elai(nch), esai(nch), snl(nch),xerr(nch),zerr(nch))
      allocate (dz(nch,-nlevsno+1:nlevsoi),        &
           z(nch,-nlevsno+1:nlevsoi),         &
@@ -200,6 +203,16 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
         enddo
      enddo
 
+     ! Read coszen_avg from end of file (added for SZA frac_sno)
+     ! Use iostat for backward compat with old restarts that lack this field
+     read(40, iostat=ios) coszen_avg
+     if (ios /= 0) then
+        coszen_avg(:) = 0.0d0
+        if (rank.eq.0) then
+           write(*,*) 'CLM Restart: coszen_avg not found, defaulting to 0.0'
+        endif
+     endif
+
      close(40)
      if(rank.eq.0)then
         write(*,*)'CLM Restart File Read: ',drv%rstf
@@ -255,6 +268,7 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
            call drv_t2gr(snowdp         ,g_snowdp         ,drv%nc,drv%nr,nch,fgrd,col,row)
            call drv_t2gr(h2ocan         ,g_h2ocan         ,drv%nc,drv%nr,nch,fgrd,col,row)
            call drv_t2gr(frac_sno       ,g_frac_sno       ,drv%nc,drv%nr,nch,fgrd,col,row)
+           call drv_t2gr(coszen_avg     ,g_coszen_avg     ,drv%nc,drv%nr,nch,fgrd,col,row)
            call drv_t2gr(elai           ,g_elai           ,drv%nc,drv%nr,nch,fgrd,col,row)
            call drv_t2gr(esai           ,g_esai           ,drv%nc,drv%nr,nch,fgrd,col,row)
 
@@ -305,6 +319,7 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
                     clm(t)%snowdp = snowdp(n)
                     clm(t)%h2ocan = h2ocan(n)
                     clm(t)%frac_sno = frac_sno(n)
+                    clm(t)%coszen_avg = coszen_avg(n)
                     clm(t)%elai = elai(n)
                     clm(t)%esai = esai(n)
 
@@ -340,6 +355,7 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
                  clm(t)%snowdp = g_snowdp(tile(t)%col,tile(t)%row)
                  clm(t)%h2ocan = g_h2ocan(tile(t)%col,tile(t)%row)
                  clm(t)%frac_sno = g_frac_sno(tile(t)%col,tile(t)%row)
+                 clm(t)%coszen_avg = g_coszen_avg(tile(t)%col,tile(t)%row)
                  clm(t)%elai = g_elai(tile(t)%col,tile(t)%row)
                  clm(t)%esai = g_esai(tile(t)%col,tile(t)%row)
                  do l = -nlevsno+1,nlevsoi
@@ -380,6 +396,7 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
                  clm(t)%snowdp = snowdp(t)
                  clm(t)%h2ocan = h2ocan(t)
                  clm(t)%frac_sno = frac_sno(t)
+                 clm(t)%coszen_avg = coszen_avg(t)
                  clm(t)%elai = elai(t)
                  clm(t)%esai = esai(t)
                  clm(t)%snl=snl(t)
@@ -514,8 +531,11 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
            do t = 1,drv%nch
               tmptileni(t) = clm(t)%h2osoi_ice(l)
            enddo
-           write(40) tmptileni     !CLM Average Ice Content [kg/m2] 
+           write(40) tmptileni     !CLM Average Ice Content [kg/m2]
         enddo
+
+        ! New fields appended at end for backward-compatible restarts
+        write(40) clm%coszen_avg            !CLM Smoothed cos(SZA) for SZA frac_sno [-]
 
         close(40)
 

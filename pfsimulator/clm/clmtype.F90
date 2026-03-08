@@ -285,8 +285,13 @@ module clmtype
      real(r8) :: albedo_thaw_a         ! VIC melt-phase decay base, default 0.82
 
 ! Fractional snow covered area (frac_sno) options @RMM 2025
-     integer  :: frac_sno_type         ! frac_sno scheme: 0=CLM (default), others TBD
-     real(r8) :: frac_sno_roughness    ! roughness length for frac_sno [m], default=zlnd
+     integer  :: frac_sno_type         ! frac_sno scheme: 0=CLM (default), 1=SZA-modulated
+     real(r8) :: frac_sno_roughness    ! roughness length for frac_sno [m], default=zlnd (case 0)
+     real(r8) :: frac_sno_roughness_min ! min roughness for SZA interp [m], default 1e-8 (case 1)
+     real(r8) :: frac_sno_roughness_max ! max roughness for SZA interp [m], default 0.2 (case 1)
+     real(r8) :: frac_sno_gamma_sza    ! SZA power-law exponent [-], default 4.0
+     real(r8) :: frac_sno_tau_sza      ! EMA smoothing window [hours], default 72.0
+     real(r8) :: coszen_avg            ! exponentially smoothed cos(SZA) for frac_sno [-]
 
      real(r8) :: eflx_snomelt   ! added to be consistent with lsm hybrid code
      real(r8) :: eflx_impsoil   ! implicit evaporation for soil temperature equation (W/m**2)
