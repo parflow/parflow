@@ -152,16 +152,16 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
     {
       if (stride == 1)
       {
-        #if CUDART_VERSION >= 13000
+#if CUDART_VERSION >= 13000
         int deviceIndex;
         CUDA_ERRCHK(cudaGetDevice(&deviceIndex));
         struct cudaMemLocation location = {};
         location.type = cudaMemLocationTypeDevice;
         location.id = deviceIndex;
         CUDA_ERRCHK(cudaMemPrefetchAsync(data, (size_t)len * element_size, location, 0, 0));
-        #else
+#else
         CUDA_ERRCHK(cudaMemPrefetchAsync(data, (size_t)len * element_size, cudaCpuDeviceId, 0));
-        #endif
+#endif
       }
       else
       {
@@ -170,16 +170,16 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
              ptr_src += stride * element_size)
 
         {
-            #if CUDART_VERSION >= 13000
+#if CUDART_VERSION >= 13000
           int deviceIndex;
           CUDA_ERRCHK(cudaGetDevice(&deviceIndex));
           struct cudaMemLocation location = {};
           location.type = cudaMemLocationTypeDevice;
           location.id = deviceIndex;
           CUDA_ERRCHK(cudaMemPrefetchAsync(ptr_src, (size_t)len * element_size, location, 0, 0));
-          #else
+#else
           CUDA_ERRCHK(cudaMemPrefetchAsync(ptr_src, (size_t)element_size, cudaCpuDeviceId, 0));
-          #endif
+#endif
         }
 
         CUDA_ERRCHK(cudaStreamSynchronize(0));
