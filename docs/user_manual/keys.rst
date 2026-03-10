@@ -6793,7 +6793,7 @@ Larger values reduce snow cover fraction for a given snow depth.
 
 *double* **Solver.CLM.FracSnoRoughnessMin** 1.0e-8 Minimum effective
 roughness length for SZA-modulated fractional snow cover [m]. Used by
-FracSnoScheme=SZA (case 1). At low sun angles (small coszen_avg), the
+FracSnoScheme=SZA. At low sun angles (small coszen_avg), the
 effective roughness approaches this value, yielding higher frac_sno.
 
 .. container:: list
@@ -6805,7 +6805,7 @@ effective roughness approaches this value, yielding higher frac_sno.
 
 *double* **Solver.CLM.FracSnoRoughnessMax** 0.2 Maximum effective
 roughness length for SZA-modulated fractional snow cover [m]. Used by
-FracSnoScheme=SZA (case 1). At high sun angles (large coszen_avg), the
+FracSnoScheme=SZA. At high sun angles (large coszen_avg), the
 effective roughness approaches this value, yielding lower frac_sno.
 
 .. container:: list
