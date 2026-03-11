@@ -17,7 +17,8 @@ dai_apf,dai_bpf,dai_cpf,dai_dpf,jennings_apf,jennings_bpf,jennings_gpf,         
 sza_snow_dampingpf,sza_damping_coszen_refpf,sza_damping_coszen_minpf,                                 &
 albedo_schemepf,albedo_vis_newpf,albedo_nir_newpf,albedo_minpf,                                        &
 albedo_decay_vispf,albedo_decay_nirpf,albedo_accum_apf,albedo_thaw_apf,                               &
-frac_sno_typepf,frac_sno_roughnesspf,                                                               &
+frac_sno_typepf,frac_sno_roughnesspf,frac_sno_roughness_minpf,frac_sno_roughness_maxpf,        &
+frac_sno_gamma_szapf,frac_sno_tau_szapf,                                                          &
 snowage_tau0_vispf,snowage_tau0_nirpf,snowage_grain_growth_vispf,snowage_grain_growth_nirpf,        &
 snowage_dirt_soot_vispf,snowage_dirt_soot_nirpf,snowage_reset_factorpf)
 
@@ -189,8 +190,12 @@ snowage_dirt_soot_vispf,snowage_dirt_soot_nirpf,snowage_reset_factorpf)
   real(r8) :: albedo_thaw_apf                    ! VIC melt-phase decay base
 
   ! frac_sno parameterization keys @RMM 2025
-  integer  :: frac_sno_typepf                    ! frac_sno scheme: 0=CLM (default), others TBD
-  real(r8) :: frac_sno_roughnesspf               ! roughness length for frac_sno [m]
+  integer  :: frac_sno_typepf                    ! frac_sno scheme: 0=CLM (default), 1=SZA
+  real(r8) :: frac_sno_roughnesspf               ! roughness length for frac_sno [m] (case 0)
+  real(r8) :: frac_sno_roughness_minpf           ! min roughness for SZA interp [m] (case 1)
+  real(r8) :: frac_sno_roughness_maxpf           ! max roughness for SZA interp [m] (case 1)
+  real(r8) :: frac_sno_gamma_szapf               ! SZA power-law exponent [-] (case 1)
+  real(r8) :: frac_sno_tau_szapf                 ! EMA smoothing window [hours]
 
   ! snow age VIS/NIR separation keys @RMM 2025
   real(r8) :: snowage_tau0_vispf                 ! VIS e-folding time [s]
@@ -577,6 +582,10 @@ snowage_dirt_soot_vispf,snowage_dirt_soot_nirpf,snowage_reset_factorpf)
            ! for frac_sno parameterization @RMM 2025
            clm(t)%frac_sno_type        = frac_sno_typepf
            clm(t)%frac_sno_roughness   = frac_sno_roughnesspf
+           clm(t)%frac_sno_roughness_min = frac_sno_roughness_minpf
+           clm(t)%frac_sno_roughness_max = frac_sno_roughness_maxpf
+           clm(t)%frac_sno_gamma_sza   = frac_sno_gamma_szapf
+           clm(t)%frac_sno_tau_sza     = frac_sno_tau_szapf
 
            ! for snow age VIS/NIR separation @RMM 2025
            clm(t)%snowage_tau0_vis        = snowage_tau0_vispf
