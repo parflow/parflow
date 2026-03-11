@@ -131,6 +131,15 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
 
 endif()
 
+if(${PARFLOW_HAVE_OAS3})
+  # Exclude tests that use Richards solver
+  set(TESTS "")
+  set(PARALLEL_3DTOPO_TESTS "")
+  set(PARALLEL_2DTOPO_TESTS "")
+  list(APPEND TESTS default_single)
+endif()
+
+
 foreach(inputfile ${TESTS})
   pf_add_py_test(${inputfile})
 endforeach()
