@@ -307,7 +307,6 @@ var_dz_with_well.Solver.Nonlinear.DerivativeEpsilon = 1e-10
 var_dz_with_well.Solver.Linear.KrylovDimension = 10
 
 var_dz_with_well.Solver.Linear.Preconditioner = "MGSemi"
-var_dz_with_well.Solver.Linear.Preconditioner = "PFMG"
 var_dz_with_well.Solver.Linear.Preconditioner.MGSemi.MaxIter = 1
 var_dz_with_well.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 10
 
@@ -553,8 +552,8 @@ if not passed:
 all_tests_passed = all_tests_passed and passed
 
 
-if passed:
-    print("vardz_with_well : PASSED")
+if all_tests_passed:
+    print("var_dz_with_well : PASSED")
 else:
-    print("vardz_with_well : FAILED")
+    print("var_dz_with_well : FAILED")
     sys.exit(1)
