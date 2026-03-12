@@ -486,21 +486,13 @@ var_dz_with_well.Cell._12.dzScale.Value = 1
 var_dz_with_well.Cell._13.dzScale.Value = 1
 
 subtest = 4
-new_output_dir_name = base_new_output_dir + "/multi_column_1"
-
-mkdir(new_output_dir_name)
-var_dz_with_well.run(working_directory=new_output_dir_name)
-
-new_pressure_file = f"{new_output_dir_name}/{pressure_file}"
 correct_pressure_file = (
     f"{correct_output_dir_name}/var_dz_with_well_multi_column.out.press.00010.pfb"
 )
-
-if not pf_test_file(
-    new_pressure_file, correct_pressure_file, f"Max difference in {new_pressure_file}"
+if not run_check_output(
+    var_dz_with_well, base_new_output_dir, subtest, correct_pressure_file
 ):
     passed = False
-    print(f"var_dz_with_well subtest {subtest}: FAILED")
 
 var_dz_with_well.ComputationalGrid.DZ = 10.0
 var_dz_with_well.Geom.domain.Upper.Z = 140.0
@@ -521,21 +513,13 @@ var_dz_with_well.Cell._12.dzScale.Value = 0.1
 var_dz_with_well.Cell._13.dzScale.Value = 0.1
 
 subtest = 5
-new_output_dir_name = base_new_output_dir + "/multi_column_2"
-
-mkdir(new_output_dir_name)
-var_dz_with_well.run(working_directory=new_output_dir_name)
-
-new_pressure_file = f"{new_output_dir_name}/{pressure_file}"
 correct_pressure_file = (
     f"{correct_output_dir_name}/var_dz_with_well_multi_column.out.press.00010.pfb"
 )
-
-if not pf_test_file(
-    new_pressure_file, correct_pressure_file, f"Max difference in {new_pressure_file}"
+if not run_check_output(
+    var_dz_with_well, base_new_output_dir, subtest, correct_pressure_file
 ):
     passed = False
-    print(f"var_dz_with_well subtest {subtest}: FAILED")
 
 var_dz_with_well.ComputationalGrid.DZ = 0.1
 var_dz_with_well.Geom.domain.Upper.Z = 1.4
@@ -555,39 +539,24 @@ var_dz_with_well.Cell._12.dzScale.Value = 10
 var_dz_with_well.Cell._13.dzScale.Value = 10
 
 subtest = 6
-new_output_dir_name = base_new_output_dir + "/multi_column_3"
-
-mkdir(new_output_dir_name)
-var_dz_with_well.run(working_directory=new_output_dir_name)
-
-new_pressure_file = f"{new_output_dir_name}/{pressure_file}"
 correct_pressure_file = (
     f"{correct_output_dir_name}/var_dz_with_well_multi_column.out.press.00010.pfb"
 )
-
-if not pf_test_file(
-    new_pressure_file, correct_pressure_file, f"Max difference in {new_pressure_file}"
+if not run_check_output(
+    var_dz_with_well, base_new_output_dir, subtest, correct_pressure_file
 ):
     passed = False
-    print(f"var_dz_with_well subtest {subtest}: FAILED")
 
 # Here we test if we turn off the correction for variable dz produces uncorrect output
 var_dz_with_well.Wells.CorrectForVarDz = False
 
 subtest = 7
-new_output_dir_name = base_new_output_dir + "/multi_column_4"
-
-mkdir(new_output_dir_name)
-var_dz_with_well.run(working_directory=new_output_dir_name)
-
-new_pressure_file = f"{new_output_dir_name}/{pressure_file}"
 correct_pressure_file = f"{correct_output_dir_name}/var_dz_with_well_multi_column_no_correction.out.press.00010.pfb"
 
-if not pf_test_file(
-    new_pressure_file, correct_pressure_file, f"Max difference in {new_pressure_file}"
+if not run_check_output(
+    var_dz_with_well, base_new_output_dir, subtest, correct_pressure_file
 ):
     passed = False
-    print(f"var_dz_with_well subtest {subtest}: FAILED")
 
 if passed:
     print("var_dz_with_well : PASSED")

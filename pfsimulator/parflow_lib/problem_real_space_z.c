@@ -267,7 +267,7 @@ int  realSpaceZSizeOfTempData()
  *
  * This function takes a real space z and calculates the index space z. It will always return a value
  * if the real space z value lives on the real domain, even if it does not live on this rank.
- * 
+ *
  * This function does a reduction communication and must be called on all ranks.
  *
  * @param real_space_z The real space z
