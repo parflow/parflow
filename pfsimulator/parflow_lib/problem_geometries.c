@@ -42,12 +42,6 @@
  * Structures
  *--------------------------------------------------------------------------*/
 
-enum file_type
-{
-  PFBinary, /* binary file in Parflow format */
-  NCFile     /* NetCDF file in Parflow format */
-};
-
 typedef struct indicator_data {
   int num_indicators;                       // Number of indicators for the given solid
   int                     *indicators;  //pointer to dynamic object
