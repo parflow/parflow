@@ -912,7 +912,7 @@ PFModule  *WellPackageNewPublicXtra(
 
   char key[IDB_MAX_KEY_LEN];
 
-  char *name;  
+  char *name;
   char *switch_name;
   int switch_value;
 
