@@ -905,7 +905,6 @@ PFModule  *WellPackageNewPublicXtra(
   int num_cycles;
   int global_cycle;
 
-  int correct_for_var_dz;
   char *well_names;
   char *well_name;
 
@@ -913,11 +912,14 @@ PFModule  *WellPackageNewPublicXtra(
 
   char key[IDB_MAX_KEY_LEN];
 
+  char *name;  
   char *switch_name;
+  int switch_value;
 
   int phase;
   int contaminant;
 
+  NameArray switch_na;
   NameArray inputtype_na;
   NameArray action_na;
   NameArray mechanism_na;
@@ -936,8 +938,13 @@ PFModule  *WellPackageNewPublicXtra(
   (public_xtra->num_phases) = num_phases;
   (public_xtra->num_contaminants) = num_contaminants;
 
-  correct_for_var_dz = GetIntDefault("Wells.CorrectForVarDz", 0);
-  public_xtra->correct_for_var_dz = correct_for_var_dz;
+  name = "Wells.CorrectForVarDz";
+  switch_na = NA_NewNameArray("False True");
+  switch_name = GetStringDefault(name, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, name);
+  NA_FreeNameArray(switch_na);
+
+  public_xtra->correct_for_var_dz = switch_value;
 
   char* EMPTY_NAMES_LIST = "";
   well_names = GetStringDefault("Wells.Names", EMPTY_NAMES_LIST);

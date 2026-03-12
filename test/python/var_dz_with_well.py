@@ -330,7 +330,7 @@ var_dz_with_well.Solver.Linear.Preconditioner.MGSemi.MaxIter = 1
 var_dz_with_well.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 10
 
 var_dz_with_well.Wells.Names = "pressure_well"
-var_dz_with_well.Wells.CorrectForVarDz = 1
+var_dz_with_well.Wells.CorrectForVarDz = True
 var_dz_with_well.Wells.pressure_well.InputType = "Vertical"
 var_dz_with_well.Wells.pressure_well.Action = "Extraction"
 var_dz_with_well.Wells.pressure_well.Type = "Pressure"
@@ -554,7 +554,7 @@ if not pf_test_file(
     print(f"var_dz_with_well subtest {subtest}: FAILED")
 
 # Here we test if we turn off the correction for variable dz produces uncorrect output
-var_dz_with_well.Wells.CorrectForVarDz = 0
+var_dz_with_well.Wells.CorrectForVarDz = False
 
 subtest=7
 new_output_dir_name = base_new_output_dir + "/multi_column_4"
