@@ -27,7 +27,6 @@
 **********************************************************************EHEADER*/
 
 #include "parflow.h"
-//#include "grid_utilities.c"
 
 #include <string.h>
 #include <stdbool.h>
@@ -38,9 +37,6 @@
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
-
-
-
 
 typedef struct {
   int num_phases;
@@ -62,7 +58,7 @@ typedef struct {
   int      **intervals;
   int       *repeat_counts;
 
-  int correct_for_var_dz;
+  bool correct_for_var_dz;
   NameArray well_names;
 } PublicXtra;
 
@@ -97,8 +93,6 @@ typedef struct {
   double **phase_values_inj;
   double **contaminant_fractions;
 } Type1;                      /* basic vertical well, recirculating */
-
-
 
 /*--------------------------------------------------------------------------
  * WellPackage
@@ -225,7 +219,6 @@ void         WellPackage(
 
           process = amps_Rank(amps_CommWorld);
 #ifdef PARFLOW_HAVE_MPI
-//          // here I am making the assumption that indices need to be positive so we can use amps_max
           amps_Invoice well_properties_invoice = amps_NewInvoice("%d", &subgrid_volume);
           amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Max);
           amps_FreeInvoice(well_properties_invoice);
@@ -250,8 +243,8 @@ void         WellPackage(
             subgrid_volume = nx * ny * nz * dx * dy * dz;
           }
 
-//It would be nice to do only one reduce but we need to result of the reduce above to create the grid we
-// calculate the volume for this reduce from
+          // It would be nice to do only one reduce but we need to result of the reduce above to create the grid we
+          // calculate the volume for this reduce from
 #ifdef PARFLOW_HAVE_MPI
           well_properties_invoice = amps_NewInvoice("%d", &subgrid_volume);
           amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Max);

@@ -28,10 +28,9 @@
 
 #include "parflow.h"
 
-#include <string.h>
-
 #include "seepage.h"
 
+#include <string.h>
 
 /**
  * @brief Populate Seepage patch information from input database

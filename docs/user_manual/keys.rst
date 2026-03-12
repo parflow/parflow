@@ -4004,7 +4004,6 @@ manually.
 
       Wells.CorrectForVarDz "True"
 
-
 *string* **Wells.\ *well_name*.InputType** no default This key specifies
 the type of well to be defined for the given well, *well_name*. This key
 can be either **Vertical** or **Recirc**. The value **Vertical**

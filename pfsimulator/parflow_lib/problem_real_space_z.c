@@ -263,15 +263,18 @@ int  realSpaceZSizeOfTempData()
   return 0;
 }
 
-/** @brief This will calculate index space z given a z in real space
+/** @brief Calculate index space z given a z in real space.
+ *
+ * This function takes a real space z and calculates the index space z. It will always return a value
+ * if the real space z value lives on the real domain, even if it does not live on this rank.
+ * 
+ * This function does a reduction communication and must be called on all ranks.
  *
  * @param real_space_z The real space z
- * @param problem_data Expects the general problem data instance
+ * @param problem_data Problem data instance
  *
  * @return The index space calculated
  */
-//This function takes a real space z and calculates the index space z. It will always return a value
-//IF the real z lives on the real domain, even if it does not live on this rank
 int CalculateIndexSpaceZ(double real_space_z, ProblemData* problem_data)
 {
   Grid           *grid = VectorGrid(problem_data->rsz);
@@ -282,7 +285,7 @@ int CalculateIndexSpaceZ(double real_space_z, ProblemData* problem_data)
   GrGeomSolid *gr_domain = problem_data->gr_domain;
   bool found_index_space_z = false;
 
-//We need this number to always be larger than the number of z indices, hence the choice of INT_MAX
+  //We need this number to always be larger than the number of z indices, hence the choice of INT_MAX
   index_space_z = INT_MAX;
   ForSubgridI(subgrid_index, subgrids)
   {
@@ -322,11 +325,11 @@ int CalculateIndexSpaceZ(double real_space_z, ProblemData* problem_data)
   //Right now doing this reduction is needed to avoid seg faults later but if someone knows a
   //good default value to return that might be possible. Tried with -1 and checking for that but
   //ended up needing a reduction later anyways
-  #ifdef PARFLOW_HAVE_MPI
+#ifdef PARFLOW_HAVE_MPI
   amps_Invoice index_space_z_invoice = amps_NewInvoice("%i", &index_space_z);
   amps_AllReduce(amps_CommWorld, index_space_z_invoice, amps_Min);
   amps_FreeInvoice(index_space_z_invoice);
-  #endif
+#endif
   return index_space_z;
 }
 
