@@ -7,7 +7,26 @@ from parflow.tools.fs import mkdir, get_absolute_path
 import numpy as np
 import sys
 import parflow as pf
+from parflow.tools.compare import pf_test_file
 
+def run_check_output(runner, base_new_output_dir, subtest, correct_pressure_file):
+    pressure_file = "var_dz_with_well.out.press.00010.pfb"
+    
+    new_output_dir_name = base_new_output_dir + f"/var_dz_with_well_{subtest}"
+
+    mkdir(new_output_dir_name)
+    runner.run(working_directory=new_output_dir_name)
+
+    new_pressure_file=f"{new_output_dir_name}/{pressure_file}"
+
+    if not pf_test_file(
+            new_pressure_file,
+            correct_pressure_file,
+            f"Max difference in {new_pressure_file}"):
+        print(f"var_dz_with_well subtest {subtest}: FAILED")
+        return False
+
+    return True
 
 var_dz_with_well = pf.Run("var_dz_with_well", __file__)
 
@@ -328,33 +347,26 @@ var_dz_with_well.Wells.pressure_well.alltime.Saturation.water.Value = 1.0
 # Run and do tests
 # -----------------------------------------------------------------------------
 
+base_new_output_dir=get_absolute_path("test_output")
+
 # For our tests we will be comparing the pressure field at the 10th timestep
 # We use np.allclose to compare instead of np.equals because changing the var
 # dz causes tiny differences from floating point arithmatic. These changes make
 # total sense and are unavoidable.
 
-
+passed = True
 pressure_file = "var_dz_with_well.out.press.00010.pfb"
+    
+correct_output_dir_name = get_absolute_path("../correct_output")
+
 # base case single column
-dir_name = get_absolute_path("test_output/single_column_1")
-mkdir(dir_name)
-var_dz_with_well.run(working_directory=dir_name)
+subtest=1
+correct_pressure_file = f"{correct_output_dir_name}/var_dz_with_well_single_column.out.press.00010.pfb"
 
-test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-
-correct_pressure_file = (
-    "$PF_SRC/test/correct_output/var_dz_with_well_single_column.out.press.00010.pfb"
-)
-correct_pressure = pf.read_pfb(get_absolute_path(correct_pressure_file))
-
-passed = np.allclose(test_case_pressure, correct_pressure)
-if not passed:
-    print("var_dz_with_well subtest 1: FAILED")
+if not run_check_output(var_dz_with_well, base_new_output_dir, subtest, correct_pressure_file):
+    passed = False
 
 # single column test 1
-dir_name = get_absolute_path("test_output/single_column_2")
-mkdir(dir_name)
-
 var_dz_with_well.ComputationalGrid.DZ = 10.0
 var_dz_with_well.Geom.domain.Upper.Z = 140.0
 var_dz_with_well.dzScale.nzListNumber = 14
@@ -373,20 +385,13 @@ var_dz_with_well.Cell._11.dzScale.Value = 0.1
 var_dz_with_well.Cell._12.dzScale.Value = 0.1
 var_dz_with_well.Cell._13.dzScale.Value = 0.1
 
-var_dz_with_well.run(working_directory=dir_name)
+subtest=2
+correct_pressure_file = f"{correct_output_dir_name}/var_dz_with_well_single_column.out.press.00010.pfb"
 
-all_tests_passed = True
-test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-passed = np.allclose(correct_pressure, test_case_pressure)
-if not passed:
-    print("var_dz_with_well subtest 2: FAILED")
-
-all_tests_passed = all_tests_passed and passed
+if not run_check_output(var_dz_with_well, base_new_output_dir, subtest, correct_pressure_file):
+    passed = False
 
 # single column test 2
-dir_name = get_absolute_path("test_output/single_column_3")
-mkdir(dir_name)
-
 var_dz_with_well.ComputationalGrid.DZ = 0.1
 var_dz_with_well.Geom.domain.Upper.Z = 1.4
 var_dz_with_well.Cell._0.dzScale.Value = 10
@@ -404,24 +409,21 @@ var_dz_with_well.Cell._11.dzScale.Value = 10
 var_dz_with_well.Cell._12.dzScale.Value = 10
 var_dz_with_well.Cell._13.dzScale.Value = 10
 
-var_dz_with_well.run(working_directory=dir_name)
+subtest=3
+correct_pressure_file = f"{correct_output_dir_name}/var_dz_with_well_single_column.out.press.00010.pfb"
 
-test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-passed = np.allclose(correct_pressure, test_case_pressure)
-if not passed:
-    print("var_dz_with_well subtest 3: FAILED")
-
-all_tests_passed = all_tests_passed and passed
+if not run_check_output(var_dz_with_well, base_new_output_dir, subtest, correct_pressure_file):
+    passed = False
 
 # Next we switch to a multicolumn setup and add a flux well in to make sure this works for both types
 # of wells
+
 var_dz_with_well.ComputationalGrid.NX = 2
 var_dz_with_well.ComputationalGrid.NY = 2
 var_dz_with_well.Process.Topology.P = 2
 var_dz_with_well.Process.Topology.Q = 2
 var_dz_with_well.Geom.domain.Upper.X = 2.0
 var_dz_with_well.Geom.domain.Upper.Y = 2.0
-
 
 var_dz_with_well.Wells.Names = "pressure_well flux_well"
 
@@ -448,10 +450,7 @@ var_dz_with_well.Wells.flux_well.ZUpper = 10.5
 var_dz_with_well.Wells.flux_well.Method = "Standard"
 var_dz_with_well.Wells.flux_well.alltime.Flux.water.Value = 7.5
 
-
 # Multi column  base case
-dir_name = get_absolute_path("test_output/multi_column_1")
-mkdir(dir_name)
 
 var_dz_with_well.ComputationalGrid.DZ = 1.0
 var_dz_with_well.Geom.domain.Upper.Z = 14.0
@@ -471,20 +470,21 @@ var_dz_with_well.Cell._11.dzScale.Value = 1
 var_dz_with_well.Cell._12.dzScale.Value = 1
 var_dz_with_well.Cell._13.dzScale.Value = 1
 
-var_dz_with_well.run(working_directory=dir_name)
-correct_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
+subtest=4
+new_output_dir_name = base_new_output_dir + "/multi_column_1"
 
-correct_pressure_file = (
-    "$PF_SRC/test/correct_output/var_dz_with_well_multi_column.out.press.00010.pfb"
-)
-correct_pressure = pf.read_pfb(get_absolute_path(correct_pressure_file))
+mkdir(new_output_dir_name)
+var_dz_with_well.run(working_directory=new_output_dir_name)
 
-passed = np.allclose(correct_pressure, test_case_pressure)
-if not passed:
-    print("var_dz_with_well subtest 4: FAILED")
+new_pressure_file=f"{new_output_dir_name}/{pressure_file}"
+correct_pressure_file = f"{correct_output_dir_name}/var_dz_with_well_multi_column.out.press.00010.pfb"
 
-dir_name = get_absolute_path("test_output/multi_column_2")
-mkdir(dir_name)
+if not pf_test_file(
+        new_pressure_file,
+        correct_pressure_file,
+        f"Max difference in {new_pressure_file}"):
+    passed = False
+    print(f"var_dz_with_well subtest {subtest}: FAILED")
 
 var_dz_with_well.ComputationalGrid.DZ = 10.0
 var_dz_with_well.Geom.domain.Upper.Z = 140.0
@@ -504,16 +504,21 @@ var_dz_with_well.Cell._11.dzScale.Value = 0.1
 var_dz_with_well.Cell._12.dzScale.Value = 0.1
 var_dz_with_well.Cell._13.dzScale.Value = 0.1
 
-var_dz_with_well.run(working_directory=dir_name)
+subtest=5
+new_output_dir_name = base_new_output_dir + "/multi_column_2"
 
-test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-passed = np.allclose(correct_pressure, test_case_pressure)
-if not passed:
-    print("var_dz_with_well subtest 5: FAILED")
+mkdir(new_output_dir_name)
+var_dz_with_well.run(working_directory=new_output_dir_name)
 
-all_tests_passed = all_tests_passed and passed
-dir_name = get_absolute_path("test_output/multi_column_3")
-mkdir(dir_name)
+new_pressure_file=f"{new_output_dir_name}/{pressure_file}"
+correct_pressure_file = f"{correct_output_dir_name}/var_dz_with_well_multi_column.out.press.00010.pfb"
+
+if not pf_test_file(
+        new_pressure_file,
+        correct_pressure_file,
+        f"Max difference in {new_pressure_file}"):
+    passed = False
+    print(f"var_dz_with_well subtest {subtest}: FAILED")
 
 var_dz_with_well.ComputationalGrid.DZ = 0.1
 var_dz_with_well.Geom.domain.Upper.Z = 1.4
@@ -532,27 +537,42 @@ var_dz_with_well.Cell._11.dzScale.Value = 10
 var_dz_with_well.Cell._12.dzScale.Value = 10
 var_dz_with_well.Cell._13.dzScale.Value = 10
 
-var_dz_with_well.run(working_directory=dir_name)
+subtest=6
+new_output_dir_name = base_new_output_dir + "/multi_column_3"
 
-test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-passed = np.allclose(correct_pressure, test_case_pressure)
+mkdir(new_output_dir_name)
+var_dz_with_well.run(working_directory=new_output_dir_name)
 
-# Here we test if we turn off the correction for variable dz that the outputs no longer match
-dir_name = get_absolute_path("test_output/multi_column_4")
-mkdir(dir_name)
+new_pressure_file=f"{new_output_dir_name}/{pressure_file}"
+correct_pressure_file = f"{correct_output_dir_name}/var_dz_with_well_multi_column.out.press.00010.pfb"
 
+if not pf_test_file(
+        new_pressure_file,
+        correct_pressure_file,
+        f"Max difference in {new_pressure_file}"):
+    passed = False
+    print(f"var_dz_with_well subtest {subtest}: FAILED")
+
+# Here we test if we turn off the correction for variable dz produces uncorrect output
 var_dz_with_well.Wells.CorrectForVarDz = 0
 
-var_dz_with_well.run(working_directory=dir_name)
+subtest=7
+new_output_dir_name = base_new_output_dir + "/multi_column_4"
 
-test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-passed = not np.allclose(correct_pressure, test_case_pressure)
-if not passed:
-    print("var_dz_with_well subtest 6: FAILED")
-all_tests_passed = all_tests_passed and passed
+mkdir(new_output_dir_name)
+var_dz_with_well.run(working_directory=new_output_dir_name)
 
+new_pressure_file=f"{new_output_dir_name}/{pressure_file}"
+correct_pressure_file = f"{correct_output_dir_name}/var_dz_with_well_multi_column_no_correction.out.press.00010.pfb"
 
-if all_tests_passed:
+if not pf_test_file(
+        new_pressure_file,
+        correct_pressure_file,
+        f"Max difference in {new_pressure_file}"):
+    passed = False
+    print(f"var_dz_with_well subtest {subtest}: FAILED")
+
+if passed:
     print("var_dz_with_well : PASSED")
 else:
     print("var_dz_with_well : FAILED")
