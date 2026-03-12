@@ -323,7 +323,6 @@ ifield.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 100
 # Run and Unload the ParFlow output files
 # -----------------------------------------------------------------------------
 
-ifield.dist(dir_name + "/small_domain_indicator_field.nc")
 correct_output_dir_name = get_absolute_path("../correct_output")
 ifield.run(working_directory=dir_name)
 
