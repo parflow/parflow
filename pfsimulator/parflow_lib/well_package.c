@@ -573,17 +573,22 @@ void         WellPackage(
               {
                 subgrid_volume = CalculateLocalSubgridVolume(new_subgrid, problem_data);
               }
+	      else
+	      {
+		subgrid_volume = 0.0;
+	      }
+
+#ifdef PARFLOW_HAVE_MPI
+	      // Multiple ranks may intersect the well subgrid; sum local subgrid volumes across ranks
+	      amps_Invoice well_properties_invoice = amps_NewInvoice("%d", &subgrid_volume);
+	      amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Add);
+	      amps_FreeInvoice(well_properties_invoice);
+#endif
             }
             else
             {
               subgrid_volume = nx * ny * nz * dx * dy * dz;
             }
-#ifdef PARFLOW_HAVE_MPI
-            // here I am making the assumption that indices need to be positive so we can use amps_max
-            amps_Invoice well_properties_invoice = amps_NewInvoice("%d", &subgrid_volume);
-            amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Max);
-            amps_FreeInvoice(well_properties_invoice);
-#endif
             if (mechanism == PRESSURE_WELL)
             {
               /* Put in physical data for this well */

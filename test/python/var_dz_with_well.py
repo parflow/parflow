@@ -575,6 +575,7 @@ if not run_check_output(
     passed = False
     
 # Here we test if we turn off the correction for variable dz produces uncorrect output
+var_dz_with_well.Process.Topology.R = 1
 var_dz_with_well.Wells.CorrectForVarDz = False
 
 subtest = 9
