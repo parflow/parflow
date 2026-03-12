@@ -232,16 +232,16 @@ void         WellPackage(
             {
               subgrid_volume = CalculateLocalSubgridVolume(new_subgrid, problem_data);
             }
-	    else
-	    {
-	      subgrid_volume = 0.0;
-	    }
+            else
+            {
+              subgrid_volume = 0.0;
+            }
 
 #ifdef PARFLOW_HAVE_MPI
-	    // Multiple ranks may intersect the well subgrid; sum local subgrid volumes across ranks
-	    amps_Invoice well_properties_invoice = amps_NewInvoice("%d", &subgrid_volume);
-	    amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Add);
-	    amps_FreeInvoice(well_properties_invoice);
+            // Multiple ranks may intersect the well subgrid; sum local subgrid volumes across ranks
+            amps_Invoice well_properties_invoice = amps_NewInvoice("%d", &subgrid_volume);
+            amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Add);
+            amps_FreeInvoice(well_properties_invoice);
 #endif
           }
           else
@@ -573,16 +573,16 @@ void         WellPackage(
               {
                 subgrid_volume = CalculateLocalSubgridVolume(new_subgrid, problem_data);
               }
-	      else
-	      {
-		subgrid_volume = 0.0;
-	      }
+              else
+              {
+                subgrid_volume = 0.0;
+              }
 
 #ifdef PARFLOW_HAVE_MPI
-	      // Multiple ranks may intersect the well subgrid; sum local subgrid volumes across ranks
-	      amps_Invoice well_properties_invoice = amps_NewInvoice("%d", &subgrid_volume);
-	      amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Add);
-	      amps_FreeInvoice(well_properties_invoice);
+              // Multiple ranks may intersect the well subgrid; sum local subgrid volumes across ranks
+              amps_Invoice well_properties_invoice = amps_NewInvoice("%d", &subgrid_volume);
+              amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Add);
+              amps_FreeInvoice(well_properties_invoice);
 #endif
             }
             else

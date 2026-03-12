@@ -430,9 +430,9 @@ if not run_check_output(
 ):
     passed = False
 
-# Test parallel in Z    
+# Test parallel in Z
 var_dz_with_well.Process.Topology.R = 2
-    
+
 subtest = 4
 correct_pressure_file = (
     f"{correct_output_dir_name}/var_dz_with_well_single_column.out.press.00010.pfb"
@@ -441,7 +441,7 @@ if not run_check_output(
     var_dz_with_well, base_new_output_dir, subtest, correct_pressure_file
 ):
     passed = False
-    
+
 
 # Next we switch to a multicolumn setup and add a flux well in to make sure this works for both types
 # of wells
@@ -562,9 +562,9 @@ if not run_check_output(
     passed = False
 
 
-# Test parallel in Z    
+# Test parallel in Z
 var_dz_with_well.Process.Topology.R = 2
-    
+
 subtest = 8
 correct_pressure_file = (
     f"{correct_output_dir_name}/var_dz_with_well_multi_column.out.press.00010.pfb"
@@ -573,7 +573,7 @@ if not run_check_output(
     var_dz_with_well, base_new_output_dir, subtest, correct_pressure_file
 ):
     passed = False
-    
+
 # Here we test if we turn off the correction for variable dz produces uncorrect output
 var_dz_with_well.Process.Topology.R = 1
 var_dz_with_well.Wells.CorrectForVarDz = False
