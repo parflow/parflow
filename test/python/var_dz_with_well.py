@@ -430,6 +430,19 @@ if not run_check_output(
 ):
     passed = False
 
+# Test parallel in Z    
+var_dz_with_well.Process.Topology.R = 2
+    
+subtest = 4
+correct_pressure_file = (
+    f"{correct_output_dir_name}/var_dz_with_well_single_column.out.press.00010.pfb"
+)
+if not run_check_output(
+    var_dz_with_well, base_new_output_dir, subtest, correct_pressure_file
+):
+    passed = False
+    
+
 # Next we switch to a multicolumn setup and add a flux well in to make sure this works for both types
 # of wells
 
@@ -437,6 +450,7 @@ var_dz_with_well.ComputationalGrid.NX = 2
 var_dz_with_well.ComputationalGrid.NY = 2
 var_dz_with_well.Process.Topology.P = 2
 var_dz_with_well.Process.Topology.Q = 2
+var_dz_with_well.Process.Topology.R = 1
 var_dz_with_well.Geom.domain.Upper.X = 2.0
 var_dz_with_well.Geom.domain.Upper.Y = 2.0
 
@@ -485,7 +499,7 @@ var_dz_with_well.Cell._11.dzScale.Value = 1
 var_dz_with_well.Cell._12.dzScale.Value = 1
 var_dz_with_well.Cell._13.dzScale.Value = 1
 
-subtest = 4
+subtest = 5
 correct_pressure_file = (
     f"{correct_output_dir_name}/var_dz_with_well_multi_column.out.press.00010.pfb"
 )
@@ -512,7 +526,7 @@ var_dz_with_well.Cell._11.dzScale.Value = 0.1
 var_dz_with_well.Cell._12.dzScale.Value = 0.1
 var_dz_with_well.Cell._13.dzScale.Value = 0.1
 
-subtest = 5
+subtest = 6
 correct_pressure_file = (
     f"{correct_output_dir_name}/var_dz_with_well_multi_column.out.press.00010.pfb"
 )
@@ -538,7 +552,7 @@ var_dz_with_well.Cell._11.dzScale.Value = 10
 var_dz_with_well.Cell._12.dzScale.Value = 10
 var_dz_with_well.Cell._13.dzScale.Value = 10
 
-subtest = 6
+subtest = 7
 correct_pressure_file = (
     f"{correct_output_dir_name}/var_dz_with_well_multi_column.out.press.00010.pfb"
 )
@@ -547,10 +561,23 @@ if not run_check_output(
 ):
     passed = False
 
+
+# Test parallel in Z    
+var_dz_with_well.Process.Topology.R = 2
+    
+subtest = 8
+correct_pressure_file = (
+    f"{correct_output_dir_name}/var_dz_with_well_multi_column.out.press.00010.pfb"
+)
+if not run_check_output(
+    var_dz_with_well, base_new_output_dir, subtest, correct_pressure_file
+):
+    passed = False
+    
 # Here we test if we turn off the correction for variable dz produces uncorrect output
 var_dz_with_well.Wells.CorrectForVarDz = False
 
-subtest = 7
+subtest = 9
 correct_pressure_file = f"{correct_output_dir_name}/var_dz_with_well_multi_column_no_correction.out.press.00010.pfb"
 
 if not run_check_output(
