@@ -335,7 +335,7 @@ defined for this problem.
 
 *string* **GeomInput.\ *geom_input_name*.InputType** no default This
 defines the input type for the geometry input with *geom_input_name*.
-This key must be one of: **SolidFile, IndicatorField**, **Box**.
+This key must be one of: **SolidFile, IndicatorField, IndicatorFieldNC**, **Box**.
 
 .. container:: list
 
@@ -350,9 +350,9 @@ list of the names of the geometries defined by the geometry input. For a
 geometry input type of Box, the list should contain a single geometry
 name. For the SolidFile geometry type this should contain a list with
 the same number of gemetries as were defined using GMS. The order of
-geometries in the SolidFile should match the names. For IndicatorField
-types you need to specify the value in the input field which matches the
-name using GeomInput.\ *geom_input_name*.Value.
+geometries in the SolidFile should match the names. For IndicatorField and
+IndicatorFieldNC types you need to specify the value in the input field
+which matches the name using GeomInput.\ *geom_input_name*.Value.
 
 .. container:: list
 
@@ -364,8 +364,8 @@ name using GeomInput.\ *geom_input_name*.Value.
       <runname>.GeomInput.solidinput.GeomNames = "domain bottomlayer middlelayer toplayer"  ## Python syntax
 
 *string* **GeomInput.\ *geom_input_name*.Filename** no default For
-IndicatorField and SolidFile geometry inputs this key specifies the
-input filename which contains the field or solid information.
+IndicatorField, IndicatorFieldNC and SolidFile geometry inputs this key
+specifies the input filename which contains the field or solid information.
 
 .. container:: list
 
@@ -376,9 +376,10 @@ input filename which contains the field or solid information.
       <runname>.GeomInput.solidinput.FileName = "ocwd.pfsol"   ## Python syntax
 
 *integer* **GeomInput.\ *geometry_input_name*.Value** no default For
-IndicatorField geometry inputs you need to specify the mapping between
-values in the input file and the geometry names. The named geometry will
-be defined wherever the input file is equal to the specified value.
+IndicatorField, IndicatorFieldNC geometry inputs you need to specify the
+mapping between values in the input file and the geometry names. The named
+geometry will be defined wherever the input file is equal to the specified
+value.
 
 .. container:: list
 
