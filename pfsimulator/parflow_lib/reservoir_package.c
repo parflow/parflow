@@ -259,20 +259,20 @@ void         ReservoirPackage(
                                        rx, ry, rz,
                                        current_mpi_rank);
 
-      if (SubgridLivesOnThisRank(new_intake_subgrid, grid))
+      if (SubgridIntersectsCurrentRank(new_intake_subgrid, grid))
       {
         intake_cell_rank = current_mpi_rank;
       }
 
-      if (SubgridLivesOnThisRank(new_secondary_intake_subgrid, grid))
+      if (SubgridIntersectsCurrentRank(new_secondary_intake_subgrid, grid))
       {
         secondary_intake_cell_rank = current_mpi_rank;
       }
       release_subgrid_volume = 1;
-      if (SubgridLivesOnThisRank(new_release_subgrid, grid))
+      if (SubgridIntersectsCurrentRank(new_release_subgrid, grid))
       {
         release_cell_rank = current_mpi_rank;
-        release_subgrid_volume = CalculateSubgridVolume(new_release_subgrid, problem_data);
+        release_subgrid_volume = CalculateLocalSubgridVolume(new_release_subgrid, problem_data);
       }
       //If we are multiprocessor we need to do some reductions to determine the correct ranks
       // for the reservoirs

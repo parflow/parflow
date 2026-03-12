@@ -986,7 +986,7 @@ SubgridArray  *UnionSubgridArray(
  * @param grid the problems grid
  * @return True or False corresponding to whether the subgrid intersects
  */
-int SubgridLivesOnThisRank(Subgrid* subgrid, Grid *grid)
+int SubgridIntersectsCurrentRank(Subgrid* subgrid, Grid *grid)
 {
   int subgrid_index;
   Subgrid* rank_subgrid, *tmp_subgrid;
@@ -1013,8 +1013,7 @@ int SubgridLivesOnThisRank(Subgrid* subgrid, Grid *grid)
  *
  * @return The subgrid volume
  */
-//This will calculate the subgrid volume accounting for vardz
-double CalculateSubgridVolume(Subgrid *subgrid, ProblemData* problem_data)
+double CalculateLocalSubgridVolume(Subgrid *subgrid, ProblemData* problem_data)
 {
   {
     double dx = SubgridDX(subgrid);

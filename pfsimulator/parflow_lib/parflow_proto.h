@@ -250,8 +250,8 @@ Subgrid *ExtractSubgrid(int rx, int ry, int rz, Subgrid *subgrid);
 Subgrid *IntersectSubgrids(Subgrid *subgrid1, Subgrid *subgrid2);
 SubgridArray *SubtractSubgrids(Subgrid *subgrid1, Subgrid *subgrid2);
 SubgridArray *UnionSubgridArray(SubgridArray *subgrids);
-double CalculateSubgridVolume(Subgrid *subgrid, ProblemData* problem_data);
-int SubgridLivesOnThisRank(Subgrid* subgrid, Grid *grid);
+double CalculateLocalSubgridVolume(Subgrid *subgrid, ProblemData* problem_data);
+int SubgridIntersectsCurrentRank(Subgrid* subgrid, Grid *grid);
 
 /* hbt.c */
 HBT *HBT_new(

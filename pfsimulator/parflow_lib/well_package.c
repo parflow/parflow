@@ -240,9 +240,9 @@ void         WellPackage(
           dz = SubgridDZ(new_subgrid);
           if (public_xtra->correct_for_var_dz)
           {
-            if (SubgridLivesOnThisRank(new_subgrid, grid))
+            if (SubgridIntersectsCurrentRank(new_subgrid, grid))
             {
-              subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
+              subgrid_volume = CalculateLocalSubgridVolume(new_subgrid, problem_data);
             }
           }
           else
@@ -577,9 +577,9 @@ void         WellPackage(
             dz = SubgridDZ(new_subgrid);
             if (public_xtra->correct_for_var_dz)
             {
-              if (SubgridLivesOnThisRank(new_subgrid, grid))
+              if (SubgridIntersectsCurrentRank(new_subgrid, grid))
               {
-                subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
+                subgrid_volume = CalculateLocalSubgridVolume(new_subgrid, problem_data);
               }
             }
             else
