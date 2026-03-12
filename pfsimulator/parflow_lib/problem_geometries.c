@@ -47,6 +47,7 @@ typedef struct indicator_data {
   int                     *indicators;  //pointer to dynamic object
   char                    *filename;
   struct  indicator_data  *next_indicator_data;
+
   int file_type;
 
   NameArray indicator_na;
@@ -212,16 +213,21 @@ void           Geometries(
   {
     InitVectorAll(tmp_indicator_field, -1.0);
 
-    switch(current_indicator_data->file_type)
+    switch (current_indicator_data->file_type)
     {
       case PFBFile:
+      {
         ReadPFBinary((current_indicator_data->filename), tmp_indicator_field);
         break;
+      }
+
       case NCFile:
+      {
         int time_step = 0;
         int dimensionality = 3;
         ReadPFNC((current_indicator_data->filename), tmp_indicator_field, "indicator", time_step, dimensionality);
         break;
+      }
     }
 
     handle = InitVectorUpdate(tmp_indicator_field, VectorUpdateAll);
