@@ -252,8 +252,8 @@ clm.Solver.CLM.SingleFile = True
 # ET Keys - Non-default interception parameters
 # -----------------------------------------------------------------------------
 
-clm.Solver.CLM.InterceptionFpiMax = 0.5    # doubled from CLM3 default of 0.25
-clm.Solver.CLM.FwetExponent = 0.5          # lower than CLM3 default of 0.6667
+clm.Solver.CLM.InterceptionFpiMax = 0.5  # doubled from CLM3 default of 0.25
+clm.Solver.CLM.FwetExponent = 0.5  # lower than CLM3 default of 0.6667
 
 # -----------------------------------------------------------------------------
 # Initial conditions: water pressure
