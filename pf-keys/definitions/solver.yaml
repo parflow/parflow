@@ -987,6 +987,45 @@ Solver:
           max_value: 1.0
         RequiresModule: CLM
 
+    # ET formulation improvements @RMM 2026
+    InterceptionFpiMax:
+      help: >
+        [Type: double] Maximum interception fraction coefficient. CLM3 default
+        0.25 caps canopy interception at 25% even for dense canopies. CLM5 uses
+        higher values. Formula: fpi = InterceptionFpiMax * (1 - exp(-0.5*(LAI+SAI)))
+      default: 0.25
+      domains:
+        DoubleValue:
+          min_value: 0.05
+          max_value: 1.0
+        RequiresModule: CLM
+
+    FwetExponent:
+      help: >
+        [Type: double] Power-law exponent for wet canopy fraction. CLM default
+        2/3 (0.6667). Lower values keep the canopy wet longer, increasing wet
+        canopy evaporation. Formula: fwet = (h2ocan/(dewmx*LAI))^FwetExponent
+      default: 0.6667
+      domains:
+        DoubleValue:
+          min_value: 0.3
+          max_value: 1.0
+        RequiresModule: CLM
+
+    StomataScheme:
+      help: >
+        [Type: string] Stomatal conductance model. BallBerry uses relative
+        humidity (CLM3 default). Medlyn uses vapor pressure deficit and is
+        recommended for modern applications. Reference: Medlyn et al. (2011)
+        Global Change Biology.
+      default: BallBerry
+      domains:
+        EnumDomain:
+          enum_list:
+            - BallBerry
+            - Medlyn
+        RequiresModule: CLM
+
     # -----------------------------------------------------------------------------
     # CLM input variables to write drv_clmin.dat (Input) and drv_vegp.dat (VegParams) files
     # -----------------------------------------------------------------------------

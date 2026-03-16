@@ -6838,6 +6838,56 @@ diurnal artifacts in fractional snow cover. Typical range 48-96 hours.
       pfset Solver.CLM.FracSnoAvgWindow 72.0           ## TCL syntax
       <runname>.Solver.CLM.FracSnoAvgWindow = 72.0     ## Python syntax
 
+**ET Formulation Improvements**
+
+These keys improve CLM's evapotranspiration calculations. Default values
+reproduce original CLM3 behavior for backward compatibility. PFT-dependent
+photosynthesis parameters (vcmx25, c3psn, mp, bp, qe25, folnmx) can be
+provided in drv_vegp.dat; when detected, improved stomata physics
+(dark respiration, smooth colimitation, niter=5) activates automatically.
+
+*double* **Solver.CLM.InterceptionFpiMax** 0.25 Maximum interception
+fraction coefficient. CLM3 default 0.25 caps canopy interception at 25%
+even for dense canopies. CLM5 uses higher values.
+Formula: fpi = InterceptionFpiMax * (1 - exp(-0.5*(LAI+SAI)))
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.InterceptionFpiMax 0.25           ## TCL syntax
+      <runname>.Solver.CLM.InterceptionFpiMax = 0.25     ## Python syntax
+
+*double* **Solver.CLM.FwetExponent** 0.6667 Power-law exponent for wet
+canopy fraction. CLM default 2/3. Lower values keep the canopy wet longer,
+increasing wet canopy evaporation.
+Formula: fwet = (h2ocan/(dewmx*LAI))^FwetExponent
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FwetExponent 0.6667               ## TCL syntax
+      <runname>.Solver.CLM.FwetExponent = 0.6667         ## Python syntax
+
+*string* **Solver.CLM.StomataScheme** BallBerry Selects the stomatal
+conductance model.
+
+**BallBerry**:
+   CLM3 default. Uses relative humidity in the conductance equation.
+
+**Medlyn**:
+   Medlyn et al. (2011) model. Uses vapor pressure deficit (VPD) instead
+   of relative humidity. Requires g1_medlyn parameter in drv_vegp.dat for
+   PFT-dependent slope values.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.StomataScheme BallBerry            ## TCL syntax
+      <runname>.Solver.CLM.StomataScheme = "BallBerry"   ## Python syntax
+
 
 .. _ParFlow NetCDF4 Parallel I/O:
 

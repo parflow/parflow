@@ -246,6 +246,11 @@ typedef struct {
   double clm_snowage_dirt_soot_nir;   /* NIR dirt/soot factor [-] */
   double clm_snowage_reset_factor;    /* fresh snow reset factor [-] */
 
+  /* ET formulation improvements @RMM 2026 */
+  double clm_interception_fpi_max; /* Max interception fraction coefficient [-] */
+  double clm_fwet_exponent;        /* Power-law exponent for wet canopy fraction [-] */
+  int clm_stomata_scheme;          /* Stomatal model: 0=BallBerry, 1=Medlyn */
+
   int clm_reuse_count;          /* NBE: Number of times to use each CLM input */
   int clm_write_logs;           /* NBE: Write the processor logs for CLM or not */
   int clm_last_rst;             /* NBE: Only write/overwrite one rst file or write a lot of them */
@@ -2855,7 +2860,10 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          public_xtra->clm_snowage_grain_growth_nir,
                          public_xtra->clm_snowage_dirt_soot_vis,
                          public_xtra->clm_snowage_dirt_soot_nir,
-                         public_xtra->clm_snowage_reset_factor);
+                         public_xtra->clm_snowage_reset_factor,
+                         public_xtra->clm_interception_fpi_max,
+                         public_xtra->clm_fwet_exponent,
+                         public_xtra->clm_stomata_scheme);
 
             break;
           }
@@ -5903,6 +5911,40 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "%s.CLM.SnowAgeResetFactor", name);
   public_xtra->clm_snowage_reset_factor = GetDoubleDefault(key, 0.1);
+
+  /* @RMM 2026 ET formulation improvements */
+  sprintf(key, "%s.CLM.InterceptionFpiMax", name);
+  public_xtra->clm_interception_fpi_max = GetDoubleDefault(key, 0.25);
+
+  sprintf(key, "%s.CLM.FwetExponent", name);
+  public_xtra->clm_fwet_exponent = GetDoubleDefault(key, 0.6667);
+
+  NameArray stomata_switch_na;
+  stomata_switch_na = NA_NewNameArray("BallBerry Medlyn");
+  sprintf(key, "%s.CLM.StomataScheme", name);
+  switch_name = GetStringDefault(key, "BallBerry");
+  switch_value = NA_NameToIndexExitOnError(stomata_switch_na, switch_name, key);
+  switch (switch_value)
+  {
+    case 0:
+    {
+      public_xtra->clm_stomata_scheme = 0;
+      break;
+    }
+
+    case 1:
+    {
+      public_xtra->clm_stomata_scheme = 1;
+      break;
+    }
+
+    default:
+    {
+      InputError("Error: Invalid value <%s> for key <%s>. Expected BallBerry or Medlyn.\n",
+                 switch_name, key);
+    }
+  }
+  NA_FreeNameArray(stomata_switch_na);
 
   /* IMF Write CLM as Silo (default=False) */
   sprintf(key, "%s.WriteSiloCLM", name);

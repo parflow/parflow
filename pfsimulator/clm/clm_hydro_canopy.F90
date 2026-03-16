@@ -111,7 +111,12 @@ subroutine clm_hydro_canopy (clm)
 
         ! Direct throughfall
 
-        fpi = 0.25d0*(1. - exp(-0.5*(clm%elai + clm%esai)))
+        if (clm%interception_fpi_max /= 0.25d0) then
+           fpi = clm%interception_fpi_max                                &
+                 * (1.d0 - exp(-0.5d0*(clm%elai + clm%esai)))
+        else
+           fpi = 0.25d0*(1. - exp(-0.5*(clm%elai + clm%esai)))
+        endif
         qflx_through  = prcp*(1.-fpi)*clm%frac_veg_nosno
 
         ! Water storage of intercepted precipitation and dew
@@ -313,7 +318,11 @@ subroutine clm_hydro_canopy (clm)
   if (clm%h2ocan > 0. .and. clm%frac_veg_nosno == 1) then
      vegt     = clm%frac_veg_nosno*(clm%elai + clm%esai)
      dewmxi   = 1.0/clm%dewmx
-     clm%fwet = ((dewmxi/vegt)*clm%h2ocan)**.666666666666
+     if (clm%fwet_exponent /= 0.6667d0) then
+        clm%fwet = ((dewmxi/vegt)*clm%h2ocan)**clm%fwet_exponent
+     else
+        clm%fwet = ((dewmxi/vegt)*clm%h2ocan)**.666666666666
+     endif
      clm%fwet = min(clm%fwet,dble(1.0))     ! Check for maximum limit of fwet
      clm%fdry = (1.-clm%fwet)*clm%elai/(clm%elai+clm%esai)
   else

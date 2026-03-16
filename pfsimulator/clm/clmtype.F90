@@ -383,6 +383,13 @@ module clmtype
 
      integer :: soi_z ! NBE added
 
+! ET formulation improvements @RMM 2026
+! (placed at end of struct to preserve existing field offsets)
+     logical  :: photosyn_custom ! true when drv_vegp.dat provides PFT photosynthesis params
+     integer  :: stomata_scheme  ! stomatal model: 0=BallBerry (default), 1=Medlyn
+     real(r8) :: g1_medlyn       ! Medlyn stomatal slope parameter (kPa^0.5)
+     real(r8) :: interception_fpi_max ! max interception fraction coefficient [-]
+     real(r8) :: fwet_exponent        ! power-law exponent for wet canopy fraction [-]
 
 !=== End Variable List ===================================================
 
