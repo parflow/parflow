@@ -263,6 +263,9 @@ subroutine drv_clmini (drv, grid,pf_porosity, tile, clm, istep_pf, clm_forc_veg)
      clm%c3psn  =  1.       ! photosynthetic pathway: 0. = c4, 1. = c3
      clm%g1_medlyn = 4.0    ! Medlyn default slope (kPa^0.5) @RMM 2026
   endif
+  ! folnvt must always be set — CLM3 defaults set it above, but the
+  ! custom path skips that block. Always set to ensure fnf=1. @RMM 2026-03
+  clm%folnvt = max(clm%folnmx, 1.5d0) * 1.33d0
   ! Michaelis-Menten constants & Q10s — truly universal, always set
   clm%ko25   =  30000.   ! o2 michaelis-menten constant at 25c (pa)
   clm%kc25   =  30.      ! co2 michaelis-menten constant at 25c (pa)
