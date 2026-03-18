@@ -141,8 +141,8 @@ void SADVECT(double *s, double *sn,
                      clm_frac_sno_type, clm_frac_sno_roughness, clm_frac_sno_roughness_min, clm_frac_sno_roughness_max, clm_frac_sno_gamma_sza, clm_frac_sno_tau_sza,                                        \
                      clm_snowage_tau0_vis, clm_snowage_tau0_nir, clm_snowage_grain_growth_vis, clm_snowage_grain_growth_nir,                                                                                 \
                      clm_snowage_dirt_soot_vis, clm_snowage_dirt_soot_nir, clm_snowage_reset_factor,                                                                                                         \
-                     clm_interception_fpi_max, clm_fwet_exponent, clm_stomata_scheme,                                                                                                                       \
-                     clm_interception_scheme, clm_interception_tanh_alpha)                                                                                                                              \
+                     clm_interception_fpi_max, clm_fwet_exponent, clm_stomata_scheme,                                                                                                                        \
+                     clm_interception_scheme, clm_interception_tanh_alpha)                                                                                                                                   \
         CLM_LSM(pressure_data, saturation_data, evap_trans_data, top, bottom, porosity_data,                                                                                                                 \
                 dz_mult_data, &istep, &dt, &t, &start_time, &dx, &dy, &dz, &ix, &iy, &nx, &ny, &nz, &nx_f, &ny_f, &nz_f, &nz_rz, &ip, &p, &q, &r, &gnx, &gny, &rank,                                         \
                 sw_data, lw_data, prcp_data, tas_data, u_data, v_data, patm_data, qatm_data,                                                                                                                 \
@@ -163,7 +163,7 @@ void SADVECT(double *s, double *sn,
                 &clm_frac_sno_type, &clm_frac_sno_roughness, &clm_frac_sno_roughness_min, &clm_frac_sno_roughness_max, &clm_frac_sno_gamma_sza, &clm_frac_sno_tau_sza,                                       \
                 &clm_snowage_tau0_vis, &clm_snowage_tau0_nir, &clm_snowage_grain_growth_vis, &clm_snowage_grain_growth_nir,                                                                                  \
                 &clm_snowage_dirt_soot_vis, &clm_snowage_dirt_soot_nir, &clm_snowage_reset_factor,                                                                                                           \
-                &clm_interception_fpi_max, &clm_fwet_exponent, &clm_stomata_scheme,                                                                                                                       \
+                &clm_interception_fpi_max, &clm_fwet_exponent, &clm_stomata_scheme,                                                                                                                          \
                 &clm_interception_scheme, &clm_interception_tanh_alpha);
 
 void CLM_LSM(double *pressure_data, double *saturation_data, double *evap_trans_data, double *top, double *bottom, double *porosity_data,
