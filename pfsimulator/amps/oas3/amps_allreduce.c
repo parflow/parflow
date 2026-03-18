@@ -150,14 +150,28 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
 
     if (cudaGetLastError() == cudaSuccess && attributes.type > 1)
     {
+#if CUDART_VERSION >= 13000
+      int deviceIndex;
+      CUDA_ERRCHK(cudaGetDevice(&deviceIndex));
+      struct cudaMemLocation location = {};
+      location.type = cudaMemLocationTypeHost;
+      location.id = deviceIndex;
+#endif
       if (stride == 1)
+#if CUDART_VERSION >= 13000
+        CUDA_ERRCHK(cudaMemPrefetchAsync(data, (size_t)len * element_size, location, 0, 0));
+#else
         CUDA_ERRCHK(cudaMemPrefetchAsync(data, (size_t)len * element_size, cudaCpuDeviceId, 0));
+#endif
       else
         for (ptr_src = data;
              ptr_src < data + len * stride * element_size;
              ptr_src += stride * element_size)
+#if CUDART_VERSION >= 13000
+          CUDA_ERRCHK(cudaMemPrefetchAsync(data, (size_t)len * element_size, location, 0, 0));
+#else
           CUDA_ERRCHK(cudaMemPrefetchAsync(ptr_src, (size_t)element_size, cudaCpuDeviceId, 0));
-
+#endif
       CUDA_ERRCHK(cudaStreamSynchronize(0));
     }
 #endif
