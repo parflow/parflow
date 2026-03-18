@@ -111,10 +111,15 @@ subroutine clm_hydro_canopy (clm)
 
         ! Direct throughfall
 
-        if (clm%interception_fpi_max /= 0.25d0) then
+        if (clm%interception_scheme == 1) then
+           ! CLM5 tanh interception (Lawrence et al. 2019)
+           fpi = clm%interception_tanh_alpha                             &
+                 * tanh(clm%elai + clm%esai)
+        else if (clm%interception_fpi_max /= 0.25d0) then
            fpi = clm%interception_fpi_max                                &
                  * (1.d0 - exp(-0.5d0*(clm%elai + clm%esai)))
         else
+           ! Original CLM3 expression for bit-for-bit backward compat
            fpi = 0.25d0*(1. - exp(-0.5*(clm%elai + clm%esai)))
         endif
         qflx_through  = prcp*(1.-fpi)*clm%frac_veg_nosno

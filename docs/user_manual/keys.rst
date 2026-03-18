@@ -6888,6 +6888,38 @@ conductance model.
       pfset Solver.CLM.StomataScheme BallBerry            ## TCL syntax
       <runname>.Solver.CLM.StomataScheme = "BallBerry"   ## Python syntax
 
+*string* **Solver.CLM.InterceptionScheme** CLM3 Selects the canopy
+interception scheme.
+
+**CLM3**:
+   CLM3 default exponential formulation.
+   Formula: fpi = InterceptionFpiMax * (1 - exp(-0.5*(LAI+SAI)))
+   Asymptotes to InterceptionFpiMax (default 0.25) regardless of LAI.
+
+**CLM5Tanh**:
+   CLM5 tanh formulation (Lawrence et al. 2019).
+   Formula: fpi = InterceptionTanhAlpha * tanh(LAI+SAI)
+   Approaches InterceptionTanhAlpha (default 1.0) for LAI > 2, correcting
+   the CLM3 structural low bias in canopy interception for dense canopies.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.InterceptionScheme CLM3              ## TCL syntax
+      <runname>.Solver.CLM.InterceptionScheme = "CLM3"     ## Python syntax
+
+*double* **Solver.CLM.InterceptionTanhAlpha** 1.0 Scaling coefficient for
+CLM5 tanh interception scheme. Formula: fpi = alpha * tanh(LAI+SAI).
+Default 1.0 matches CLM5. Only used when InterceptionScheme is CLM5Tanh.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.InterceptionTanhAlpha 1.0             ## TCL syntax
+      <runname>.Solver.CLM.InterceptionTanhAlpha = 1.0      ## Python syntax
+
 
 .. _ParFlow NetCDF4 Parallel I/O:
 

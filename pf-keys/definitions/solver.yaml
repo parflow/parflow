@@ -1026,6 +1026,33 @@ Solver:
             - Medlyn
         RequiresModule: CLM
 
+    InterceptionScheme:
+      help: >
+        [Type: string] Canopy interception scheme. CLM3 uses exponential
+        formulation capped at InterceptionFpiMax (default 0.25). CLM5Tanh
+        uses tanh(LAI+SAI) scaled by InterceptionTanhAlpha, which approaches
+        1.0 for LAI>2 and corrects the CLM3 structural low bias.
+        Reference: Lawrence et al. (2019) JAMES.
+      default: CLM3
+      domains:
+        EnumDomain:
+          enum_list:
+            - CLM3
+            - CLM5Tanh
+        RequiresModule: CLM
+
+    InterceptionTanhAlpha:
+      help: >
+        [Type: double] Scaling coefficient for CLM5 tanh interception scheme.
+        Formula: fpi = alpha * tanh(LAI+SAI). Default 1.0 matches CLM5.
+        Only used when InterceptionScheme is CLM5Tanh.
+      default: 1.0
+      domains:
+        DoubleValue:
+          min_value: 0.1
+          max_value: 1.0
+        RequiresModule: CLM
+
     # -----------------------------------------------------------------------------
     # CLM input variables to write drv_clmin.dat (Input) and drv_vegp.dat (VegParams) files
     # -----------------------------------------------------------------------------

@@ -301,6 +301,8 @@ subroutine clm_typini (ntiles, clm, istep_pf)
      ! canopy interception parameters @RMM 2026
      clm(k)%interception_fpi_max = NaN  ! max interception fraction coefficient
      clm(k)%fwet_exponent     = NaN     ! power-law exponent for wet canopy fraction
+     clm(k)%interception_scheme = 0     ! 0=CLM3 (default), 1=CLM5Tanh
+     clm(k)%interception_tanh_alpha = NaN ! CLM5 tanh scaling coefficient
 
      ! alma output
      clm(k)%diffusion         = NaN  ! heat diffusion through layer zero interface 

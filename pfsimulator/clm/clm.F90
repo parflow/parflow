@@ -21,7 +21,8 @@ frac_sno_typepf,frac_sno_roughnesspf,frac_sno_roughness_minpf,frac_sno_roughness
 frac_sno_gamma_szapf,frac_sno_tau_szapf,                                                          &
 snowage_tau0_vispf,snowage_tau0_nirpf,snowage_grain_growth_vispf,snowage_grain_growth_nirpf,        &
 snowage_dirt_soot_vispf,snowage_dirt_soot_nirpf,snowage_reset_factorpf,                                    &
-interception_fpi_maxpf,fwet_exponentpf,stomata_schemepf)
+interception_fpi_maxpf,fwet_exponentpf,stomata_schemepf,                                     &
+interception_schemepf,interception_tanh_alphapf)
 
   !=========================================================================
   !
@@ -211,6 +212,8 @@ interception_fpi_maxpf,fwet_exponentpf,stomata_schemepf)
   real(r8) :: interception_fpi_maxpf             ! max interception fraction coeff [-]
   real(r8) :: fwet_exponentpf                    ! power-law exponent for wet canopy [-]
   integer  :: stomata_schemepf                   ! stomatal model: 0=BallBerry, 1=Medlyn
+  integer  :: interception_schemepf              ! interception: 0=CLM3, 1=CLM5Tanh
+  real(r8) :: interception_tanh_alphapf          ! CLM5 tanh scaling coeff [-]
 
   ! local indices & counters
   integer  :: i,j,k,k1,j1,l1                     ! indices for local looping
@@ -606,6 +609,8 @@ interception_fpi_maxpf,fwet_exponentpf,stomata_schemepf)
            clm(t)%interception_fpi_max = interception_fpi_maxpf
            clm(t)%fwet_exponent        = fwet_exponentpf
            clm(t)%stomata_scheme       = stomata_schemepf
+           clm(t)%interception_scheme  = interception_schemepf
+           clm(t)%interception_tanh_alpha = interception_tanh_alphapf
 
            ! for irrigation
            clm(t)%irr_type           = irr_typepf

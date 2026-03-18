@@ -250,6 +250,8 @@ typedef struct {
   double clm_interception_fpi_max; /* Max interception fraction coefficient [-] */
   double clm_fwet_exponent;        /* Power-law exponent for wet canopy fraction [-] */
   int clm_stomata_scheme;          /* Stomatal model: 0=BallBerry, 1=Medlyn */
+  int clm_interception_scheme;     /* Interception scheme: 0=CLM3, 1=CLM5Tanh */
+  double clm_interception_tanh_alpha; /* CLM5 tanh scaling coefficient [-] */
 
   int clm_reuse_count;          /* NBE: Number of times to use each CLM input */
   int clm_write_logs;           /* NBE: Write the processor logs for CLM or not */
@@ -2863,7 +2865,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          public_xtra->clm_snowage_reset_factor,
                          public_xtra->clm_interception_fpi_max,
                          public_xtra->clm_fwet_exponent,
-                         public_xtra->clm_stomata_scheme);
+                         public_xtra->clm_stomata_scheme,
+                         public_xtra->clm_interception_scheme,
+                         public_xtra->clm_interception_tanh_alpha);
 
             break;
           }
@@ -5945,6 +5949,36 @@ SolverRichardsNewPublicXtra(char *name)
     }
   }
   NA_FreeNameArray(stomata_switch_na);
+
+  NameArray intercep_scheme_na;
+  intercep_scheme_na = NA_NewNameArray("CLM3 CLM5Tanh");
+  sprintf(key, "%s.CLM.InterceptionScheme", name);
+  switch_name = GetStringDefault(key, "CLM3");
+  switch_value = NA_NameToIndexExitOnError(intercep_scheme_na, switch_name, key);
+  switch (switch_value)
+  {
+    case 0:
+    {
+      public_xtra->clm_interception_scheme = 0;
+      break;
+    }
+
+    case 1:
+    {
+      public_xtra->clm_interception_scheme = 1;
+      break;
+    }
+
+    default:
+    {
+      InputError("Error: Invalid value <%s> for key <%s>. Expected CLM3 or CLM5Tanh.\n",
+                 switch_name, key);
+    }
+  }
+  NA_FreeNameArray(intercep_scheme_na);
+
+  sprintf(key, "%s.CLM.InterceptionTanhAlpha", name);
+  public_xtra->clm_interception_tanh_alpha = GetDoubleDefault(key, 1.0);
 
   /* IMF Write CLM as Silo (default=False) */
   sprintf(key, "%s.WriteSiloCLM", name);
