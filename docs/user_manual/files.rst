@@ -234,6 +234,37 @@ land surface model. These plain-text files are read by CLM's Fortran
 reader at the start of each simulation. They must be present in the
 run directory.
 
+ParFlow-CLM is originally based on CLM 1.0 (Dai et al. 2003) and has been
+extended with coupled hydrology, improved evapotranspiration, snow physics,
+and PFT-dependent photosynthesis for integrated watershed modeling.
+
+**Key references:**
+
+- Maxwell, R.M. and Miller, N.L. (2005). Development of a coupled land surface
+  and groundwater model. *J. Hydrometeorol.*, 6(3), 233-247,
+  doi:10.1175/JHM422.1.
+- Kollet, S.J. and Maxwell, R.M. (2008). Capturing the influence of groundwater
+  dynamics on land surface processes using an integrated, distributed watershed
+  model. *Water Resour. Res.*, 44(2), W02402, doi:10.1029/2007WR006004.
+- Jefferson, J.L. and Maxwell, R.M. (2015). Evaluation of simple to complex
+  parameterizations of bare ground evaporation. *JAMES*, 7, 1-15,
+  doi:10.1002/2014MS000398.
+- Ferguson, I.M., Jefferson, J.L., Maxwell, R.M. and Kollet, S.J. (2016).
+  Effects of root water uptake formulation on simulated water and energy budgets
+  at local and basin scales. *Environ. Earth Sci.*, 75(15),
+  doi:10.1007/s12665-015-5041-z.
+- Jefferson, J.L., Maxwell, R.M., Constantine, P.G. (2017). Exploring the
+  sensitivity of photosynthesis and stomatal resistance parameters in a land
+  surface model. *J. Hydrometeorol.*, 18(3), 897-915,
+  doi:10.1175/JHM-D-16-0053.1.
+- Ryken, A., Bearup, L.A., Jefferson, J., Constantine, P. and Maxwell, R.M.
+  (2020). Sensitivity and model reduction of simulated snow processes. *Adv.
+  Water Resour.*, 135, 103473, doi:10.1016/j.advwatres.2019.103473.
+- Kuffour, B.N.O., Engdahl, N.B., Woodward, C.S., Condon, L.E., Kollet, S.J.
+  and Maxwell, R.M. (2020). Simulating coupled surface-subsurface flows with
+  ParFlow v3.5.0. *Geosci. Model Dev.*, 13, 1373-1397,
+  doi:10.5194/gmd-13-1373-2020.
+
 .. _drv_clmin.dat:
 
 ``drv_clmin.dat`` — CLM Initialization Parameters
@@ -440,15 +471,12 @@ uniformly across all grid cells).
    * - ``cnfac``
      - 0.5
      - Crank-Nicholson factor [0-1]
-   * - ``smpmin``
-     - -1.0e8
-     - Minimum soil matric potential [mm]
    * - ``ssi``
      - 0.033
      - Irreducible water saturation of snow
    * - ``wimp``
      - 0.05
-     - Water impermeable threshold for porosity
+     - Water impermeable threshold for porosity in snow
 
 .. admonition:: Deprecated Parameters
 
@@ -466,54 +494,83 @@ uniformly across all grid cells).
    - ``smpmax`` — Read into CLM; only used in ALMA output (deprecated)
    - ``scalez`` — Read into tile space; downstream formula is commented out
    - ``pondmx`` — Read into CLM; feeds ``xs`` computation whose downstream code is all commented out
+   - ``smpmin`` — Read into CLM; clamped ``psit`` is immediately overwritten by ParFlow pressure
 
    A cleaned file without these parameters is provided as
    ``test/tcl/clm/drv_clmin_clean.dat``. A best-practice version with
    recommended forcing heights and canopy parameters is provided as
    ``test/tcl/clm/drv_clmin_bestpractice.dat``.
 
-**Annotated example** (minimal working file):
+**Annotated example** (recommended best-practice configuration):
 
 .. code-block:: text
 
-   ! --- Domain ---
-   maxt           1              Maximum tiles per grid
-   mina           0.05           Min grid area for tile (%)
-   udef           -9999.         Undefined value
-   vclass         2              IGBP vegetation classification
+   !=========================================================================
+   ! ParFlow-CLM initialization parameter file
    !
-   ! --- Files ---
-   vegtf          drv_vegm.dat   Vegetation tile map
-   vegpf          drv_vegp.dat   Vegetation parameters
-   outf1d         clm.output.txt CLM output file
-   poutf1d        clm.para.out   Parameter output file
-   rstf           clm.rst.       Restart file prefix
+   ! Part of ParFlow v3.14 (March 2026)
+   ! https://parflow.org | https://github.com/parflow/parflow
+   ! Originally based on CLM 1.0 (Dai et al. 2003)
+   !=========================================================================
    !
-   ! --- Timing ---
-   startcode      2              Cold start
+   ! --- Domain & Classification ---
+   !
+   maxt           1                    Maximum tiles per grid cell
+   mina           0.05                 Min grid area for tile (%)
+   udef           -9999.               Undefined value marker
+   vclass         2                    Vegetation classification (1=UMD, 2=IGBP)
+   !
+   ! --- File References ---
+   !
+   vegtf          drv_vegm.dat         Vegetation tile map file
+   vegpf          drv_vegp.dat         Vegetation type parameter file
+   outf1d         clm.output.txt       CLM 1-D output file
+   poutf1d        clm.para.out.dat     CLM 1-D parameter output file
+   rstf           clm.rst.             CLM restart file prefix
+   !
+   ! --- Run Timing (all times in UTC) ---
+   !
+   startcode      2                    1=restart file, 2=cold start
    sss 00  smn 00  shr 00  sda 01  smo 10  syr 2000
    ess 00  emn 00  ehr 00  eda 01  emo 10  eyr 2001
-   clm_ic         2              ICs from this file
-   t_ini          285.           Initial temperature [K]
-   h2osno_ini     0.             Initial SWE [mm]
    !
-   ! --- Diagnostics ---
-   surfind 2  soilind 1  snowind 0
+   ! --- Initial Conditions ---
    !
-   ! --- Forcing heights (30m for gridded products) ---
-   forc_hgt_u     30.0           Wind height [m]
-   forc_hgt_t     30.0           Temperature height [m]
-   forc_hgt_q     30.0           Humidity height [m]
+   clm_ic         2                    IC source: 1=restart, 2=defined here
+   t_ini          285.                 Initial temperature [K]
+   h2osno_ini     0.                   Initial SWE [mm]
    !
-   ! --- Vegetation ---
-   dewmx          0.2            Max dew [mm]
-   rootfr         -9999.0        Use PFT default
+   ! --- Diagnostic Output ---
    !
-   ! --- Roughness ---
-   zlnd 0.01  zsno 0.0024  csoilc 0.0025
+   surfind        2                    Number of surface diagnostic variables
+   soilind        1                    Number of soil layer diagnostic variables
+   snowind        0                    Number of snow layer diagnostic variables
    !
-   ! --- Numerical ---
-   capr 0.34  cnfac 0.5  smpmin -1.e8  ssi 0.033  wimp 0.05
+   ! --- Forcing Heights ---
+   !   30m recommended for gridded products (NLDAS, CW3E, AORC).
+   !   10/2/2m for site-level met stations.
+   !
+   forc_hgt_u     30.0                 Observational height of wind [m]
+   forc_hgt_t     30.0                 Observational height of temperature [m]
+   forc_hgt_q     30.0                 Observational height of humidity [m]
+   !
+   ! --- Vegetation Parameters ---
+   !
+   dewmx          0.2                  Maximum allowed dew [mm] (CLM4.5+ default)
+   rootfr         -9999.0              Root fraction (-9999 = use PFT default)
+   !
+   ! --- Roughness Lengths ---
+   !
+   zlnd           0.01                 Roughness length for soil [m]
+   zsno           0.0024               Roughness length for snow [m]
+   csoilc         0.0025               Drag coefficient for soil under canopy [-]
+   !
+   ! --- Numerical Parameters ---
+   !
+   capr           0.34                 Tuning factor: first-layer T to surface T
+   cnfac          0.5                  Crank-Nicholson factor [0-1]
+   ssi            0.033                Irreducible water saturation of snow
+   wimp           0.05                 Water impermeable threshold for porosity in snow
 
 
 .. _drv_vegp.dat:
@@ -642,7 +699,7 @@ for snow/ice, water, bare soil classes where a parameter is meaningless).
    * - ``irrig``
      - Irrigation flag (0=none, 1=irrigate)
 
-.. list-table:: Photosynthesis Parameters (optional)
+.. list-table:: PFT Extension Parameters (optional, recommended)
    :widths: 15 55
    :header-rows: 1
 
@@ -663,16 +720,17 @@ for snow/ice, water, bare soil classes where a parameter is meaningless).
    * - ``g1_medlyn``
      - Medlyn stomatal slope parameter [kPa^0.5]
    * - ``clump``
-     - Canopy clumping index (1.0 = no clumping)
+     - Canopy clumping index [0-1] (1.0 = no clumping; He et al. 2012)
 
 .. note::
 
-   **PFT-specific photosynthesis is activated by the presence of
-   ``vcmx25`` in the file.** Without it, CLM uses hardcoded defaults
+   **These parameters are recommended for all new simulations.**
+   PFT-specific photosynthesis is activated by the presence of
+   ``vcmx25`` in the file. Without it, CLM uses hardcoded defaults
    from ``clm_varcon.F90``. When ``vcmx25`` is present, the ``c3psn``,
-   ``mp``, ``bp``, ``qe25``, ``folnmx``, and ``g1_medlyn`` values are
-   used per-PFT. A best-practice file with CLM4.5 corrections and
-   photosynthesis parameters is provided as
+   ``mp``, ``bp``, ``qe25``, ``folnmx``, ``g1_medlyn``, and ``clump``
+   values are used per-PFT. A best-practice file with CLM4.5
+   corrections, PFT photosynthesis, and canopy clumping is provided as
    ``test/tcl/clm/drv_vegp_bestpractice.dat``.
 
 **CLM4.5 corrections** (applied in ``drv_vegp_bestpractice.dat``):
@@ -681,6 +739,7 @@ for snow/ice, water, bare soil classes where a parameter is meaningless).
 - IGBP 8-10, 12 (savanna/grass/crop): ``taus_vis/nir`` → 0.001, ``rhos_vis`` → 0.16, ``rhos_nir`` → 0.39 (CLM4.5 Table 3.1)
 - IGBP 9, 10, 12: ``rhol_nir`` 0.58 → 0.35
 - C3/C4 fixes: IGBP 10 ``vcmx25`` 52 → 24, ``qe25`` 0.04 → 0.05 (C4 pathway)
+- Canopy clumping: PFT-specific clumping index for radiation calculations (He et al. 2012)
 
 .. _drv_vegm.dat:
 

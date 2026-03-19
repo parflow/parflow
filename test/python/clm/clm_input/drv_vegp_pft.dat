@@ -1,23 +1,40 @@
 !=========================================================================
+! ParFlow-CLM vegetation parameter file (IGBP classification)
 !
-!  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely
-!  L                        M  available land surface process model.
-!  M --COMMON LAND MODEL--  C
-!  C                        L  CLM WEB INFO: http://clm.gsfc.nasa.gov
-!  LMCLMCLMCLMCLMCLMCLMCLMCLM  CLM ListServ/Mailing List:
+! Part of ParFlow v3.14 (March 2026)
+! https://parflow.org | https://github.com/parflow/parflow
+! Originally based on CLM 1.0 (Dai et al. 2003)
 !
+! References:
+!  Maxwell & Miller (2005) J. Hydrometeorol. — ParFlow-CLM coupling
+!  Kollet & Maxwell (2008) Water Resour. Res. — Integrated watershed model
+!  Maxwell & Condon (2016) Science, SI — Coupling approach, parameter tables
+!  Kuffour et al. (2020) Geosci. Model Dev. — ParFlow v3.5 description
 !=========================================================================
-! clm_vegp.dat:
+! drv_vegp_pft.dat:
 !
 ! DESCRIPTION:
-!  Vegetation parameter data file for IGBP classification.
-!  Extended with PFT-dependent photosynthesis and stomatal parameters.
-!  Reference: CLM4.5 PFT table (Oleson et al. 2013) and
-!  Lin et al. (2015) Nature Climate Change for Medlyn g1 values.
+!  Vegetation parameters with PFT-dependent photosynthesis, stomatal
+!  conductance, and canopy clumping index. Uses default (uncorrected)
+!  optical and structural values for baseline testing.
+!
+!  Parameter sources:
+!    Oleson et al. (2013) CLM4.5 Tech Note — PFT photosynthesis values
+!    Lin et al. (2015) Nature Climate Change — Medlyn g1 values
+!    He et al. (2012) / Lawrence et al. (2019) — Canopy clumping index
 !
 ! REVISION HISTORY:
-!  15 September 1999: Yongjiu Dai; Initial code
-!  March 2026: Reed Maxwell; Added PFT photosynthesis params @RMM 2026
+!  1998-1999: Yongjiu Dai, Xubin Zeng; Original CLM code (NCAR)
+!  2004-2009: Reed Maxwell, Stefan Kollet; ParFlow-CLM coupling
+!  2009: Ian Ferguson; Irrigation schemes
+!  2014: Nick Engdahl; Stomatal resistance multiplier, output controls
+!  2016: Reed Maxwell, Bryant Reyes; Under-canopy drag (csoilc) correction
+!  2017: Jennifer Jefferson; ET and transpiration improvements
+!  2018-2019: Lindsay Bearup, Anna Ryken; Snow parameterizations
+!  2022: Reed Maxwell; CLM update
+!  Jan-Mar 2026: Reed Maxwell; Snow parameterizations, ET improvements,
+!                PFT photosynthesis, Medlyn stomata, canopy clumping,
+!                CLM4.5 optical/structural corrections, driver cleanup
 !=========================================================================
 !IGBP Land Cover Types
 !  1 evergreen needleleaf forests
