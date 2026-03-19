@@ -1,0 +1,126 @@
+!=========================================================================
+!
+!  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely
+!  L                        M  available land surface process model.
+!  M --COMMON LAND MODEL--  C
+!  C                        L  CLM WEB INFO: http://clm.gsfc.nasa.gov
+!  LMCLMCLMCLMCLMCLMCLMCLMCLM  CLM ListServ/Mailing List:
+!
+!=========================================================================
+! clm_vegp.dat:
+!
+! DESCRIPTION:
+!  Vegetation parameter data file for IGBP classification.
+!  Extended with PFT-dependent photosynthesis and stomatal parameters.
+!  Reference: CLM4.5 PFT table (Oleson et al. 2013) and
+!  Lin et al. (2015) Nature Climate Change for Medlyn g1 values.
+!
+! REVISION HISTORY:
+!  15 September 1999: Yongjiu Dai; Initial code
+!  March 2026: Reed Maxwell; Added PFT photosynthesis params @RMM 2026
+!=========================================================================
+!IGBP Land Cover Types
+!  1 evergreen needleleaf forests
+!  2 evergreen broadleaf forests
+!  3 deciduous needleleaf forests
+!  4 deciduous broadleaf forests
+!  5 mixed forests
+!  6 closed shrublands
+!  7 open shrublands
+!  8 woody savannas
+!  9 savannas
+! 10 grasslands
+! 11 permanent wetlands
+! 12 croplands
+! 13 urban and built-up lands
+! 14 cropland / natural vegetation mosaics
+! 15 snow and ice
+! 16 barren or sparsely vegetated
+! 17 water bodies
+! 18 bare soil
+!=========================================================================
+!
+itypwat        (1-soil, 2-land ice, 3-deep lake, 4-shallow lake, 5-wetland: swamp, marsh)
+1 1 1 1 1 1 1 1 1 1 5 1 1 1 2 1 3 1
+!
+lai            Maximum leaf area index [-]
+6.00 6.00 6.00 6.00 6.00 6.00 6.00 6.00 6.00 2.00 6.00 6.00 5.00 6.00 0.00 6.00 0.00 0.00
+!
+lai0           Minimum leaf area index [-]
+5.00 5.00 1.00 1.00 3.00 2.00 1.00 2.00 1.00 0.50 0.50 0.50 1.00 2.00 0.00 0.50 0.00 0.00
+!
+sai            Stem area index [-]
+2.00 2.00 2.00 2.00 2.00 2.00 2.00 2.00 2.00 4.00 2.00 0.50 2.00 2.00 2.00 2.00 2.00 0.00
+!
+z0m            Aerodynamic roughness length [m]
+1.00 2.20  1.00 0.80 0.80 0.10 0.10 0.70 0.10 0.03 0.03 0.06 0.50 0.06 0.01 0.05 0.002 0.01
+!
+displa         Displacement height [m]
+11.0 23.00 11.0 13.0 13.0 0.30 0.30 6.50 0.70 0.30 0.30 0.30 3.00 0.30 0.00 0.10 0.00  0.00
+!
+dleaf          Leaf dimension [m]
+0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.00
+!
+roota          Fitted numerical index of rooting distribution
+7.00 7.00 7.00 6.00 5.00 6.00 5.00 6.00 5.00 1.00 6.00 6.00 5.00 5.00 0.00 5.00 0.00 0.00
+!
+rootb          Fitted numerical index of rooting distribution
+2.00 1.00 2.00 2.00 1.50 1.50 2.50 2.50 1.00 2.50 2.00 2.50 2.00 2.00 0.00 2.00 0.00 0.00
+!
+rhol_vis       !leaf reflectance vis
+0.07 0.10 0.07 0.10 0.08 0.08 0.08 0.09 0.11 0.11 0.11 0.11 0.09 0.09 -99. 0.09 -99. -99.
+!
+rhol_nir       !leaf reflectance nir
+0.35 0.45 0.35 0.45 0.40 0.40 0.40 0.49 0.58 0.58 0.35 0.58 0.47 0.47 -99. 0.47 -99. -99.
+!
+rhos_vis       !stem reflectance vis
+0.16 0.16 0.16 0.16 0.16 0.16 0.16 0.26 0.36 0.36 0.36 0.36 0.24 0.24 -99. 0.24 -99. -99.
+!
+rhos_nir       !stem reflectance nir
+0.39 0.39 0.39 0.39 0.39 0.39 0.39 0.48 0.58 0.58 0.39 0.58 0.47 0.47 -99. 0.47 -99. -99.
+!
+taul_vis       !leaf transmittance vis
+0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.06 0.07 0.07 0.07 0.07 0.06 0.06 -99. 0.06 -99. -99.
+!
+taul_nir       !leaf transmittance nir
+0.10 0.25 0.10 0.25 0.17 0.17 0.17 0.21 0.25 0.25 0.10 0.25 0.20 0.20 -99. 0.20 -99. -99.
+!
+taus_vis       !stem transmittance vis
+0.001 0.001 0.001 0.001 0.001 0.001 0.001 0.11 0.22 0.22 0.22  0.22  0.09  0.09 -99. 0.09 -99. -99.
+!
+taus_nir       !stem transmittance nir
+0.001 0.001 0.001 0.001 0.001 0.001 0.001 0.19 0.38 0.38 0.001 0.38  0.15  0.15 -99. 0.15 -99. -99.
+!
+xl             !leaf/stem orientation index
+0.01  0.10  0.01  0.25  0.13  0.13  0.13 -0.08 -0.3 -0.3  -0.3  -0.3 -0.07 -0.07 -99. -0.07  -99. -99.
+!
+vw             !btran exponent:[(h2osoi_vol-watdry)/(watopt-watdry)]**vw
+1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. -99. 1. -99. -99.
+!
+irrig          !(irrig=0 -> no irrigation, irrig=1 -> irrigate)
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+!
+vcmx25         Maximum rate of carboxylation at 25C (umol CO2/m2/s)
+51. 62. 39. 57. 54. 17. 17. 40. 40. 52. 52. 50. 50. 50. 0. 17. 0. 0.
+!
+c3psn          Photosynthetic pathway (1=C3, 0=C4)
+1. 1. 1. 1. 1. 1. 1. 1. 1. 0. 1. 0. 1. 0. 0. 0. 0. 0.
+!
+mp             Ball-Berry slope parameter
+9. 9. 9. 9. 9. 9. 9. 9. 9. 4. 9. 4. 9. 4. 0. 9. 0. 0.
+!
+bp             Minimum leaf conductance (umol/m2/s)
+2000. 2000. 2000. 2000. 2000. 2000. 2000. 2000. 2000. 40000. 2000. 40000. 2000. 40000. 2000. 2000. 2000. 2000.
+!
+qe25           Quantum efficiency at 25C (umol CO2/umol photon)
+0.06 0.06 0.06 0.06 0.06 0.06 0.06 0.06 0.06 0.04 0.06 0.04 0.06 0.04 0. 0.06 0. 0.
+!
+folnmx         Foliage nitrogen concentration when f(N)=1 (%)
+1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5
+!
+g1_medlyn      Medlyn stomatal slope parameter (kPa^0.5)
+2.35 4.12 2.35 4.45 3.50 4.70 4.70 4.45 1.62 5.25 5.25 5.79 4.00 5.25 0. 4.70 0. 0.
+!
+clump          Vegetation clumping index (0-1, 1=no clumping)
+0.62 0.72 0.58 0.76 0.69 0.84 0.84 0.78 0.78 0.95 0.80 0.95 0.95 0.95 1.0 0.95 1.0 1.0
+!
