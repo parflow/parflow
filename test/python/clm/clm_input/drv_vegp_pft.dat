@@ -121,3 +121,6 @@ folnmx         Foliage nitrogen concentration when f(N)=1 (%)
 g1_medlyn      Medlyn stomatal slope parameter (kPa^0.5)
 2.35 4.12 2.35 4.45 3.50 4.70 4.70 4.45 1.62 5.25 5.25 5.79 4.00 5.25 0. 4.70 0. 0.
 !
+clump          Vegetation clumping index (0-1, 1=no clumping)
+0.62 0.72 0.58 0.76 0.69 0.84 0.84 0.78 0.78 0.95 0.80 0.95 0.95 0.95 1.0 0.95 1.0 1.0
+!

@@ -98,6 +98,7 @@ subroutine drv_readvegpf (drv,grid,tile,clm)
      if (vname == 'qe25')      call drv_vpr(drv,tile,clm%qe25)     ! @RMM 2026 PFT photosyn
      if (vname == 'folnmx')    call drv_vpr(drv,tile,clm%folnmx)   ! @RMM 2026 PFT photosyn
      if (vname == 'g1_medlyn')  call drv_vpr(drv,tile,clm%g1_medlyn) ! @RMM 2026 Medlyn stomata
+     if (vname == 'clump')      call drv_vpr(drv,tile,clm%clump_index) ! @RMM 2026 canopy clumping
      ! initialize lakpoi from itypwat variable
 
      do t=1,drv%nch 

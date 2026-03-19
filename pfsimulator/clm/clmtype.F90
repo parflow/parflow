@@ -392,6 +392,7 @@ module clmtype
      real(r8) :: fwet_exponent        ! power-law exponent for wet canopy fraction [-]
      integer  :: interception_scheme  ! interception scheme: 0=CLM3, 1=CLM5Tanh @RMM 2026
      real(r8) :: interception_tanh_alpha ! CLM5 tanh scaling coeff [-], default 1.0 @RMM 2026
+     real(r8) :: clump_index         ! vegetation clumping index [0-1], 1=no clumping @RMM 2026
 
 !=== End Variable List ===================================================
 
