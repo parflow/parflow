@@ -1,4 +1,16 @@
 !=========================================================================
+! ParFlow-CLM initialization parameter file
+!
+! Part of ParFlow v3.14 (March 2026)
+! https://parflow.org | https://github.com/parflow/parflow
+! Originally based on CLM 1.0 (Dai et al. 2003)
+!
+! References:
+!  Maxwell & Miller (2005) J. Hydrometeorol. — ParFlow-CLM coupling
+!  Kollet & Maxwell (2008) Water Resour. Res. — Integrated watershed model
+!  Maxwell & Condon (2016) Science, SI — Coupling approach, parameter tables
+!  Kuffour et al. (2020) Geosci. Model Dev. — ParFlow v3.5 description
+!=========================================================================
 ! drv_clmin_bestpractice.dat — Best-practice CLM initialization parameters
 !
 ! Changes from default drv_clmin.dat:
@@ -10,7 +22,7 @@
 !
 ! Dead/unused parameters removed (same as drv_clmin_clean.dat):
 !   metf1d, qflx_tran_vegmx, nt, hkdepth, wtfact, trsmx0,
-!   smpmax, scalez, pondmx
+!   smpmax, scalez, pondmx, smpmin
 !
 ! NOTE: This file produces DIFFERENT output from the default because
 ! forcing heights and dewmx affect the surface energy balance.
@@ -98,6 +110,5 @@ csoilc         0.0025                                Drag coefficient for soil u
 !
 capr           0.34                                  Tuning factor: first layer T → surface T
 cnfac          0.5                                   Crank-Nicholson factor [0-1]
-smpmin         -1.e8                                 Minimum soil matric potential [mm]
 ssi            0.033                                 Irreducible water saturation of snow
-wimp           0.05                                  Water impermeable if porosity < wimp
+wimp           0.05                                  Water impermeable threshold for porosity in snow

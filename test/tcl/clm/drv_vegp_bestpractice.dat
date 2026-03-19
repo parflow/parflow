@@ -1,17 +1,21 @@
 !=========================================================================
+! ParFlow-CLM vegetation parameter file (IGBP classification)
 !
-!  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely
-!  L                        M  available land surface process model.
-!  M --COMMON LAND MODEL--  C
-!  C                        L  CLM WEB INFO: http://clm.gsfc.nasa.gov
-!  LMCLMCLMCLMCLMCLMCLMCLMCLM  CLM ListServ/Mailing List:
+! Part of ParFlow v3.14 (March 2026)
+! https://parflow.org | https://github.com/parflow/parflow
+! Originally based on CLM 1.0 (Dai et al. 2003)
 !
+! References:
+!  Maxwell & Miller (2005) J. Hydrometeorol. — ParFlow-CLM coupling
+!  Kollet & Maxwell (2008) Water Resour. Res. — Integrated watershed model
+!  Maxwell & Condon (2016) Science, SI — Coupling approach, parameter tables
+!  Kuffour et al. (2020) Geosci. Model Dev. — ParFlow v3.5 description
 !=========================================================================
 ! drv_vegp_bestpractice.dat:
 !
 ! DESCRIPTION:
 !  Best-practice vegetation parameters with CLM4.5 optical/structural
-!  corrections AND PFT-dependent photosynthesis parameters.
+!  corrections, PFT-dependent photosynthesis, and canopy clumping.
 !
 !  Changes from default drv_vegp.dat:
 !    - CLM4.5 optical corrections for grass/savanna/crop (IGBP 8-10, 12):
@@ -22,15 +26,28 @@
 !    - C3/C4 photosynthesis parameter fixes
 !    - Medlyn stomatal conductance (g1_medlyn)
 !    - Foliage nitrogen (folnmx)
+!    - Canopy clumping index (clump) for radiation calculations
 !
 !  Presence of vcmx25 keyword activates PFT-specific photosynthesis.
 !
-!  Refs: Lawrence et al. (2011), Bonan et al. (2011), Zeng (2001),
-!        Medlyn et al. (2011), CLM4.5 Tech Note Table 3.1
+!  Parameter sources:
+!    Oleson et al. (2013) CLM4.5 Tech Note — Optical/structural corrections
+!    Jefferson et al. (2017) J. Hydrometeorol. — Photosynthesis sensitivity
+!    Medlyn et al. (2011), Lin et al. (2015) — Stomatal conductance
+!    He et al. (2012) / Lawrence et al. (2019) — Canopy clumping index
 !
 ! REVISION HISTORY:
-!  15 September 1999: Yongjiu Dai; Initial code
-!  March 2026: Reed Maxwell; CLM4.5 corrections + PFT photosynthesis
+!  1998-1999: Yongjiu Dai, Xubin Zeng; Original CLM code (NCAR)
+!  2004-2009: Reed Maxwell, Stefan Kollet; ParFlow-CLM coupling
+!  2009: Ian Ferguson; Irrigation schemes
+!  2014: Nick Engdahl; Stomatal resistance multiplier, output controls
+!  2016: Reed Maxwell, Bryant Reyes; Under-canopy drag (csoilc) correction
+!  2017: Jennifer Jefferson; ET and transpiration improvements
+!  2018-2019: Lindsay Bearup, Anna Ryken; Snow parameterizations
+!  2022: Reed Maxwell; CLM update
+!  Jan-Mar 2026: Reed Maxwell; Snow parameterizations, ET improvements,
+!                PFT photosynthesis, Medlyn stomata, canopy clumping,
+!                CLM4.5 optical/structural corrections, driver cleanup
 !=========================================================================
 !IGBP Land Cover Types
 !  1 evergreen needleleaf forests
@@ -152,4 +169,8 @@ g1_medlyn      Medlyn stomatal slope parameter (kPa^0.5)
 !              Medlyn et al. (2011); values from Lin et al. (2015)
 !              C3/C4 fix: IGBP 9 1.62→4.45 (C3 savanna), IGBP 10 5.25→1.62 (C4),
 !                         IGBP 12 5.79→1.79 (C4), IGBP 14 5.25→1.62 (C4)
+!
+clump          Vegetation clumping index (0-1, 1=no clumping)
+0.62 0.72 0.58 0.76 0.69 0.84 0.84 0.78 0.78 0.95 0.80 0.95 0.95 0.95 1.0 0.95 1.0 1.0
+!              He et al. (2012); values by IGBP class from global dataset
 !

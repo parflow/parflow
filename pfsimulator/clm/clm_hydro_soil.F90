@@ -187,24 +187,26 @@ subroutine clm_hydro_soil (clm)
   ! call clm_soilwater (vol_liq, clm%eff_porosity, clm%qflx_infl, sdamp, &
   !                     dwat   , hk              , dhkdw        , clm)
 
-  ! Set zero to hydraulic conductivity if effective porosity 5% in any of 
-  ! two neighbor layers or liquid content (theta) less than 0.001
-
-  do i = 1, nlevsoi
-     if (      (clm%eff_porosity(i) < clm%wimp) &
-          .OR. (clm%eff_porosity(min(nlevsoi,i+1)) < clm%wimp) &
-          .OR. (clm%pf_vol_liq(i) <= 1.e-3))then
-        hk(i) = 0.
-        dhkdw(i) = 0.
-     else
-        s1 = 0.5*(vol_liq(i)+vol_liq(min(nlevsoi,i+1))) / &
-             (0.5*(clm%watsat(i)+clm%watsat(min(nlevsoi,i+1))))
-        s2 = clm%hksat(i)*s1**(2.*clm%bsw(i)+2.)
-        hk(i) = s1*s2  
-        dhkdw(i) = (2.*clm%bsw(i)+3.)*s2*0.5/clm%watsat(i)
-        if(i == nlevsoi) dhkdw(i) = dhkdw(i) * 2.
-     endif
-  enddo
+  ! LEGACY: hk/dhkdw soil hydraulic conductivity — all downstream uses
+  ! commented out since ParFlow handles subsurface flow via pf_couple.
+  ! wimp check here was for soil layers only; wimp remains active for
+  ! snow layer percolation in clm_hydro_snow.F90.
+  !
+  ! do i = 1, nlevsoi
+  !    if (      (clm%eff_porosity(i) < clm%wimp) &
+  !         .OR. (clm%eff_porosity(min(nlevsoi,i+1)) < clm%wimp) &
+  !         .OR. (clm%pf_vol_liq(i) <= 1.e-3))then
+  !       hk(i) = 0.
+  !       dhkdw(i) = 0.
+  !    else
+  !       s1 = 0.5*(vol_liq(i)+vol_liq(min(nlevsoi,i+1))) / &
+  !            (0.5*(clm%watsat(i)+clm%watsat(min(nlevsoi,i+1))))
+  !       s2 = clm%hksat(i)*s1**(2.*clm%bsw(i)+2.)
+  !       hk(i) = s1*s2
+  !       dhkdw(i) = (2.*clm%bsw(i)+3.)*s2*0.5/clm%watsat(i)
+  !       if(i == nlevsoi) dhkdw(i) = dhkdw(i) * 2.
+  !    endif
+  ! enddo
 
 
   ! Renew the mass of liquid water

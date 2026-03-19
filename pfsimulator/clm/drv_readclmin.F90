@@ -171,7 +171,7 @@ subroutine drv_readclmin(drv,grid,rank,clm_write_logs)
       ! Numerical finite-difference parameters (read into 2-D grid module variables)
       if (vname == 'capr')        call drv_get2drvar(c,r,grid%capr)
       if (vname == 'cnfac')       call drv_get2drvar(c,r,grid%cnfac)
-      if (vname == 'smpmin')      call drv_get2drvar(c,r,grid%smpmin)
+      ! if (vname == 'smpmin')      call drv_get2drvar(c,r,grid%smpmin)  ! dead: ParFlow overwrites psit in clm_thermal
       if (vname == 'ssi')         call drv_get2drvar(c,r,grid%ssi)
       if (vname == 'wimp')        call drv_get2drvar(c,r,grid%wimp)
       ! if (vname == 'pondmx')      call drv_get2drvar(c,r,grid%pondmx)  ! feeds xs, all downstream commented out
