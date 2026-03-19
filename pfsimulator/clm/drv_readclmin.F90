@@ -88,10 +88,11 @@ subroutine drv_readclmin(drv,grid,rank,clm_write_logs)
       if (vname == 'vclass')      call drv_get1divar(drv%vclass)  
 
       ! CLM file names
-      if (vname == 'vegtf')       call drv_get1dcvar(drv%vegtf)  
-      if (vname == 'vegpf')       call drv_get1dcvar(drv%vegpf)  
-      if (vname == 'metf1d')      call drv_get1dcvar(drv%metf1d)  
-      if (vname == 'poutf1d')     call drv_get1dcvar(drv%poutf1d)  
+      if (vname == 'vegtf')       call drv_get1dcvar(drv%vegtf)
+      if (vname == 'vegpf')       call drv_get1dcvar(drv%vegpf)
+      ! metf1d: read but unused in ParFlow-coupled mode (forcing via PF keys)
+      if (vname == 'metf1d')      call drv_get1dcvar(drv%metf1d)
+      if (vname == 'poutf1d')     call drv_get1dcvar(drv%poutf1d)
       if (vname == 'outf1d')      call drv_get1dcvar(drv%outf1d)
       if (vname == 'rstf')        call drv_get1dcvar(drv%rstf)  
 
@@ -150,12 +151,17 @@ subroutine drv_readclmin(drv,grid,rank,clm_write_logs)
       if (vname == 'dewmx')       call drv_get2drvar(c,r,grid%dewmx)
       if (vname == 'rootfr')      call drv_get2drvar(c,r,grid%rootfr)
 
-      ! CLM Soil parameters (read into 2-D grid module variables)
-      if (vname == 'smpmax')      call drv_get2drvar(c,r,grid%smpmax)
-      if (vname == 'scalez')      call drv_get2drvar(c,r,grid%scalez)
-      if (vname == 'hkdepth')     call drv_get2drvar(c,r,grid%hkdepth)
-      if (vname == 'wtfact')      call drv_get2drvar(c,r,grid%wtfact)
-      if (vname == 'trsmx0')      call drv_get2drvar(c,r,grid%trsmx0)
+      ! CLM Soil parameters — DEPRECATED (dead code in ParFlow-CLM)
+      ! These parameters are read into grid/clm variables but never used
+      ! in any active computation path. They are kept here (commented out)
+      ! so old drv_clmin.dat files with these params are silently skipped
+      ! by the reader (unrecognized names are ignored).
+      !
+      ! if (vname == 'smpmax')      call drv_get2drvar(c,r,grid%smpmax)  ! only used in ALMA output (deprecated)
+      ! if (vname == 'scalez')      call drv_get2drvar(c,r,grid%scalez)  ! downstream formula commented out
+      ! if (vname == 'hkdepth')     call drv_get2drvar(c,r,grid%hkdepth) ! downstream formula commented out
+      ! if (vname == 'wtfact')      call drv_get2drvar(c,r,grid%wtfact)  ! feeds fcov, never used by ParFlow
+      ! if (vname == 'trsmx0')      call drv_get2drvar(c,r,grid%trsmx0)  ! never referenced in computation
 
       ! Roughness lengths (read into 2-D grid module variables)
       if (vname == 'zlnd')        call drv_get2drvar(c,r,grid%zlnd)
@@ -168,7 +174,7 @@ subroutine drv_readclmin(drv,grid,rank,clm_write_logs)
       if (vname == 'smpmin')      call drv_get2drvar(c,r,grid%smpmin)
       if (vname == 'ssi')         call drv_get2drvar(c,r,grid%ssi)
       if (vname == 'wimp')        call drv_get2drvar(c,r,grid%wimp)
-      if (vname == 'pondmx')      call drv_get2drvar(c,r,grid%pondmx)
+      ! if (vname == 'pondmx')      call drv_get2drvar(c,r,grid%pondmx)  ! feeds xs, all downstream commented out
 
    enddo
    close(10)

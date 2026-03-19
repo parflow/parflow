@@ -116,18 +116,21 @@ subroutine clm_hydro_soil (clm)
 
   !write(20,*) s(:nlevsoi)
 
-  ! Determine water table 
-
-  wmean = 0.                                                  
-  fz    = 1.0                                                
-  do i  = 1, nlevsoi                                        
-     wmean = wmean + s(i)*clm%dz(i)                          
-  enddo
-  zwt = fz * (clm%zi(nlevsoi) - wmean)                   
+  ! Determine water table
+  ! fcov/zwt removed — surface runoff and fractional wetland area
+  ! are handled by ParFlow, not CLM's TOPMODEL parameterization.
+  ! The wtfact parameter (read from drv_clmin.dat) fed only this
+  ! calculation and is now a deprecated/dead parameter.
+  !
+  ! wmean = 0.
+  ! fz    = 1.0
+  ! do i  = 1, nlevsoi
+  !    wmean = wmean + s(i)*clm%dz(i)
+  ! enddo
+  ! zwt = fz * (clm%zi(nlevsoi) - wmean)
 
   ! Saturation fraction
-
-  fcov = clm%wtfact*min(dble(1.),exp(-zwt))
+  ! fcov = clm%wtfact*min(dble(1.),exp(-zwt))
 
   ! Currently no overland flow parameterization in code is considered
   ! qflx_surf = 0.   Zong-Liang Yang & G.-Y. Niu
@@ -288,13 +291,17 @@ subroutine clm_hydro_soil (clm)
   ! clm%qflx_drain = clm%qflx_drain - xs/clm%dtime
 
   ! Determine water in excess of saturation
-
-  xs = max(dble(0.), clm%h2osoi_liq(1)-(clm%pondmx+clm%eff_porosity(1)*dzmm(1)))
-  !@ I implement a warning here because "pondmx" is a empirical factor we don't really know/use 
+  ! xs/pondmx removed — ponding and excess saturation are handled by
+  ! ParFlow's overland flow solver. The pondmx parameter is an empirical
+  ! factor that was never actively used (all downstream code was already
+  ! commented out by the original developer).
+  !
+  ! xs = max(dble(0.), clm%h2osoi_liq(1)-(clm%pondmx+clm%eff_porosity(1)*dzmm(1)))
+  !@ I implement a warning here because "pondmx" is a empirical factor we don't really know/use
   !@  if (xs > 0.) then
   !@   write(20,*)"TROUBLE: Ponding in individual cell"
   !@   clm%h2osoi_liq(1) = clm%pondmx+clm%eff_porosity(1)*dzmm(1)
-  !@  endif   
+  !@  endif
 
   !do i = 2,nlevsoi 
   !  xs = xs + max(clm%h2osoi_liq(i)-clm%eff_porosity(i)*dzmm(i), 0.)     ! [mm]
