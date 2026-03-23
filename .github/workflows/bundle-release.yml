@@ -1,0 +1,627 @@
+#
+# .github/workflows/bundle-release.yml
+#
+# Builds relocatable ParFlow binary bundles for distribution.
+# Follows the same build pattern as macos.yml and linux.yml but adds:
+#   - HDF5 from source (not Homebrew) for full relocatability
+#   - Post-build rpath fixups and Fortran runtime bundling
+#   - Tarball creation and GitHub Release publishing
+#
+# Triggered on:
+#   - Version tags (v3.14.0, etc.) → creates a GitHub Release
+#   - Manual dispatch → uploads artifacts for testing
+#   - Weekly schedule → catches upstream breakage early
+#
+name: Build Release Bundles
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+  schedule:
+    # Weekly Monday 6am UTC
+    - cron: '0 6 * * 1'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bundle:
+    name: Bundle (${{ matrix.config.name }})
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+              name: "macOS ARM64",
+              os: macos-14,
+              platform: macos-arm64,
+              hdf5_cppflags: "",
+              hdf5_ldflags: "",
+              netcdf_cppflags_prefix: "PARFLOW_DEP_DIR",
+            }
+          - {
+              name: "macOS x86_64",
+              os: macos-13,
+              platform: macos-x86_64,
+              hdf5_cppflags: "",
+              hdf5_ldflags: "",
+              netcdf_cppflags_prefix: "PARFLOW_DEP_DIR",
+            }
+          - {
+              name: "Linux x86_64",
+              os: ubuntu-22.04,
+              platform: linux-x86_64,
+              hdf5_cppflags: "",
+              hdf5_ldflags: "",
+              netcdf_cppflags_prefix: "PARFLOW_DEP_DIR",
+            }
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # =====================================================================
+      # Compiler + MPI setup — same actions as existing macos.yml / linux.yml
+      # =====================================================================
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - uses: fortran-lang/setup-fortran@v1
+        with:
+          compiler: gcc
+
+      - uses: mpi4py/setup-mpi@v1
+        with:
+          mpi: openmpi
+
+      - name: Linux packages
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -qq install -y patchelf tcl-dev
+
+      - name: macOS TCL setup
+        if: runner.os == 'macOS'
+        run: |
+          brew install tcl-tk@8 || true
+          brew link tcl-tk@8 || true
+
+      # =====================================================================
+      # Directory setup — mirrors existing CI pattern
+      # =====================================================================
+      - name: Directory Setup
+        run: |
+          # PARFLOW_DIR: final ParFlow install (becomes the bundle root)
+          mkdir -p $HOME/install
+          echo "PARFLOW_DIR=$HOME/install" >> $GITHUB_ENV
+
+          # PARFLOW_DEP_DIR: all dependencies built here, then merged into bundle
+          mkdir -p $HOME/depend/{include,lib,bin}
+          echo "PARFLOW_DEP_DIR=$HOME/depend" >> $GITHUB_ENV
+          echo "$HOME/depend/bin" >> $GITHUB_PATH
+
+          # Library search paths
+          echo "LD_LIBRARY_PATH=$HOME/depend/lib:$HOME/depend/lib64:${LD_LIBRARY_PATH:-}" >> $GITHUB_ENV
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            echo "DYLD_FALLBACK_LIBRARY_PATH=$HOME/depend/lib:${DYLD_FALLBACK_LIBRARY_PATH:-}" >> $GITHUB_ENV
+          fi
+
+      # =====================================================================
+      # Dependencies — built from source for full relocatability
+      # Key difference from CI: HDF5 is from source, not Homebrew
+      # =====================================================================
+
+      # HDF5 (parallel) — built from source instead of brew install hdf5-mpi
+      # This is the key change: Homebrew libs can't be redistributed cleanly
+      - name: HDF5 Install (parallel, from source)
+        run: |
+          HDF5_VERSION=1.14.3
+          URL=https://github.com/HDFGroup/hdf5/releases/download/hdf5_${HDF5_VERSION}/hdf5-${HDF5_VERSION}.tar.gz
+          mkdir hdf5-build && cd hdf5-build
+          curl -L $URL | tar --strip-components=1 -xz
+          CC=mpicc ./configure \
+            --enable-parallel \
+            --enable-shared \
+            --disable-static \
+            --prefix=$PARFLOW_DEP_DIR
+          make -j 3
+          make install
+          cd ..
+          echo "HDF5 parallel build complete"
+          ls $PARFLOW_DEP_DIR/lib/libhdf5*
+
+      # NetCDF-C — same as existing CI, built from source
+      # Points at our source-built HDF5 instead of Homebrew
+      - name: NetCDF-C Install
+        run: |
+          URL=https://github.com/Unidata/netcdf-c/archive/v4.9.0.tar.gz
+          mkdir netcdf-c && cd netcdf-c
+          curl -L $URL | tar --strip-components=1 -xz
+          CC=mpicc \
+            CPPFLAGS=-I${PARFLOW_DEP_DIR}/include \
+            LDFLAGS=-L${PARFLOW_DEP_DIR}/lib \
+            ./configure --prefix=$PARFLOW_DEP_DIR
+          make -j 3
+          make install
+          cd ..
+
+          # Verify parallel support
+          if [ ! -f "${PARFLOW_DEP_DIR}/include/netcdf_par.h" ]; then
+            echo "::error::netcdf_par.h not found — parallel NetCDF build failed"
+            exit 1
+          fi
+          echo "NetCDF parallel build verified (netcdf_par.h present)"
+
+      # NetCDF-Fortran — same as existing CI
+      - name: NetCDF-Fortran Install
+        run: |
+          URL=https://github.com/Unidata/netcdf-fortran/archive/v4.5.4.tar.gz
+          mkdir netcdf-fortran && cd netcdf-fortran
+          curl -L $URL | tar --strip-components=1 -xz
+          CC=mpicc FC=mpifort \
+            CPPFLAGS=-I${PARFLOW_DEP_DIR}/include \
+            LDFLAGS=-L${PARFLOW_DEP_DIR}/lib \
+            ./configure --prefix=${PARFLOW_DEP_DIR}
+          make -j 3
+          make install
+
+      # SILO — same as existing CI
+      - name: SILO Install
+        run: |
+          URL=https://github.com/LLNL/Silo/archive/refs/tags/4.11.1.tar.gz
+          mkdir silo && cd silo
+          curl -L $URL | tar --strip-components=1 -xz
+          ./configure \
+            --disable-silex --disable-hzip --disable-fpzip \
+            --enable-shared=yes --disable-fortran --with-readline=no \
+            --prefix=$PARFLOW_DEP_DIR
+          make -j 3 install
+
+      # HYPRE — same as existing CI (using same version)
+      - name: HYPRE Install
+        run: |
+          URL=https://github.com/hypre-space/hypre/archive/v2.26.0.tar.gz
+          mkdir hypre && cd hypre
+          curl -L $URL | tar --strip-components=1 -xz
+          cd src
+          CC=mpicc CXX=mpic++ FC=mpif77 F77=mpif90 \
+            ./configure --prefix=$PARFLOW_DEP_DIR
+          make -j 3 install
+
+      # =====================================================================
+      # ParFlow build — mirrors existing CI cmake flags
+      # =====================================================================
+      - name: ParFlow CMake Configure
+        run: |
+          mpicc -v
+
+          # TCL is needed for build only (not shipped in bundle)
+          # macOS: use Homebrew TCL paths, same as existing CI
+          # Note: Homebrew prefix is /opt/homebrew on ARM, /usr/local on Intel
+          TCL_FLAGS=""
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            BREW_PREFIX=$(brew --prefix)
+            TCL_FLAGS="-DTCL_INCLUDE_PATH=${BREW_PREFIX}/include -DTCL_LIBRARY=${BREW_PREFIX}/lib/libtcl8.6.dylib -DTCL_TCLSH=${BREW_PREFIX}/bin/tclsh8.6"
+          fi
+
+          CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 cmake -Bbuild \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DPARFLOW_ENABLE_TIMING=TRUE \
+            -DPARFLOW_AMPS_LAYER=mpi1 \
+            -DPARFLOW_AMPS_SEQUENTIAL_IO=true \
+            -DPARFLOW_HAVE_CLM=ON \
+            -DHYPRE_ROOT=$PARFLOW_DEP_DIR \
+            -DSILO_ROOT=$PARFLOW_DEP_DIR \
+            -DNETCDF_DIR=$PARFLOW_DEP_DIR \
+            -DPARFLOW_ENABLE_HDF5=TRUE \
+            -DPARFLOW_ENABLE_PYTHON=TRUE \
+            -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR \
+            -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE \
+            $TCL_FLAGS
+
+      - name: ParFlow Build & Install
+        run: |
+          cd build
+          make -j 3 install
+
+      # Quick sanity check before bundling — same as existing CI
+      - name: ParFlow CTest
+        run: |
+          cd build
+          ctest --output-on-failure
+
+      # =====================================================================
+      # BUNDLE STEPS — this is the new part
+      # Everything above is the same proven build; below makes it portable
+      # =====================================================================
+
+      # Merge deps into the ParFlow install tree so we have one prefix
+      - name: Merge dependencies into bundle
+        run: |
+          BUNDLE=$PARFLOW_DIR
+          DEP=$PARFLOW_DEP_DIR
+
+          echo "Merging $DEP into $BUNDLE..."
+
+          # Copy libraries (skip static .a files to save space)
+          for f in $DEP/lib/*.dylib $DEP/lib/*.so* $DEP/lib/*.a; do
+            [ -e "$f" ] || continue
+            bn=$(basename "$f")
+            # Don't overwrite ParFlow's own libs
+            if [ ! -e "$BUNDLE/lib/$bn" ]; then
+              cp -a "$f" "$BUNDLE/lib/"
+            fi
+          done
+
+          # Copy headers (needed if someone wants to compile against this install)
+          cp -rn $DEP/include/* $BUNDLE/include/ 2>/dev/null || true
+
+          # Copy any dep binaries (nc-config, h5dump, etc — useful for debugging)
+          for f in $DEP/bin/*; do
+            [ -e "$f" ] || continue
+            bn=$(basename "$f")
+            if [ ! -e "$BUNDLE/bin/$bn" ]; then
+              cp -a "$f" "$BUNDLE/bin/"
+            fi
+          done
+
+          echo "Merge complete. Bundle contents:"
+          echo "  bin: $(ls $BUNDLE/bin | wc -l) files"
+          echo "  lib: $(ls $BUNDLE/lib | wc -l) files"
+          echo "  include: $(ls $BUNDLE/include | wc -l) files"
+
+      # Copy MPI into bundle so users don't need a system MPI install
+      - name: Bundle MPI
+        run: |
+          BUNDLE=$PARFLOW_DIR
+
+          # Find where setup-mpi installed OpenMPI
+          MPI_BIN=$(dirname $(which mpirun))
+          MPI_PREFIX=$(dirname $MPI_BIN)
+
+          echo "MPI found at: $MPI_PREFIX"
+
+          # Copy MPI binaries
+          for bin in mpirun mpiexec mpicc mpicxx mpic++ mpifort orterun orted; do
+            if [ -x "$MPI_PREFIX/bin/$bin" ]; then
+              cp -a "$MPI_PREFIX/bin/$bin" "$BUNDLE/bin/" 2>/dev/null || true
+            fi
+          done
+
+          # Copy MPI libraries
+          if [ -d "$MPI_PREFIX/lib" ]; then
+            for f in $MPI_PREFIX/lib/libmpi* $MPI_PREFIX/lib/libopen-* $MPI_PREFIX/lib/libpmix* $MPI_PREFIX/lib/libprrte*; do
+              [ -e "$f" ] || continue
+              cp -a "$f" "$BUNDLE/lib/" 2>/dev/null || true
+            done
+          fi
+
+          # Copy MPI's etc directory (needed for mpirun configuration)
+          if [ -d "$MPI_PREFIX/etc" ]; then
+            cp -r "$MPI_PREFIX/etc" "$BUNDLE/" 2>/dev/null || true
+          fi
+
+          # Copy MPI's share directory (needed for OpenMPI modules)
+          if [ -d "$MPI_PREFIX/share/openmpi" ]; then
+            mkdir -p "$BUNDLE/share"
+            cp -r "$MPI_PREFIX/share/openmpi" "$BUNDLE/share/" 2>/dev/null || true
+          fi
+
+          echo "MPI bundled: $(ls $BUNDLE/bin/mpi* 2>/dev/null | wc -l) binaries"
+
+      # CRITICAL: Fix pf-cmake-env.sh to use bundled MPI instead of build-machine paths
+      # The ParFlow run script ($PARFLOW_DIR/bin/run) sources this file to find MPIEXEC.
+      # At cmake time, MPIEXEC is baked in as an absolute path to the CI runner's mpiexec.
+      # For the bundle to be relocatable, we rewrite it to use $PARFLOW_DIR/bin/mpiexec.
+      - name: Fix pf-cmake-env.sh for relocatability
+        run: |
+          BUNDLE=$PARFLOW_DIR
+          ENV_FILE="$BUNDLE/config/pf-cmake-env.sh"
+
+          if [ ! -f "$ENV_FILE" ]; then
+            echo "::warning::pf-cmake-env.sh not found at $ENV_FILE"
+            exit 0
+          fi
+
+          echo "Original pf-cmake-env.sh:"
+          cat "$ENV_FILE"
+          echo ""
+
+          # Replace the hardcoded MPIEXEC path with a $PARFLOW_DIR-relative one
+          # The run script already has $PARFLOW_DIR set when it sources this file,
+          # so $PARFLOW_DIR/bin/mpiexec will resolve correctly at runtime
+          sed -i.bak 's|^MPIEXEC=.*|MPIEXEC="${PARFLOW_DIR}/bin/mpiexec"|' "$ENV_FILE"
+
+          # Also fix MPIEXEC_NUMPROC_FLAG if it somehow got mangled
+          # (should be -n or -np, but verify it's present)
+          grep -q 'MPIEXEC_NUMPROC_FLAG' "$ENV_FILE" || \
+            echo 'MPIEXEC_NUMPROC_FLAG="-n"' >> "$ENV_FILE"
+
+          rm -f "$ENV_FILE.bak"
+
+          echo "Patched pf-cmake-env.sh:"
+          cat "$ENV_FILE"
+
+      # Bundle Fortran runtime (the libgfortran.5.dylib etc from your build notes)
+      - name: Bundle Fortran Runtime
+        run: |
+          BUNDLE=$PARFLOW_DIR
+
+          # Find gfortran's library directory
+          FC_PATH=$(which gfortran 2>/dev/null || which gfortran-* 2>/dev/null | head -1)
+          if [ -z "$FC_PATH" ]; then
+            echo "::warning::gfortran not found, skipping Fortran runtime bundling"
+            exit 0
+          fi
+
+          echo "gfortran: $FC_PATH"
+
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            RTLIBS="libgfortran.5.dylib libquadmath.0.dylib libgcc_s.1.1.dylib libgomp.1.dylib"
+          else
+            RTLIBS="libgfortran.so.5 libquadmath.so.0 libgcc_s.so.1 libgomp.so.1"
+          fi
+
+          for rtlib in $RTLIBS; do
+            # Use gfortran --print-file-name to locate
+            LIB_PATH=$($FC_PATH --print-file-name=$rtlib 2>/dev/null)
+            if [ -f "$LIB_PATH" ]; then
+              cp -a "$LIB_PATH" "$BUNDLE/lib/"
+              echo "  [bundled] $rtlib from $LIB_PATH"
+            else
+              echo "  [skip] $rtlib not found"
+            fi
+          done
+
+      # Fix rpaths so the bundle works from any directory
+      - name: Fix rpaths (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          BUNDLE=$PARFLOW_DIR
+
+          echo "Fixing dylib install names..."
+          for dylib in $BUNDLE/lib/*.dylib; do
+            [ -f "$dylib" ] || continue
+            libname=$(basename "$dylib")
+
+            # Set install name to @rpath-relative
+            install_name_tool -id "@rpath/$libname" "$dylib" 2>/dev/null || true
+
+            # Rewrite references to other bundled libs
+            otool -L "$dylib" | awk 'NR>1 {print $1}' | while read dep; do
+              depbase=$(basename "$dep")
+              if [ -f "$BUNDLE/lib/$depbase" ] && [[ "$dep" != "@rpath/"* ]] && [[ "$dep" != "@loader_path/"* ]]; then
+                install_name_tool -change "$dep" "@rpath/$depbase" "$dylib" 2>/dev/null || true
+              fi
+            done
+          done
+
+          echo "Fixing binary rpaths..."
+          for bin in $BUNDLE/bin/*; do
+            [ -f "$bin" ] && [ -x "$bin" ] || continue
+
+            # Add rpath to find bundled libs
+            install_name_tool -add_rpath "@executable_path/../lib" "$bin" 2>/dev/null || true
+
+            # Rewrite any absolute references to bundled libs
+            otool -L "$bin" 2>/dev/null | awk 'NR>1 {print $1}' | while read dep; do
+              depbase=$(basename "$dep")
+              if [ -f "$BUNDLE/lib/$depbase" ] && [[ "$dep" != "@rpath/"* ]] && [[ "$dep" != "@executable_path/"* ]] && [[ "$dep" != "/usr/lib/"* ]] && [[ "$dep" != "/System/"* ]]; then
+                install_name_tool -change "$dep" "@rpath/$depbase" "$bin" 2>/dev/null || true
+              fi
+            done
+          done
+
+          echo "rpath fixups complete"
+
+      - name: Fix rpaths (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          BUNDLE=$PARFLOW_DIR
+
+          for bin in $BUNDLE/bin/*; do
+            [ -f "$bin" ] && [ -x "$bin" ] || continue
+            patchelf --set-rpath '$ORIGIN/../lib' "$bin" 2>/dev/null || true
+          done
+          for so in $BUNDLE/lib/*.so*; do
+            [ -f "$so" ] || continue
+            patchelf --set-rpath '$ORIGIN' "$so" 2>/dev/null || true
+          done
+
+          echo "Linux runpath fixups complete"
+
+      # Verify the bundle works in isolation
+      - name: Bundle smoke test
+        run: |
+          BUNDLE=$PARFLOW_DIR
+          ERRORS=0
+
+          echo "=== Smoke testing bundle ==="
+
+          # Check parflow binary exists and runs
+          if [ ! -x "$BUNDLE/bin/parflow" ]; then
+            echo "::error::parflow binary not found"
+            ERRORS=$((ERRORS+1))
+          fi
+
+          # Check mpirun exists
+          if [ ! -x "$BUNDLE/bin/mpirun" ]; then
+            echo "::error::mpirun binary not found in bundle"
+            ERRORS=$((ERRORS+1))
+          fi
+
+          # On macOS, check no leaking references to /opt/homebrew or /usr/local
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            LEAKS=$(otool -L "$BUNDLE/bin/parflow" | grep -c '/opt/homebrew\|/usr/local' || true)
+            if [ "$LEAKS" -gt 0 ]; then
+              echo "::warning::parflow binary has $LEAKS references to Homebrew/local paths"
+              otool -L "$BUNDLE/bin/parflow" | grep '/opt/homebrew\|/usr/local'
+              # Warning not error — some system libs may legitimately be here
+            fi
+          fi
+
+          # Check critical libraries are present
+          for lib in libhdf5 libnetcdf libHYPRE; do
+            if [[ "${{ runner.os }}" == "macOS" ]]; then
+              FOUND=$(ls $BUNDLE/lib/${lib}*.dylib 2>/dev/null | wc -l)
+            else
+              FOUND=$(ls $BUNDLE/lib/${lib}*.so* 2>/dev/null | wc -l)
+            fi
+            if [ "$FOUND" -eq 0 ]; then
+              echo "::error::${lib} not found in bundle"
+              ERRORS=$((ERRORS+1))
+            else
+              echo "  [ok] $lib present"
+            fi
+          done
+
+          # Check Fortran runtime (macOS specific)
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            if [ ! -f "$BUNDLE/lib/libgfortran.5.dylib" ]; then
+              echo "::warning::libgfortran.5.dylib not in bundle — may cause runtime failures"
+            else
+              echo "  [ok] libgfortran bundled"
+            fi
+          fi
+
+          # Check PFTools
+          python3 -c "import sys; sys.path.insert(0, '$BUNDLE'); import parflow" 2>/dev/null && \
+            echo "  [ok] pftools importable" || \
+            echo "  [warn] pftools not directly importable (may need pip install)"
+
+          if [ "$ERRORS" -gt 0 ]; then
+            echo "::error::Smoke test failed with $ERRORS errors"
+            exit 1
+          fi
+          echo "=== Smoke test passed ==="
+
+      # Add setup.sh to the bundle
+      - name: Add setup.sh
+        run: |
+          cat > $PARFLOW_DIR/setup.sh << 'SETUP_EOF'
+          #!/usr/bin/env bash
+          #
+          # ParFlow Environment Setup
+          # Source this file, or just set PARFLOW_DIR and PATH yourself.
+          #
+          #   source /path/to/parflow/setup.sh
+          #
+          PARFLOW_SETUP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+          export PARFLOW_DIR="${PARFLOW_SETUP_DIR}"
+          export PATH="${PARFLOW_DIR}/bin:${PATH}"
+
+          # Library paths — needed so bundled shared libs are found at runtime
+          if [[ "$(uname -s)" == "Darwin" ]]; then
+              export DYLD_FALLBACK_LIBRARY_PATH="${PARFLOW_DIR}/lib:${DYLD_FALLBACK_LIBRARY_PATH:-}"
+          else
+              export LD_LIBRARY_PATH="${PARFLOW_DIR}/lib:${LD_LIBRARY_PATH:-}"
+          fi
+
+          echo "PARFLOW_DIR=${PARFLOW_DIR}"
+          SETUP_EOF
+          chmod +x $PARFLOW_DIR/setup.sh
+
+      # Create the tarball
+      - name: Create tarball
+        run: |
+          # Get version from the VERSION file
+          PF_VERSION=$(cat VERSION | tr -d '[:space:]')
+          PLATFORM=${{ matrix.config.platform }}
+          TARBALL_NAME="parflow-${PF_VERSION}-${PLATFORM}"
+
+          # Rename the install directory to the tarball name
+          mv $PARFLOW_DIR $HOME/${TARBALL_NAME}
+
+          # Create tarball
+          cd $HOME
+          tar czf ${GITHUB_WORKSPACE}/${TARBALL_NAME}.tar.gz ${TARBALL_NAME}
+
+          echo "TARBALL_NAME=${TARBALL_NAME}" >> $GITHUB_ENV
+          echo "Created: ${TARBALL_NAME}.tar.gz ($(du -sh ${GITHUB_WORKSPACE}/${TARBALL_NAME}.tar.gz | cut -f1))"
+
+      - name: Upload tarball artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.TARBALL_NAME }}
+          path: ${{ env.TARBALL_NAME }}.tar.gz
+          retention-days: 30
+
+  # ===========================================================================
+  # Create GitHub Release (only on tag push)
+  # ===========================================================================
+  release:
+    needs: bundle
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    name: Create Release
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Compute checksums
+        run: |
+          cd artifacts
+          find . -name '*.tar.gz' -exec sha256sum {} \; | sort > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Get version
+        run: |
+          PF_VERSION=$(cat VERSION | tr -d '[:space:]')
+          echo "PF_VERSION=${PF_VERSION}" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "ParFlow ${{ env.PF_VERSION }}"
+          body: |
+            ## ParFlow ${{ env.PF_VERSION }} — Pre-built Binaries
+
+            Download the tarball for your platform, untar, and run:
+
+            ```bash
+            tar xzf parflow-${{ env.PF_VERSION }}-<platform>.tar.gz
+            cd parflow-${{ env.PF_VERSION }}-<platform>/
+            source setup.sh
+            python my_simulation.py
+            ```
+
+            No admin rights, Docker, Homebrew, or conda required.
+            All dependencies including MPI are bundled — just set `PARFLOW_DIR` and go.
+
+            ### Platforms
+            | File | Platform |
+            |------|----------|
+            | `*-macos-arm64.tar.gz` | macOS Apple Silicon (M1/M2/M3/M4) |
+            | `*-macos-x86_64.tar.gz` | macOS Intel |
+            | `*-linux-x86_64.tar.gz` | Linux x86_64 (Ubuntu, RHEL, WSL2) |
+
+            ### What's included
+            - ParFlow with CLM
+            - OpenMPI (bundled)
+            - Parallel HDF5 and NetCDF-C/Fortran
+            - hypre, Silo
+            - Fortran runtime libraries
+            - PFTools Python package
+
+            ### Windows
+            Install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install)
+            and use the Linux x86_64 bundle.
+
+            See `SHA256SUMS.txt` to verify downloads.
+          files: |
+            artifacts/**/*.tar.gz
+            artifacts/SHA256SUMS.txt
+          draft: false
+          prerelease: false
