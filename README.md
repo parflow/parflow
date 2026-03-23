@@ -68,6 +68,40 @@ A Parflow blog is available with notes from users on how to use Parflow:
 To report Parflow bugs, please use the GitHub issue tracker for Parflow:
 - [Parflow Issue Tracker](https://github.com/parflow/parflow/issues)
 
+## Install
+
+Pre-built ParFlow bundles are available for macOS and Linux with all
+dependencies included. No compilation, Docker, or admin rights required.
+
+**Automatic install:**
+
+```
+curl -sSf https://raw.githubusercontent.com/parflow/parflow/master/bin/install.sh | bash
+```
+
+**Then set your environment:**
+
+```
+export PARFLOW_DIR=$HOME/parflow
+export PATH=${PARFLOW_DIR}/bin:${PATH}
+```
+
+Add those two lines to your `~/.bashrc` or `~/.zshrc` to make them permanent.
+
+**Run your simulation:**
+
+```
+python my_simulation.py
+```
+
+Pre-built bundles include ParFlow, CLM, parallel HDF5, parallel NetCDF,
+OpenMPI, and hypre. Available for macOS Apple Silicon, macOS Intel, and
+Linux x86_64 (including WSL2). See
+[Releases](https://github.com/parflow/parflow/releases) for manual download
+or to install a specific version.
+
+For building ParFlow from source, see [Quick Start](#quick-start-on-unixlinux) below.
+
 ## Quick Start on Unix/Linux
 
 Important note for users that have built with Autoconf, the CMake
