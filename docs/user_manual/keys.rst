@@ -6302,19 +6302,34 @@ described below, will also need to be changed.
       <runname>.Solver.CLM.RootZoneNZ = 4    ## Python syntax
 
 *integer* **Solver.CLM.RZWaterStress** 0 This key sets the distribution
-of transpiration over the root zone and changes the behavior of plant water limitations.
-As discussed in :cite:p:`Ferguson2016` water stress approaches result in
-different cut-offs for transpiration ().  Two options are currently
-implemented both use the beta-type water stress defined above.  Option 0
-(default) will limit transpiration when the top soil layer drops below
-wilting point, option 1 limits each layer independently.
+of transpiration over the root zone and changes the behavior of plant water
+limitations. All options use the beta-type water stress defined by
+``Solver.CLM.VegWaterStress``. Three options are available:
+
+- **Option 0** (default): Transpiration is distributed by root fraction only.
+  All transpiration is shut off when the top soil layer drops below the wilting
+  point. This is the original CLM3 behavior.
+
+- **Option 1**: Transpiration is distributed weighted by both root fraction and
+  per-layer water stress (soil resistance). There is no top-layer cutoff, so
+  plants can transpire from deep wet roots even when the surface is dry. The
+  total transpiration is still limited by the aggregate stress factor ``btran``.
+  See :cite:p:`Ferguson2016`.
+
+- **Option 2**: Compensatory root water uptake. Uses the same weighted
+  distribution as option 1, but additionally boosts the aggregate stress factor
+  ``btran`` so that wet layers can compensate for dry layers. The compensation
+  is controlled by a PFT-dependent parameter ``omega_max`` (set via
+  ``drv_vegp.dat``): ``btran = min(1.0, omega_max * btran_raw)``. When
+  ``omega_max = 1.0`` (default), this recovers option 1 behavior. Values of 2-3
+  are recommended for deep-rooted trees. See :cite:p:`Li2001`.
 
 .. container:: list
 
    ::
 
-      pfset Solver.CLM.RZWaterStress 1          ## TCL syntax
-      <runname>.Solver.CLM.RZWaterStress = 1    ## Python syntax
+      pfset Solver.CLM.RZWaterStress 2          ## TCL syntax
+      <runname>.Solver.CLM.RZWaterStress = 2    ## Python syntax
       
 *integer* **Solver.CLM.SoiLayer** 7 This key sets the soil layer, and
 thus the soil depth, that ``CLM`` uses for the seasonal temperature 

@@ -36,14 +36,15 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
      j=tile(t)%row
      if (clm(t)%planar_mask==1) then
         !! RZ water stress * T distribution
-        if (clm(t)%rzwaterstress == 1) then
+        !! rzwaterstress=1 (distributed) and =2 (compensatory) both use weighted distribution
+        if (clm(t)%rzwaterstress == 1 .or. clm(t)%rzwaterstress == 2) then
         total_soil_resistance = 0.0d0
         do k = 1, nlevsoi
         total_soil_resistance = total_soil_resistance + clm(t)%soil_resistance(k)*clm(t)%rootfr(k)
         end do  !k over soil column
         end if
 
-        if (clm(t)%rzwaterstress == 0)  then  !! check what kind of water stress formulation we are using to distribute T
+        if (clm(t)%rzwaterstress == 0)  then  !! uniform T distribution by root fraction only
         do k = 1, nlevsoi
            l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))    ! updated indexing @RMM 4-12-09
            abs_transpiration = 0.0

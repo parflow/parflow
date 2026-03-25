@@ -271,8 +271,12 @@ subroutine drv_clmini (drv, grid,pf_porosity, tile, clm, istep_pf, clm_forc_veg)
   clm%kc25   =  30.      ! co2 michaelis-menten constant at 25c (pa)
   clm%ako    =  1.2      ! q10 for ko25
   clm%akc    =  2.1      ! q10 for kc25
-  clm%avcmx  =  2.4      ! q10 for vcmx25                
-  
+  clm%avcmx  =  2.4      ! q10 for vcmx25
+
+  ! Compensatory RWU: default omega_max=1.0 if not set via drv_vegp.dat @RMM 2026
+  ! omega_max=1.0 gives no compensation (identical to rzwaterstress=1)
+  if (clm%omega_max /= clm%omega_max) clm%omega_max = 1.0d0
+
 ! ========================================================================
 ! TIME VARIANT [1]
 ! Temperatures and snow cover fraction are initialized in CLM
