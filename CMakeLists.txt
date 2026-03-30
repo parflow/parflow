@@ -280,15 +280,18 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
 
 endif ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
 
-find_package(TCL QUIET)
-if (${TCL_FOUND})
-  set(PARFLOW_HAVE_TCL "yes")
-  set(HAVE_TCL ${PARFLOW_HAVE_TCL})
-else (${TCL_FOUND})
-  if (${PARFLOW_ENABLE_TOOLS})
-    message(FATAL_ERROR "TCL is required for building pftools")
-  endif (${PARFLOW_ENABLE_TOOLS})
-endif (${TCL_FOUND})
+option(PARFLOW_ENABLE_TCL "Enable Tcl-based tools and tests" "TRUE")
+if (PARFLOW_ENABLE_TCL)
+  find_package(TCL QUIET)
+  if (TCL_FOUND)
+    set(PARFLOW_HAVE_TCL "yes")
+    set(HAVE_TCL ${PARFLOW_HAVE_TCL})
+  else ()
+    message(WARNING "Tcl not found; skipping Tcl-based pftools targets and Tcl-driven tests")
+  endif ()
+else ()
+  message(STATUS "Tcl support disabled; skipping Tcl-based pftools targets and Tcl-driven tests")
+endif ()
 
 #-----------------------------------------------------------------------------
 # SILO

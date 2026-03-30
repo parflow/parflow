@@ -9,39 +9,40 @@ set (TOOLS_SRC_FILES pftappinit.c printdatabox.c readdatabox.c databox.c
   toposlopes.c sum.c solidtools.c
   )
 
-add_library(pftools SHARED ${TOOLS_SRC_FILES})
+if (PARFLOW_HAVE_TCL)
+  add_library(pftools SHARED ${TOOLS_SRC_FILES})
 
-target_include_directories(pftools PUBLIC ${TCL_INCLUDE_PATH})
-target_link_libraries(pftools ${TCL_LIBRARY})
+  target_include_directories(pftools PUBLIC ${TCL_INCLUDE_PATH})
+  target_link_libraries(pftools ${TCL_LIBRARY})
 
-if (${PARFLOW_HAVE_SILO})
-  target_include_directories (pftools PUBLIC "${SILO_INCLUDE_DIRS}")
-  target_link_libraries (pftools ${SILO_LIBRARIES})
-endif (${PARFLOW_HAVE_SILO})
+  if (${PARFLOW_HAVE_SILO})
+    target_include_directories (pftools PUBLIC "${SILO_INCLUDE_DIRS}")
+    target_link_libraries (pftools ${SILO_LIBRARIES})
+  endif (${PARFLOW_HAVE_SILO})
 
-if (${PARFLOW_HAVE_HDF5})
-  target_include_directories (pftools PUBLIC "${HDF5_INCLUDE_DIRS}")
-  target_link_libraries (pftools ${HDF5_LIBRARIES})
-endif (${PARFLOW_HAVE_HDF5})
+  if (${PARFLOW_HAVE_HDF5})
+    target_include_directories (pftools PUBLIC "${HDF5_INCLUDE_DIRS}")
+    target_link_libraries (pftools ${HDF5_LIBRARIES})
+  endif (${PARFLOW_HAVE_HDF5})
 
-if (${PARFLOW_HAVE_ZLIB})
-  target_link_libraries (pftools ${ZLIB_LIBRARIES})
-endif (${PARFLOW_HAVE_ZLIB})
+  if (${PARFLOW_HAVE_ZLIB})
+    target_link_libraries (pftools ${ZLIB_LIBRARIES})
+  endif (${PARFLOW_HAVE_ZLIB})
 
-if (${PARFLOW_HAVE_SZLIB})
-  target_link_libraries (pftools ${SZLIB_LIBRARIES})
-endif (${PARFLOW_HAVE_SZLIB})
+  if (${PARFLOW_HAVE_SZLIB})
+    target_link_libraries (pftools ${SZLIB_LIBRARIES})
+  endif (${PARFLOW_HAVE_SZLIB})
 
-# Install to bin is for TCL which seem to prefer shared libraries
-# there for some installs.
-install(TARGETS pftools DESTINATION bin)
-install(TARGETS pftools DESTINATION lib)
+  # Install to bin is for Tcl, which expects shared libraries there on some systems.
+  install(TARGETS pftools DESTINATION bin)
+  install(TARGETS pftools DESTINATION lib)
 
-file (GLOB TCL_SRC *.tcl)
-install(FILES ${TCL_SRC} DESTINATION bin)
+  file (GLOB TCL_SRC *.tcl)
+  install(FILES ${TCL_SRC} DESTINATION bin)
 
-set(SCRIPTS pfhelp pfmvio pfbtosa pfbtovis pfbtosilo pfsbtosa pfstrip)
-install(PROGRAMS ${SCRIPTS} DESTINATION bin)
+  set(SCRIPTS pfhelp pfmvio pfbtosa pfbtovis pfbtosilo pfsbtosa pfstrip)
+  install(PROGRAMS ${SCRIPTS} DESTINATION bin)
+endif ()
 
 add_executable(pfwell_cat pfwell_cat.c well.c)
 install(TARGETS pfwell_cat DESTINATION bin)
@@ -65,10 +66,12 @@ install(TARGETS projecttin DESTINATION bin)
 #-----------------------------------------------------------------------------
 # Mask utilities
 #-----------------------------------------------------------------------------
-add_executable(pfmask-to-pfsol pfmask-to-pfsol.cpp)
-target_include_directories(pfmask-to-pfsol PUBLIC third_party)
-target_link_libraries(pfmask-to-pfsol pftools)
-install(TARGETS pfmask-to-pfsol DESTINATION bin)
+if (PARFLOW_HAVE_TCL)
+  add_executable(pfmask-to-pfsol pfmask-to-pfsol.cpp)
+  target_include_directories(pfmask-to-pfsol PUBLIC third_party)
+  target_link_libraries(pfmask-to-pfsol pftools)
+  install(TARGETS pfmask-to-pfsol DESTINATION bin)
+endif ()
 
 add_executable(pfsol-to-vtk pfsol-to-vtk.c)
 install(TARGETS pfsol-to-vtk DESTINATION bin)
@@ -77,4 +80,6 @@ add_executable(pfmaskdownsize pfmaskdownsize.cpp)
 target_include_directories(pfmaskdownsize PUBLIC third_party)
 install(TARGETS pfmaskdownsize DESTINATION bin)
 
-add_subdirectory (test)
+if (PARFLOW_HAVE_TCL)
+  add_subdirectory (test)
+endif ()
