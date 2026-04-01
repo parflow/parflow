@@ -2052,9 +2052,11 @@ PFModule   *PhaseRelPermNewPublicXtra()
             case 0:  /* None */
               h_s = 0.0;
               break;
+
             case 1:  /* Constant */
               h_s = global_h_s;
               break;
+
             case 2:  /* InverseAlpha */
               if (dummy1->alphas[ir] <= 0.0)
               {
@@ -2063,6 +2065,7 @@ PFModule   *PhaseRelPermNewPublicXtra()
               }
               h_s = 1.0 / dummy1->alphas[ir];
               break;
+
             case 3:  /* PerRegion */
               sprintf(key, "Geom.%s.Saturation.AirEntryHead", region);
               h_s = GetDouble(key);

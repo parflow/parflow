@@ -330,7 +330,7 @@ static inline double SatLookupSpline(
     sat = (2.0 * pow(t, 3) - 3.0 * pow(t, 2) + 1.0) * a
           + (pow(t, 3) - 2.0 * pow(t, 2) + t)
           * (lookup_table->x[pt + 1] - x) * d + (-2.0 * pow(t, 3)
-                                                  + 3.0 * pow(t, 2)) * (lookup_table->a[pt + 1])
+                                                 + 3.0 * pow(t, 2)) * (lookup_table->a[pt + 1])
           + (pow(t, 3) - pow(t, 2)) * (lookup_table->x[pt + 1] - x)
           * (lookup_table->d[pt + 1]);
   }
@@ -340,7 +340,7 @@ static inline double SatLookupSpline(
     sat = (2.0 * pow(t, 3) - 3.0 * pow(t, 2) + 1.0) * a_der
           + (pow(t, 3) - 2.0 * pow(t, 2) + t)
           * (lookup_table->x[pt + 1] - x) * d_der + (-2.0 * pow(t, 3)
-                                                      + 3.0 * pow(t, 2)) * (lookup_table->a_der[pt + 1])
+                                                     + 3.0 * pow(t, 2)) * (lookup_table->a_der[pt + 1])
           + (pow(t, 3) - pow(t, 2)) * (lookup_table->x[pt + 1] - x)
           * (lookup_table->d_der[pt + 1]);
   }
@@ -1244,9 +1244,11 @@ PFModule   *SaturationNewPublicXtra()
             case 0:  /* None */
               h_s = 0.0;
               break;
+
             case 1:  /* Constant */
               h_s = global_h_s;
               break;
+
             case 2:  /* InverseAlpha */
               if (dummy1->alphas[ir] <= 0.0)
               {
@@ -1255,6 +1257,7 @@ PFModule   *SaturationNewPublicXtra()
               }
               h_s = 1.0 / dummy1->alphas[ir];
               break;
+
             case 3:  /* PerRegion */
               sprintf(key, "Geom.%s.Saturation.AirEntryHead", region);
               h_s = GetDouble(key);
