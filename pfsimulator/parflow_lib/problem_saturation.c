@@ -66,6 +66,7 @@ typedef struct {
   double *ns;
   double *s_ress;
   double *s_difs;
+  double *h_s_values;           /* per-region Ippisch air-entry head */
   Vector *alpha_values;
   Vector *n_values;
   Vector *s_res_values;
@@ -221,7 +222,7 @@ void     Saturation(
     case 1: /* Van Genuchten saturation curve */
     {
       int data_from_file;
-      double *alphas, *ns, *s_ress, *s_difs;
+      double *alphas, *ns, *s_ress, *s_difs, *h_s_values;
 
       Vector *n_values, *alpha_values, *s_res_values, *s_sat_values;
 
@@ -233,6 +234,7 @@ void     Saturation(
       ns = (dummy1->ns);
       s_ress = (dummy1->s_ress);
       s_difs = (dummy1->s_difs);
+      h_s_values = (dummy1->h_s_values);
       data_from_file = (dummy1->data_from_file);
 
       if (data_from_file == 0) /* Soil parameters given by region */
@@ -262,6 +264,17 @@ void     Saturation(
             ppdat = SubvectorData(pp_sub);
             pddat = SubvectorData(pd_sub);
 
+            /* Precompute Ippisch Scs per region (1.0 when h_s = 0) */
+            double h_s_val = h_s_values ? h_s_values[ir] : 0.0;
+            double Scs = 1.0;
+            if (h_s_val > 0.0)
+            {
+              double alpha_r = alphas[ir];
+              double n_r = ns[ir];
+              double m_r = 1.0e0 - (1.0e0 / n_r);
+              Scs = pow(1.0 + pow(alpha_r * h_s_val, n_r), -m_r);
+            }
+
             if (fcn == CALCFCN)
             {
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
@@ -281,8 +294,13 @@ void     Saturation(
                 else
                 {
                   double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                  psdat[ips] = s_dif / pow(1.0 + pow((alpha * head), n), m)
-                               + s_res;
+                  if (head <= h_s_val)
+                    psdat[ips] = s_dif + s_res;
+                  else
+                  {
+                    double Sc = pow(1.0 + pow(alpha * head, n), -m);
+                    psdat[ips] = s_dif * (Sc / Scs) + s_res;
+                  }
                 }
               });
             }    /* End if clause */
@@ -304,8 +322,11 @@ void     Saturation(
                 else
                 {
                   double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                  psdat[ips] = (m * n * alpha * pow(alpha * head, (n - 1))) * s_dif
-                               / (pow(1.0 + pow(alpha * head, n), m + 1));
+                  if (head <= h_s_val)
+                    psdat[ips] = 0.0;
+                  else
+                    psdat[ips] = (m * n * alpha * pow(alpha * head, (n - 1))) * s_dif
+                                 / (Scs * pow(1.0 + pow(alpha * head, n), m + 1));
                 }
               });
             }   /* End else clause */
@@ -899,6 +920,23 @@ PFModule   *SaturationNewPublicXtra()
         (dummy1->ns) = ctalloc(double, num_regions);
         (dummy1->s_ress) = ctalloc(double, num_regions);
         (dummy1->s_difs) = ctalloc(double, num_regions);
+        (dummy1->h_s_values) = ctalloc(double, num_regions);
+
+        /* Read Ippisch air-entry mode */
+        int air_entry_mode = 0;  /* 0=None, 1=Constant, 2=InverseAlpha, 3=PerRegion */
+        double global_h_s = 0.0;
+        {
+          NameArray air_entry_na = NA_NewNameArray("None Constant InverseAlpha PerRegion");
+          char *air_entry_name = GetStringDefault("Phase.Saturation.VanGenuchten.AirEntryMode", "None");
+          air_entry_mode = NA_NameToIndexExitOnError(air_entry_na, air_entry_name,
+                                                     "Phase.Saturation.VanGenuchten.AirEntryMode");
+          NA_FreeNameArray(air_entry_na);
+
+          if (air_entry_mode == 1)  /* Constant */
+          {
+            global_h_s = GetDouble("Phase.Saturation.VanGenuchten.AirEntryHead");
+          }
+        }
 
         for (ir = 0; ir < num_regions; ir++)
         {
@@ -927,6 +965,31 @@ PFModule   *SaturationNewPublicXtra()
           s_sat = GetDouble(key);
 
           (dummy1->s_difs[ir]) = s_sat - (dummy1->s_ress[ir]);
+
+          /* Compute h_s for this region based on AirEntryMode */
+          double h_s = 0.0;
+          switch (air_entry_mode)
+          {
+            case 0:  /* None */
+              h_s = 0.0;
+              break;
+            case 1:  /* Constant */
+              h_s = global_h_s;
+              break;
+            case 2:  /* InverseAlpha */
+              if (dummy1->alphas[ir] <= 0.0)
+              {
+                InputError("Error: AirEntryMode InverseAlpha requires alpha > 0 for region <%s>",
+                           region, "alpha must be positive");
+              }
+              h_s = 1.0 / dummy1->alphas[ir];
+              break;
+            case 3:  /* PerRegion */
+              sprintf(key, "Geom.%s.Saturation.AirEntryHead", region);
+              h_s = GetDouble(key);
+              break;
+          }
+          dummy1->h_s_values[ir] = h_s;
         }
 
         dummy1->alpha_file = NULL;
@@ -955,6 +1018,7 @@ PFModule   *SaturationNewPublicXtra()
         dummy1->ns = NULL;
         dummy1->s_ress = NULL;
         dummy1->s_difs = NULL;
+        dummy1->h_s_values = NULL;
       }
 
       (public_xtra->data) = (void*)dummy1;
@@ -1130,6 +1194,7 @@ void  SaturationFreePublicXtra()
           tfree(dummy1->ns);
           tfree(dummy1->s_ress);
           tfree(dummy1->s_difs);
+          tfree(dummy1->h_s_values);
         }
 
         tfree(dummy1);
