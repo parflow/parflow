@@ -1174,6 +1174,7 @@ void         PhaseRelPerm(
                     VanGTable *lookup_table = dummy1->lookup_tables[ir];
                     double interval = lookup_table->interval;
                     double min_pressure_head = lookup_table->min_pressure_head;
+                    double table_h_s = lookup_table->h_s;
                     int num_sample_points = lookup_table->num_sample_points;
                     int max = num_sample_points + 1;
                     PF_UNUSED(max);
@@ -1190,24 +1191,22 @@ void         PhaseRelPerm(
                       else
                       {
                         double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                        if (ppdat[ipp] >= 0.0)
+
+                        if (head <= table_h_s)
+                        {
                           prdat[ipr] = 1.0;
+                        }
+                        else if (head < fabs(min_pressure_head))
+                        {
+                          int pt = (int)floor((head - table_h_s) / interval);
+                          assert(pt < max);
+
+                          prdat[ipr] = lookup_table->a[pt] + lookup_table->slope[pt] *
+                                       (head - lookup_table->x[pt]);
+                        }
                         else
                         {
-                          head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-
-                          if (head < fabs(min_pressure_head))
-                          {
-                            int pt = (int)floor(head / interval);
-                            assert(pt < max);
-
-                            prdat[ipr] = lookup_table->a[pt] + lookup_table->slope[pt] *
-                                         (head - lookup_table->x[pt]);
-                          }
-                          else
-                          {
-                            prdat[ipr] = 0.0;
-                          }
+                          prdat[ipr] = 0.0;
                         }
                       }
                     });
@@ -1217,7 +1216,21 @@ void         PhaseRelPerm(
               }
               else
               {
-                /* Compute VanG curve */
+                /* Compute VanG curve (with Ippisch modification if h_s > 0) */
+                double h_s_val = dummy1->h_s_values[ir];
+
+                double ippisch_fac = 1.0;
+                if (h_s_val > 0.0)
+                {
+                  double alpha_r = alphas[ir];
+                  double n_r = ns[ir];
+                  double m_r = 1.0e0 - (1.0e0 / n_r);
+                  double opahn_s = 1.0 + pow(alpha_r * h_s_val, n_r);
+                  double S_cs = pow(opahn_s, -m_r);
+                  double ahnm1_s = pow(alpha_r * h_s_val, n_r - 1);
+                  double F_denom = 1.0 - ahnm1_s / pow(opahn_s, m_r);
+                  ippisch_fac = sqrt(S_cs) * F_denom * F_denom;
+                }
 
                 GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                 {
@@ -1234,10 +1247,19 @@ void         PhaseRelPerm(
                     double m = 1.0e0 - (1.0e0 / n);
 
                     double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                    double opahn = 1.0 + pow(alpha * head, n);
-                    double ahnm1 = pow(alpha * head, n - 1);
-                    prdat[ipr] = pow(1.0 - ahnm1 / (pow(opahn, m)), 2)
-                                 / pow(opahn, (m / 2));
+
+                    if (head <= h_s_val)
+                    {
+                      prdat[ipr] = 1.0;
+                    }
+                    else
+                    {
+                      double opahn = 1.0 + pow(alpha * head, n);
+                      double ahnm1 = pow(alpha * head, n - 1);
+                      prdat[ipr] = pow(1.0 - ahnm1 / (pow(opahn, m)), 2)
+                                   / pow(opahn, (m / 2));
+                      prdat[ipr] /= ippisch_fac;
+                    }
                   }
                 });
               }
@@ -1277,6 +1299,7 @@ void         PhaseRelPerm(
                     VanGTable *lookup_table = dummy1->lookup_tables[ir];
                     double interval = lookup_table->interval;
                     double min_pressure_head = lookup_table->min_pressure_head;
+                    double table_h_s = lookup_table->h_s;
                     int num_sample_points = lookup_table->num_sample_points;
                     int max = num_sample_points + 1;
                     PF_UNUSED(max);
@@ -1294,9 +1317,13 @@ void         PhaseRelPerm(
                       {
                         double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
 
-                        if (head < fabs(min_pressure_head))
+                        if (head <= table_h_s)
                         {
-                          int pt = (int)floor(head / interval);
+                          prdat[ipr] = 0.0;
+                        }
+                        else if (head < fabs(min_pressure_head))
+                        {
+                          int pt = (int)floor((head - table_h_s) / interval);
                           assert(pt < max);
 
                           prdat[ipr] = lookup_table->a_der[pt] + lookup_table->slope_der[pt] *
@@ -1314,7 +1341,21 @@ void         PhaseRelPerm(
               }
               else
               {
-                /* Compute VanG curve */
+                /* Compute VanG curve (with Ippisch modification if h_s > 0) */
+                double h_s_val = dummy1->h_s_values[ir];
+
+                double ippisch_fac = 1.0;
+                if (h_s_val > 0.0)
+                {
+                  double alpha_r = alphas[ir];
+                  double n_r = ns[ir];
+                  double m_r = 1.0e0 - (1.0e0 / n_r);
+                  double opahn_s = 1.0 + pow(alpha_r * h_s_val, n_r);
+                  double S_cs = pow(opahn_s, -m_r);
+                  double ahnm1_s = pow(alpha_r * h_s_val, n_r - 1);
+                  double F_denom = 1.0 - ahnm1_s / pow(opahn_s, m_r);
+                  ippisch_fac = sqrt(S_cs) * F_denom * F_denom;
+                }
 
                 GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                 {
@@ -1331,16 +1372,25 @@ void         PhaseRelPerm(
                     double m = 1.0e0 - (1.0e0 / n);
 
                     double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                    double opahn = 1.0 + pow(alpha * head, n);
-                    double ahnm1 = pow(alpha * head, n - 1);
-                    double coeff = 1.0 - ahnm1 * pow(opahn, -m);
 
-                    prdat[ipr] = 2.0 * (coeff / (pow(opahn, (m / 2))))
-                                 * ((n - 1) * pow(alpha * head, n - 2) * alpha
-                                    * pow(opahn, -m)
-                                    - ahnm1 * m * pow(opahn, -(m + 1)) * n * alpha * ahnm1)
-                                 + pow(coeff, 2) * (m / 2) * pow(opahn, (-(m + 2) / 2))
-                                 * n * alpha * ahnm1;
+                    if (head <= h_s_val)
+                    {
+                      prdat[ipr] = 0.0;  /* dKr/dh = 0 in air-entry zone */
+                    }
+                    else
+                    {
+                      double opahn = 1.0 + pow(alpha * head, n);
+                      double ahnm1 = pow(alpha * head, n - 1);
+                      double coeff = 1.0 - ahnm1 * pow(opahn, -m);
+
+                      prdat[ipr] = 2.0 * (coeff / (pow(opahn, (m / 2))))
+                                   * ((n - 1) * pow(alpha * head, n - 2) * alpha
+                                      * pow(opahn, -m)
+                                      - ahnm1 * m * pow(opahn, -(m + 1)) * n * alpha * ahnm1)
+                                   + pow(coeff, 2) * (m / 2) * pow(opahn, (-(m + 2) / 2))
+                                   * n * alpha * ahnm1;
+                      prdat[ipr] /= ippisch_fac;
+                    }
                   }
                 });
               }
