@@ -1091,6 +1091,37 @@ Geom:
           DoubleValue:
             min_value: 0.0
 
+      NumSamplePoints:
+        help: >
+          [Type: int] Number of sample points for a spline-based interpolation table
+          for the Van Genuchten saturation function on geom_name. If 0 (default),
+          the function is evaluated directly. Using the interpolation table is
+          faster but introduces interpolation error.
+        default: 0
+        domains:
+          IntValue:
+            min_value: 0
+
+      MinPressureHead:
+        help: >
+          [Type: double] Lower bound (negative value) for the saturation lookup
+          table pressure head range. Used only when Saturation.NumSamplePoints > 0.
+          Should match or exceed the RelPerm.MinPressureHead value.
+        domains:
+          DoubleValue:
+
+      InterpolationMethod:
+        help: >
+          [Type: string] Interpolation method for the saturation lookup table.
+          Spline uses monotonic Hermite cubic interpolation (Fritsch and Carlson 1980).
+          Linear uses piecewise linear interpolation.
+        default: Spline
+        domains:
+          EnumDomain:
+            enum_list:
+              - Spline
+              - Linear
+
       A:
         help: >
           [Type: double] This key specifies the A parameter for the Haverkamp saturation on geom_name.
