@@ -6,6 +6,7 @@
 import sys
 from parflow import Run
 from parflow.tools.fs import cp, mkdir, get_absolute_path
+from parflow.tools.compare import pf_test_file, pf_test_file_with_abs
 
 run_name = "crater2D_ippisch_constant"
 crater = Run(run_name, __file__)
@@ -25,7 +26,7 @@ cp("$PF_SRC/test/input/crater2D.pfsol", dir_name)
 
 VG_points = 20000
 VG_alpha = 1.0
-VG_N = 1.5   # n < 2: this is the primary Ippisch use case
+VG_N = 1.5  # n < 2: this is the primary Ippisch use case
 
 # ---------------------------------------------------------
 
@@ -332,13 +333,6 @@ crater.Geom.zone4.RelPerm.MinPressureHead = -300
 crater.Phase.Saturation.Type = "VanGenuchten"
 crater.Phase.Saturation.GeomNames = Zones
 
-s_res_vals = {
-    "zone1": 0.2771, "zone2": 0.2806,
-    "zone3above4": 0.2643, "zone3left4": 0.2643,
-    "zone3right4": 0.2643, "zone3below4": 0.2643,
-    "zone4": 0.2643,
-}
-
 crater.Geom.zone1.Saturation.Alpha = VG_alpha
 crater.Geom.zone1.Saturation.N = VG_N
 crater.Geom.zone1.Saturation.SRes = 0.2771
@@ -516,48 +510,51 @@ crater.Solver.Linear.Preconditioner.MGSemi.MaxIter = 1
 crater.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 100
 
 # -----------------------------------------------------------------------------
-# Run and verify convergence
+# Run and Unload the ParFlow output files
 # -----------------------------------------------------------------------------
 
 new_output_dir_name = dir_name
+correct_output_dir_name = get_absolute_path("../correct_output")
 mkdir(new_output_dir_name)
 crater.run(working_directory=new_output_dir_name)
 
-# Verify ParFlow ran successfully and produced output files
-import os
-from parflow.tools.io import read_pfb
-import numpy as np
-
 passed = True
+sig_digits = 5
+abs_value = 1e-200
+test_files = ["perm_x", "perm_y", "perm_z", "porosity"]
+
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.pfb"
+    if not pf_test_file(
+        new_output_dir_name + filename,
+        correct_output_dir_name + filename,
+        f"Max difference in {test_file}",
+        sig_digits,
+    ):
+        passed = False
+
 
 for i in range(3):
     timestep = str(i).rjust(5, "0")
-
-    press_file = f"{new_output_dir_name}/{run_name}.out.press.{timestep}.pfb"
-    satur_file = f"{new_output_dir_name}/{run_name}.out.satur.{timestep}.pfb"
-
-    if not os.path.exists(press_file):
-        print(f"MISSING: {press_file}")
+    filename = f"/{run_name}.out.press.{timestep}.pfb"
+    if not pf_test_file_with_abs(
+        new_output_dir_name + filename,
+        correct_output_dir_name + filename,
+        f"Max difference in Pressure for timestep {timestep}",
+        abs_value,
+        sig_digits,
+    ):
         passed = False
-        continue
-
-    press = read_pfb(press_file)
-    satur = read_pfb(satur_file)
-
-    # Check for NaN
-    if np.any(np.isnan(press)):
-        print(f"NaN in pressure at timestep {timestep}")
-        passed = False
-    if np.any(np.isnan(satur)):
-        print(f"NaN in saturation at timestep {timestep}")
+    filename = f"/{run_name}.out.satur.{timestep}.pfb"
+    if not pf_test_file_with_abs(
+        new_output_dir_name + filename,
+        correct_output_dir_name + filename,
+        f"Max difference in Saturation for timestep {timestep}",
+        abs_value,
+        sig_digits,
+    ):
         passed = False
 
-    # Check saturation bounds (should be between SRes and 1.0)
-    min_sres = min(s_res_vals.values())
-    if np.any(satur < min_sres - 0.01) or np.any(satur > 1.01):
-        print(f"Saturation out of bounds at timestep {timestep}: "
-              f"min={np.min(satur):.4f}, max={np.max(satur):.4f}")
-        passed = False
 
 if passed:
     print(f"{run_name} : PASSED")
