@@ -1080,6 +1080,17 @@ Geom:
             AnyString:
             ValidFile:
 
+      AirEntryHead:
+        help: >
+          [Type: double] Per-region air-entry pressure head in meters (positive value).
+          Used when Phase.Saturation.VanGenuchten.AirEntryMode is PerRegion.
+          The Ippisch air-entry modification introduces a finite air-entry pressure
+          that eliminates the relative permeability derivative singularity at saturation
+          for Van Genuchten n < 2.
+        domains:
+          DoubleValue:
+            min_value: 0.0
+
       A:
         help: >
           [Type: double] This key specifies the A parameter for the Haverkamp saturation on geom_name.

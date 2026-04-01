@@ -58,6 +58,7 @@ typedef struct {
 
 typedef struct {
   double min_pressure_head;
+  double h_s;                    /* Ippisch air-entry head */
   int num_sample_points;
 
   double *x;
@@ -81,6 +82,7 @@ typedef struct {
   int data_from_file;
   double *alphas;
   double *ns;
+  double *h_s_values;           /* per-region Ippisch air-entry head */
   char   *alpha_file;
   char   *n_file;
   Vector *alpha_values;
@@ -118,7 +120,8 @@ VanGTable *VanGComputeTable(
                             int    num_sample_points,
                             double min_pressure_head,
                             double alpha,
-                            double n)
+                            double n,
+                            double h_s)
 {
   double *x, *a, *d, *a_der, *d_der;
 
@@ -128,6 +131,7 @@ VanGTable *VanGComputeTable(
 
   new_table->num_sample_points = num_sample_points;
   new_table->min_pressure_head = min_pressure_head;
+  new_table->h_s = h_s;
 
   new_table->x = ctalloc(double, num_sample_points + 1); // interpolation points
   new_table->a = ctalloc(double, num_sample_points + 1); // function value at interpolation point
@@ -155,34 +159,55 @@ VanGTable *VanGComputeTable(
   int index;
   double interval, m;
 
-  // Loop over sample min_pressure_head to 0.0, min_pressure_head/num_sample_points step
-  interval = min_pressure_head / (double)(num_sample_points - 1);
-  new_table->interval = fabs(interval);
+  /* Ippisch air-entry: precompute scaling constants.
+   * Kr_ippisch = Kr_standard / ippisch_factor
+   * When h_s = 0: S_cs = 1, F_denom = 1, ippisch_factor = 1 (standard VG). */
   m = 1.0e0 - (1.0e0 / n);
+  double ippisch_factor = 1.0;
+  if (h_s > 0.0)
+  {
+    double opahn_s = 1.0 + pow(alpha * h_s, n);
+    double S_cs = pow(opahn_s, -m);
+    double ahnm1_s = pow(alpha * h_s, n - 1);
+    double F_denom = 1.0 - ahnm1_s / pow(opahn_s, m);
+    ippisch_factor = sqrt(S_cs) * F_denom * F_denom;
+  }
+
+  /* Table domain: h_s to fabs(min_pressure_head), evenly spaced */
+  double table_range = fabs(min_pressure_head) - h_s;
+  interval = table_range / (double)(num_sample_points - 1);
+  new_table->interval = interval;
 
   // evenly spaced interpolation points (future: variably spaced points)
   for (index = 0; index <= num_sample_points; index++)
   {
-    x[index] = fabs(index * interval);
+    x[index] = h_s + index * interval;
     double opahn = 1.0 + pow(alpha * x[index], n);
     double ahnm1 = pow(alpha * x[index], n - 1);
-    // calculating function at interpolation points
+    // calculating function at interpolation points (standard VG Kr)
     a[index] = pow(1.0 - ahnm1 / (pow(opahn, m)), 2)
                / pow(opahn, (m / 2));
 
     double coeff = 1.0 - ahnm1 * pow(opahn, -m);
-    // calculating derivative at interpolation points
+    // calculating derivative at interpolation points (standard VG dKr/dh)
     a_der[index] = 2.0 * (coeff / (pow(opahn, (m / 2))))
                    * ((n - 1) * pow(alpha * x[index], n - 2) * alpha
                       * pow(opahn, -m)
                       - ahnm1 * m * pow(opahn, -(m + 1)) * n * alpha * ahnm1)
                    + pow(coeff, 2) * (m / 2) * pow(opahn, (-(m + 2) / 2))
                    * n * alpha * ahnm1;
-    //CPS fix of 1<n<2, K is infinite at pressure head = 0
-    if ((n < 2) && (index == 0))
+
+    /* CPS fix: dKr/dh is infinite at h=0 when 1 < n < 2.
+     * Only needed when h_s = 0 (standard VG); with Ippisch (h_s > 0)
+     * the table starts at h_s where the derivative is finite. */
+    if (h_s == 0.0 && (n < 2) && (index == 0))
     {
       a_der[index] = 0;
     }
+
+    /* Apply Ippisch scaling: Kr_ippisch = Kr_standard / ippisch_factor */
+    a[index] /= ippisch_factor;
+    a_der[index] /= ippisch_factor;
   }
 
   /* Fill in slope for linear interpolation */
@@ -271,13 +296,23 @@ static inline double VanGLookupSpline(
   int pt = 0;
   int num_sample_points = lookup_table->num_sample_points;
   double min_pressure_head = lookup_table->min_pressure_head;
+  double h_s = lookup_table->h_s;
   int max = num_sample_points + 1;
 
-  // This table goes from 0 to fabs(min_pressure_head)
+  // This table goes from h_s to fabs(min_pressure_head)
   assert(pressure_head >= 0);
 
+  /* Ippisch air-entry zone: Kr = 1.0 for |h| <= h_s */
+  if (pressure_head <= h_s)
+  {
+    if (fcn == CALCFCN)
+      return 1.0;
+    else
+      return 0.0;
+  }
+
   // SGS TODO add warning in output?
-  // Make sure values are in the table range, if lower then set to the 0.0 which is limit of VG curve
+  // Make sure values are in the table range, if beyond dry end set to 0.0
   if (pressure_head >= fabs(min_pressure_head))
   {
     return 0.0;
@@ -287,7 +322,7 @@ static inline double VanGLookupSpline(
     // Use direct table lookup to avoid using this binary search since
     // we have uniformly spaced points.
     double interval = lookup_table->interval;
-    pt = (int)floor(pressure_head / interval);
+    pt = (int)floor((pressure_head - h_s) / interval);
     if (pt > max)
     {
       pt = max - 1;
@@ -720,6 +755,7 @@ void         PhaseRelPerm(
                     VanGTable *lookup_table = dummy1->lookup_tables[ir];
                     double interval = lookup_table->interval;
                     double min_pressure_head = lookup_table->min_pressure_head;
+                    double table_h_s = lookup_table->h_s;
                     int num_sample_points = lookup_table->num_sample_points;
                     int max = num_sample_points + 1;
                     PF_UNUSED(max);
@@ -742,9 +778,13 @@ void         PhaseRelPerm(
                       {
                         double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
 
-                        if (head < fabs(min_pressure_head))
+                        if (head <= table_h_s)
                         {
-                          int pt = (int)floor(head / interval);
+                          prdat[ipr] = 1.0;
+                        }
+                        else if (head < fabs(min_pressure_head))
+                        {
+                          int pt = (int)floor((head - table_h_s) / interval);
                           assert(pt < max);
 
                           prdat[ipr] = lookup_table->a[pt] + lookup_table->slope[pt] *
@@ -762,7 +802,22 @@ void         PhaseRelPerm(
               }
               else
               {
-                /* Compute VanG curve */
+                /* Compute VanG curve (with Ippisch modification if h_s > 0) */
+                double h_s_val = dummy1->h_s_values[ir];
+
+                /* Precompute Ippisch scaling factor (1.0 when h_s = 0) */
+                double ippisch_fac = 1.0;
+                if (h_s_val > 0.0)
+                {
+                  double alpha_r = alphas[ir];
+                  double n_r = ns[ir];
+                  double m_r = 1.0e0 - (1.0e0 / n_r);
+                  double opahn_s = 1.0 + pow(alpha_r * h_s_val, n_r);
+                  double S_cs = pow(opahn_s, -m_r);
+                  double ahnm1_s = pow(alpha_r * h_s_val, n_r - 1);
+                  double F_denom = 1.0 - ahnm1_s / pow(opahn_s, m_r);
+                  ippisch_fac = sqrt(S_cs) * F_denom * F_denom;
+                }
 
                 GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                                nx, ny, nz,
@@ -783,10 +838,19 @@ void         PhaseRelPerm(
                     double m = 1.0e0 - (1.0e0 / n);
 
                     double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                    double opahn = 1.0 + pow(alpha * head, n);
-                    double ahnm1 = pow(alpha * head, n - 1);
-                    prdat[ipr] = pow(1.0 - ahnm1 / (pow(opahn, m)), 2)
-                                 / pow(opahn, (m / 2));
+
+                    if (head <= h_s_val)
+                    {
+                      prdat[ipr] = 1.0;
+                    }
+                    else
+                    {
+                      double opahn = 1.0 + pow(alpha * head, n);
+                      double ahnm1 = pow(alpha * head, n - 1);
+                      prdat[ipr] = pow(1.0 - ahnm1 / (pow(opahn, m)), 2)
+                                   / pow(opahn, (m / 2));
+                      prdat[ipr] /= ippisch_fac;
+                    }
                   }
                 });
               }
@@ -831,6 +895,7 @@ void         PhaseRelPerm(
                     VanGTable *lookup_table = dummy1->lookup_tables[ir];
                     double interval = lookup_table->interval;
                     double min_pressure_head = lookup_table->min_pressure_head;
+                    double table_h_s = lookup_table->h_s;
                     int num_sample_points = lookup_table->num_sample_points;
                     int max = num_sample_points + 1;
                     PF_UNUSED(max);
@@ -852,24 +917,22 @@ void         PhaseRelPerm(
                       else
                       {
                         double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                        if (ppdat[ipp] >= 0.0)
-                          prdat[ipr] = 1.0;
+
+                        if (head <= table_h_s)
+                        {
+                          prdat[ipr] = 0.0;
+                        }
+                        else if (head < fabs(min_pressure_head))
+                        {
+                          int pt = (int)floor((head - table_h_s) / interval);
+                          assert(pt < max);
+
+                          prdat[ipr] = lookup_table->a_der[pt] + lookup_table->slope_der[pt] *
+                                       (head - lookup_table->x[pt]);
+                        }
                         else
                         {
-                          head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-
-                          if (head < fabs(min_pressure_head))
-                          {
-                            int pt = (int)floor(head / interval);
-                            assert(pt < max);
-
-                            prdat[ipr] = lookup_table->a_der[pt] + lookup_table->slope_der[pt] *
-                                         (head - lookup_table->x[pt]);
-                          }
-                          else
-                          {
-                            prdat[ipr] = 0.0;
-                          }
+                          prdat[ipr] = 0.0;
                         }
                       }
                     });
@@ -879,7 +942,22 @@ void         PhaseRelPerm(
               }
               else
               {
-                /* Compute VanG curve */
+                /* Compute VanG curve (with Ippisch modification if h_s > 0) */
+                double h_s_val = dummy1->h_s_values[ir];
+
+                /* Precompute Ippisch scaling factor (1.0 when h_s = 0) */
+                double ippisch_fac = 1.0;
+                if (h_s_val > 0.0)
+                {
+                  double alpha_r = alphas[ir];
+                  double n_r = ns[ir];
+                  double m_r = 1.0e0 - (1.0e0 / n_r);
+                  double opahn_s = 1.0 + pow(alpha_r * h_s_val, n_r);
+                  double S_cs = pow(opahn_s, -m_r);
+                  double ahnm1_s = pow(alpha_r * h_s_val, n_r - 1);
+                  double F_denom = 1.0 - ahnm1_s / pow(opahn_s, m_r);
+                  ippisch_fac = sqrt(S_cs) * F_denom * F_denom;
+                }
 
                 GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                                nx, ny, nz,
@@ -900,16 +978,25 @@ void         PhaseRelPerm(
                     double m = 1.0e0 - (1.0e0 / n);
 
                     double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                    double opahn = 1.0 + pow(alpha * head, n);
-                    double ahnm1 = pow(alpha * head, n - 1);
-                    double coeff = 1.0 - ahnm1 * pow(opahn, -m);
 
-                    prdat[ipr] = 2.0 * (coeff / (pow(opahn, (m / 2))))
-                                 * ((n - 1) * pow(alpha * head, n - 2) * alpha
-                                    * pow(opahn, -m)
-                                    - ahnm1 * m * pow(opahn, -(m + 1)) * n * alpha * ahnm1)
-                                 + pow(coeff, 2) * (m / 2) * pow(opahn, (-(m + 2) / 2))
-                                 * n * alpha * ahnm1;
+                    if (head <= h_s_val)
+                    {
+                      prdat[ipr] = 0.0;  /* dKr/dh = 0 in air-entry zone */
+                    }
+                    else
+                    {
+                      double opahn = 1.0 + pow(alpha * head, n);
+                      double ahnm1 = pow(alpha * head, n - 1);
+                      double coeff = 1.0 - ahnm1 * pow(opahn, -m);
+
+                      prdat[ipr] = 2.0 * (coeff / (pow(opahn, (m / 2))))
+                                   * ((n - 1) * pow(alpha * head, n - 2) * alpha
+                                      * pow(opahn, -m)
+                                      - ahnm1 * m * pow(opahn, -(m + 1)) * n * alpha * ahnm1)
+                                   + pow(coeff, 2) * (m / 2) * pow(opahn, (-(m + 2) / 2))
+                                   * n * alpha * ahnm1;
+                      prdat[ipr] /= ippisch_fac;
+                    }
                   }
                 });
               }
@@ -1868,11 +1955,28 @@ PFModule   *PhaseRelPermNewPublicXtra()
         (dummy1->region_indices) = ctalloc(int, num_regions);
         (dummy1->alphas) = ctalloc(double, num_regions);
         (dummy1->ns) = ctalloc(double, num_regions);
+        (dummy1->h_s_values) = ctalloc(double, num_regions);
 #if PF_PRINT_VG_TABLE
         (dummy1->print_table) = ctalloc(int, num_regions);
 #endif
 
         (dummy1->lookup_tables) = ctalloc(VanGTable*, num_regions);
+
+        /* Read Ippisch air-entry mode (shared with Saturation keys) */
+        int air_entry_mode = 0;  /* 0=None, 1=Constant, 2=InverseAlpha, 3=PerRegion */
+        double global_h_s = 0.0;
+        {
+          type_na = NA_NewNameArray("None Constant InverseAlpha PerRegion");
+          switch_name = GetStringDefault("Phase.Saturation.VanGenuchten.AirEntryMode", "None");
+          air_entry_mode = NA_NameToIndexExitOnError(type_na, switch_name,
+                                                     "Phase.Saturation.VanGenuchten.AirEntryMode");
+          NA_FreeNameArray(type_na);
+
+          if (air_entry_mode == 1)  /* Constant */
+          {
+            global_h_s = GetDouble("Phase.Saturation.VanGenuchten.AirEntryHead");
+          }
+        }
 
         for (ir = 0; ir < num_regions; ir++)
         {
@@ -1890,6 +1994,31 @@ PFModule   *PhaseRelPermNewPublicXtra()
 
           sprintf(key, "Geom.%s.RelPerm.N", region);
           dummy1->ns[ir] = GetDouble(key);
+
+          /* Compute h_s for this region based on AirEntryMode */
+          double h_s = 0.0;
+          switch (air_entry_mode)
+          {
+            case 0:  /* None */
+              h_s = 0.0;
+              break;
+            case 1:  /* Constant */
+              h_s = global_h_s;
+              break;
+            case 2:  /* InverseAlpha */
+              if (dummy1->alphas[ir] <= 0.0)
+              {
+                InputError("Error: AirEntryMode InverseAlpha requires alpha > 0 for region <%s>",
+                           region, "alpha must be positive");
+              }
+              h_s = 1.0 / dummy1->alphas[ir];
+              break;
+            case 3:  /* PerRegion */
+              sprintf(key, "Geom.%s.Saturation.AirEntryHead", region);
+              h_s = GetDouble(key);
+              break;
+          }
+          dummy1->h_s_values[ir] = h_s;
 
           sprintf(key, "Geom.%s.RelPerm.NumSamplePoints", region);
 
@@ -1912,7 +2041,8 @@ PFModule   *PhaseRelPermNewPublicXtra()
                                                          num_sample_points,
                                                          min_pressure_head,
                                                          dummy1->alphas[ir],
-                                                         dummy1->ns[ir]);
+                                                         dummy1->ns[ir],
+                                                         h_s);
           }
           else
           {
@@ -1936,6 +2066,7 @@ PFModule   *PhaseRelPermNewPublicXtra()
         dummy1->region_indices = NULL;
         dummy1->alphas = NULL;
         dummy1->ns = NULL;
+        dummy1->h_s_values = NULL;
       }
 
       (public_xtra->data) = (void*)dummy1;
@@ -2083,6 +2214,7 @@ void  PhaseRelPermFreePublicXtra()
         tfree(dummy1->region_indices);
         tfree(dummy1->alphas);
         tfree(dummy1->ns);
+        tfree(dummy1->h_s_values);
 
         num_regions = (dummy1->num_regions);
         for (ir = 0; ir < num_regions; ir++)
