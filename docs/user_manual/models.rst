@@ -121,6 +121,53 @@ initial condition,
 
 completes the specification of the problem.
 
+.. _Ippisch Air-Entry Modification:
+
+Ippisch Air-Entry Modification
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The standard Van Genuchten--Mualem (VGM) model has a well-documented
+derivative singularity in relative permeability :math:`k_r` at full
+saturation when the VG shape parameter :math:`n < 2` (:math:`m < 0.5`).
+This singularity causes Newton solver convergence difficulties for
+fine-textured soils with measured :math:`n` values below 2.
+
+ParFlow implements the modification proposed by
+:cite:p:`Ippisch2006`, which introduces a finite air-entry
+pressure head :math:`h_s` that eliminates the singularity for any
+:math:`n > 1`. The modified saturation is:
+
+.. math::
+   :label: eqn-ippisch-sat
+
+   S_e(h) = \begin{cases}
+   1 & |h| \le h_s \\
+   S_c(h) / S_c(h_s) & |h| > h_s
+   \end{cases}
+
+where :math:`S_c(h) = [1 + (\alpha |h|)^n]^{-m}` is the standard VG
+capillary saturation and :math:`S_c(h_s)` is a normalization constant.
+
+The modified Mualem relative permeability is:
+
+.. math::
+   :label: eqn-ippisch-kr
+
+   k_r(\Theta) = \Theta^{1/2} \left[\frac{F(\Theta)}{F(1)}\right]^2
+
+where :math:`\Theta = S_e` is the rescaled effective saturation,
+:math:`F(\Theta) = 1 - (1 - (\Theta \cdot S_c(h_s))^{1/m})^m`, and
+:math:`F(1) = 1 - (1 - S_c(h_s)^{1/m})^m` is a finite constant when
+:math:`h_s > 0`. The key result is that :math:`dk_r/d\Theta` at
+:math:`\Theta = 1` is bounded for any :math:`n > 1`.
+
+When :math:`h_s = 0`, both equations reduce to the standard VGM model.
+The air-entry head can be specified as a constant, computed as
+:math:`h_s = 1/\alpha` per region (``InverseAlpha`` mode), or set
+per geometry. See the keys
+``Phase.Saturation.VanGenuchten.AirEntryMode`` and
+``Phase.Saturation.VanGenuchten.AirEntryHead`` for configuration.
+
 .. _TFG:
 
 Terrain Following Grid
