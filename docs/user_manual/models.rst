@@ -317,6 +317,75 @@ assumes that the user provides face centered bedslopes
 (:math:`S_{o,i}`). This is different from the original formulation which
 assumes the user provides grid cenered bedslopes.
 
+Isotropic Diffusion Correction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The **OverlandKinematic** boundary condition can be augmented with an
+optional isotropic diffusion correction that adds the dominant diffusive
+physics missing from the kinematic wave approximation. This is enabled
+by setting ``Solver.OverlandKinematic.DiffusionCorrection.Type`` to
+``Isotropic``. The corrected overland flow equation is:
+
+.. math::
+   :label: diffcorr_eq
+
+   \begin{aligned}
+   \frac{\partial \|\psi,0\|}{\partial t}
+   + \nabla \cdot \mathbf{q}_{\mathrm{kin}}
+   - \nabla \cdot \left(D(\psi)\,\nabla\psi\right)
+   = q_r + q_e
+   \end{aligned}
+
+where :math:`\mathbf{q}_{\mathrm{kin}}` is the existing kinematic flux
+and the diffusion coefficient is:
+
+.. math::
+   :label: diffcoeff
+
+   \begin{aligned}
+   D(\psi) = \frac{\alpha\,|\psi|^{5/3}}{n\,|\mathbf{S}_f|^{1/2}},
+   \qquad
+   \mathbf{S}_f = \mathbf{S}_0 + \nabla\psi
+   \end{aligned}
+
+Here :math:`\alpha` is a strength parameter
+(``Solver.OverlandKinematic.DiffusionCorrection.Alpha``, default 1.0),
+:math:`n` is the Manning's coefficient, :math:`\mathbf{S}_0` is the bed
+slope, and :math:`\mathbf{S}_f` is the friction slope. The diffusion
+coefficient uses the **friction slope** (not the bed slope), which
+provides self-regularization on flat terrain: when
+:math:`\mathbf{S}_0 \approx 0`, the water surface gradient
+:math:`\nabla\psi` keeps :math:`D` finite as long as there is a
+pressure gradient.
+
+The correction is self-activating: it is strongest on flat terrain and
+in backwater zones where the kinematic approximation is weakest, and
+vanishes where the kinematic wave is appropriate (steep terrain with
+uniform flow). Because it is isotropic, the vector
+:math:`\mathbf{S}_f` enters only through its scalar magnitude in
+:math:`D`, avoiding the geometric staggering issues that affect the
+full diffusive wave equation.
+
+The Jacobian linearization of the diffusion term can be selected via
+``Solver.OverlandKinematic.DiffusionCorrection.Jacobian``:
+
+- ``Picard`` (default): treats :math:`D` as constant in the derivative,
+  giving :math:`\pm D/\Delta x`. Simple and robust.
+- ``FullNewton``: includes the full :math:`\partial D/\partial\psi`
+  terms for faster Newton convergence near the solution.
+
+Both options converge to the same solution. The correction is
+implemented entirely within the kinematic module and inherits all
+boundary handling (internal patch edges, lower boundaries, seepage
+faces). No changes to the Jacobian assembly or stencil structure are
+required.
+
+The corresponding Python post-processing function
+``calculate_overland_fluxes()`` in ``parflow.tools.hydrology`` supports
+the diffusion correction via
+``flow_method='OverlandKinematicDiffusive'`` with an optional ``alpha``
+parameter.
+
 .. _Multi-Phase Flow Equations:
 
 Multi-Phase Flow Equations

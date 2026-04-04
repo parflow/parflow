@@ -2231,7 +2231,8 @@ Solver:
 
   OverlandKinematic:
     __doc__: >
-      Setting epsilon value for the diffusive kinematic flow formulation.
+      Settings for the kinematic wave overland flow formulation, including
+      the optional isotropic diffusion correction.
 
     Epsilon:
       help: >
@@ -2240,6 +2241,47 @@ Solver:
       domains:
         DoubleValue:
           min_value: 0.0
+
+    DiffusionCorrection:
+      __doc__: >
+        Optional diffusion correction for the kinematic wave overland flow.
+        Adds a diffusive flux to smooth water surfaces on flat terrain and
+        in backwater zones.
+
+      Type:
+        help: >
+          [Type: string] Selects the type of diffusion correction applied to the
+          OverlandKinematic boundary condition. None disables the correction (default).
+          Isotropic adds an isotropic diffusive flux delta_q = -D * grad(psi) where
+          D = alpha * |psi|^{5/3} / (n * |Sf|^{1/2}).
+        default: None
+        domains:
+          EnumDomain:
+            enum_list:
+              - None
+              - Isotropic
+
+      Alpha:
+        help: >
+          [Type: double] Strength multiplier for the diffusion correction coefficient.
+          D = alpha * |psi|^{5/3} / (n * |Sf|^{1/2}). Range [0,1]: 0 = no correction,
+          1 = full correction.
+        default: 1.0
+        domains:
+          DoubleValue:
+            min_value: 0.0
+
+      Jacobian:
+        help: >
+          [Type: string] Selects the Jacobian linearization for the diffusion correction.
+          Picard treats D as constant in the derivative (simple, robust). FullNewton
+          includes the full dD/dpsi terms for faster Newton convergence near the solution.
+        default: Picard
+        domains:
+          EnumDomain:
+            enum_list:
+              - Picard
+              - FullNewton
 
   # missing from manual
   PolyDegree:

@@ -4483,6 +4483,50 @@ minimum value for the :math:`\bar{S_{f}}` used in the
 
       <runname>.Solver.OverlandKinematic.Epsilon = 1E-7     ## Python syntax
 
+*string* **Solver.OverlandKinematic.DiffusionCorrection.Type** None
+This key selects the type of diffusion correction applied to the
+**OverlandKinematic** boundary condition. ``None`` disables the
+correction (default). ``Isotropic`` adds an isotropic diffusive flux
+:math:`\delta\mathbf{q} = -D\,\nabla\psi` where
+:math:`D = \alpha\,|\psi|^{5/3} / (n\,|S_f|^{1/2})` and
+:math:`S_f = S_0 + \nabla\psi` is the friction slope. The correction
+is strongest on flat terrain and in backwater zones where the kinematic
+approximation is weakest, and vanishes where the kinematic wave is
+appropriate.
+
+::
+
+      pfset Solver.OverlandKinematic.DiffusionCorrection.Type Isotropic          ## TCL syntax
+
+      <runname>.Solver.OverlandKinematic.DiffusionCorrection.Type = 'Isotropic'  ## Python syntax
+
+*double* **Solver.OverlandKinematic.DiffusionCorrection.Alpha** 1.0
+This key sets the strength multiplier :math:`\alpha` for the diffusion
+correction coefficient. Values range from 0 (no correction) to 1 (full
+correction). Intermediate values provide a linear blend between pure
+kinematic and kinematic-plus-diffusion.
+
+::
+
+      pfset Solver.OverlandKinematic.DiffusionCorrection.Alpha 0.5          ## TCL syntax
+
+      <runname>.Solver.OverlandKinematic.DiffusionCorrection.Alpha = 0.5    ## Python syntax
+
+*string* **Solver.OverlandKinematic.DiffusionCorrection.Jacobian** Picard
+This key selects the Jacobian linearization for the diffusion
+correction. ``Picard`` treats the diffusion coefficient :math:`D` as
+constant when computing the derivative (:math:`\pm D/\Delta x`), which
+is simple and robust. ``FullNewton`` includes the full
+:math:`\partial D / \partial\psi` terms in the Jacobian for faster
+Newton convergence near the solution, at the cost of additional
+arithmetic per cell.
+
+::
+
+      pfset Solver.OverlandKinematic.DiffusionCorrection.Jacobian FullNewton          ## TCL syntax
+
+      <runname>.Solver.OverlandKinematic.DiffusionCorrection.Jacobian = 'FullNewton'  ## Python syntax
+
 
 *string* **Solver.PrintInitialConditions** True This key is used to
       turn on printing of the initial conditions.  This includes the
