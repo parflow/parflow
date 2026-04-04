@@ -157,7 +157,7 @@ Full API
     :param ``mask``: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of mask values (bottom layer to top layer). If ``None``, assumed to be an ``nz`` by ``ny`` by ``nx`` ``ndarray`` of 1s.
     :return: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of evapotranspiration values (units L^3/T), spanning all layers (bottom to top)
 
-5. ``calculate_overland_fluxes(pressure, slopex, slopey, mannings, dx, dy, flow_method='OverlandKinematic', epsilon=1e-5, mask=None)``
+5. ``calculate_overland_fluxes(pressure, slopex, slopey, mannings, dx, dy, flow_method='OverlandKinematic', epsilon=1e-5, mask=None, alpha=1.0)``
     Calculate overland fluxes across grid faces.
 
     :param ``pressure``: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of pressure values (bottom layer to top layer)
@@ -166,9 +166,10 @@ Full API
     :param ``mannings``: a scalar value, or a ``ny`` by ``nx`` ``ndarray``
     :param ``dx``: Length of a grid element in the ``x`` direction
     :param ``dy``: Length of a grid element in the ``y`` direction
-    :param ``flow_method``: Either 'OverlandFlow' or 'OverlandKinematic'. 'OverlandKinematic' by default.
-    :param ``epsilon``: Minimum slope magnitude for solver. Only applicable if ``flow_method='OverlandKinematic'``. This is set using the ``Solver.OverlandKinematic.Epsilon`` key in Parflow.
+    :param ``flow_method``: ``'OverlandFlow'``, ``'OverlandKinematic'``, or ``'OverlandKinematicDiffusive'``. ``'OverlandKinematic'`` by default. ``'OverlandKinematicDiffusive'`` adds an isotropic diffusion correction :math:`\delta q = -D\,\nabla\psi` to the kinematic wave flux (see :ref:`Overland Flow`).
+    :param ``epsilon``: Minimum slope magnitude for solver. Only applicable if ``flow_method='OverlandKinematic'`` or ``'OverlandKinematicDiffusive'``. This is set using the ``Solver.OverlandKinematic.Epsilon`` key in Parflow.
     :param ``mask``: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of mask values (bottom layer to top layer). If ``None``, assumed to be an ``nz`` by ``ny`` by ``nx`` ``ndarray`` of 1s.
+    :param ``alpha``: Strength multiplier for diffusion correction (default 1.0). Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
     :return: A 2-tuple: 
 
         (``qeast``: A ``ny`` by ``(nx+1)`` ``ndarray`` of overland flux values,  
@@ -200,7 +201,7 @@ Full API
         (North)
 
 
-6. ``calculate_overland_flow_grid(pressure, slopex, slopey, mannings, dx, dy, flow_method='OverlandKinematic', epsilon=1e-5, mask=None)``
+6. ``calculate_overland_flow_grid(pressure, slopex, slopey, mannings, dx, dy, flow_method='OverlandKinematic', epsilon=1e-5, mask=None, alpha=1.0)``
     Calculate overland outflow per grid cell of a domain.
 
     :param ``pressure``: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of pressure values (bottom layer to top layer)
@@ -209,12 +210,13 @@ Full API
     :param ``mannings``: a scalar value, or a ``ny`` by ``nx`` ``ndarray``
     :param ``dx``: Length of a grid element in the ``x`` direction
     :param ``dy``: Length of a grid element in the ``y`` direction
-    :param ``flow_method``: Either 'OverlandFlow' or 'OverlandKinematic'. 'OverlandKinematic' by default.
-    :param ``epsilon``: Minimum slope magnitude for solver. Only applicable if ``kinematic=True``. This is set using the ``Solver.OverlandKinematic.Epsilon`` key in Parflow.
+    :param ``flow_method``: ``'OverlandFlow'``, ``'OverlandKinematic'``, or ``'OverlandKinematicDiffusive'``. ``'OverlandKinematic'`` by default.
+    :param ``epsilon``: Minimum slope magnitude for solver. Only applicable if ``flow_method='OverlandKinematic'`` or ``'OverlandKinematicDiffusive'``. This is set using the ``Solver.OverlandKinematic.Epsilon`` key in Parflow.
     :param ``mask``: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of mask values (bottom layer to top layer). If ``None``, assumed to be an ``nz`` by ``ny`` by ``nx`` ``ndarray`` of 1s.
+    :param ``alpha``: Strength multiplier for diffusion correction (default 1.0). Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
     :return: An ``ny`` by ``nx`` ``ndarray`` of overland flow values
 
-7. ``calculate_overland_flow(pressure, slopex, slopey, mannings, dx, dy, flow_method='OverlandKinematic', epsilon=1e-5, mask=None)``
+7. ``calculate_overland_flow(pressure, slopex, slopey, mannings, dx, dy, flow_method='OverlandKinematic', epsilon=1e-5, mask=None, alpha=1.0)``
 
     :param ``pressure``: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of pressure values (bottom layer to top layer)
     :param ``slopex``: ``ny`` by ``nx``
@@ -222,7 +224,8 @@ Full API
     :param ``mannings``: a scalar value, or a ``ny`` by ``nx`` ``ndarray``
     :param ``dx``: Length of a grid element in the ``x`` direction
     :param ``dy``: Length of a grid element in the ``y`` direction
-    :param ``flow_method``: Either 'OverlandFlow' or 'OverlandKinematic'. 'OverlandKinematic' by default.
-    :param ``epsilon``: Minimum slope magnitude for solver. Only applicable if ``flow_method='OverlandKinematic'``. This is set using the ``Solver.OverlandKinematic.Epsilon`` key in Parflow.
+    :param ``flow_method``: ``'OverlandFlow'``, ``'OverlandKinematic'``, or ``'OverlandKinematicDiffusive'``. ``'OverlandKinematic'`` by default.
+    :param ``epsilon``: Minimum slope magnitude for solver. Only applicable if ``flow_method='OverlandKinematic'`` or ``'OverlandKinematicDiffusive'``. This is set using the ``Solver.OverlandKinematic.Epsilon`` key in Parflow.
     :param ``mask``: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of mask values (bottom layer to top layer). If None, assumed to be an ``nz`` by ``ny`` by ``nx`` ``ndarray`` of 1s.
+    :param ``alpha``: Strength multiplier for diffusion correction (default 1.0). Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
     :return: A ``ny`` by ``nx`` ``ndarray`` of overland flow values

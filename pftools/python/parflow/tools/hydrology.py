@@ -393,6 +393,70 @@ def _overland_flow_kinematic(
 # -----------------------------------------------------------------------------
 
 
+def _overland_flow_kinematic_diffusive(
+    mask, pressure_top, slopex, slopey, mannings, dx, dy, epsilon, alpha=1.0
+):
+    """Kinematic wave flux with isotropic diffusion correction.
+
+    Same as _overland_flow_kinematic but adds:
+        delta_q = -D * grad(psi)
+    where D = alpha * psi^{5/3} / (n * |Sf|^{1/2}) and Sf = S0 + grad(psi).
+    """
+    # Start with the kinematic flux
+    qeast_kin, qnorth_kin = _overland_flow_kinematic(
+        mask, pressure_top, slopex, slopey, mannings, dx, dy, epsilon
+    )
+
+    ny, nx = pressure_top.shape
+
+    # --- Diffusion flux in x-direction ---
+    # Pressure gradient at east faces (between cell i and i+1)
+    grad_x = np.diff(pressure_top, axis=1) / dx  # shape (ny, nx-1)
+
+    # Friction slope at east faces
+    Sf_x = slopex[:, :-1] + grad_x
+    Sf_y_east = slopey[:, :-1]  # bed slope only for cross-component
+    Sf_mag = np.maximum(epsilon, np.hypot(Sf_x, Sf_y_east))
+
+    # Upwind depth for D (same convention as kinematic)
+    pupwindx = np.where(
+        slopex[:, :-1] <= 0,
+        pressure_top[:, :-1],
+        pressure_top[:, 1:],
+    )
+
+    D_x = alpha * pupwindx ** (5 / 3) / (np.sqrt(Sf_mag) * mannings[:, :-1])
+    diff_qx = -D_x * grad_x * dy  # shape (ny, nx-1)
+
+    # Add diffusion to kinematic flux (interior faces only)
+    qeast_diff = qeast_kin.copy()
+    qeast_diff[:, 1:-1] += diff_qx  # skip boundary faces
+
+    # --- Diffusion flux in y-direction ---
+    grad_y = np.diff(pressure_top, axis=0) / dy  # shape (ny-1, nx)
+
+    Sf_y = slopey[:-1, :] + grad_y
+    Sf_x_north = slopex[:-1, :]
+    Sf_mag = np.maximum(epsilon, np.hypot(Sf_x_north, Sf_y))
+
+    pupwindy = np.where(
+        slopey[:-1, :] <= 0,
+        pressure_top[:-1, :],
+        pressure_top[1:, :],
+    )
+
+    D_y = alpha * pupwindy ** (5 / 3) / (np.sqrt(Sf_mag) * mannings[:-1, :])
+    diff_qy = -D_y * grad_y * dx  # shape (ny-1, nx)
+
+    qnorth_diff = qnorth_kin.copy()
+    qnorth_diff[1:-1, :] += diff_qy  # skip boundary faces
+
+    return qeast_diff, qnorth_diff
+
+
+# -----------------------------------------------------------------------------
+
+
 def calculate_overland_fluxes(
     pressure,
     slopex,
@@ -403,6 +467,7 @@ def calculate_overland_fluxes(
     flow_method="OverlandKinematic",
     epsilon=1e-5,
     mask=None,
+    alpha=1.0,
 ):
     """
     Calculate overland fluxes across grid faces
@@ -413,12 +478,15 @@ def calculate_overland_fluxes(
     :param mannings: a scalar value, or a ny-by-nx ndarray
     :param dx: Length of a grid element in the x direction
     :param dy: Length of a grid element in the y direction
-    :param flow_method: Either 'OverlandFlow' or 'OverlandKinematic'
-        'OverlandKinematic' by default.
-    :param epsilon: Minimum slope magnitude for solver. Only applicable if flow_method='OverlandKinematic'.
-        This is set using the Solver.OverlandKinematic.Epsilon key in Parflow.
+    :param flow_method: 'OverlandFlow', 'OverlandKinematic', or 'OverlandKinematicDiffusive'
+        'OverlandKinematic' by default. 'OverlandKinematicDiffusive' adds an isotropic
+        diffusion correction to the kinematic wave flux.
+    :param epsilon: Minimum slope magnitude for solver. Only applicable if flow_method='OverlandKinematic'
+        or 'OverlandKinematicDiffusive'. Set using the Solver.OverlandKinematic.Epsilon key in Parflow.
     :param mask: A nz-by-ny-by-nx ndarray of mask values (bottom layer to top layer)
         If None, assumed to be an nz-by-ny-by-nx ndarray of 1s.
+    :param alpha: Strength multiplier for diffusion correction. Only applicable if
+        flow_method='OverlandKinematicDiffusive'. Default 1.0.
     :return: A 2-tuple:
         qeast - A ny-by-(nx+1) ndarray of overland flux values
         qnorth - A (ny+1)-by-nx ndarray of overland flux values
@@ -467,14 +535,23 @@ def calculate_overland_fluxes(
     pressure_top = np.nan_to_num(pressure_top)
     pressure_top[pressure_top < 0] = 0
 
-    assert flow_method in ("OverlandFlow", "OverlandKinematic"), "Unknown flow method"
-    if flow_method == "OverlandKinematic":
+    assert flow_method in (
+        "OverlandFlow",
+        "OverlandKinematic",
+        "OverlandKinematicDiffusive",
+    ), "Unknown flow method"
+    if flow_method in ("OverlandKinematic", "OverlandKinematicDiffusive"):
         if mask is None:
             mask = np.ones_like(pressure)
         mask = np.where(mask > 0, 1, 0)
-        qeast, qnorth = _overland_flow_kinematic(
-            mask, pressure_top, slopex, slopey, mannings, dx, dy, epsilon
-        )
+        if flow_method == "OverlandKinematicDiffusive":
+            qeast, qnorth = _overland_flow_kinematic_diffusive(
+                mask, pressure_top, slopex, slopey, mannings, dx, dy, epsilon, alpha
+            )
+        else:
+            qeast, qnorth = _overland_flow_kinematic(
+                mask, pressure_top, slopex, slopey, mannings, dx, dy, epsilon
+            )
     else:
         qeast, qnorth = _overland_flow(pressure_top, slopex, slopey, mannings, dx, dy)
 
@@ -494,6 +571,7 @@ def calculate_overland_flow_grid(
     flow_method="OverlandKinematic",
     epsilon=1e-5,
     mask=None,
+    alpha=1.0,
 ):
     """
     Calculate overland outflow per grid cell of a domain
@@ -504,12 +582,14 @@ def calculate_overland_flow_grid(
     :param mannings: a scalar value, or a ny-by-nx ndarray
     :param dx: Length of a grid element in the x direction
     :param dy: Length of a grid element in the y direction
-    :param flow_method: Either 'OverlandFlow' or 'OverlandKinematic'
+    :param flow_method: 'OverlandFlow', 'OverlandKinematic', or 'OverlandKinematicDiffusive'
         'OverlandKinematic' by default.
-    :param epsilon: Minimum slope magnitude for solver. Only applicable if kinematic=True.
-        This is set using the Solver.OverlandKinematic.Epsilon key in Parflow.
+    :param epsilon: Minimum slope magnitude for solver. Only applicable if
+        flow_method='OverlandKinematic' or 'OverlandKinematicDiffusive'.
     :param mask: A nz-by-ny-by-nx ndarray of mask values (bottom layer to top layer)
         If None, assumed to be an nz-by-ny-by-nx ndarray of 1s.
+    :param alpha: Strength multiplier for diffusion correction (default 1.0).
+        Only applicable if flow_method='OverlandKinematicDiffusive'.
     :return: A ny-by-nx ndarray of overland flow values
     """
     mask = np.where(mask > 0, 1, 0)
@@ -523,6 +603,7 @@ def calculate_overland_flow_grid(
         flow_method=flow_method,
         epsilon=epsilon,
         mask=mask,
+        alpha=alpha,
     )
 
     # Outflow is a positive qeast[i,j+1] or qnorth[i+1,j] or a negative qeast[i,j], qnorth[i,j]
@@ -552,6 +633,7 @@ def calculate_overland_flow(
     flow_method="OverlandKinematic",
     epsilon=1e-5,
     mask=None,
+    alpha=1.0,
 ):
     """
     Calculate overland outflow out of a domain
@@ -562,12 +644,14 @@ def calculate_overland_flow(
     :param mannings: a scalar value, or a ny-by-nx ndarray
     :param dx: Length of a grid element in the x direction
     :param dy: Length of a grid element in the y direction
-    :param flow_method: Either 'OverlandFlow' or 'OverlandKinematic'
+    :param flow_method: 'OverlandFlow', 'OverlandKinematic', or 'OverlandKinematicDiffusive'
         'OverlandKinematic' by default.
-    :param epsilon: Minimum slope magnitude for solver. Only applicable if flow_method='OverlandKinematic'.
-        This is set using the Solver.OverlandKinematic.Epsilon key in Parflow.
+    :param epsilon: Minimum slope magnitude for solver. Only applicable if
+        flow_method='OverlandKinematic' or 'OverlandKinematicDiffusive'.
     :param mask: A nz-by-ny-by-nx ndarray of mask values (bottom layer to top layer)
         If None, assumed to be an nz-by-ny-by-nx ndarray of 1s.
+    :param alpha: Strength multiplier for diffusion correction (default 1.0).
+        Only applicable if flow_method='OverlandKinematicDiffusive'.
     :return: A float value representing the total overland flow over the domain.
     """
     qeast, qnorth = calculate_overland_fluxes(
@@ -580,6 +664,7 @@ def calculate_overland_flow(
         flow_method=flow_method,
         epsilon=epsilon,
         mask=mask,
+        alpha=alpha,
     )
 
     if mask is not None:
