@@ -200,6 +200,7 @@ int       KINSolMatVec(
     *recompute = 0;
     StateJac(((State*)current_state)) = J;
     StateJacC(((State*)current_state)) = JC;
+
   }
 
   if (JC == NULL)
@@ -1612,19 +1613,18 @@ void    RichardsJacobianEval(
           iitmp = (int)patch_dat[io1];
 
           /* Now add overland contributions to JC */
+          /* Storage derivative: only when ponded (d[max(pp,0)]/dpp = 0 when dry) */
           if ((pp[ip]) > 0.0)
           {
-            /* RMM, switch if seepage face on */
-            if (IsSeepagePatch(&(public_xtra->seepage), iitmp))
-            {
-              cp_c[io] += (vol / dz) * (1.0 + 0.0);
-            }
-            else
-            {
-              /*regular overland diagonal term */
-              cp_c[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
-                          + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
-            }
+            cp_c[io] += (vol / dz);
+          }
+          /* Flux derivatives: always added for non-seepage (residual includes flux
+           * divergence regardless of ponding; derivatives are naturally zero when
+           * all neighboring cells are dry) */
+          if (!IsSeepagePatch(&(public_xtra->seepage), iitmp))
+          {
+            cp_c[io] += (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                        + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
           }
 
           /*west term */
@@ -1955,19 +1955,23 @@ void    RichardsJacobianEval(
 
           iitmp = (int)patch_dat[itop];
           /* Now add overland contributions to J similar to JC above */
+          /* Storage derivative: only when ponded */
           if ((pp[ip]) > 0.0)
           {
-            /* RMM, switch seepage face on optionally for specified surface patches */
             if (IsSeepagePatch(&(public_xtra->seepage), iitmp))
             {
               cp[im] += dt * (vol / dz) * (1.0 + 0.0);
             }
             else
             {
-              /*diagonal term */
-              cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
-                        + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+              cp[im] += (vol / dz);
             }
+          }
+          /* Flux derivatives: always added for non-seepage */
+          if (!IsSeepagePatch(&(public_xtra->seepage), iitmp))
+          {
+            cp[im] += (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                      + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
           }
 
           /*west term */

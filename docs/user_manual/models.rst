@@ -343,28 +343,30 @@ and the diffusion coefficient is:
    :label: diffcoeff
 
    \begin{aligned}
-   D(\psi) = \frac{\alpha\,|\psi|^{5/3}}{n\,|\mathbf{S}_f|^{1/2}},
-   \qquad
-   \mathbf{S}_f = \mathbf{S}_0 + \nabla\psi
+   D(\psi) = \frac{\alpha\,|\psi|^{5/3}}{n\,|\mathbf{S}_0|^{1/2}}
    \end{aligned}
 
 Here :math:`\alpha` is a strength parameter
 (``Solver.OverlandKinematic.DiffusionCorrection.Alpha``, default 1.0),
-:math:`n` is the Manning's coefficient, :math:`\mathbf{S}_0` is the bed
-slope, and :math:`\mathbf{S}_f` is the friction slope. The diffusion
-coefficient uses the **friction slope** (not the bed slope), which
-provides self-regularization on flat terrain: when
-:math:`\mathbf{S}_0 \approx 0`, the water surface gradient
-:math:`\nabla\psi` keeps :math:`D` finite as long as there is a
-pressure gradient.
+:math:`n` is the Manning's coefficient, and :math:`\mathbf{S}_0` is the
+bed slope. The denominator uses the **bed slope magnitude**
+:math:`|\mathbf{S}_0|` (with an epsilon floor set by
+``Solver.OverlandKinematic.Epsilon``), keeping the formulation consistent
+with the kinematic wave structure. The upwind depth selection uses the
+friction slope :math:`\mathbf{S}_f^* = \mathbf{S}_0 + \alpha\,\nabla\psi`
+to determine which cell provides the depth for the flux evaluation.
 
-The correction is self-activating: it is strongest on flat terrain and
-in backwater zones where the kinematic approximation is weakest, and
-vanishes where the kinematic wave is appropriate (steep terrain with
-uniform flow). Because it is isotropic, the vector
-:math:`\mathbf{S}_f` enters only through its scalar magnitude in
-:math:`D`, avoiding the geometric staggering issues that affect the
-full diffusive wave equation.
+The correction is self-activating: it is strongest where the pressure
+gradient opposes or supplements the bed slope, and vanishes where the
+kinematic wave is appropriate (steep terrain with uniform flow).
+
+.. note::
+   On flat terrain (:math:`|\mathbf{S}_0| \approx 0`), the diffusion
+   coefficient is controlled by the epsilon floor, which acts as a
+   physical parameter limiting the maximum diffusion rate. For
+   flat-terrain applications, consider adjusting
+   ``Solver.OverlandKinematic.Epsilon`` or using the full
+   ``OverlandDiffusive`` formulation instead.
 
 The Jacobian linearization of the diffusion term can be selected via
 ``Solver.OverlandKinematic.DiffusionCorrection.Jacobian``:

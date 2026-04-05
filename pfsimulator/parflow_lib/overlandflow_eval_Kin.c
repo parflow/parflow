@@ -187,39 +187,55 @@ void    OverlandFlowEvalKin(
           PP_ipp1 = pp[ipp1];
         if (ippsy >= 0)
           PP_ippsy = pp[ippsy];
-        Press_x = RPMean(-Sf_x, 0.0,
-                         pfmax((PP_ip), 0.0),
-                         pfmax((PP_ipp1), 0.0));
-        Press_y = RPMean(-Sf_y, 0.0,
-                         pfmax((PP_ip), 0.0),
-                         pfmax((PP_ippsy), 0.0));
 
+        /* Upwind selection: use friction slope Sf* when diffusion correction is on,
+         * bed slope S_0 otherwise. Sf* = S_0 + alpha*grad(psi). */
+        if (diffusion_correction)
+        {
+          double Pdown = pfmax(PP_ip, 0.0);
+          double Pup_x = pfmax(PP_ipp1, 0.0);
+          double Pup_y = pfmax(PP_ippsy, 0.0);
+          double Sf_star_x = Sf_x + diff_alpha * (Pup_x - Pdown) / dx;
+          double Sf_star_y = Sf_y + diff_alpha * (Pup_y - Pdown) / dy;
+
+          Press_x = RPMean(-Sf_star_x, 0.0, Pdown, Pup_x);
+          Press_y = RPMean(-Sf_star_y, 0.0, Pdown, Pup_y);
+        }
+        else
+        {
+          Press_x = RPMean(-Sf_x, 0.0,
+                           pfmax((PP_ip), 0.0),
+                           pfmax((PP_ipp1), 0.0));
+          Press_y = RPMean(-Sf_y, 0.0,
+                           pfmax((PP_ip), 0.0),
+                           pfmax((PP_ippsy), 0.0));
+        }
+
+        /* Kinematic flux: S_0 in numerator, |S_0| in denominator, Sf*-upwinded depth */
         qx_v[io] = -(Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]))
                    * RPowerR(Press_x, (5.0 / 3.0));
         qy_v[io] = -(Sf_y / (RPowerR(fabs(Sf_mag), 0.5)
                              * mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
 
-        /* --- Diffusion correction (isotropic) --- */
+        /* Diffusion correction: -alpha * Press^{5/3}/(n|S_0|^{1/2}) * grad(psi) */
         if (diffusion_correction)
         {
-          double Pup_x = pfmax(PP_ipp1, 0.0);
           double Pdown = pfmax(PP_ip, 0.0);
-          double Pup_y = pfmax(PP_ippsy, 0.0);
-
-          double Sf_x_d = sx_dat[io] + (Pup_x - Pdown) / dx;
-          double Sf_y_d = sy_dat[io] + (Pup_y - Pdown) / dy;
-          double Sf_mag_d = RPowerR(Sf_x_d * Sf_x_d
-                                    + Sf_y_d * Sf_y_d, 0.5);
-          if (Sf_mag_d < ov_epsilon)
-            Sf_mag_d = ov_epsilon;
-
           double D_coeff = diff_alpha
-                           / (RPowerR(fabs(Sf_mag_d), 0.5) * mann_dat[io]);
-          double D_x = D_coeff * RPowerR(Press_x, 5.0 / 3.0);
-          double D_y = D_coeff * RPowerR(Press_y, 5.0 / 3.0);
+                           / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]);
 
-          qx_v[io] += -D_x * (Pup_x - Pdown) / dx;
-          qy_v[io] += -D_y * (Pup_y - Pdown) / dy;
+          if (ipp1 >= 0)
+          {
+            double Pup_x = pfmax(PP_ipp1, 0.0);
+            double D_x = D_coeff * RPowerR(Press_x, 5.0 / 3.0);
+            qx_v[io] += -D_x * (Pup_x - Pdown) / dx;
+          }
+          if (ippsy >= 0)
+          {
+            double Pup_y = pfmax(PP_ippsy, 0.0);
+            double D_y = D_coeff * RPowerR(Press_y, 5.0 / 3.0);
+            qy_v[io] += -D_y * (Pup_y - Pdown) / dy;
+          }
         }
       }
       // fix for internal patch edges in x direction
@@ -236,29 +252,27 @@ void    OverlandFlowEvalKin(
           if (Sf_mag < ov_epsilon)
             Sf_mag = ov_epsilon;
 
-          Press_x = RPMean(-Sf_x, 0.0,
-                           pfmax((pp[ipm1]), 0.0),
-                           pfmax((pp[ip]), 0.0));
+          double Pdown_w = pfmax(pp[ipm1], 0.0);
+          double Pup_w = pfmax(pp[ip], 0.0);
+
+          if (diffusion_correction)
+          {
+            double Sf_star_w = Sf_x + diff_alpha * (Pup_w - Pdown_w) / dx;
+            Press_x = RPMean(-Sf_star_w, 0.0, Pdown_w, Pup_w);
+          }
+          else
+          {
+            Press_x = RPMean(-Sf_x, 0.0, Pdown_w, Pup_w);
+          }
 
           qx_v[io - 1] = -(Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - 1]))
                          * RPowerR(Press_x, (5.0 / 3.0));
 
           if (diffusion_correction)
           {
-            double Pdown_w = pfmax(pp[ipm1], 0.0);
-            double Pup_w = pfmax(pp[ip], 0.0);
-
-            double Sf_x_d = sx_dat[io - 1] + (Pup_w - Pdown_w) / dx;
-            double Sf_y_d = sy_dat[io - 1];
-            double Sf_mag_d = RPowerR(Sf_x_d * Sf_x_d
-                                      + Sf_y_d * Sf_y_d, 0.5);
-            if (Sf_mag_d < ov_epsilon)
-              Sf_mag_d = ov_epsilon;
-
             double D_coeff = diff_alpha
-                             / (RPowerR(fabs(Sf_mag_d), 0.5) * mann_dat[io - 1]);
+                             / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - 1]);
             double D_x = D_coeff * RPowerR(Press_x, 5.0 / 3.0);
-
             qx_v[io - 1] += -D_x * (Pup_w - Pdown_w) / dx;
           }
         }
@@ -278,29 +292,27 @@ void    OverlandFlowEvalKin(
           if (Sf_mag < ov_epsilon)
             Sf_mag = ov_epsilon;
 
-          Press_y = RPMean(-Sf_y, 0.0,
-                           pfmax((pp[ipmsy]), 0.0),
-                           pfmax((pp[ip]), 0.0));
+          double Pdown_s = pfmax(pp[ipmsy], 0.0);
+          double Pup_s = pfmax(pp[ip], 0.0);
+
+          if (diffusion_correction)
+          {
+            double Sf_star_s = Sf_y + diff_alpha * (Pup_s - Pdown_s) / dy;
+            Press_y = RPMean(-Sf_star_s, 0.0, Pdown_s, Pup_s);
+          }
+          else
+          {
+            Press_y = RPMean(-Sf_y, 0.0, Pdown_s, Pup_s);
+          }
 
           qy_v[io - sy_v] = -(Sf_y / (RPowerR(fabs(Sf_mag), 0.5)
                                       * mann_dat[io - sy_v])) * RPowerR(Press_y, (5.0 / 3.0));
 
           if (diffusion_correction)
           {
-            double Pdown_s = pfmax(pp[ipmsy], 0.0);
-            double Pup_s = pfmax(pp[ip], 0.0);
-
-            double Sf_x_d = sx_dat[io - sy_v];
-            double Sf_y_d = sy_dat[io - sy_v] + (Pup_s - Pdown_s) / dy;
-            double Sf_mag_d = RPowerR(Sf_x_d * Sf_x_d
-                                      + Sf_y_d * Sf_y_d, 0.5);
-            if (Sf_mag_d < ov_epsilon)
-              Sf_mag_d = ov_epsilon;
-
             double D_coeff = diff_alpha
-                             / (RPowerR(fabs(Sf_mag_d), 0.5) * mann_dat[io - sy_v]);
+                             / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - sy_v]);
             double D_y = D_coeff * RPowerR(Press_y, 5.0 / 3.0);
-
             qy_v[io - sy_v] += -D_y * (Pup_s - Pdown_s) / dy;
           }
         }
@@ -323,22 +335,7 @@ void    OverlandFlowEvalKin(
             ip = SubvectorEltIndex(p_sub, i, j, k1);
             Press_x = pfmax((pp[ip]), 0.0);
             qx_v[io - 1] = -(Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_x, (5.0 / 3.0));
-
-            if (diffusion_correction)
-            {
-              double Sf_x_d = sx_dat[io] + (0.0 - Press_x) / dx;
-              double Sf_y_d = sy_dat[io];
-              double Sf_mag_d = RPowerR(Sf_x_d * Sf_x_d
-                                        + Sf_y_d * Sf_y_d, 0.5);
-              if (Sf_mag_d < ov_epsilon)
-                Sf_mag_d = ov_epsilon;
-
-              double D_coeff = diff_alpha
-                               / (RPowerR(fabs(Sf_mag_d), 0.5) * mann_dat[io]);
-              double D_x = D_coeff * RPowerR(Press_x, 5.0 / 3.0);
-
-              qx_v[io - 1] += -D_x * (0.0 - Press_x) / dx;
-            }
+            /* No diffusion correction at lower boundaries — no physical neighbor */
           }
         }
       }
@@ -360,22 +357,7 @@ void    OverlandFlowEvalKin(
             ip = SubvectorEltIndex(p_sub, i, j, k1);
             Press_y = pfmax((pp[ip]), 0.0);
             qy_v[io - sy_v] = -(Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
-
-            if (diffusion_correction)
-            {
-              double Sf_x_d = sx_dat[io];
-              double Sf_y_d = sy_dat[io] + (0.0 - Press_y) / dy;
-              double Sf_mag_d = RPowerR(Sf_x_d * Sf_x_d
-                                        + Sf_y_d * Sf_y_d, 0.5);
-              if (Sf_mag_d < ov_epsilon)
-                Sf_mag_d = ov_epsilon;
-
-              double D_coeff = diff_alpha
-                               / (RPowerR(fabs(Sf_mag_d), 0.5) * mann_dat[io]);
-              double D_y = D_coeff * RPowerR(Press_y, 5.0 / 3.0);
-
-              qy_v[io - sy_v] += -D_y * (0.0 - Press_y) / dy;
-            }
+            /* No diffusion correction at lower boundaries — no physical neighbor */
           }
         }
       }
@@ -447,87 +429,65 @@ void    OverlandFlowEvalKin(
         if (Sf_mag < ov_epsilon)
           Sf_mag = ov_epsilon;
 
-        Press_x = RPMean(-Sf_x, 0.0,
-                         pfmax((pp[ip]), 0.0),
-                         pfmax((pp[ipp1]), 0.0));
-        Press_y = RPMean(-Sf_y, 0.0,
-                         pfmax((pp[ip]), 0.0),
-                         pfmax((pp[ippsy]), 0.0));
-
-        qx_temp = -(5.0 / 3.0) * (Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_x, (2.0 / 3.0));
-        qy_temp = -(5.0 / 3.0) * (Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_y, (2.0 / 3.0));
-
-        ke_v[io] = pfmax(qx_temp, 0);
-        kw_v[io + 1] = -pfmax(-qx_temp, 0);
-        kn_v[io] = pfmax(qy_temp, 0);
-        ks_v[io + sy_v] = -pfmax(-qy_temp, 0);
-
-        /* --- Diffusion correction derivatives --- */
+        /* Derivative of q = -(Sf_star / (|S_0|^{1/2}*n)) * Press^{5/3}
+         * h-derivative uses Sf_star (combined kin+diff), pfmax routes to upwind cell.
+         * Sf_star-derivative gives +/-D/dx Picard terms with ponding guards. */
         if (diffusion_correction)
         {
-          double Pup_x = pfmax(pp[ipp1], 0.0);
           double Pdown = pfmax(pp[ip], 0.0);
+          double Pup_x = pfmax(pp[ipp1], 0.0);
           double Pup_y = pfmax(pp[ippsy], 0.0);
+          double Sf_star_x = Sf_x + diff_alpha * (Pup_x - Pdown) / dx;
+          double Sf_star_y = Sf_y + diff_alpha * (Pup_y - Pdown) / dy;
 
-          double Sf_x_d = sx_dat[io] + (Pup_x - Pdown) / dx;
-          double Sf_y_d = sy_dat[io] + (Pup_y - Pdown) / dy;
-          double Sf_mag_d = RPowerR(Sf_x_d * Sf_x_d
-                                    + Sf_y_d * Sf_y_d, 0.5);
-          if (Sf_mag_d < ov_epsilon)
-            Sf_mag_d = ov_epsilon;
+          Press_x = RPMean(-Sf_star_x, 0.0, Pdown, Pup_x);
+          Press_y = RPMean(-Sf_star_y, 0.0, Pdown, Pup_y);
 
+          /* h-derivative: Picard uses S_0 (freezes D), FullNewton uses Sf*
+           * (adds dD/dh * grad(h) cross-term to upwind diagonal) */
+          double slope_jac_x = diff_jacobian ? Sf_star_x : Sf_x;
+          double slope_jac_y = diff_jacobian ? Sf_star_y : Sf_y;
+          qx_temp = -(5.0 / 3.0) * (slope_jac_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]))
+                    * RPowerR(Press_x, (2.0 / 3.0));
+          qy_temp = -(5.0 / 3.0) * (slope_jac_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]))
+                    * RPowerR(Press_y, (2.0 / 3.0));
+
+          ke_v[io] = pfmax(qx_temp, 0);
+          kw_v[io + 1] = -pfmax(-qx_temp, 0);
+          kn_v[io] = pfmax(qy_temp, 0);
+          ks_v[io + sy_v] = -pfmax(-qy_temp, 0);
+
+          /* Sf*-derivative: ±D/dx with ponding guards */
           double D_coeff = diff_alpha
-                           / (RPowerR(fabs(Sf_mag_d), 0.5) * mann_dat[io]);
+                           / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]);
           double D_x = D_coeff * RPowerR(Press_x, 5.0 / 3.0);
           double D_y = D_coeff * RPowerR(Press_y, 5.0 / 3.0);
 
-          /* Picard: +/- D/dx */
           ke_v[io] += D_x / dx;
-          kw_v[io + 1] += -D_x / dx;
           kn_v[io] += D_y / dy;
-          ks_v[io + sy_v] += -D_y / dy;
+          if (Pup_x > 0.0)
+            kw_v[io + 1] += -D_x / dx;
+          if (Pup_y > 0.0)
+            ks_v[io + sy_v] += -D_y / dy;
+        }
+        else
+        {
+          Press_x = RPMean(-Sf_x, 0.0,
+                           pfmax((pp[ip]), 0.0),
+                           pfmax((pp[ipp1]), 0.0));
+          Press_y = RPMean(-Sf_y, 0.0,
+                           pfmax((pp[ip]), 0.0),
+                           pfmax((pp[ippsy]), 0.0));
 
-          /* Full Newton: add dD/dpsi correction terms */
-          if (diff_jacobian == 1)
-          {
-            double grad_x = (Pup_x - Pdown) / dx;
-            double grad_y = (Pup_y - Pdown) / dy;
-            double Sf_mag_d2 = Sf_mag_d * Sf_mag_d;
+          qx_temp = -(5.0 / 3.0) * (Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]))
+                    * RPowerR(Press_x, (2.0 / 3.0));
+          qy_temp = -(5.0 / 3.0) * (Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]))
+                    * RPowerR(Press_y, (2.0 / 3.0));
 
-            /* dD/dPress contribution */
-            double dD_dPress_x = (5.0 / 3.0) * D_coeff
-                                 * RPowerR(Press_x, 2.0 / 3.0);
-            double dD_dPress_y = (5.0 / 3.0) * D_coeff
-                                 * RPowerR(Press_y, 2.0 / 3.0);
-
-            /* Upwind flags: RPMean(-Sf_x, 0, P_i, P_{i+1})
-             *   selects P_i when Sf_x <= 0 */
-            double uw_i_x = (Sf_x <= 0.0) ? 1.0 : 0.0;
-            double uw_ip1_x = 1.0 - uw_i_x;
-            double uw_i_y = (Sf_y <= 0.0) ? 1.0 : 0.0;
-            double uw_jp1_y = 1.0 - uw_i_y;
-
-            /* d|Sf|/d(psi_i) combined with dD/d|Sf| */
-            double dSf_center = (Sf_x_d / dx + Sf_y_d / dy);
-
-            /* East face Newton corrections */
-            double dDx_dpsi_i = dD_dPress_x * uw_i_x
-                                + D_x * dSf_center / (2.0 * Sf_mag_d2);
-            double dDx_dpsi_ip1 = dD_dPress_x * uw_ip1_x
-                                  - D_x * Sf_x_d / (2.0 * dx * Sf_mag_d2);
-
-            ke_v[io] += -dDx_dpsi_i * grad_x;
-            kw_v[io + 1] += -dDx_dpsi_ip1 * grad_x;
-
-            /* North face Newton corrections */
-            double dDy_dpsi_j = dD_dPress_y * uw_i_y
-                                + D_y * dSf_center / (2.0 * Sf_mag_d2);
-            double dDy_dpsi_jp1 = dD_dPress_y * uw_jp1_y
-                                  - D_y * Sf_y_d / (2.0 * dy * Sf_mag_d2);
-
-            kn_v[io] += -dDy_dpsi_j * grad_y;
-            ks_v[io + sy_v] += -dDy_dpsi_jp1 * grad_y;
-          }
+          ke_v[io] = pfmax(qx_temp, 0);
+          kw_v[io + 1] = -pfmax(-qx_temp, 0);
+          kn_v[io] = pfmax(qy_temp, 0);
+          ks_v[io + sy_v] = -pfmax(-qy_temp, 0);
         }
       }
 
@@ -545,32 +505,36 @@ void    OverlandFlowEvalKin(
           if (Sf_mag < ov_epsilon)
             Sf_mag = ov_epsilon;
 
-          Press_x = RPMean(-Sf_x, 0.0,
-                           pfmax((pp[ipm1]), 0.0),
-                           pfmax((pp[ip]), 0.0));
-
-          qx_temp = -(5.0 / 3.0) * (Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - 1])) * RPowerR(Press_x, (2.0 / 3.0));
-          kw_v[io] = -pfmax(-qx_temp, 0);
-          ke_v[io - 1] = pfmax(qx_temp, 0);
+          double Pdown_w = pfmax(pp[ipm1], 0.0);
+          double Pup_w = pfmax(pp[ip], 0.0);
 
           if (diffusion_correction)
           {
-            double Pdown_w = pfmax(pp[ipm1], 0.0);
-            double Pup_w = pfmax(pp[ip], 0.0);
+            double Sf_star_w = Sf_x + diff_alpha * (Pup_w - Pdown_w) / dx;
+            Press_x = RPMean(-Sf_star_w, 0.0, Pdown_w, Pup_w);
 
-            double Sf_x_d = sx_dat[io - 1] + (Pup_w - Pdown_w) / dx;
-            double Sf_y_d = sy_dat[io - 1];
-            double Sf_mag_d = RPowerR(Sf_x_d * Sf_x_d
-                                      + Sf_y_d * Sf_y_d, 0.5);
-            if (Sf_mag_d < ov_epsilon)
-              Sf_mag_d = ov_epsilon;
+            double slope_jac_w = diff_jacobian ? Sf_star_w : Sf_x;
+            qx_temp = -(5.0 / 3.0) * (slope_jac_w / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - 1]))
+                      * RPowerR(Press_x, (2.0 / 3.0));
+            kw_v[io] = -pfmax(-qx_temp, 0);
+            ke_v[io - 1] = pfmax(qx_temp, 0);
 
             double D_coeff = diff_alpha
-                             / (RPowerR(fabs(Sf_mag_d), 0.5) * mann_dat[io - 1]);
+                             / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - 1]);
             double D_x = D_coeff * RPowerR(Press_x, 5.0 / 3.0);
 
             ke_v[io - 1] += D_x / dx;
-            kw_v[io] += -D_x / dx;
+            if (Pup_w > 0.0)
+              kw_v[io] += -D_x / dx;
+          }
+          else
+          {
+            Press_x = RPMean(-Sf_x, 0.0, Pdown_w, Pup_w);
+
+            qx_temp = -(5.0 / 3.0) * (Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - 1]))
+                      * RPowerR(Press_x, (2.0 / 3.0));
+            kw_v[io] = -pfmax(-qx_temp, 0);
+            ke_v[io - 1] = pfmax(qx_temp, 0);
           }
         }
       }
@@ -589,32 +553,36 @@ void    OverlandFlowEvalKin(
           if (Sf_mag < ov_epsilon)
             Sf_mag = ov_epsilon;
 
-          Press_y = RPMean(-Sf_y, 0.0,
-                           pfmax((pp[ipmsy]), 0.0),
-                           pfmax((pp[ip]), 0.0));
-
-          qy_temp = -(5.0 / 3.0) * (Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - sy_v])) * RPowerR(Press_y, (2.0 / 3.0));
-          ks_v[io] = -pfmax(-qy_temp, 0);
-          kn_v[io - sy_v] = pfmax(qy_temp, 0);
+          double Pdown_s = pfmax(pp[ipmsy], 0.0);
+          double Pup_s = pfmax(pp[ip], 0.0);
 
           if (diffusion_correction)
           {
-            double Pdown_s = pfmax(pp[ipmsy], 0.0);
-            double Pup_s = pfmax(pp[ip], 0.0);
+            double Sf_star_s = Sf_y + diff_alpha * (Pup_s - Pdown_s) / dy;
+            Press_y = RPMean(-Sf_star_s, 0.0, Pdown_s, Pup_s);
 
-            double Sf_x_d = sx_dat[io - sy_v];
-            double Sf_y_d = sy_dat[io - sy_v] + (Pup_s - Pdown_s) / dy;
-            double Sf_mag_d = RPowerR(Sf_x_d * Sf_x_d
-                                      + Sf_y_d * Sf_y_d, 0.5);
-            if (Sf_mag_d < ov_epsilon)
-              Sf_mag_d = ov_epsilon;
+            double slope_jac_s = diff_jacobian ? Sf_star_s : Sf_y;
+            qy_temp = -(5.0 / 3.0) * (slope_jac_s / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - sy_v]))
+                      * RPowerR(Press_y, (2.0 / 3.0));
+            ks_v[io] = -pfmax(-qy_temp, 0);
+            kn_v[io - sy_v] = pfmax(qy_temp, 0);
 
             double D_coeff = diff_alpha
-                             / (RPowerR(fabs(Sf_mag_d), 0.5) * mann_dat[io - sy_v]);
+                             / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - sy_v]);
             double D_y = D_coeff * RPowerR(Press_y, 5.0 / 3.0);
 
             kn_v[io - sy_v] += D_y / dy;
-            ks_v[io] += -D_y / dy;
+            if (Pup_s > 0.0)
+              ks_v[io] += -D_y / dy;
+          }
+          else
+          {
+            Press_y = RPMean(-Sf_y, 0.0, Pdown_s, Pup_s);
+
+            qy_temp = -(5.0 / 3.0) * (Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - sy_v]))
+                      * RPowerR(Press_y, (2.0 / 3.0));
+            ks_v[io] = -pfmax(-qy_temp, 0);
+            kn_v[io - sy_v] = pfmax(qy_temp, 0);
           }
         }
       }
@@ -639,23 +607,7 @@ void    OverlandFlowEvalKin(
 
             kw_v[io] = -pfmax(-qx_temp, 0);
             ke_v[io - 1] = pfmax(qx_temp, 0);
-
-            if (diffusion_correction)
-            {
-              double Sf_x_d = sx_dat[io] + (0.0 - Press_x) / dx;
-              double Sf_y_d = sy_dat[io];
-              double Sf_mag_d = RPowerR(Sf_x_d * Sf_x_d
-                                        + Sf_y_d * Sf_y_d, 0.5);
-              if (Sf_mag_d < ov_epsilon)
-                Sf_mag_d = ov_epsilon;
-
-              double D_coeff = diff_alpha
-                               / (RPowerR(fabs(Sf_mag_d), 0.5) * mann_dat[io]);
-              double D_x = D_coeff * RPowerR(Press_x, 5.0 / 3.0);
-
-              ke_v[io - 1] += D_x / dx;
-              kw_v[io] += -D_x / dx;
-            }
+            /* No diffusion correction at lower boundaries — no physical neighbor */
           }
         }
       }
@@ -680,23 +632,7 @@ void    OverlandFlowEvalKin(
 
             ks_v[io] = -pfmax(-qy_temp, 0);
             kn_v[io - sy_v] = pfmax(qy_temp, 0);
-
-            if (diffusion_correction)
-            {
-              double Sf_x_d = sx_dat[io];
-              double Sf_y_d = sy_dat[io] + (0.0 - Press_y) / dy;
-              double Sf_mag_d = RPowerR(Sf_x_d * Sf_x_d
-                                        + Sf_y_d * Sf_y_d, 0.5);
-              if (Sf_mag_d < ov_epsilon)
-                Sf_mag_d = ov_epsilon;
-
-              double D_coeff = diff_alpha
-                               / (RPowerR(fabs(Sf_mag_d), 0.5) * mann_dat[io]);
-              double D_y = D_coeff * RPowerR(Press_y, 5.0 / 3.0);
-
-              kn_v[io - sy_v] += D_y / dy;
-              ks_v[io] += -D_y / dy;
-            }
+            /* No diffusion correction at lower boundaries — no physical neighbor */
           }
         }
       }
