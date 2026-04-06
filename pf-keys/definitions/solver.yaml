@@ -2275,13 +2275,34 @@ Solver:
         help: >
           [Type: string] Selects the Jacobian linearization for the diffusion correction.
           Picard treats D as constant in the derivative (simple, robust). FullNewton
-          includes the full dD/dpsi terms for faster Newton convergence near the solution.
+          includes the depth derivative through D for faster Newton convergence.
+          FullNewtonDdx adds the dD/d(grad_psi) terms through the x-gradient at each
+          face (5-point stencil, no diagonal neighbors). Only active for FrictionSlope
+          or Pythagorean denominators (BedSlope has no gradient dependence in D).
         default: Picard
         domains:
           EnumDomain:
             enum_list:
               - Picard
               - FullNewton
+              - FullNewtonDdx
+
+      Denominator:
+        help: >
+          [Type: string] Selects the slope magnitude used in the denominator of the
+          diffusion coefficient D = alpha * |psi|^{5/3} / (n * |S_denom|^{1/2}).
+          BedSlope uses |S_0| (bed slope only, ATS-style, needs epsilon floor on flat
+          terrain). FrictionSlope uses |S_f| = |S_0 + alpha*grad(psi)| (self-regularizes
+          on flat terrain via water surface gradient). Pythagorean uses
+          sqrt(|S_0|^2 + |alpha*grad(psi)|^2) (self-regularizes, smoother Jacobian
+          than FrictionSlope because dD/d(grad psi) vanishes on steep terrain).
+        default: BedSlope
+        domains:
+          EnumDomain:
+            enum_list:
+              - BedSlope
+              - FrictionSlope
+              - Pythagorean
 
   # missing from manual
   PolyDegree:

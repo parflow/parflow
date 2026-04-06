@@ -93,6 +93,7 @@ void    OverlandFlowEvalKin(
 
   int diffusion_correction;
   int diff_jacobian;
+  int diff_denom;        /* 0=BedSlope, 1=FrictionSlope, 2=Pythagorean */
   double diff_alpha;
   double dx, dy;
 
@@ -128,7 +129,15 @@ void    OverlandFlowEvalKin(
   }
   {
     char *jac_str = GetStringDefault("Solver.OverlandKinematic.DiffusionCorrection.Jacobian", "Picard");
-    diff_jacobian = (strcmp(jac_str, "FullNewton") == 0) ? 1 : 0;
+    diff_jacobian = 0;  /* 0=Picard, 1=FullNewton, 2=FullNewton+dD/dhx */
+    if (strcmp(jac_str, "FullNewton") == 0)     diff_jacobian = 1;
+    if (strcmp(jac_str, "FullNewtonDdx") == 0)  diff_jacobian = 2;
+  }
+  {
+    char *denom_str = GetStringDefault("Solver.OverlandKinematic.DiffusionCorrection.Denominator", "BedSlope");
+    diff_denom = 0;
+    if (strcmp(denom_str, "FrictionSlope") == 0) diff_denom = 1;
+    if (strcmp(denom_str, "Pythagorean") == 0)   diff_denom = 2;
   }
   diff_alpha = GetDoubleDefault("Solver.OverlandKinematic.DiffusionCorrection.Alpha", 1.0);
 
@@ -217,22 +226,40 @@ void    OverlandFlowEvalKin(
         qy_v[io] = -(Sf_y / (RPowerR(fabs(Sf_mag), 0.5)
                              * mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
 
-        /* Diffusion correction: -alpha * Press^{5/3}/(n|S_0|^{1/2}) * grad(psi) */
+        /* Diffusion correction: -D * grad(psi), D = alpha * Press^{5/3}/(n * |S_denom|^{1/2}) */
         if (diffusion_correction)
         {
           double Pdown = pfmax(PP_ip, 0.0);
+          double Pup_x = pfmax(PP_ipp1, 0.0);
+          double Pup_y = pfmax(PP_ippsy, 0.0);
+
+          /* Denominator choice for D */
+          double D_denom_mag;
+          if (diff_denom == 0) {
+            D_denom_mag = Sf_mag;  /* BedSlope: |S_0|, already computed */
+          } else if (diff_denom == 1) {
+            double Sf_star_x = sx_dat[io] + diff_alpha * (Pup_x - Pdown) / dx;
+            double Sf_star_y = sy_dat[io] + diff_alpha * (Pup_y - Pdown) / dy;
+            D_denom_mag = RPowerR(Sf_star_x * Sf_star_x + Sf_star_y * Sf_star_y, 0.5);
+            if (D_denom_mag < ov_epsilon) D_denom_mag = ov_epsilon;
+          } else {
+            double dhdx_val = diff_alpha * (Pup_x - Pdown) / dx;
+            double dhdy_val = diff_alpha * (Pup_y - Pdown) / dy;
+            D_denom_mag = RPowerR(sx_dat[io] * sx_dat[io] + sy_dat[io] * sy_dat[io]
+                                + dhdx_val * dhdx_val + dhdy_val * dhdy_val, 0.5);
+            if (D_denom_mag < ov_epsilon) D_denom_mag = ov_epsilon;
+          }
+
           double D_coeff = diff_alpha
-                           / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]);
+                           / (RPowerR(fabs(D_denom_mag), 0.5) * mann_dat[io]);
 
           if (ipp1 >= 0)
           {
-            double Pup_x = pfmax(PP_ipp1, 0.0);
             double D_x = D_coeff * RPowerR(Press_x, 5.0 / 3.0);
             qx_v[io] += -D_x * (Pup_x - Pdown) / dx;
           }
           if (ippsy >= 0)
           {
-            double Pup_y = pfmax(PP_ippsy, 0.0);
             double D_y = D_coeff * RPowerR(Press_y, 5.0 / 3.0);
             qy_v[io] += -D_y * (Pup_y - Pdown) / dy;
           }
@@ -270,8 +297,22 @@ void    OverlandFlowEvalKin(
 
           if (diffusion_correction)
           {
+            double D_denom_mag;
+            if (diff_denom == 0) {
+              D_denom_mag = Sf_mag;
+            } else if (diff_denom == 1) {
+              double Sf_star_w = Sf_x + diff_alpha * (Pup_w - Pdown_w) / dx;
+              double Sf_star_wy = Sf_y + 0.0;  /* no y-gradient info at patch edge */
+              D_denom_mag = RPowerR(Sf_star_w * Sf_star_w + Sf_star_wy * Sf_star_wy, 0.5);
+              if (D_denom_mag < ov_epsilon) D_denom_mag = ov_epsilon;
+            } else {
+              double dhdx_w = diff_alpha * (Pup_w - Pdown_w) / dx;
+              D_denom_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y
+                                  + dhdx_w * dhdx_w, 0.5);
+              if (D_denom_mag < ov_epsilon) D_denom_mag = ov_epsilon;
+            }
             double D_coeff = diff_alpha
-                             / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - 1]);
+                             / (RPowerR(fabs(D_denom_mag), 0.5) * mann_dat[io - 1]);
             double D_x = D_coeff * RPowerR(Press_x, 5.0 / 3.0);
             qx_v[io - 1] += -D_x * (Pup_w - Pdown_w) / dx;
           }
@@ -310,8 +351,22 @@ void    OverlandFlowEvalKin(
 
           if (diffusion_correction)
           {
+            double D_denom_mag;
+            if (diff_denom == 0) {
+              D_denom_mag = Sf_mag;
+            } else if (diff_denom == 1) {
+              double Sf_star_sx = Sf_x + 0.0;  /* no x-gradient info at patch edge */
+              double Sf_star_s = Sf_y + diff_alpha * (Pup_s - Pdown_s) / dy;
+              D_denom_mag = RPowerR(Sf_star_sx * Sf_star_sx + Sf_star_s * Sf_star_s, 0.5);
+              if (D_denom_mag < ov_epsilon) D_denom_mag = ov_epsilon;
+            } else {
+              double dhdy_s = diff_alpha * (Pup_s - Pdown_s) / dy;
+              D_denom_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y
+                                  + dhdy_s * dhdy_s, 0.5);
+              if (D_denom_mag < ov_epsilon) D_denom_mag = ov_epsilon;
+            }
             double D_coeff = diff_alpha
-                             / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - sy_v]);
+                             / (RPowerR(fabs(D_denom_mag), 0.5) * mann_dat[io - sy_v]);
             double D_y = D_coeff * RPowerR(Press_y, 5.0 / 3.0);
             qy_v[io - sy_v] += -D_y * (Pup_s - Pdown_s) / dy;
           }
@@ -458,8 +513,22 @@ void    OverlandFlowEvalKin(
           ks_v[io + sy_v] = -pfmax(-qy_temp, 0);
 
           /* Sf*-derivative: ±D/dx with ponding guards */
+          double D_denom_mag;
+          if (diff_denom == 0) {
+            D_denom_mag = Sf_mag;
+          } else if (diff_denom == 1) {
+            D_denom_mag = RPowerR(Sf_star_x * Sf_star_x + Sf_star_y * Sf_star_y, 0.5);
+            if (D_denom_mag < ov_epsilon) D_denom_mag = ov_epsilon;
+          } else {
+            double dhdx_val = diff_alpha * (Pup_x - Pdown) / dx;
+            double dhdy_val = diff_alpha * (Pup_y - Pdown) / dy;
+            D_denom_mag = RPowerR(sx_dat[io] * sx_dat[io] + sy_dat[io] * sy_dat[io]
+                                + dhdx_val * dhdx_val + dhdy_val * dhdy_val, 0.5);
+            if (D_denom_mag < ov_epsilon) D_denom_mag = ov_epsilon;
+          }
+
           double D_coeff = diff_alpha
-                           / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]);
+                           / (RPowerR(fabs(D_denom_mag), 0.5) * mann_dat[io]);
           double D_x = D_coeff * RPowerR(Press_x, 5.0 / 3.0);
           double D_y = D_coeff * RPowerR(Press_y, 5.0 / 3.0);
 
@@ -469,6 +538,25 @@ void    OverlandFlowEvalKin(
             kw_v[io + 1] += -D_x / dx;
           if (Pup_y > 0.0)
             ks_v[io + sy_v] += -D_y / dy;
+
+          /* Level 2: dD/dhx correction — adds hx^2/(2*|Seff|^2) * (±D/dx)
+           * Only active for FrictionSlope/Pythagorean (BedSlope has no hx in D) */
+          if (diff_jacobian >= 2 && diff_denom > 0)
+          {
+            double dhdx_val = diff_alpha * (Pup_x - Pdown) / dx;
+            double dhdy_val = diff_alpha * (Pup_y - Pdown) / dy;
+            double Seff2 = D_denom_mag * D_denom_mag;
+            /* Factor: hx^2 / (2 * |Seff|^2), bounded in [0, 0.5] */
+            double fx = (Seff2 > 0) ? dhdx_val * dhdx_val / (2.0 * Seff2) : 0.0;
+            double fy = (Seff2 > 0) ? dhdy_val * dhdy_val / (2.0 * Seff2) : 0.0;
+
+            ke_v[io] += fx * D_x / dx;
+            kn_v[io] += fy * D_y / dy;
+            if (Pup_x > 0.0)
+              kw_v[io + 1] += -fx * D_x / dx;
+            if (Pup_y > 0.0)
+              ks_v[io + sy_v] += -fy * D_y / dy;
+          }
         }
         else
         {
@@ -519,13 +607,36 @@ void    OverlandFlowEvalKin(
             kw_v[io] = -pfmax(-qx_temp, 0);
             ke_v[io - 1] = pfmax(qx_temp, 0);
 
+            double D_denom_mag;
+            if (diff_denom == 0) {
+              D_denom_mag = Sf_mag;
+            } else if (diff_denom == 1) {
+              double Sf_star_wy = Sf_y + 0.0;
+              D_denom_mag = RPowerR(Sf_star_w * Sf_star_w + Sf_star_wy * Sf_star_wy, 0.5);
+              if (D_denom_mag < ov_epsilon) D_denom_mag = ov_epsilon;
+            } else {
+              double dhdx_w = diff_alpha * (Pup_w - Pdown_w) / dx;
+              D_denom_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y
+                                  + dhdx_w * dhdx_w, 0.5);
+              if (D_denom_mag < ov_epsilon) D_denom_mag = ov_epsilon;
+            }
             double D_coeff = diff_alpha
-                             / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - 1]);
+                             / (RPowerR(fabs(D_denom_mag), 0.5) * mann_dat[io - 1]);
             double D_x = D_coeff * RPowerR(Press_x, 5.0 / 3.0);
 
             ke_v[io - 1] += D_x / dx;
             if (Pup_w > 0.0)
               kw_v[io] += -D_x / dx;
+
+            if (diff_jacobian >= 2 && diff_denom > 0)
+            {
+              double dhdx_w = diff_alpha * (Pup_w - Pdown_w) / dx;
+              double Seff2 = D_denom_mag * D_denom_mag;
+              double fx = (Seff2 > 0) ? dhdx_w * dhdx_w / (2.0 * Seff2) : 0.0;
+              ke_v[io - 1] += fx * D_x / dx;
+              if (Pup_w > 0.0)
+                kw_v[io] += -fx * D_x / dx;
+            }
           }
           else
           {
@@ -567,13 +678,36 @@ void    OverlandFlowEvalKin(
             ks_v[io] = -pfmax(-qy_temp, 0);
             kn_v[io - sy_v] = pfmax(qy_temp, 0);
 
+            double D_denom_mag;
+            if (diff_denom == 0) {
+              D_denom_mag = Sf_mag;
+            } else if (diff_denom == 1) {
+              double Sf_star_sx = Sf_x + 0.0;
+              D_denom_mag = RPowerR(Sf_star_sx * Sf_star_sx + Sf_star_s * Sf_star_s, 0.5);
+              if (D_denom_mag < ov_epsilon) D_denom_mag = ov_epsilon;
+            } else {
+              double dhdy_s = diff_alpha * (Pup_s - Pdown_s) / dy;
+              D_denom_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y
+                                  + dhdy_s * dhdy_s, 0.5);
+              if (D_denom_mag < ov_epsilon) D_denom_mag = ov_epsilon;
+            }
             double D_coeff = diff_alpha
-                             / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - sy_v]);
+                             / (RPowerR(fabs(D_denom_mag), 0.5) * mann_dat[io - sy_v]);
             double D_y = D_coeff * RPowerR(Press_y, 5.0 / 3.0);
 
             kn_v[io - sy_v] += D_y / dy;
             if (Pup_s > 0.0)
               ks_v[io] += -D_y / dy;
+
+            if (diff_jacobian >= 2 && diff_denom > 0)
+            {
+              double dhdy_s = diff_alpha * (Pup_s - Pdown_s) / dy;
+              double Seff2 = D_denom_mag * D_denom_mag;
+              double fy = (Seff2 > 0) ? dhdy_s * dhdy_s / (2.0 * Seff2) : 0.0;
+              kn_v[io - sy_v] += fy * D_y / dy;
+              if (Pup_s > 0.0)
+                ks_v[io] += -fy * D_y / dy;
+            }
           }
           else
           {
