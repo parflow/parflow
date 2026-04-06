@@ -66,12 +66,19 @@ install(TARGETS projecttin DESTINATION bin)
 #-----------------------------------------------------------------------------
 # Mask utilities
 #-----------------------------------------------------------------------------
-if (PARFLOW_HAVE_TCL)
-  add_executable(pfmask-to-pfsol pfmask-to-pfsol.cpp)
-  target_include_directories(pfmask-to-pfsol PUBLIC third_party)
-  target_link_libraries(pfmask-to-pfsol pftools)
-  install(TARGETS pfmask-to-pfsol DESTINATION bin)
-endif ()
+
+# This is first step at enabling building without TCL.  The pfmask-to-pfsol utility was
+# originally written to link against the TCL library; this was changed to
+# compile with the needed funtions directly compiled.   Should consider
+# reworking this utility using the Python library or seperating the TCL from the other
+# utilities into two libraries to link against.
+add_executable(pfmask-to-pfsol pfmask-to-pfsol.cpp readdatabox.c databox.c tools_io.c)
+target_include_directories(pfmask-to-pfsol PUBLIC third_party)
+if (${PARFLOW_HAVE_SILO})
+  target_link_libraries (pfmask-to-pfsol ${SILO_LIBRARIES})
+endif (${PARFLOW_HAVE_SILO})
+
+install(TARGETS pfmask-to-pfsol DESTINATION bin)
 
 add_executable(pfsol-to-vtk pfsol-to-vtk.c)
 install(TARGETS pfsol-to-vtk DESTINATION bin)
