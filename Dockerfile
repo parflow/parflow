@@ -96,7 +96,7 @@ WORKDIR /home/parflow
 RUN wget -q https://github.com/LLNL/Silo/archive/refs/tags/4.12.0.tar.gz && \
     tar -xf 4.12.0.tar.gz && \
     cd Silo-4.12.0 && \
-    CFLAGS="-fPIC" ./configure  --prefix=$PARFLOW_DIR --disable-silex --disable-hzip --disable-fpzip && \
+    ./configure  --disable-silex --disable-hzip --disable-fpzip --enable-shared=yes --prefix=$PARFLOW_DIR && \
     make install && \
     cd .. && \
     rm -fr Silo-4.12.0 4.12.0.tar.gz
@@ -105,13 +105,13 @@ RUN wget -q https://github.com/LLNL/Silo/archive/refs/tags/4.12.0.tar.gz && \
 # Hypre
 #
 WORKDIR /home/parflow
-RUN  wget -q https://github.com/hypre-space/hypre/archive/v2.26.0.tar.gz && \
-   tar xf v2.26.0.tar.gz && \
-   cd hypre-2.26.0/src && \
+RUN  wget -q https://github.com/hypre-space/hypre/archive/v2.33.0.tar.gz && \
+   tar xf v2.33.0.tar.gz && \
+   cd hypre-2.33.0/src && \
    ./configure --prefix=$PARFLOW_DIR && \
    make install && \
    cd ../.. && \
-   rm -fr hypre-2.18.2 v2.18.2.tar.gz
+   rm -fr hypre-2.33.0 v2.33.0.tar.gz
 
 #-----------------------------------------------------------------------------
 # Parflow configure and build
