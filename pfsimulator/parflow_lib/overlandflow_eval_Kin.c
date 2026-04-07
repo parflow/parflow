@@ -198,14 +198,16 @@ void    OverlandFlowEvalKin(
           PP_ippsy = pp[ippsy];
 
         /* Upwind selection: use friction slope Sf* when diffusion correction is on,
-         * bed slope S_0 otherwise. Sf* = S_0 + alpha*grad(psi). */
+         * bed slope S_0 otherwise. Sf* = S_0 + alpha*grad(psi).
+         * At domain boundaries (k1x/k1y < 0), revert to bed slope — no
+         * physical neighbor for the gradient. */
         if (diffusion_correction)
         {
           double Pdown = pfmax(PP_ip, 0.0);
           double Pup_x = pfmax(PP_ipp1, 0.0);
           double Pup_y = pfmax(PP_ippsy, 0.0);
-          double Sf_star_x = Sf_x + diff_alpha * (Pup_x - Pdown) / dx;
-          double Sf_star_y = Sf_y + diff_alpha * (Pup_y - Pdown) / dy;
+          double Sf_star_x = (k1x >= 0) ? Sf_x + diff_alpha * (Pup_x - Pdown) / dx : Sf_x;
+          double Sf_star_y = (k1y >= 0) ? Sf_y + diff_alpha * (Pup_y - Pdown) / dy : Sf_y;
 
           Press_x = RPMean(-Sf_star_x, 0.0, Pdown, Pup_x);
           Press_y = RPMean(-Sf_star_y, 0.0, Pdown, Pup_y);
@@ -226,12 +228,13 @@ void    OverlandFlowEvalKin(
         qy_v[io] = -(Sf_y / (RPowerR(fabs(Sf_mag), 0.5)
                              * mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
 
-        /* Diffusion correction: -D * grad(psi), D = alpha * Press^{5/3}/(n * |S_denom|^{1/2}) */
+        /* Diffusion correction: -D * grad(psi), D = alpha * Press^{5/3}/(n * |S_denom|^{1/2})
+         * Skip correction at domain boundaries (k1x/k1y < 0) — no physical neighbor. */
         if (diffusion_correction)
         {
           double Pdown = pfmax(PP_ip, 0.0);
-          double Pup_x = pfmax(PP_ipp1, 0.0);
-          double Pup_y = pfmax(PP_ippsy, 0.0);
+          double Pup_x = (k1x >= 0) ? pfmax(PP_ipp1, 0.0) : Pdown;
+          double Pup_y = (k1y >= 0) ? pfmax(PP_ippsy, 0.0) : Pdown;
 
           /* Denominator choice for D */
           double D_denom_mag;
@@ -253,12 +256,12 @@ void    OverlandFlowEvalKin(
           double D_coeff = diff_alpha
                            / (RPowerR(fabs(D_denom_mag), 0.5) * mann_dat[io]);
 
-          if (ipp1 >= 0)
+          if (ipp1 >= 0 && k1x >= 0)
           {
             double D_x = D_coeff * RPowerR(Press_x, 5.0 / 3.0);
             qx_v[io] += -D_x * (Pup_x - Pdown) / dx;
           }
-          if (ippsy >= 0)
+          if (ippsy >= 0 && k1y >= 0)
           {
             double D_y = D_coeff * RPowerR(Press_y, 5.0 / 3.0);
             qy_v[io] += -D_y * (Pup_y - Pdown) / dy;
@@ -487,13 +490,18 @@ void    OverlandFlowEvalKin(
         /* Derivative of q = -(Sf_star / (|S_0|^{1/2}*n)) * Press^{5/3}
          * h-derivative uses Sf_star (combined kin+diff), pfmax routes to upwind cell.
          * Sf_star-derivative gives +/-D/dx Picard terms with ponding guards. */
+        /* At domain boundaries (k1x/k1y < 0), revert to bed slope — no
+         * physical neighbor for the gradient. */
         if (diffusion_correction)
         {
           double Pdown = pfmax(pp[ip], 0.0);
           double Pup_x = pfmax(pp[ipp1], 0.0);
           double Pup_y = pfmax(pp[ippsy], 0.0);
-          double Sf_star_x = Sf_x + diff_alpha * (Pup_x - Pdown) / dx;
-          double Sf_star_y = Sf_y + diff_alpha * (Pup_y - Pdown) / dy;
+          double Sf_star_x = (k1x >= 0) ? Sf_x + diff_alpha * (Pup_x - Pdown) / dx : Sf_x;
+          double Sf_star_y = (k1y >= 0) ? Sf_y + diff_alpha * (Pup_y - Pdown) / dy : Sf_y;
+          /* For D_denom and flux, zero gradient at domain boundaries */
+          double Pup_x_dc = (k1x >= 0) ? Pup_x : Pdown;
+          double Pup_y_dc = (k1y >= 0) ? Pup_y : Pdown;
 
           Press_x = RPMean(-Sf_star_x, 0.0, Pdown, Pup_x);
           Press_y = RPMean(-Sf_star_y, 0.0, Pdown, Pup_y);
@@ -520,8 +528,8 @@ void    OverlandFlowEvalKin(
             D_denom_mag = RPowerR(Sf_star_x * Sf_star_x + Sf_star_y * Sf_star_y, 0.5);
             if (D_denom_mag < ov_epsilon) D_denom_mag = ov_epsilon;
           } else {
-            double dhdx_val = diff_alpha * (Pup_x - Pdown) / dx;
-            double dhdy_val = diff_alpha * (Pup_y - Pdown) / dy;
+            double dhdx_val = diff_alpha * (Pup_x_dc - Pdown) / dx;
+            double dhdy_val = diff_alpha * (Pup_y_dc - Pdown) / dy;
             D_denom_mag = RPowerR(sx_dat[io] * sx_dat[io] + sy_dat[io] * sy_dat[io]
                                 + dhdx_val * dhdx_val + dhdy_val * dhdy_val, 0.5);
             if (D_denom_mag < ov_epsilon) D_denom_mag = ov_epsilon;
@@ -532,30 +540,38 @@ void    OverlandFlowEvalKin(
           double D_x = D_coeff * RPowerR(Press_x, 5.0 / 3.0);
           double D_y = D_coeff * RPowerR(Press_y, 5.0 / 3.0);
 
-          ke_v[io] += D_x / dx;
-          kn_v[io] += D_y / dy;
-          if (Pup_x > 0.0)
-            kw_v[io + 1] += -D_x / dx;
-          if (Pup_y > 0.0)
-            ks_v[io + sy_v] += -D_y / dy;
+          if (k1x >= 0) {
+            ke_v[io] += D_x / dx;
+            if (Pup_x > 0.0)
+              kw_v[io + 1] += -D_x / dx;
+          }
+          if (k1y >= 0) {
+            kn_v[io] += D_y / dy;
+            if (Pup_y > 0.0)
+              ks_v[io + sy_v] += -D_y / dy;
+          }
 
           /* Level 2: dD/dhx correction — adds hx^2/(2*|Seff|^2) * (±D/dx)
            * Only active for FrictionSlope/Pythagorean (BedSlope has no hx in D) */
           if (diff_jacobian >= 2 && diff_denom > 0)
           {
-            double dhdx_val = diff_alpha * (Pup_x - Pdown) / dx;
-            double dhdy_val = diff_alpha * (Pup_y - Pdown) / dy;
+            double dhdx_val = diff_alpha * (Pup_x_dc - Pdown) / dx;
+            double dhdy_val = diff_alpha * (Pup_y_dc - Pdown) / dy;
             double Seff2 = D_denom_mag * D_denom_mag;
             /* Factor: hx^2 / (2 * |Seff|^2), bounded in [0, 0.5] */
             double fx = (Seff2 > 0) ? dhdx_val * dhdx_val / (2.0 * Seff2) : 0.0;
             double fy = (Seff2 > 0) ? dhdy_val * dhdy_val / (2.0 * Seff2) : 0.0;
 
-            ke_v[io] += fx * D_x / dx;
-            kn_v[io] += fy * D_y / dy;
-            if (Pup_x > 0.0)
-              kw_v[io + 1] += -fx * D_x / dx;
-            if (Pup_y > 0.0)
-              ks_v[io + sy_v] += -fy * D_y / dy;
+            if (k1x >= 0) {
+              ke_v[io] += fx * D_x / dx;
+              if (Pup_x > 0.0)
+                kw_v[io + 1] += -fx * D_x / dx;
+            }
+            if (k1y >= 0) {
+              kn_v[io] += fy * D_y / dy;
+              if (Pup_y > 0.0)
+                ks_v[io + sy_v] += -fy * D_y / dy;
+            }
           }
         }
         else
