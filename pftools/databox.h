@@ -46,7 +46,11 @@
 #include <hdf.h>
 #endif
 
+#ifdef PARFLOW_HAVE_TCL
 #include <tcl.h>
+#endif
+
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
