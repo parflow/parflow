@@ -81,6 +81,7 @@ endif()
 
 target_include_directories(pfmask-to-pfsol PUBLIC third_party)
 if (${PARFLOW_HAVE_SILO})
+  target_include_directories (pfmask-to-pfsol PUBLIC "${SILO_INCLUDE_DIRS}")
   target_link_libraries (pfmask-to-pfsol ${SILO_LIBRARIES})
 endif (${PARFLOW_HAVE_SILO})
 
