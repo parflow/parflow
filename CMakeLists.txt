@@ -280,42 +280,45 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
 
 endif ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
 
-find_package(TCL QUIET)
-if(TCL_FOUND)
-  # Warn: TCL support is deprecated and will be removed in a future release.
-  # Tracking issue: https://github.com/parflow/parflow/issues/707<N>
-  message(WARNING
-    "TCL support in ParFlow is deprecated and will be removed in a future release. "
-    "Users are encouraged to migrate to the Python-based pftools. "
-    "See https://github.com/parflow/parflow/issues/707 for migration guidance."
-  )
-  set(PARFLOW_HAVE_TCL TRUE)
-  set(HAVE_TCL "${PARFLOW_HAVE_TCL}")
-
-  # Determine TCL version
-  # TCL_VERSION is the canonical macro in tcl.h across all supported versions.
-  if(TCL_INCLUDE_PATH AND EXISTS "${TCL_INCLUDE_PATH}/tcl.h")
-    file(STRINGS "${TCL_INCLUDE_PATH}/tcl.h" _tcl_version_line
-         REGEX "^#[ \t]*define[ \t]+TCL_VERSION[ \t]+\"[^\"]+\"")
-    if(_tcl_version_line)
-      string(REGEX REPLACE ".*\"([^\"]+)\".*" "\\1" PARFLOW_TCL_VERSION "${_tcl_version_line}")
-    unset(_tcl_version_line)
-    endif(_tcl_version_line)
-  endif(TCL_INCLUDE_PATH AND EXISTS "${TCL_INCLUDE_PATH}/tcl.h")
-  # Tcl 9.x removed PFIDB support. Warn early rather than fail at runtime
-  if(PARFLOW_TCL_VERSION VERSION_GREATER_EQUAL "9.0")
+option(PARFLOW_ENABLE_TCL "Enable Tcl-based tools and tests" "OFF")
+if (PARFLOW_ENABLE_TCL)
+  find_package(TCL QUIET)
+  if(TCL_FOUND)
+    # Warn: TCL support is deprecated and will be removed in a future release.
+    # Tracking issue: https://github.com/parflow/parflow/issues/707<N>
     message(WARNING
-      "TCL ${PARFLOW_TCL_VERSION} detected (>= 9.0). "
-      "ParFlow will compile, but creating or running PFIDB files is not supported with Tcl 9.x. "
-      "Migrate to Python-based pftools or use Tcl 8.x."
-    )
-  endif()
+      "TCL support in ParFlow is deprecated and will be removed in a future release. "
+      "Users are encouraged to migrate to the Python-based pftools. "
+      "See https://github.com/parflow/parflow/issues/707 for migration guidance."
+      )
+    set(PARFLOW_HAVE_TCL TRUE)
+    set(HAVE_TCL "${PARFLOW_HAVE_TCL}")
 
-else(TCL_FOUND)
-  if(PARFLOW_ENABLE_TOOLS)
-    message(FATAL_ERROR "TCL is required for building pftools")
-  endif()
-endif(TCL_FOUND)
+    # Determine TCL version
+    # TCL_VERSION is the canonical macro in tcl.h across all supported versions.
+    if(TCL_INCLUDE_PATH AND EXISTS "${TCL_INCLUDE_PATH}/tcl.h")
+      file(STRINGS "${TCL_INCLUDE_PATH}/tcl.h" _tcl_version_line
+        REGEX "^#[ \t]*define[ \t]+TCL_VERSION[ \t]+\"[^\"]+\"")
+      if(_tcl_version_line)
+	string(REGEX REPLACE ".*\"([^\"]+)\".*" "\\1" PARFLOW_TCL_VERSION "${_tcl_version_line}")
+	unset(_tcl_version_line)
+      endif(_tcl_version_line)
+    endif(TCL_INCLUDE_PATH AND EXISTS "${TCL_INCLUDE_PATH}/tcl.h")
+    # Tcl 9.x removed PFIDB support. Warn early rather than fail at runtime
+    if(PARFLOW_TCL_VERSION VERSION_GREATER_EQUAL "9.0")
+      message(WARNING
+	"TCL ${PARFLOW_TCL_VERSION} detected (>= 9.0). "
+	"ParFlow will compile, but creating or running PFIDB files is not supported with Tcl 9.x. "
+	"Migrate to Python-based pftools or use Tcl 8.x."
+	)
+    endif()
+
+  else(TCL_FOUND)
+    if(PARFLOW_ENABLE_TOOLS)
+      message(FATAL_ERROR "TCL is required for building pftools")
+    endif()
+  endif(TCL_FOUND)
+endif(PARFLOW_ENABLE_TCL)
 
 #-----------------------------------------------------------------------------
 # SILO
