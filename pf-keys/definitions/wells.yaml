@@ -21,6 +21,17 @@ Wells:
         type: ChildrenHandler
         class_name: WellItem
 
+  CorrectForVarDz:
+    help: >
+      [Type: int] This key specifies whether well flux and pressure calculations
+      are corrected for variable dz cell thickness. Set to 1 to enable and 0
+      to disable.
+    default: 0
+    domains:
+      IntValue:
+        min_value: 0
+        max_value: 1
+
   .{well_name}:
     __class__: WellItem
     __rst__:
