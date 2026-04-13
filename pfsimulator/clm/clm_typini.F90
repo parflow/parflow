@@ -140,6 +140,7 @@ subroutine clm_typini (ntiles, clm, istep_pf)
      clm(k)%h2osoi_liq(:)      = NaN   ! liquid water (kg/m2)
      clm(k)%h2osoi_ice(:)      = NaN   ! ice lens (kg/m2)
      clm(k)%frac_sno           = NaN   ! fractional snow cover
+     clm(k)%coszen_avg         = 0.0d0 ! exponentially smoothed cos(SZA) for SZA frac_sno
      clm(k)%t_veg              = NaN   ! leaf temperature [K]
      clm(k)%h2ocan             = NaN   ! depth of water on foliage [kg/m2/s]
      clm(k)%snowage            = NaN   ! non dimensional snow age [-]
@@ -291,6 +292,18 @@ subroutine clm_typini (ntiles, clm, istep_pf)
      clm(k)%folnmx            = NaN    ! foliage nitrogen concentration when f(n)=1 (%)
      clm(k)%folnvt            = NaN    ! foliage nitrogen concentration (%)
      clm(k)%c3psn             = NaN    ! photosynthetic pathway: 0. = c4, 1. = c3
+     clm(k)%photosyn_custom   = .false. ! PFT photosynthesis params not yet set @RMM 2026
+
+     ! stomatal conductance scheme @RMM 2026
+     clm(k)%stomata_scheme    = 0       ! 0=BallBerry (default), 1=Medlyn
+     clm(k)%g1_medlyn         = NaN     ! Medlyn slope parameter (kPa^0.5)
+
+     ! canopy interception parameters @RMM 2026
+     clm(k)%interception_fpi_max = NaN  ! max interception fraction coefficient
+     clm(k)%fwet_exponent     = NaN     ! power-law exponent for wet canopy fraction
+     clm(k)%interception_scheme = 0     ! 0=CLM3 (default), 1=CLM5Tanh
+     clm(k)%interception_tanh_alpha = NaN ! CLM5 tanh scaling coefficient
+     clm(k)%clump_index       = 1.0d0 ! no clumping by default (bit-for-bit)
 
      ! alma output
      clm(k)%diffusion         = NaN  ! heat diffusion through layer zero interface 

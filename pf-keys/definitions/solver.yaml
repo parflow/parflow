@@ -807,25 +807,80 @@ Solver:
       help: >
         [Type: string] Selects the fractional snow covered area (frac_sno) calculation method.
         CLM uses the standard formulation: frac_sno = snowdp / (10*roughness + snowdp).
-        Additional formulations may be added in future versions.
+        SZA interpolates the effective roughness between FracSnoRoughnessMin and
+        FracSnoRoughnessMax using w = coszen_avg^GammaSZA, creating an energy-driven
+        accumulation/melt asymmetry in fractional snow cover, naturally latitude-aware.
       default: CLM
       domains:
         EnumDomain:
           enum_list:
             - CLM
+            - SZA
         RequiresModule: CLM
 
     FracSnoRoughness:
       help: >
         [Type: double] Roughness length scale for fractional snow cover calculation [m].
-        Default 0.01 m matches CLM's zlnd parameter for backward compatibility.
-        Larger values reduce snow cover fraction for a given snow depth.
+        Used by FracSnoScheme CLM (case 0). Default 0.01 m matches CLM's zlnd
+        parameter for backward compatibility. Larger values reduce snow cover
+        fraction for a given snow depth.
         Formula: frac_sno = snowdp / (10*FracSnoRoughness + snowdp)
       default: 0.01
       domains:
         DoubleValue:
           min_value: 0.001
           max_value: 0.1
+        RequiresModule: CLM
+
+    FracSnoRoughnessMin:
+      help: >
+        [Type: double] Minimum effective roughness length for SZA-modulated
+        fractional snow cover [m]. Used by FracSnoScheme SZA (case 1).
+        The effective roughness interpolates between this value (at low sun)
+        and FracSnoRoughnessMax (at high sun) using coszen_avg^GammaSZA.
+      default: 1.0e-8
+      domains:
+        DoubleValue:
+          min_value: 0.0
+          max_value: 0.1
+        RequiresModule: CLM
+
+    FracSnoRoughnessMax:
+      help: >
+        [Type: double] Maximum effective roughness length for SZA-modulated
+        fractional snow cover [m]. Used by FracSnoScheme SZA (case 1).
+        The effective roughness interpolates between FracSnoRoughnessMin
+        (at low sun) and this value (at high sun) using coszen_avg^GammaSZA.
+      default: 0.2
+      domains:
+        DoubleValue:
+          min_value: 0.001
+          max_value: 1.0
+        RequiresModule: CLM
+
+    FracSnoGammaSZA:
+      help: >
+        [Type: double] Power-law exponent for the SZA interpolation weight
+        w = coszen_avg^GammaSZA in fractional snow cover when FracSnoScheme
+        is SZA. Higher values sharpen the transition between min and max
+        roughness. Dimensionless.
+      default: 4.0
+      domains:
+        DoubleValue:
+          min_value: 0.1
+          max_value: 20.0
+        RequiresModule: CLM
+
+    FracSnoAvgWindow:
+      help: >
+        [Type: double] Exponential moving average window for smoothed cos(SZA) [hours].
+        Used by FracSnoScheme SZA to prevent diurnal artifacts in fractional snow cover.
+        Typical range 48-96 hours.
+      default: 72.0
+      domains:
+        DoubleValue:
+          min_value: 1.0
+          max_value: 720.0
         RequiresModule: CLM
 
     # -----------------------------------------------------------------------------
@@ -929,6 +984,72 @@ Solver:
       domains:
         DoubleValue:
           min_value: 0.01
+          max_value: 1.0
+        RequiresModule: CLM
+
+    # ET formulation improvements @RMM 2026
+    InterceptionFpiMax:
+      help: >
+        [Type: double] Maximum interception fraction coefficient. CLM3 default
+        0.25 caps canopy interception at 25% even for dense canopies. CLM5 uses
+        higher values. Formula: fpi = InterceptionFpiMax * (1 - exp(-0.5*(LAI+SAI)))
+      default: 0.25
+      domains:
+        DoubleValue:
+          min_value: 0.05
+          max_value: 1.0
+        RequiresModule: CLM
+
+    FwetExponent:
+      help: >
+        [Type: double] Power-law exponent for wet canopy fraction. CLM default
+        2/3 (0.6667). Lower values keep the canopy wet longer, increasing wet
+        canopy evaporation. Formula: fwet = (h2ocan/(dewmx*LAI))^FwetExponent
+      default: 0.6667
+      domains:
+        DoubleValue:
+          min_value: 0.3
+          max_value: 1.0
+        RequiresModule: CLM
+
+    StomataScheme:
+      help: >
+        [Type: string] Stomatal conductance model. BallBerry uses relative
+        humidity (CLM3 default). Medlyn uses vapor pressure deficit and is
+        recommended for modern applications. Reference: Medlyn et al. (2011)
+        Global Change Biology.
+      default: BallBerry
+      domains:
+        EnumDomain:
+          enum_list:
+            - BallBerry
+            - Medlyn
+        RequiresModule: CLM
+
+    InterceptionScheme:
+      help: >
+        [Type: string] Canopy interception scheme. CLM3 uses exponential
+        formulation capped at InterceptionFpiMax (default 0.25). CLM5Tanh
+        uses tanh(LAI+SAI) scaled by InterceptionTanhAlpha, which approaches
+        1.0 for LAI>2 and corrects the CLM3 structural low bias.
+        Reference: Lawrence et al. (2019) JAMES.
+      default: CLM3
+      domains:
+        EnumDomain:
+          enum_list:
+            - CLM3
+            - CLM5Tanh
+        RequiresModule: CLM
+
+    InterceptionTanhAlpha:
+      help: >
+        [Type: double] Scaling coefficient for CLM5 tanh interception scheme.
+        Formula: fpi = alpha * tanh(LAI+SAI). Default 1.0 matches CLM5.
+        Only used when InterceptionScheme is CLM5Tanh.
+      default: 1.0
+      domains:
+        DoubleValue:
+          min_value: 0.1
           max_value: 1.0
         RequiresModule: CLM
 

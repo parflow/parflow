@@ -335,7 +335,7 @@ defined for this problem.
 
 *string* **GeomInput.\ *geom_input_name*.InputType** no default This
 defines the input type for the geometry input with *geom_input_name*.
-This key must be one of: **SolidFile, IndicatorField**, **Box**.
+This key must be one of: **SolidFile, IndicatorField, IndicatorFieldNC**, **Box**.
 
 .. container:: list
 
@@ -350,9 +350,9 @@ list of the names of the geometries defined by the geometry input. For a
 geometry input type of Box, the list should contain a single geometry
 name. For the SolidFile geometry type this should contain a list with
 the same number of gemetries as were defined using GMS. The order of
-geometries in the SolidFile should match the names. For IndicatorField
-types you need to specify the value in the input field which matches the
-name using GeomInput.\ *geom_input_name*.Value.
+geometries in the SolidFile should match the names. For IndicatorField and
+IndicatorFieldNC types you need to specify the value in the input field
+which matches the name using GeomInput.\ *geom_input_name*.Value.
 
 .. container:: list
 
@@ -364,8 +364,8 @@ name using GeomInput.\ *geom_input_name*.Value.
       <runname>.GeomInput.solidinput.GeomNames = "domain bottomlayer middlelayer toplayer"  ## Python syntax
 
 *string* **GeomInput.\ *geom_input_name*.Filename** no default For
-IndicatorField and SolidFile geometry inputs this key specifies the
-input filename which contains the field or solid information.
+IndicatorField, IndicatorFieldNC and SolidFile geometry inputs this key
+specifies the input filename which contains the field or solid information.
 
 .. container:: list
 
@@ -376,9 +376,10 @@ input filename which contains the field or solid information.
       <runname>.GeomInput.solidinput.FileName = "ocwd.pfsol"   ## Python syntax
 
 *integer* **GeomInput.\ *geometry_input_name*.Value** no default For
-IndicatorField geometry inputs you need to specify the mapping between
-values in the input file and the geometry names. The named geometry will
-be defined wherever the input file is equal to the specified value.
+IndicatorField, IndicatorFieldNC geometry inputs you need to specify the
+mapping between values in the input file and the geometry names. The named
+geometry will be defined wherever the input file is equal to the specified
+value.
 
 .. container:: list
 
@@ -3989,11 +3990,20 @@ wells for which input data will be given.
 
       Wells.Names "test_well inj_well ext_well"
 
-*int* **Wells.CorrectForVarDz** default of 0 This key specifies whether
-parflow will correct well fluxes for var dz. A value of 1 will result in
-corrections being applied. For backwards compatability the default value
-is zero, but the recommendation is to turn this on rather than do the
-corrections yourself.
+*bool* **Wells.CorrectForVarDz** False This key specifies whether well
+fluxes be adjusted for variable dz spacing.  For backwards
+compatability the default value is **False** and the well volume used
+to calculate well fluxes is incorrectly set using the single **dz**
+value (:math:`nx * ny * nz * dx * dy * dz`).  When set to **True** the
+volume will be computed by the user specified variable dz values.  It is
+recommended to set the flag to **True** rather than do the correction
+manually.
+
+.. container:: list
+
+   ::
+
+      Wells.CorrectForVarDz "True"
 
 *string* **Wells.\ *well_name*.InputType** no default This key specifies
 the type of well to be defined for the given well, *well_name*. This key
@@ -6765,11 +6775,18 @@ by weighting snow and bare ground contributions. The CLM formulation uses
 a tanh-like relationship with snow depth and surface roughness.
 
 *string* **Solver.CLM.FracSnoScheme** CLM Selects the fractional snow cover
-calculation method. Currently only CLM is available; extensible for future
-formulations.
+calculation method.
 
 **CLM**:
-   Standard formulation: frac_sno = snowdp / (10*roughness + snowdp)
+   Standard formulation: frac_sno = snowdp / (10*roughness + snowdp),
+   using FracSnoRoughness as the roughness length.
+
+**SZA**:
+   SZA-modulated formulation that interpolates the effective roughness
+   between FracSnoRoughnessMin and FracSnoRoughnessMax using a power-law
+   weight w = coszen_avg^GammaSZA, creating a continuous energy-driven
+   accumulation/melt asymmetry in fractional snow cover. Naturally
+   latitude-aware.
 
 .. container:: list
 
@@ -6779,9 +6796,9 @@ formulations.
       <runname>.Solver.CLM.FracSnoScheme = "CLM"   ## Python syntax
 
 *double* **Solver.CLM.FracSnoRoughness** 0.01 Roughness length scale for
-fractional snow cover calculation [m]. Default 0.01 m matches CLM's zlnd
-parameter for backward compatibility. Larger values reduce snow cover
-fraction for a given snow depth.
+fractional snow cover calculation [m]. Used by FracSnoScheme=CLM (case 0).
+Default 0.01 m matches CLM's zlnd parameter for backward compatibility.
+Larger values reduce snow cover fraction for a given snow depth.
 
 .. container:: list
 
@@ -6789,6 +6806,135 @@ fraction for a given snow depth.
 
       pfset Solver.CLM.FracSnoRoughness 0.01         ## TCL syntax
       <runname>.Solver.CLM.FracSnoRoughness = 0.01   ## Python syntax
+
+*double* **Solver.CLM.FracSnoRoughnessMin** 1.0e-8 Minimum effective
+roughness length for SZA-modulated fractional snow cover [m]. Used by
+FracSnoScheme=SZA. At low sun angles (small coszen_avg), the
+effective roughness approaches this value, yielding higher frac_sno.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FracSnoRoughnessMin 1.0e-8       ## TCL syntax
+      <runname>.Solver.CLM.FracSnoRoughnessMin = 1.0e-8  ## Python syntax
+
+*double* **Solver.CLM.FracSnoRoughnessMax** 0.2 Maximum effective
+roughness length for SZA-modulated fractional snow cover [m]. Used by
+FracSnoScheme=SZA. At high sun angles (large coszen_avg), the
+effective roughness approaches this value, yielding lower frac_sno.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FracSnoRoughnessMax 0.2           ## TCL syntax
+      <runname>.Solver.CLM.FracSnoRoughnessMax = 0.2     ## Python syntax
+
+*double* **Solver.CLM.FracSnoGammaSZA** 4.0 Power-law exponent for the SZA
+interpolation weight w = coszen_avg^GammaSZA in fractional snow cover when
+FracSnoScheme=SZA. Higher values sharpen the transition between min and max
+roughness. Dimensionless.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FracSnoGammaSZA 4.0             ## TCL syntax
+      <runname>.Solver.CLM.FracSnoGammaSZA = 4.0       ## Python syntax
+
+*double* **Solver.CLM.FracSnoAvgWindow** 72.0 Exponential moving average
+window for smoothed cos(SZA) [hours]. Used by FracSnoScheme=SZA to prevent
+diurnal artifacts in fractional snow cover. Typical range 48-96 hours.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FracSnoAvgWindow 72.0           ## TCL syntax
+      <runname>.Solver.CLM.FracSnoAvgWindow = 72.0     ## Python syntax
+
+**ET Formulation Improvements**
+
+These keys improve CLM's evapotranspiration calculations. Default values
+reproduce original CLM3 behavior for backward compatibility. PFT-dependent
+photosynthesis parameters (vcmx25, c3psn, mp, bp, qe25, folnmx) can be
+provided in drv_vegp.dat; when detected, improved stomata physics
+(dark respiration, smooth colimitation, niter=5) activates automatically.
+
+*double* **Solver.CLM.InterceptionFpiMax** 0.25 Maximum interception
+fraction coefficient. CLM3 default 0.25 caps canopy interception at 25%
+even for dense canopies. CLM5 uses higher values.
+Formula: fpi = InterceptionFpiMax * (1 - exp(-0.5*(LAI+SAI)))
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.InterceptionFpiMax 0.25           ## TCL syntax
+      <runname>.Solver.CLM.InterceptionFpiMax = 0.25     ## Python syntax
+
+*double* **Solver.CLM.FwetExponent** 0.6667 Power-law exponent for wet
+canopy fraction. CLM default 2/3. Lower values keep the canopy wet longer,
+increasing wet canopy evaporation.
+Formula: fwet = (h2ocan/(dewmx*LAI))^FwetExponent
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FwetExponent 0.6667               ## TCL syntax
+      <runname>.Solver.CLM.FwetExponent = 0.6667         ## Python syntax
+
+*string* **Solver.CLM.StomataScheme** BallBerry Selects the stomatal
+conductance model.
+
+**BallBerry**:
+   CLM3 default. Uses relative humidity in the conductance equation.
+
+**Medlyn**:
+   Medlyn et al. (2011) model. Uses vapor pressure deficit (VPD) instead
+   of relative humidity. Requires g1_medlyn parameter in drv_vegp.dat for
+   PFT-dependent slope values.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.StomataScheme BallBerry            ## TCL syntax
+      <runname>.Solver.CLM.StomataScheme = "BallBerry"   ## Python syntax
+
+*string* **Solver.CLM.InterceptionScheme** CLM3 Selects the canopy
+interception scheme.
+
+**CLM3**:
+   CLM3 default exponential formulation.
+   Formula: fpi = InterceptionFpiMax * (1 - exp(-0.5*(LAI+SAI)))
+   Asymptotes to InterceptionFpiMax (default 0.25) regardless of LAI.
+
+**CLM5Tanh**:
+   CLM5 tanh formulation (Lawrence et al. 2019).
+   Formula: fpi = InterceptionTanhAlpha * tanh(LAI+SAI)
+   Approaches InterceptionTanhAlpha (default 1.0) for LAI > 2, correcting
+   the CLM3 structural low bias in canopy interception for dense canopies.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.InterceptionScheme CLM3              ## TCL syntax
+      <runname>.Solver.CLM.InterceptionScheme = "CLM3"     ## Python syntax
+
+*double* **Solver.CLM.InterceptionTanhAlpha** 1.0 Scaling coefficient for
+CLM5 tanh interception scheme. Formula: fpi = alpha * tanh(LAI+SAI).
+Default 1.0 matches CLM5. Only used when InterceptionScheme is CLM5Tanh.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.InterceptionTanhAlpha 1.0             ## TCL syntax
+      <runname>.Solver.CLM.InterceptionTanhAlpha = 1.0      ## Python syntax
 
 
 .. _ParFlow NetCDF4 Parallel I/O:

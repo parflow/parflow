@@ -27,7 +27,6 @@
 **********************************************************************EHEADER*/
 
 #include "parflow.h"
-//#include "grid_utilities.c"
 
 #include <string.h>
 #include <stdbool.h>
@@ -38,9 +37,6 @@
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
-
-
-
 
 typedef struct {
   int num_phases;
@@ -62,7 +58,7 @@ typedef struct {
   int      **intervals;
   int       *repeat_counts;
 
-  int correct_for_var_dz;
+  bool correct_for_var_dz;
   NameArray well_names;
 } PublicXtra;
 
@@ -97,8 +93,6 @@ typedef struct {
   double **phase_values_inj;
   double **contaminant_fractions;
 } Type1;                      /* basic vertical well, recirculating */
-
-
 
 /*--------------------------------------------------------------------------
  * WellPackage
@@ -204,7 +198,7 @@ void         WellPackage(
 
           ix = IndexSpaceX((dummy0->xlocation), 0);
           iy = IndexSpaceY((dummy0->ylocation), 0);
-          if (public_xtra->correct_for_var_dz == 1)
+          if (public_xtra->correct_for_var_dz)
           {
             iz_lower = CalculateIndexSpaceZ(dummy0->z_lower, problem_data);
             iz_upper = CalculateIndexSpaceZ(dummy0->z_upper, problem_data);
@@ -224,12 +218,6 @@ void         WellPackage(
           rz = 0;
 
           process = amps_Rank(amps_CommWorld);
-#ifdef PARFLOW_HAVE_MPI
-//          // here I am making the assumption that indices need to be positive so we can use amps_max
-          amps_Invoice well_properties_invoice = amps_NewInvoice("%d", &subgrid_volume);
-          amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Max);
-          amps_FreeInvoice(well_properties_invoice);
-#endif
 
           new_subgrid = NewSubgrid(ix, iy, iz_lower,
                                    nx, ny, nz,
@@ -240,23 +228,27 @@ void         WellPackage(
           dz = SubgridDZ(new_subgrid);
           if (public_xtra->correct_for_var_dz)
           {
-            if (SubgridLivesOnThisRank(new_subgrid, grid))
+            if (SubgridIntersectsCurrentRank(new_subgrid, grid))
             {
-              subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
+              subgrid_volume = CalculateLocalSubgridVolume(new_subgrid, problem_data);
             }
+            else
+            {
+              subgrid_volume = 0.0;
+            }
+
+#ifdef PARFLOW_HAVE_MPI
+            // Multiple ranks may intersect the well subgrid; sum local subgrid volumes across ranks
+            amps_Invoice well_properties_invoice = amps_NewInvoice("%d", &subgrid_volume);
+            amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Add);
+            amps_FreeInvoice(well_properties_invoice);
+#endif
           }
           else
           {
             subgrid_volume = nx * ny * nz * dx * dy * dz;
           }
 
-//It would be nice to do only one reduce but we need to result of the reduce above to create the grid we
-// calculate the volume for this reduce from
-#ifdef PARFLOW_HAVE_MPI
-          well_properties_invoice = amps_NewInvoice("%d", &subgrid_volume);
-          amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Max);
-          amps_FreeInvoice(well_properties_invoice);
-#endif
           if ((dummy0->mechanism) == PRESSURE_WELL)
           {
             /* Put in physical data for this well */
@@ -525,7 +517,7 @@ void         WellPackage(
             iz_upper = -1;
             if (well_action == 0)
             {
-              if (public_xtra->correct_for_var_dz == 1)
+              if (public_xtra->correct_for_var_dz)
               {
                 iz_lower = CalculateIndexSpaceZ(dummy1->z_lower_ext, problem_data);
                 iz_upper = CalculateIndexSpaceZ(dummy1->z_upper_ext, problem_data);
@@ -542,7 +534,7 @@ void         WellPackage(
             }
             else
             {
-              if (public_xtra->correct_for_var_dz == 1)
+              if (public_xtra->correct_for_var_dz)
               {
                 iz_lower = CalculateIndexSpaceZ(dummy1->z_lower_inj, problem_data);
                 iz_upper = CalculateIndexSpaceZ(dummy1->z_upper_inj, problem_data);
@@ -577,21 +569,26 @@ void         WellPackage(
             dz = SubgridDZ(new_subgrid);
             if (public_xtra->correct_for_var_dz)
             {
-              if (SubgridLivesOnThisRank(new_subgrid, grid))
+              if (SubgridIntersectsCurrentRank(new_subgrid, grid))
               {
-                subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
+                subgrid_volume = CalculateLocalSubgridVolume(new_subgrid, problem_data);
               }
+              else
+              {
+                subgrid_volume = 0.0;
+              }
+
+#ifdef PARFLOW_HAVE_MPI
+              // Multiple ranks may intersect the well subgrid; sum local subgrid volumes across ranks
+              amps_Invoice well_properties_invoice = amps_NewInvoice("%d", &subgrid_volume);
+              amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Add);
+              amps_FreeInvoice(well_properties_invoice);
+#endif
             }
             else
             {
               subgrid_volume = nx * ny * nz * dx * dy * dz;
             }
-#ifdef PARFLOW_HAVE_MPI
-            // here I am making the assumption that indices need to be positive so we can use amps_max
-            amps_Invoice well_properties_invoice = amps_NewInvoice("%d", &subgrid_volume);
-            amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Max);
-            amps_FreeInvoice(well_properties_invoice);
-#endif
             if (mechanism == PRESSURE_WELL)
             {
               /* Put in physical data for this well */
@@ -905,7 +902,6 @@ PFModule  *WellPackageNewPublicXtra(
   int num_cycles;
   int global_cycle;
 
-  int correct_for_var_dz;
   char *well_names;
   char *well_name;
 
@@ -913,11 +909,14 @@ PFModule  *WellPackageNewPublicXtra(
 
   char key[IDB_MAX_KEY_LEN];
 
+  char *name;
   char *switch_name;
+  int switch_value;
 
   int phase;
   int contaminant;
 
+  NameArray switch_na;
   NameArray inputtype_na;
   NameArray action_na;
   NameArray mechanism_na;
@@ -936,8 +935,13 @@ PFModule  *WellPackageNewPublicXtra(
   (public_xtra->num_phases) = num_phases;
   (public_xtra->num_contaminants) = num_contaminants;
 
-  correct_for_var_dz = GetIntDefault("Wells.CorrectForVarDz", 0);
-  public_xtra->correct_for_var_dz = correct_for_var_dz;
+  name = "Wells.CorrectForVarDz";
+  switch_na = NA_NewNameArray("False True");
+  switch_name = GetStringDefault(name, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, name);
+  NA_FreeNameArray(switch_na);
+
+  public_xtra->correct_for_var_dz = switch_value;
 
   char* EMPTY_NAMES_LIST = "";
   well_names = GetStringDefault("Wells.Names", EMPTY_NAMES_LIST);

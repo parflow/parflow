@@ -17,13 +17,16 @@ dai_apf,dai_bpf,dai_cpf,dai_dpf,jennings_apf,jennings_bpf,jennings_gpf,         
 sza_snow_dampingpf,sza_damping_coszen_refpf,sza_damping_coszen_minpf,                                 &
 albedo_schemepf,albedo_vis_newpf,albedo_nir_newpf,albedo_minpf,                                        &
 albedo_decay_vispf,albedo_decay_nirpf,albedo_accum_apf,albedo_thaw_apf,                               &
-frac_sno_typepf,frac_sno_roughnesspf,                                                               &
+frac_sno_typepf,frac_sno_roughnesspf,frac_sno_roughness_minpf,frac_sno_roughness_maxpf,        &
+frac_sno_gamma_szapf,frac_sno_tau_szapf,                                                          &
 snowage_tau0_vispf,snowage_tau0_nirpf,snowage_grain_growth_vispf,snowage_grain_growth_nirpf,        &
-snowage_dirt_soot_vispf,snowage_dirt_soot_nirpf,snowage_reset_factorpf)
+snowage_dirt_soot_vispf,snowage_dirt_soot_nirpf,snowage_reset_factorpf,                                    &
+interception_fpi_maxpf,fwet_exponentpf,stomata_schemepf,                                     &
+interception_schemepf,interception_tanh_alphapf)
 
   !=========================================================================
   !
-  !  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely   
+  !  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely
   !  L                        M  available land surface process model.  
   !  M --COMMON LAND MODEL--  C  	
   !  C                        L  CLM WEB INFO: http://clm.gsfc.nasa.gov
@@ -189,8 +192,12 @@ snowage_dirt_soot_vispf,snowage_dirt_soot_nirpf,snowage_reset_factorpf)
   real(r8) :: albedo_thaw_apf                    ! VIC melt-phase decay base
 
   ! frac_sno parameterization keys @RMM 2025
-  integer  :: frac_sno_typepf                    ! frac_sno scheme: 0=CLM (default), others TBD
-  real(r8) :: frac_sno_roughnesspf               ! roughness length for frac_sno [m]
+  integer  :: frac_sno_typepf                    ! frac_sno scheme: 0=CLM (default), 1=SZA
+  real(r8) :: frac_sno_roughnesspf               ! roughness length for frac_sno [m] (case 0)
+  real(r8) :: frac_sno_roughness_minpf           ! min roughness for SZA interp [m] (case 1)
+  real(r8) :: frac_sno_roughness_maxpf           ! max roughness for SZA interp [m] (case 1)
+  real(r8) :: frac_sno_gamma_szapf               ! SZA power-law exponent [-] (case 1)
+  real(r8) :: frac_sno_tau_szapf                 ! EMA smoothing window [hours]
 
   ! snow age VIS/NIR separation keys @RMM 2025
   real(r8) :: snowage_tau0_vispf                 ! VIS e-folding time [s]
@@ -200,6 +207,13 @@ snowage_dirt_soot_vispf,snowage_dirt_soot_nirpf,snowage_reset_factorpf)
   real(r8) :: snowage_dirt_soot_vispf            ! VIS dirt/soot factor [-]
   real(r8) :: snowage_dirt_soot_nirpf            ! NIR dirt/soot factor [-]
   real(r8) :: snowage_reset_factorpf             ! fresh snow reset factor [-]
+
+  ! ET formulation improvements @RMM 2026
+  real(r8) :: interception_fpi_maxpf             ! max interception fraction coeff [-]
+  real(r8) :: fwet_exponentpf                    ! power-law exponent for wet canopy [-]
+  integer  :: stomata_schemepf                   ! stomatal model: 0=BallBerry, 1=Medlyn
+  integer  :: interception_schemepf              ! interception: 0=CLM3, 1=CLM5Tanh
+  real(r8) :: interception_tanh_alphapf          ! CLM5 tanh scaling coeff [-]
 
   ! local indices & counters
   integer  :: i,j,k,k1,j1,l1                     ! indices for local looping
@@ -577,6 +591,10 @@ snowage_dirt_soot_vispf,snowage_dirt_soot_nirpf,snowage_reset_factorpf)
            ! for frac_sno parameterization @RMM 2025
            clm(t)%frac_sno_type        = frac_sno_typepf
            clm(t)%frac_sno_roughness   = frac_sno_roughnesspf
+           clm(t)%frac_sno_roughness_min = frac_sno_roughness_minpf
+           clm(t)%frac_sno_roughness_max = frac_sno_roughness_maxpf
+           clm(t)%frac_sno_gamma_sza   = frac_sno_gamma_szapf
+           clm(t)%frac_sno_tau_sza     = frac_sno_tau_szapf
 
            ! for snow age VIS/NIR separation @RMM 2025
            clm(t)%snowage_tau0_vis        = snowage_tau0_vispf
@@ -586,6 +604,13 @@ snowage_dirt_soot_vispf,snowage_dirt_soot_nirpf,snowage_reset_factorpf)
            clm(t)%snowage_dirt_soot_vis   = snowage_dirt_soot_vispf
            clm(t)%snowage_dirt_soot_nir   = snowage_dirt_soot_nirpf
            clm(t)%snowage_reset_factor    = snowage_reset_factorpf
+
+           ! for ET formulation improvements @RMM 2026
+           clm(t)%interception_fpi_max = interception_fpi_maxpf
+           clm(t)%fwet_exponent        = fwet_exponentpf
+           clm(t)%stomata_scheme       = stomata_schemepf
+           clm(t)%interception_scheme  = interception_schemepf
+           clm(t)%interception_tanh_alpha = interception_tanh_alphapf
 
            ! for irrigation
            clm(t)%irr_type           = irr_typepf

@@ -10,7 +10,6 @@ import sys, argparse
 run_name = "default_single"
 default_single = Run(run_name, __file__)
 
-
 correct_output_dir_name = get_absolute_path("../correct_output")
 
 # -----------------------------------------------------------------------------
@@ -238,6 +237,7 @@ default_single.Cycle.constant.Repeat = -1
 # -----------------------------------------------------------------------------
 
 default_single.Wells.Names = "snoopy"
+
 default_single.Wells.snoopy.InputType = "Recirc"
 
 default_single.Wells.snoopy.Cycle = "constant"

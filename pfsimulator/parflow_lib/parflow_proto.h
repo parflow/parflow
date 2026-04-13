@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 typedef PFModule * (*NewDefault)(void);
 
 typedef void (*AdvectionConcentrationInvoke) (ProblemData *problem_data, int phase, int concentration, Vector *old_concentration, Vector *new_concentration, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *solid_mass_factor, double time, double deltat, int order);
@@ -250,8 +252,8 @@ Subgrid *ExtractSubgrid(int rx, int ry, int rz, Subgrid *subgrid);
 Subgrid *IntersectSubgrids(Subgrid *subgrid1, Subgrid *subgrid2);
 SubgridArray *SubtractSubgrids(Subgrid *subgrid1, Subgrid *subgrid2);
 SubgridArray *UnionSubgridArray(SubgridArray *subgrids);
-double CalculateSubgridVolume(Subgrid *subgrid, ProblemData* problem_data);
-int SubgridLivesOnThisRank(Subgrid* subgrid, Grid *grid);
+double CalculateLocalSubgridVolume(Subgrid *subgrid, ProblemData* problem_data);
+bool SubgridIntersectsCurrentRank(Subgrid* subgrid, Grid *grid);
 
 /* hbt.c */
 HBT *HBT_new(

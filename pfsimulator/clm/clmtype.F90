@@ -287,8 +287,13 @@ module clmtype
      real(r8) :: albedo_thaw_a         ! VIC melt-phase decay base, default 0.82
 
 ! Fractional snow covered area (frac_sno) options @RMM 2025
-     integer  :: frac_sno_type         ! frac_sno scheme: 0=CLM (default), others TBD
-     real(r8) :: frac_sno_roughness    ! roughness length for frac_sno [m], default=zlnd
+     integer  :: frac_sno_type         ! frac_sno scheme: 0=CLM (default), 1=SZA-modulated
+     real(r8) :: frac_sno_roughness    ! roughness length for frac_sno [m], default=zlnd (case 0)
+     real(r8) :: frac_sno_roughness_min ! min roughness for SZA interp [m], default 1e-8 (case 1)
+     real(r8) :: frac_sno_roughness_max ! max roughness for SZA interp [m], default 0.2 (case 1)
+     real(r8) :: frac_sno_gamma_sza    ! SZA power-law exponent [-], default 4.0
+     real(r8) :: frac_sno_tau_sza      ! EMA smoothing window [hours], default 72.0
+     real(r8) :: coszen_avg            ! exponentially smoothed cos(SZA) for frac_sno [-]
 
 ! Snow age configurable parameters - VIS/NIR separation @RMM 2025
      real(r8) :: snowage_tau0_vis        ! VIS e-folding time [s], default 1e6
@@ -378,6 +383,16 @@ module clmtype
 
      integer :: soi_z ! NBE added
 
+! ET formulation improvements @RMM 2026
+! (placed at end of struct to preserve existing field offsets)
+     logical  :: photosyn_custom ! true when drv_vegp.dat provides PFT photosynthesis params
+     integer  :: stomata_scheme  ! stomatal model: 0=BallBerry (default), 1=Medlyn
+     real(r8) :: g1_medlyn       ! Medlyn stomatal slope parameter (kPa^0.5)
+     real(r8) :: interception_fpi_max ! max interception fraction coefficient [-]
+     real(r8) :: fwet_exponent        ! power-law exponent for wet canopy fraction [-]
+     integer  :: interception_scheme  ! interception scheme: 0=CLM3, 1=CLM5Tanh @RMM 2026
+     real(r8) :: interception_tanh_alpha ! CLM5 tanh scaling coeff [-], default 1.0 @RMM 2026
+     real(r8) :: clump_index         ! vegetation clumping index [0-1], 1=no clumping @RMM 2026
 
 !=== End Variable List ===================================================
 

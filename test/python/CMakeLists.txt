@@ -73,6 +73,9 @@ if(${PARFLOW_HAVE_SILO})
 endif()
 
 if(${PARFLOW_HAVE_NETCDF})
+  list(APPEND TESTS
+      indicator_field_netcdf
+    )
   if(${PARFLOW_HAVE_HYPRE})
     #This test is failing on several platforms
     list(APPEND TESTS
@@ -130,6 +133,15 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
   endif()
 
 endif()
+
+if(${PARFLOW_HAVE_OAS3})
+  # Exclude tests that use Richards solver
+  set(TESTS "")
+  set(PARALLEL_3DTOPO_TESTS "")
+  set(PARALLEL_2DTOPO_TESTS "")
+  list(APPEND TESTS default_single)
+endif()
+
 
 foreach(inputfile ${TESTS})
   pf_add_py_test(${inputfile})

@@ -86,6 +86,19 @@ subroutine drv_readvegpf (drv,grid,tile,clm)
      if (vname == 'vw')        call drv_vpr(drv,tile,clm%vw)
      if (vname == 'irrig')     call drv_vpi(drv,tile,clm%irrig)    ! @IMF
      if (vname == 'bkmult')    call drv_vpr(drv,tile,clm%bkmult)   ! @CAP 2014-02-24
+     if (vname == 'vcmx25') then                                     ! @RMM 2026 PFT photosyn
+        call drv_vpr(drv,tile,clm%vcmx25)
+        do t=1,drv%nch
+           clm(t)%photosyn_custom = .true.
+        end do
+     endif
+     if (vname == 'c3psn')     call drv_vpr(drv,tile,clm%c3psn)    ! @RMM 2026 PFT photosyn
+     if (vname == 'mp')        call drv_vpr(drv,tile,clm%mp)       ! @RMM 2026 PFT photosyn
+     if (vname == 'bp')        call drv_vpr(drv,tile,clm%bp)       ! @RMM 2026 PFT photosyn
+     if (vname == 'qe25')      call drv_vpr(drv,tile,clm%qe25)     ! @RMM 2026 PFT photosyn
+     if (vname == 'folnmx')    call drv_vpr(drv,tile,clm%folnmx)   ! @RMM 2026 PFT photosyn
+     if (vname == 'g1_medlyn')  call drv_vpr(drv,tile,clm%g1_medlyn) ! @RMM 2026 Medlyn stomata
+     if (vname == 'clump')      call drv_vpr(drv,tile,clm%clump_index) ! @RMM 2026 canopy clumping
      ! initialize lakpoi from itypwat variable
 
      do t=1,drv%nch 

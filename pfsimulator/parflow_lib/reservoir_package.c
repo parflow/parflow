@@ -259,22 +259,22 @@ void         ReservoirPackage(
                                        rx, ry, rz,
                                        current_mpi_rank);
 
-      if (SubgridLivesOnThisRank(new_intake_subgrid, grid))
+      if (SubgridIntersectsCurrentRank(new_intake_subgrid, grid))
       {
         intake_cell_rank = current_mpi_rank;
       }
 
-      if (SubgridLivesOnThisRank(new_secondary_intake_subgrid, grid))
+      if (SubgridIntersectsCurrentRank(new_secondary_intake_subgrid, grid))
       {
         secondary_intake_cell_rank = current_mpi_rank;
       }
       release_subgrid_volume = 1;
-      if (SubgridLivesOnThisRank(new_release_subgrid, grid))
+      if (SubgridIntersectsCurrentRank(new_release_subgrid, grid))
       {
         release_cell_rank = current_mpi_rank;
-        release_subgrid_volume = CalculateSubgridVolume(new_release_subgrid, problem_data);
+        release_subgrid_volume = CalculateLocalSubgridVolume(new_release_subgrid, problem_data);
       }
-      //If we are multiprocessor we need to do some reductions to determine the correct ranks
+      // If we are multiprocessor we need to do some reductions to determine the correct ranks
       // for the reservoirs
 #ifdef PARFLOW_HAVE_MPI
       amps_Invoice reservoir_cells_invoice = amps_NewInvoice("%i%i%i", &intake_cell_rank, &secondary_intake_cell_rank, &release_cell_rank);
@@ -290,7 +290,7 @@ void         ReservoirPackage(
       split_color = part_of_reservoir_lives_on_this_rank ? 1 : MPI_UNDEFINED;
       MPI_Comm_split(amps_CommWorld, split_color, current_mpi_rank, &new_reservoir_communicator);
 #endif
-//     edit the slopes to prevent stuff running through the reservoir
+      // edit the slopes to prevent stuff running through the reservoir
       if (public_xtra->overland_flow_solver == OVERLAND_FLOW)
       {
         StopOutletFlowAtCellOverlandFlow(intake_ix, intake_iy, problem_data, grid);
