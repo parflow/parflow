@@ -352,9 +352,6 @@ var_dz_with_well.Wells.CorrectForVarDz = True
 base_new_output_dir = get_absolute_path("test_output")
 
 # For our tests we will be comparing the pressure field at the 10th timestep
-# We use np.allclose to compare instead of np.equals because changing the var
-# dz causes tiny differences from floating point arithmatic. These changes make
-# total sense and are unavoidable.
 
 passed = True
 pressure_file = "var_dz_with_well.out.press.00010.pfb"
