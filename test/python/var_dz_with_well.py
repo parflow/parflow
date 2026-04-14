@@ -94,12 +94,12 @@ var_dz_with_well.dzScale.GeomNames = "domain"
 var_dz_with_well.dzScale.Type = "nzList"
 var_dz_with_well.dzScale.nzListNumber = 14
 var_dz_with_well.Cell._0.dzScale.Value = 1
-var_dz_with_well.Cell._1.dzScale.Value = 2.0
+var_dz_with_well.Cell._1.dzScale.Value = 1.0
 var_dz_with_well.Cell._2.dzScale.Value = 1.0
 var_dz_with_well.Cell._3.dzScale.Value = 1.0
 var_dz_with_well.Cell._4.dzScale.Value = 1.0
 var_dz_with_well.Cell._5.dzScale.Value = 1.0
-var_dz_with_well.Cell._6.dzScale.Value = 1.0
+var_dz_with_well.Cell._6.dzScale.Value = 2.0
 var_dz_with_well.Cell._7.dzScale.Value = 1.0
 var_dz_with_well.Cell._8.dzScale.Value = 1.0
 var_dz_with_well.Cell._9.dzScale.Value = 1
@@ -333,7 +333,6 @@ var_dz_with_well.Solver.Linear.Preconditioner.MGSemi.MaxIter = 1
 var_dz_with_well.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 10
 
 var_dz_with_well.Wells.Names = "well"
-var_dz_with_well.Wells.CorrectForVarDz = 1
 var_dz_with_well.Wells.well.InputType = "Vertical"
 var_dz_with_well.Wells.well.Action = "Extraction"
 var_dz_with_well.Wells.well.Type = "Flux"
@@ -344,6 +343,7 @@ var_dz_with_well.Wells.well.ZLower = 0.5
 var_dz_with_well.Wells.well.Method = "Standard"
 var_dz_with_well.Wells.well.Cycle = "constant"
 var_dz_with_well.Wells.well.alltime.Flux.water.Value = 0.5
+var_dz_with_well.Wells.CorrectForVarDz = True
 
 # -----------------------------------------------------------------------------
 # Run and do tests
@@ -366,25 +366,23 @@ subtest = 1
 correct_pressure_file = (
     f"{correct_output_dir_name}/var_dz_with_well_single_column.out.press.00010.pfb"
 )
-correct_pressure = pf.read_pfb(get_absolute_path(correct_pressure_file))
 
-passed = np.allclose(test_case_pressure, correct_pressure)
-if not passed:
-    print("var_dz_with_well subtest 1: FAILED")
-
-all_tests_passed = passed
+if not run_check_output(
+    var_dz_with_well, base_new_output_dir, subtest, correct_pressure_file
+):
+    passed = False
 
 # single column test 1
 var_dz_with_well.ComputationalGrid.DZ = 10.0
 var_dz_with_well.Geom.domain.Upper.Z = 140.0
 var_dz_with_well.dzScale.nzListNumber = 14
 var_dz_with_well.Cell._0.dzScale.Value = 0.1
-var_dz_with_well.Cell._1.dzScale.Value = 0.2
+var_dz_with_well.Cell._1.dzScale.Value = 0.1
 var_dz_with_well.Cell._2.dzScale.Value = 0.1
 var_dz_with_well.Cell._3.dzScale.Value = 0.1
 var_dz_with_well.Cell._4.dzScale.Value = 0.1
 var_dz_with_well.Cell._5.dzScale.Value = 0.1
-var_dz_with_well.Cell._6.dzScale.Value = 0.1
+var_dz_with_well.Cell._6.dzScale.Value = 0.2
 var_dz_with_well.Cell._7.dzScale.Value = 0.1
 var_dz_with_well.Cell._8.dzScale.Value = 0.1
 var_dz_with_well.Cell._9.dzScale.Value = 0.1
@@ -393,25 +391,23 @@ var_dz_with_well.Cell._11.dzScale.Value = 0.1
 var_dz_with_well.Cell._12.dzScale.Value = 0.1
 var_dz_with_well.Cell._13.dzScale.Value = 0.1
 
-var_dz_with_well.run(working_directory=dir_name)
+subtest = 2
+correct_pressure_file = (
+    f"{correct_output_dir_name}/var_dz_with_well_single_column.out.press.00010.pfb"
+)
+correct_pressure = pf.read_pfb(get_absolute_path(correct_pressure_file))
 
-test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-passed = np.allclose(correct_pressure, test_case_pressure)
-if not passed:
-    print("var_dz_with_well subtest 2: FAILED")
-
-all_tests_passed = all_tests_passed and passed
 
 # single column test 2
 var_dz_with_well.ComputationalGrid.DZ = 0.1
 var_dz_with_well.Geom.domain.Upper.Z = 1.4
 var_dz_with_well.Cell._0.dzScale.Value = 10
-var_dz_with_well.Cell._1.dzScale.Value = 20
+var_dz_with_well.Cell._1.dzScale.Value = 10
 var_dz_with_well.Cell._2.dzScale.Value = 10
 var_dz_with_well.Cell._3.dzScale.Value = 10
 var_dz_with_well.Cell._4.dzScale.Value = 10
 var_dz_with_well.Cell._5.dzScale.Value = 10
-var_dz_with_well.Cell._6.dzScale.Value = 10
+var_dz_with_well.Cell._6.dzScale.Value = 20
 var_dz_with_well.Cell._7.dzScale.Value = 10
 var_dz_with_well.Cell._8.dzScale.Value = 10
 var_dz_with_well.Cell._9.dzScale.Value = 10
@@ -485,12 +481,12 @@ var_dz_with_well.ComputationalGrid.DZ = 1.0
 var_dz_with_well.Geom.domain.Upper.Z = 14.0
 var_dz_with_well.dzScale.nzListNumber = 14
 var_dz_with_well.Cell._0.dzScale.Value = 1
-var_dz_with_well.Cell._1.dzScale.Value = 2.0
+var_dz_with_well.Cell._1.dzScale.Value = 1.0
 var_dz_with_well.Cell._2.dzScale.Value = 1.0
 var_dz_with_well.Cell._3.dzScale.Value = 1.0
 var_dz_with_well.Cell._4.dzScale.Value = 1.0
 var_dz_with_well.Cell._5.dzScale.Value = 1.0
-var_dz_with_well.Cell._6.dzScale.Value = 1.0
+var_dz_with_well.Cell._6.dzScale.Value = 2.0
 var_dz_with_well.Cell._7.dzScale.Value = 1.0
 var_dz_with_well.Cell._8.dzScale.Value = 1.0
 var_dz_with_well.Cell._9.dzScale.Value = 1
@@ -499,19 +495,15 @@ var_dz_with_well.Cell._11.dzScale.Value = 1
 var_dz_with_well.Cell._12.dzScale.Value = 1
 var_dz_with_well.Cell._13.dzScale.Value = 1
 
-var_dz_with_well.run(working_directory=dir_name)
-test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-
+subtest = 5
 correct_pressure_file = (
     f"{correct_output_dir_name}/var_dz_with_well_multi_column.out.press.00010.pfb"
 )
-correct_pressure = pf.read_pfb(get_absolute_path(correct_pressure_file))
 
-passed = np.allclose(correct_pressure, test_case_pressure)
-if not passed:
-    print("var_dz_with_well subtest 4: FAILED")
-
-all_tests_passed = all_tests_passed and passed
+if not run_check_output(
+    var_dz_with_well, base_new_output_dir, subtest, correct_pressure_file
+):
+    passed = False
 
 dir_name = get_absolute_path("test_output/multi_column_2")
 mkdir(dir_name)
@@ -520,12 +512,12 @@ var_dz_with_well.ComputationalGrid.DZ = 10.0
 var_dz_with_well.Geom.domain.Upper.Z = 140.0
 var_dz_with_well.dzScale.nzListNumber = 14
 var_dz_with_well.Cell._0.dzScale.Value = 0.1
-var_dz_with_well.Cell._1.dzScale.Value = 0.2
+var_dz_with_well.Cell._1.dzScale.Value = 0.1
 var_dz_with_well.Cell._2.dzScale.Value = 0.1
 var_dz_with_well.Cell._3.dzScale.Value = 0.1
 var_dz_with_well.Cell._4.dzScale.Value = 0.1
 var_dz_with_well.Cell._5.dzScale.Value = 0.1
-var_dz_with_well.Cell._6.dzScale.Value = 0.1
+var_dz_with_well.Cell._6.dzScale.Value = 0.2
 var_dz_with_well.Cell._7.dzScale.Value = 0.1
 var_dz_with_well.Cell._8.dzScale.Value = 0.1
 var_dz_with_well.Cell._9.dzScale.Value = 0.1
@@ -546,12 +538,12 @@ if not run_check_output(
 var_dz_with_well.ComputationalGrid.DZ = 0.1
 var_dz_with_well.Geom.domain.Upper.Z = 1.4
 var_dz_with_well.Cell._0.dzScale.Value = 10
-var_dz_with_well.Cell._1.dzScale.Value = 20
+var_dz_with_well.Cell._1.dzScale.Value = 10
 var_dz_with_well.Cell._2.dzScale.Value = 10
 var_dz_with_well.Cell._3.dzScale.Value = 10
 var_dz_with_well.Cell._4.dzScale.Value = 10
 var_dz_with_well.Cell._5.dzScale.Value = 10
-var_dz_with_well.Cell._6.dzScale.Value = 10
+var_dz_with_well.Cell._6.dzScale.Value = 20
 var_dz_with_well.Cell._7.dzScale.Value = 10
 var_dz_with_well.Cell._8.dzScale.Value = 10
 var_dz_with_well.Cell._9.dzScale.Value = 10
@@ -571,6 +563,7 @@ if not run_check_output(
 
 
 # Test parallel in Z
+# For now this implementation is not correct when parallel in Z is used
 var_dz_with_well.Process.Topology.R = 2
 
 subtest = 8
@@ -594,7 +587,8 @@ if not run_check_output(
 ):
     passed = False
 
-if all_tests_passed:
+
+if passed:
     print("vardz_with_well : PASSED")
 else:
     print("var_dz_with_well : FAILED")
