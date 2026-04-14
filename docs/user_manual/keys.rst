@@ -3990,6 +3990,21 @@ wells for which input data will be given.
 
       Wells.Names "test_well inj_well ext_well"
 
+*bool* **Wells.CorrectForVarDz** False This key specifies whether well
+fluxes be adjusted for variable dz spacing.  For backwards
+compatability the default value is **False** and the well volume used
+to calculate well fluxes is incorrectly set using the single **dz**
+value (:math:`nx * ny * nz * dx * dy * dz`).  When set to **True** the
+volume will be computed by the user specified variable dz values.  It is
+recommended to set the flag to **True** rather than do the correction
+manually.
+
+.. container:: list
+
+   ::
+
+      Wells.CorrectForVarDz "True"
+
 *string* **Wells.\ *well_name*.InputType** no default This key specifies
 the type of well to be defined for the given well, *well_name*. This key
 can be either **Vertical** or **Recirc**. The value **Vertical**
