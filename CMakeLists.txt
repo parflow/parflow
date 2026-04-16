@@ -280,7 +280,7 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
 
 endif ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
 
-option(PARFLOW_ENABLE_TCL "Enable Tcl-based tools and tests" "OFF")
+option(PARFLOW_ENABLE_TCL "Enable Tcl-based tools and tests" "ON")
 if (PARFLOW_ENABLE_TCL)
   find_package(TCL QUIET)
   if(TCL_FOUND)
