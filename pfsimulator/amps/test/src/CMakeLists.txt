@@ -62,6 +62,10 @@ foreach(test ${ALL_TESTS})
   add_executable( ${test} ${test}.c)
   target_link_libraries(${test} amps)
 
+  if ( DEFINED PARFLOW_LINKER_FLAGS)
+    set_target_properties(${test} PROPERTIES LINK_FLAGS ${PARFLOW_LINKER_FLAGS})
+  endif ( DEFINED PARFLOW_LINKER_FLAGS)
+
   # AMPS has a depency on CUDA
   if ( ${PARFLOW_HAVE_CUDA} )
     target_include_directories(${test} PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
@@ -73,6 +77,7 @@ foreach(test ${ALL_TESTS})
     target_link_libraries (${test} ${MPI_LIBRARIES})
   endif (${PARFLOW_HAVE_MPI})
 endforeach()
+
 
 foreach(test ${SEQUENTIAL_TESTS})
   pf_add_amps_sequential_test(${test} 1)
