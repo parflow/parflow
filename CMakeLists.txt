@@ -72,6 +72,8 @@ elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
       set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -G --ptxas-options=-v")
       set(CMAKE_CUDA_HOST_COMPILER mpicxx)
       message(STATUS "Found CUDA ${CMAKE_CUDA_COMPILER_VERSION} at ${CMAKE_CUDA_COMPILER}")
+  
+      find_package(CUDAToolkit)
     else(CMAKE_CUDA_COMPILER)
       message(FATAL_ERROR "ERROR: CUDA installation not found")
     endif(CMAKE_CUDA_COMPILER)
