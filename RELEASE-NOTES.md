@@ -19,7 +19,7 @@ We will be rolling out ParFlow 4.0, and we will likely break some compatibility 
 
 TCL 9.x has been released and is not backward compatible with TCL 8.x. ParFlow does not fully work with TCL 9.x. Please use a TCL 8.x release, or use the Python pftools API instead.
 
-If you have TCL 9.x installed, only the ParFlow development branch currently compiles with it. We have patched ParFlow to compile with TCL 9.x, but not all custom TCL commands work. If you must use TCL 9.x, you should use the Python interface only.
+If you have TCL 9.x installed, only the ParFlow development branch currently compiles with it. We have patched ParFlow to compile with TCL 9.x, but not all custom TCL commands work. If you only have TCL 9.x, you should use the Python interface only and can compile without TCL.
 
 To check your TCL version:
 
@@ -46,7 +46,8 @@ TCL 9.x is incompatible with the TCL 8.x versions we have been using. Supporting
 ## What should you do if you are using TCL?
 In the short term, the key point is: ParFlow does not work with TCL 9.x, so use a TCL 8.x release.
 For new problem setups, consider using the Python interface, and plan to update existing TCL workflows over time.
-Is there help to convert TCL scripts to Python?
+
+## Is there help to convert TCL scripts to Python?
 
 We have automated scripts that can convert substational parts of a ParFlow TCL input script to Python. Conversion of pfset commands is automated, but additional TCL logic (moving files, simple calculations, etc.) will require manual updates.  AI tools can also help with code conversion. Asking how to convert specific TCL statements to Python often produces reasonable results.
 
@@ -59,10 +60,6 @@ If you have concerns about this change feel free to post to [ParFlow User Group]
 ## Overview of Changes
 
 Version 3.15.0 introduces major enhancements to CLM snow parameterization with multiple rain-snow partitioning schemes, improved output options for overland flow dynamics, and more flexible KINSOL solver configuration.
-
-## Known Issues
-
-See https://github.com/parflow/parflow/issues for current bug/issue reports.
 
 ## User Visible Changes
 
@@ -143,9 +140,6 @@ When using external SUNDIALS, additional solver options and improved numerical m
 ### Improved TCL Deprecation Handling
 While TCL support remains available, it is now explicitly marked as deprecated with migration guidance to Python-based pftools. Warnings are issued at build time for Tcl 9.x compatibility issues. New `PARFLOW_ENABLE_TCL` CMake flag allows disabling TCL entirely if desired.
 
-### Python Code Style Enforcement
-Black code formatter version pinned to **26.3.1** for consistent CI style checking. Updated `pfformat` script enforces this version requirement.
-
 ### Improved CONTRIBUTING.md Documentation
 Enhanced documentation on code formatting requirements and Black version specifications for contributors.
 
@@ -185,6 +179,9 @@ Improved AMPS CMakeLists.txt organization with better dependency handling for RM
 Added suppressions for Intel MPI and libmlx4/libibverbs memory leak reports to reduce false positives in valgrind analysis.
 
 ## Internal/Developer Changes
+
+### Python Code Style Enforcement
+Black code formatter version pinned to **26.3.1** for consistent CI style checking. Updated `pfformat` script enforces this version requirement.
 
 ### CMake Configuration Enhancements
 - Memory manager (UMPIRE/RMM) configuration messages improved
