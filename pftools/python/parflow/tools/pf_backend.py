@@ -295,13 +295,11 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         where the variable ordering is fixed and each file represents an
         individual timestep
         """
-        warnings.warn(
-            """
+        warnings.warn("""
             Reading CLM output is not officially supported,
             at this time. We'll try our best to load the data,
             but this may break in the future!
-            """
-        )
+            """)
         varnames = [
             "latent_heat_flux",
             "outgoing_longwave",
