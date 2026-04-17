@@ -19,6 +19,7 @@ Use standard Git/GitHub commands to create a branch for editing some files for t
 ```shell
 VERSION=v3.13.0
 git clone git@github.com:parflow/parflow.git
+cd parflow
 git checkout -b $VERSION
 ```
 
@@ -30,7 +31,7 @@ release changes to the RELEASE notes.
 
 Edit `./VERSION` file with current version.
 
-Edit `./docs/user_Manual/conf.py` and update version number.
+Edit `./docs/user_manual/conf.py` and update version number.
 
 Edit `./CMakeLists.txt` and update version number in project specification.
 
