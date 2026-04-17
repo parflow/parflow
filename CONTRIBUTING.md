@@ -234,9 +234,12 @@ cd parflow
 ./bin/pfformat
 ```
 
-You must have installed Uncrustify version 0.79.0 in order for this to
-work.  The Python Black code formatter will be installed during the
-ParFlow installation so you don't need to manually install Black.
+You must have installed **Uncrustify version 0.79.0** in order for this to
+work.  For Python, ParFlow uses the **Black code formatter pinned to
+version 25.12.0**.  Black is installed into the ParFlow Python
+environment during installation, so you normally don't need to install
+it manually, but if you do you should ensure that you are using
+**Black 25.12.0** to match the version used in CI.
 
 Information and source on these tools can be found here:
 
@@ -345,7 +348,9 @@ code more difficult to maintain.  We are documenting now so don't follow
 the bad practices from our past.
 
 Using the [Black](https://pypi.org/project/black/) code formatter is
-enforced in the CI process for checking pull requests.
+enforced in the CI process for checking pull requests.  The CI is
+configured to use **Black 25.12.0**, so local formatting should also be
+run with this version to avoid spurious formatting diffs.
 
 ## Your First Code Contribution
 

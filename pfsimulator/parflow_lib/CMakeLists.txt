@@ -156,6 +156,7 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     problem_saturation.cpp
     rb_GS_point.cpp
     richards_jacobian_eval.cpp
+    seepage.cpp
     vector.cpp
     vector_utilities.cpp
   )
@@ -205,8 +206,14 @@ endif(${PARFLOW_HAVE_KOKKOS})
   add_library(pfsimulator ${SRC_FILES_ARCH} ${SRC_FILES_CONST})
 
   if ( ${PARFLOW_HAVE_CUDA} )
-    target_link_libraries(pfsimulator nvToolsExt)
-    target_include_directories(pfsimulator PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+    if(TARGET CUDA::nvtx3)
+      target_link_libraries(pfsimulator CUDA::nvtx3)
+    elseif(TARGET CUDA::nvToolsExt)
+      target_link_libraries(my_target PRIVATE CUDA::nvToolsExt)
+    else()
+      target_link_libraries(pfsimulator nvToolsExt)
+      target_include_directories(pfsimulator PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+    endif()
   endif ( ${PARFLOW_HAVE_CUDA} )
 
   if( ${PARFLOW_HAVE_KOKKOS} )
@@ -254,6 +261,7 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}
     rb_GS_point.c
     region.c
     richards_jacobian_eval.c
+    seepage.c
     vector.c
     vector_utilities.c
   )

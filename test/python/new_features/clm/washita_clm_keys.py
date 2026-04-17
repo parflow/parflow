@@ -7,7 +7,6 @@ from parflow import Run
 from parflow.tools.fs import cp, get_absolute_path, rm
 from parflow.tools.builders import CLMImporter
 
-
 washita = Run("washita_clm_keys", __file__)
 
 # -----------------------------------------------------------------------------

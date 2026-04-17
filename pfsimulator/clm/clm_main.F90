@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-subroutine clm_main (clm,day,gmt)
+subroutine clm_main (clm,day,gmt,clm_forc_veg)
 
   ! CLM Model/Science PHILOSOPHY:
   !   The Common Land Model (CLM) is being developed by a
@@ -170,18 +170,22 @@ subroutine clm_main (clm,day,gmt)
   ! ------------------- local ---------------------------------------
   integer j       !loop index
   real(r8) coszen !cosine of zenith angle
+  integer,intent(in)  :: clm_forc_veg
   ! -----------------------------------------------------------------
 
   ! -----------------------------------------------------------------
   ! Ecosystem dynamics: phenology, vegetation, soil carbon, snow frac
   ! -----------------------------------------------------------------
 
-  call clm_dynvegpar (clm)
+  call clm_dynvegpar (clm,clm_forc_veg)
   ! -----------------------------------------------------------------
   ! Albedos 
   ! -----------------------------------------------------------------
 
   call clm_coszen (clm,day,coszen)
+
+  ! @RMM 2025: Store coszen for use in meltfreeze SZA damping
+  clm%coszen = coszen
 
   call clm_surfalb (clm,coszen)
 
@@ -285,6 +289,8 @@ subroutine clm_main (clm,day,gmt)
 
         if (clm%snl > -nlevsno) then
            clm%snowage = 0.
+           clm%snowage_vis = 0.   ! @RMM 2025
+           clm%snowage_nir = 0.   ! @RMM 2025
            do j = -nlevsno+1, clm%snl
               clm%h2osoi_ice(j) = 0.
               clm%h2osoi_liq(j) = 0.

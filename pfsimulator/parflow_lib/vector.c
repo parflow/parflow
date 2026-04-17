@@ -272,12 +272,12 @@ static Vector  *NewTempVector(
 
     n = SubvectorNX(new_sub) * SubvectorNY(new_sub) * SubvectorNZ(new_sub);
 
-    data_size = n;
+    data_size += n;
 
     VectorSubvector(new_vector, i) = new_sub;
   }
 
-  (new_vector->data_size) = data_size;    /* data_size is size of data including ghost points */
+  SizeOfVector(new_vector) = data_size;    /* data_size is size of data including ghost points */
 
   VectorGrid(new_vector) = grid;  /* Grid that this vector is on */
 
@@ -670,53 +670,56 @@ void FreeTempVector(Vector *vector)
 void     FreeVector(
                     Vector *vector)
 {
-  switch (vector->type)
+  if (vector)
   {
+    switch (vector->type)
+    {
 #ifdef HAVE_SAMRAI
-    case vector_cell_centered:
-    case vector_cell_centered_2D:
-    case vector_side_centered_x:
-    case vector_side_centered_y:
-    case vector_side_centered_z:
-    case vector_clm_topsoil:
-    case vector_met:
-    {
-      ParflowGridType grid_type = flow_3D_grid_type;
-      if (vector->type == vector_cell_centered_2D)
+      case vector_cell_centered:
+      case vector_cell_centered_2D:
+      case vector_side_centered_x:
+      case vector_side_centered_y:
+      case vector_side_centered_z:
+      case vector_clm_topsoil:
+      case vector_met:
       {
-        grid_type = surface_2D_grid_type;
+        ParflowGridType grid_type = flow_3D_grid_type;
+        if (vector->type == vector_cell_centered_2D)
+        {
+          grid_type = surface_2D_grid_type;
+        }
+
+        if (!vector->boundary_fill_refine_algorithm.isNull())
+        {
+          vector->boundary_fill_refine_algorithm.setNull();
+          vector->boundary_fill_schedule.setNull();
+        }
+
+        tbox::Pointer < hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation->getPatchHierarchy(grid_type));
+        tbox::Pointer < hier::PatchLevel > level(hierarchy->getPatchLevel(0));
+
+        level->deallocatePatchData(vector->samrai_id);
+
+        tbox::Pointer < hier::PatchDescriptor > patch_descriptor(hierarchy->getPatchDescriptor());
+        patch_descriptor->removePatchDataComponent(vector->samrai_id);
+
+
+        samrai_vector_ids[grid_type][vector->table_index] = 0;
+        break;
       }
-
-      if (!vector->boundary_fill_refine_algorithm.isNull())
-      {
-        vector->boundary_fill_refine_algorithm.setNull();
-        vector->boundary_fill_schedule.setNull();
-      }
-
-      tbox::Pointer < hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation->getPatchHierarchy(grid_type));
-      tbox::Pointer < hier::PatchLevel > level(hierarchy->getPatchLevel(0));
-
-      level->deallocatePatchData(vector->samrai_id);
-
-      tbox::Pointer < hier::PatchDescriptor > patch_descriptor(hierarchy->getPatchDescriptor());
-      patch_descriptor->removePatchDataComponent(vector->samrai_id);
-
-
-      samrai_vector_ids[grid_type][vector->table_index] = 0;
-      break;
-    }
 #endif
-    case vector_non_samrai:
-    {
-      break;
+      case vector_non_samrai:
+      {
+        break;
+      }
+
+      default:
+        // SGS abort here
+        fprintf(stderr, "Invalid variable type\n");
     }
 
-    default:
-      // SGS abort here
-      fprintf(stderr, "Invalid variable type\n");
+    FreeTempVector(vector);
   }
-
-  FreeTempVector(vector);
 }
 
 

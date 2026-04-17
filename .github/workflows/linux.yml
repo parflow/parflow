@@ -2,6 +2,10 @@ name: Linux CI Tests
 
 on: [push, pull_request]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   style-check:
      # Runs a check on C and Python coding style.  Code
@@ -112,11 +116,26 @@ jobs:
         # useful.
         config:
         - {
+            name: "Ubuntu 22.04 GCC",
+            os: ubuntu-22.04,
+            cudaos: 'ubuntu2204',
+            cc: "gcc", cxx: "g++", fc: "gfortran",
+            python: "true",
+            tcl: "true",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "true",
+            memory_manager: "none",
+            pdi: "false",
+            sundials: "embedded"
+          }
+        - {
             name: "Ubuntu 24.04 GCC",
             os: ubuntu-24.04,
             cudaos: 'ubuntu2404',
             cc: "gcc", cxx: "g++", fc: "gfortran",
-            python: "false",
+            python: "true",
+            tcl: "true",
             backend: "none",
             amps_layer: mpi1,
             netcdf: "true",
@@ -129,7 +148,25 @@ jobs:
             os: ubuntu-24.04,
             cudaos: 'ubuntu2404',
             cc: "gcc", cxx: "g++", fc: "gfortran",
-            python: "false",
+            python: "true",
+            tcl: "true",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "true",
+            memory_manager: "none",
+            pdi: "false",
+            sundials: "external"
+          }
+        - {
+            # Testing deprecation of TCL
+            # Should switch default in other matrix builds to build without TCL when we deprecate TCL
+            # Keep at least one test with TCL until we fully remove TCL
+            name: "Ubuntu 24.04 GCC without TCL",
+            os: ubuntu-24.04,
+            cudaos: 'ubuntu2404',
+            cc: "gcc", cxx: "g++", fc: "gfortran",
+            python: "true",
+            tcl: "false",
             backend: "none",
             amps_layer: mpi1,
             netcdf: "true",
@@ -142,36 +179,11 @@ jobs:
             os: ubuntu-24.04,
             cudaos: 'ubuntu2404',
             cc: "clang-18", cxx: "clang++-18", fc: "gfortran",
-            python: "false",
+            python: "true",
+            tcl: "true",
             backend: "none",
             amps_layer: mpi1,
             netcdf: "true",
-            memory_manager: "none",
-            pdi: "false",
-            sundials: "embedded"
-          }
-        - {
-            name: "Ubuntu 22.04 GCC Python",
-            os: ubuntu-22.04,
-            cudaos: 'ubuntu2204',
-            cc: "gcc", cxx: "g++", fc: "gfortran",
-            python: "true",
-            backend: "none",
-            amps_layer: mpi1,
-            netcdf: "true",
-            memory_manager: "none",
-            pdi: "false",
-            sundials: "embedded"
-          }
-        - {
-            name: "Ubuntu 24.04 GCC Python",
-            os: ubuntu-24.04,
-            cudaos: 'ubuntu2404',
-            cc: "gcc", cxx: "g++", fc: "gfortran",
-            python: "true",
-            backend: "none",
-            amps_layer: mpi1,
-            netcdf: "false",
             memory_manager: "none",
             pdi: "false",
             sundials: "embedded"
@@ -181,7 +193,8 @@ jobs:
             os: ubuntu-24.04,
             cudaos: 'ubuntu2404',
             cc: "gcc", cxx: "g++", fc: "gfortran",
-            python: "false",
+            python: "true",
+            tcl: "true",
             backend: "omp",
             amps_layer: mpi1,
             netcdf: "false",
@@ -190,6 +203,7 @@ jobs:
             sundials: "embedded"
           }
         - {
+            # OASIS tests are broken with Python
             name: "Ubuntu 24.04 LLVM OASIS3-MCT Build",
             os: ubuntu-24.04,
             cudaos: 'ubuntu2404',
@@ -217,7 +231,8 @@ jobs:
             name: "Ubuntu 24.04 GCC CUDA/Umpire Build",
             os: ubuntu-24.04,
             cc: "gcc", cxx: "g++", fc: "gfortran",
-            python: "false",
+            python: "true",
+            tcl: "true",
             backend: "cuda",
             cudaos: 'ubuntu2404',
             amps_layer: mpi1,
@@ -241,7 +256,8 @@ jobs:
             name: "Ubuntu 24.04 GCC Kokkos/Umpire Build",
             os: ubuntu-24.04,
             cc: "gcc", cxx: "g++", fc: "gfortran",
-            python: "false",
+            python: "true",
+            tcl: "true",
             backend: "kokkos",
             cudaos: 'ubuntu2404',
             amps_layer: mpi1,
@@ -255,7 +271,8 @@ jobs:
             os: ubuntu-24.04,
             cudaos: 'ubuntu2404',
             cc: "gcc", cxx: "g++", fc: "gfortran",
-            python: "false",
+            python: "true",
+            tcl: "true",
             backend: "none",
             amps_layer: mpi1,
             netcdf: "false",
@@ -393,7 +410,7 @@ jobs:
           make -j
           make install
         fi
-        echo "RMM_FLAGS=-Drmm_ROOT=$PARFLOW_DEP_DIR/rmm" >> $GITHUB_ENV
+        echo "RMM_FLAGS=-DRMM_ROOT=$PARFLOW_DEP_DIR/rmm" >> $GITHUB_ENV
 
     - name: Umpire Install
       env:
@@ -410,7 +427,7 @@ jobs:
           cmake --build build --parallel 4
           cmake --install build
         fi
-        echo "UMPIRE_FLAGS=-Dumpire_ROOT=$PARFLOW_DEP_DIR/Umpire" >> $GITHUB_ENV
+        echo "UMPIRE_FLAGS=-DUMPIRE_ROOT=$PARFLOW_DEP_DIR/Umpire" >> $GITHUB_ENV
 
     - name: Kokkos Install
       env:
@@ -494,7 +511,7 @@ jobs:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          URL=https://github.com/LLNL/Silo/archive/refs/tags/4.11.1.tar.gz
+          URL=https://github.com/LLNL/Silo/archive/refs/tags/4.12.0.tar.gz
           mkdir silo
           cd silo
           curl -L $URL | tar --strip-components=1 -xz
@@ -599,6 +616,7 @@ jobs:
            -DOAS3_ROOT=$PARFLOW_DEP_DIR                                 \
            -DSILO_ROOT=$PARFLOW_DEP_DIR                                 \
            -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }}          \
+           -DPARFLOW_ENABLE_TCL=${{ matrix.config.tcl }}                \
            -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR                          \
            $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS $UMPIRE_FLAGS $PDI_FLAGS $SUNDIALS_FLAGS
 

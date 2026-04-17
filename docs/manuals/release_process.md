@@ -32,6 +32,8 @@ Edit `./VERSION` file with current version.
 
 Edit `./docs/user_Manual/conf.py` and update version number.
 
+Edit `./CMakeLists.txt` and update version number in project specification.
+
 ### Update pftools version number 
 
 Edit `./pftools/python/pyproject.toml` and increment the version number.

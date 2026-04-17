@@ -129,7 +129,7 @@
  * @return pointer to the allocated dataspace
  */
 #define ctalloc_default(type, count) \
-        (((count) > 0) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
+        (((count) > 0) ? (type*)calloc((size_t)(count), sizeof(type)) : NULL)
 
 #endif
 

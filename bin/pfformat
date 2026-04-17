@@ -16,6 +16,7 @@
 OPTIND=1         # Reset in case getopts has been used previously in the shell.
 
 UNCRUSTIFY_VERSION='0.79.0'
+BLACK_VERSION='25.12.0'
 
 # Exit script
 # $1 (required): Message to print on exit
@@ -74,6 +75,20 @@ function parse_params() {
     done
 }
 
+function check_black_version() {
+   # Check if black is available as a command
+   if ! command -v pfpython -m black >/dev/null 2>&1; then
+      script_exit "black is not installed"
+   fi
+
+   # Get the installed version
+   version="$(pfpython -m black --version 2>/dev/null | awk '{print $4}')"
+
+   if [ "$version" != "$BLACK_VERSION" ]; then
+      script_exit "Python black package must be version ${BLACK_VERSION}, found ${version}"
+   fi
+}
+
 function check_version() {
    if command -v "uncrustify" &>/dev/null; then
       version=$(uncrustify --version)
@@ -81,8 +96,7 @@ function check_version() {
 	 *${UNCRUSTIFY_VERSION}*)
 	 ;;
 	 *)
-	    script_exit "Uncrustify must be version ${UNCRUSTIFY_VERSION}"
-	    exit 1
+	    script_exit "Uncrustify must be version ${UNCRUSTIFY_VERSION}, found ${version}"
 	    ;;
       esac
    else
@@ -105,6 +119,8 @@ function main() {
    parse_params "$@"
    
    check_version
+
+   check_black_version 
 
    failed=false
 

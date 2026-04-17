@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 typedef PFModule * (*NewDefault)(void);
 
 typedef void (*AdvectionConcentrationInvoke) (ProblemData *problem_data, int phase, int concentration, Vector *old_concentration, Vector *new_concentration, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *solid_mass_factor, double time, double deltat, int order);
@@ -250,6 +252,8 @@ Subgrid *ExtractSubgrid(int rx, int ry, int rz, Subgrid *subgrid);
 Subgrid *IntersectSubgrids(Subgrid *subgrid1, Subgrid *subgrid2);
 SubgridArray *SubtractSubgrids(Subgrid *subgrid1, Subgrid *subgrid2);
 SubgridArray *UnionSubgridArray(SubgridArray *subgrids);
+double CalculateLocalSubgridVolume(Subgrid *subgrid, ProblemData* problem_data);
+bool SubgridIntersectsCurrentRank(Subgrid* subgrid, Grid *grid);
 
 /* hbt.c */
 HBT *HBT_new(
@@ -294,20 +298,20 @@ PFModule *InputRFNewPublicXtra(char *geom_name);
 void InputRFFreePublicXtra(void);
 int InputRFSizeOfTempData(void);
 
-typedef int (*NonlinSolverInvoke) (Vector *pressure, Vector *density, Vector *old_density, Vector *saturation, Vector *old_saturation, double t, double dt, ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity);
+typedef int (*NonlinSolverInvoke) (Vector *pressure, Vector *density, Vector *old_density, Vector *saturation, Vector *old_saturation, double t, double dt, ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *q_overlnd_x, Vector *q_overlnd_y);
 typedef PFModule *(*NonlinSolverInitInstanceXtraInvoke) (Problem *problem, Grid *grid, Grid *grid2d, ProblemData *problem_data, double *temp_data);
 
 /* kinsol_nonlin_solver.c */
 #if defined (PARFLOW_HAVE_SUNDIALS)
 int KINSolInitPC(N_Vector pf_n_pressure, N_Vector pf_n_uscale, N_Vector pf_n_fval, N_Vector pf_n_fscale, void *    current_state);
 int KINSolCallPC(N_Vector pf_n_pressure, N_Vector pf_n_uscale, N_Vector pf_n_fval, N_Vector pf_n_fscale, N_Vector pf_n_vtem, void *    current_state);
-int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, Vector *saturation, Vector *old_saturation, double t, double dt, ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity);
+int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, Vector *saturation, Vector *old_saturation, double t, double dt, ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *q_overlnd_x, Vector *q_overlnd_y);
 PFModule *KinsolNonlinSolverInitInstanceXtra(Problem *problem, Grid *grid, Grid *grid2d, ProblemData *problem_data, double *temp_data);
 #else
 int KINSolInitPC(int neq, N_Vector pressure, N_Vector uscale, N_Vector fval, N_Vector fscale, N_Vector vtemp1, N_Vector vtemp2, void *nl_function, double uround, long int *nfePtr, void *current_state);
 int KINSolCallPC(int neq, N_Vector pressure, N_Vector uscale, N_Vector fval, N_Vector fscale, N_Vector vtem, N_Vector ftem, void *nl_function, double uround, long int *nfePtr, void *current_state);
 void PrintFinalStats(FILE *out_file, long int *integer_outputs_now, long int *integer_outputs_total);
-int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, Vector *saturation, Vector *old_saturation, double t, double dt, ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity);
+int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, Vector *saturation, Vector *old_saturation, double t, double dt, ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *q_overlnd_x, Vector *q_overlnd_y);
 PFModule *KinsolNonlinSolverInitInstanceXtra(Problem *problem, Grid *grid, Grid *grid2d, ProblemData *problem_data, double *temp_data);
 #endif
 void KinsolNonlinSolverFreeInstanceXtra(void);
@@ -491,7 +495,7 @@ void N_VFree(N_Vector x);
 /* new_endpts.c */
 void NewEndpts(double *alpha, double *beta, double *pp, int *size_ptr, int n, double *a_ptr, double *b_ptr, double *cond_ptr, double ereps);
 
-typedef void (*NlFunctionEvalInvoke) (Vector *pressure, Vector *fval, ProblemData *problem_data, Vector *saturation, Vector *old_saturation, Vector *density, Vector *old_density, double dt, double time, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity);
+typedef void (*NlFunctionEvalInvoke) (Vector *pressure, Vector *fval, ProblemData *problem_data, Vector *saturation, Vector *old_saturation, Vector *density, Vector *old_density, double dt, double time, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *q_overlnd_x, Vector *q_overlnd_y);
 typedef PFModule *(*NlFunctionEvalInitInstanceXtraInvoke) (Problem *problem, Grid *grid, Grid *grid2d, double *temp_data);
 
 /* nl_function_eval.c */
@@ -500,7 +504,7 @@ int KINSolFunctionEval(N_Vector pressure, N_Vector fval, void *current_state);
 #else
 void KINSolFunctionEval(int size, N_Vector pressure, N_Vector fval, void *current_state);
 #endif
-void NlFunctionEval(Vector *pressure, Vector *fval, ProblemData *problem_data, Vector *saturation, Vector *old_saturation, Vector *density, Vector *old_density, double dt, double time, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity);
+void NlFunctionEval(Vector *pressure, Vector *fval, ProblemData *problem_data, Vector *saturation, Vector *old_saturation, Vector *density, Vector *old_density, double dt, double time, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *q_overlnd_x, Vector *q_overlnd_y);
 PFModule *NlFunctionEvalInitInstanceXtra(Problem *problem, Grid *grid, Grid *grid2d, double *temp_data);
 void NlFunctionEvalFreeInstanceXtra(void);
 PFModule *NlFunctionEvalNewPublicXtra(char *name);
@@ -806,6 +810,7 @@ void realSpaceZFreeInstanceXtra(void);
 PFModule *realSpaceZNewPublicXtra(void);
 void realSpaceZFreePublicXtra(void);
 int realSpaceZSizeOfTempData(void);
+int CalculateIndexSpaceZ(double real_space_z, ProblemData* problem_data);
 
 
 
