@@ -158,5 +158,4 @@ Docker image download information is available here:
 
 Thank you to everyone in the community for your contributions and bug fixes.
 
-Steve
 ```
