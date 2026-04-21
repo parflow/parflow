@@ -376,6 +376,11 @@ Updated most tests to execute under Ubuntu 24.04.   Ubuntu 22.04 testing is reta
 The CUDA memory managers Umpire and RMM were updated.
 
 
+## Known Issues
+
+See https://github.com/parflow/parflow/issues for current bug/issue reports.
+
+
 # ParFlow Release Notes 3.13.0
 ------------------------------
 
@@ -602,3 +607,6 @@ set correct_output_dir "../../correct_output/clm_output"
 pftestFile clm.out.press.$i_string.pfb "Max difference in Pressure for timestep $i_string" $sig_digits $correct_output_dir
 ```
 
+## Known Issues
+
+See https://github.com/parflow/parflow/issues for current bug/issue reports.
