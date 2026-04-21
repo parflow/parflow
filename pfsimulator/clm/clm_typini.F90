@@ -316,7 +316,47 @@ subroutine clm_typini (ntiles, clm, istep_pf)
      
      ! topomasks - parflow-clm couple parameters
      clm(k)%topo_mask(:)      = NaN  
-     clm(k)%planar_mask       = 0.0  ! was NaN...init to 0.0 
+     clm(k)%planar_mask       = 0.0  ! was NaN...init to 0.0
+
+     ! for SZA snow damping @RMM 2025
+     clm(k)%sza_snow_damping        = 1.0
+     clm(k)%sza_damping_coszen_ref  = NaN
+     clm(k)%sza_damping_coszen_min  = NaN
+     clm(k)%coszen                  = 0.5d0  ! initialize to reference value
+     
+     ! for snow albedo parameterization @RMM 2025
+     clm(k)%albedo_scheme        = 0
+     clm(k)%albedo_vis_new       = NaN
+     clm(k)%albedo_nir_new       = NaN
+     clm(k)%albedo_min           = NaN
+     clm(k)%albedo_decay_vis     = NaN
+     clm(k)%albedo_decay_nir     = NaN
+     clm(k)%albedo_accum_a       = NaN
+     clm(k)%albedo_thaw_a        = NaN
+     
+     ! for frac_sno parameterization @RMM 2025
+     clm(k)%frac_sno_type        = 0
+     clm(k)%frac_sno_roughness   = NaN
+     clm(k)%frac_sno_roughness_min = NaN
+     clm(k)%frac_sno_roughness_max = NaN
+     clm(k)%frac_sno_gamma_sza   = NaN
+     clm(k)%frac_sno_tau_sza     = NaN
+     
+     ! for snow age VIS/NIR separation @RMM 2025
+     clm(k)%snowage_tau0_vis        = NaN
+     clm(k)%snowage_tau0_nir        = NaN
+     clm(k)%snowage_grain_growth_vis = NaN
+     clm(k)%snowage_grain_growth_nir = NaN
+     clm(k)%snowage_dirt_soot_vis   = NaN
+     clm(k)%snowage_dirt_soot_nir   = NaN
+     clm(k)%snowage_reset_factor    = NaN
+     
+     ! for ET formulation improvements @RMM 2026
+     clm(k)%interception_fpi_max = NaN
+     clm(k)%fwet_exponent        = NaN
+     clm(k)%stomata_scheme       = 0
+     clm(k)%interception_scheme  = 0
+     clm(k)%interception_tanh_alpha = NaN
 
   end do
 
