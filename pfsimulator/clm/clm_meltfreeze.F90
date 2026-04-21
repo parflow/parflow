@@ -62,7 +62,12 @@ subroutine clm_meltfreeze (fact,     brr,       hs,     dhsdT,  &
        temp1                            ! temporary variables [kg/m2]
 
   real(r8), dimension(clm%snl+1 : nlevsoi) :: wmass0, wice0, wliq0
-  real(r8)  propor,tinc  
+  real(r8)  propor,tinc
+
+  ! @RMM 2025: Combined thin snow + SZA damping variables
+  real(r8) :: damping_factor        ! combined damping factor
+  real(r8) :: depth_damping_factor  ! depth-based (thin snow) damping component
+  real(r8) :: sza_damping_factor    ! SZA-based damping component
 
 !=== End Variable List ===================================================
 
@@ -116,6 +121,55 @@ subroutine clm_meltfreeze (fact,     brr,       hs,     dhsdT,  &
         else
            hm(j) = hs + dhsdT*tinc + brr(j) - tinc/fact(j) 
         endif
+     endif
+  enddo
+
+! @RMM 2025: Apply combined thin-snow and SZA-based damping to snow layer melt energy
+! Both effects can be enabled independently and combine multiplicatively:
+! - Thin snow damping: reduces melt when SWE is below threshold
+! - SZA damping: reduces melt at high solar zenith angles where CLM underestimates albedo
+  do j = clm%snl+1, 0   ! Only snow layers (indices <= 0)
+     if (clm%imelt(j) == 1 .and. hm(j) > 0.0d0) then   ! Only for melting
+
+        ! Initialize both factors to 1.0 (no damping)
+        depth_damping_factor = 1.0d0
+        sza_damping_factor = 1.0d0
+
+        ! Calculate depth-based (thin snow) damping
+        ! Linear interpolation from damping at SWE=0 to 1.0 at threshold
+        if (clm%thin_snow_damping > 0.0d0 .and. clm%thin_snow_damping < 1.0d0) then
+           if (clm%h2osno <= 0.0d0) then
+              depth_damping_factor = clm%thin_snow_damping
+           else if (clm%h2osno >= clm%thin_snow_threshold) then
+              depth_damping_factor = 1.0d0
+           else
+              depth_damping_factor = clm%thin_snow_damping + &
+                   (1.0d0 - clm%thin_snow_damping) * &
+                   (clm%h2osno / clm%thin_snow_threshold)
+           endif
+        endif
+
+        ! Calculate SZA-based damping
+        ! At coszen >= coszen_ref (low SZA, e.g. 60 deg): no damping
+        ! At coszen <= coszen_min (high SZA, e.g. 84 deg): maximum damping
+        ! Linear interpolation between bounds
+        if (clm%sza_snow_damping > 0.0d0 .and. clm%sza_snow_damping < 1.0d0) then
+           if (clm%coszen >= clm%sza_damping_coszen_ref) then
+              sza_damping_factor = 1.0d0
+           else if (clm%coszen <= clm%sza_damping_coszen_min) then
+              sza_damping_factor = clm%sza_snow_damping
+           else
+              sza_damping_factor = clm%sza_snow_damping + &
+                   (1.0d0 - clm%sza_snow_damping) * &
+                   (clm%coszen - clm%sza_damping_coszen_min) / &
+                   (clm%sza_damping_coszen_ref - clm%sza_damping_coszen_min)
+           endif
+        endif
+
+        ! Combine multiplicatively and apply to melt energy
+        damping_factor = depth_damping_factor * sza_damping_factor
+        hm(j) = hm(j) * damping_factor
+
      endif
   enddo
 

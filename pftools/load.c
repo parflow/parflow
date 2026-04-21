@@ -183,9 +183,9 @@ void           LoadParflowB(
 
         for (k = 0; k < nz; k++)
           for (j = 0; j < ny; j++)
-            tools_WriteDouble(file, ptr + j * (NX) + k * (NX)*(NY), (nx));
+            tools_WriteDouble(file, ptr + (size_t)(j) * (size_t)(NX) + (size_t)(k) * (size_t)(NX)*(size_t)(NY), (nx));
 
-        file_pos += 9 * tools_SizeofInt + (nx * ny * nz) * tools_SizeofDouble;
+        file_pos += (size_t)(9) * (size_t)(tools_SizeofInt) + (size_t)(nx) * (size_t)(ny) * (size_t)(nz) * tools_SizeofDouble;
 
 #ifdef AMPS_SPLIT_FILE
         fclose(file);

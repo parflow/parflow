@@ -32,6 +32,7 @@ if(${PARFLOW_HAVE_HYPRE})
     LW_var_dz_spinup
     terrain_following_grid_overland
     var_dz_1D
+    var_dz_with_well
     tilted_v_with_reservoir_overland_flow
     tilted_v_with_reservoir_overland_kinematic
     pfmg
@@ -39,8 +40,12 @@ if(${PARFLOW_HAVE_HYPRE})
     smg
     pfmg_octree
     van-genuchten-file
+    overland_flux
     overland_slopingslab_KWE
     overland_tiltedV_KWE
+    overland_tiltedV_KWE_top_patch
+    overland_tiltedV_KWE_top_patch_2
+    overland_tiltedV_KWE_top_patch_3
     overland_slopingslab_DWE
     overland_tiltedV_DWE
     overland_FlatICP
@@ -68,6 +73,9 @@ if(${PARFLOW_HAVE_SILO})
 endif()
 
 if(${PARFLOW_HAVE_NETCDF})
+  list(APPEND TESTS
+      indicator_field_netcdf
+    )
   if(${PARFLOW_HAVE_HYPRE})
     #This test is failing on several platforms
     list(APPEND TESTS
@@ -125,6 +133,15 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
   endif()
 
 endif()
+
+if(${PARFLOW_HAVE_OAS3})
+  # Exclude tests that use Richards solver
+  set(TESTS "")
+  set(PARALLEL_3DTOPO_TESTS "")
+  set(PARALLEL_2DTOPO_TESTS "")
+  list(APPEND TESTS default_single)
+endif()
+
 
 foreach(inputfile ${TESTS})
   pf_add_py_test(${inputfile})

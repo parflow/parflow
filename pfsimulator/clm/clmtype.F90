@@ -130,7 +130,9 @@ module clmtype
      real(r8) :: frac_sno        ! fractional snow cover
      real(r8) :: t_veg           ! leaf temperature [K]
      real(r8) :: h2ocan          ! depth of water on foliage [kg/m2/s]
-     real(r8) :: snowage         ! non dimensional snow age [-]
+     real(r8) :: snowage         ! non dimensional snow age [-] (legacy: average of VIS/NIR)
+     real(r8) :: snowage_vis     ! VIS band snow age [-] @RMM 2025
+     real(r8) :: snowage_nir     ! NIR band snow age [-] @RMM 2025
      real(r8) :: h2osno          ! snow mass (kg/m2)
      real(r8) :: h2osno_old      ! snow mass for previous time step (kg/m2)
      real(r8) :: snowdp          ! snow depth (m)
@@ -250,7 +252,58 @@ module clmtype
      real(r8) :: irr_threshold  ! irrigation soil moisture threshold for deficit cycle @IMF
      integer  :: threshold_type ! irrigation threshold type -- top layer, bottom layer, column avg.
      real(r8) :: irr_flag       ! flag for irrigation or non-irrigation for a given day (based on threshold)
-     
+
+! Snow parameterization options @RMM 2025
+     integer  :: snow_partition_type   ! rain-snow partition: 0=CLM, 1=wetbulb thresh, 2=wetbulb linear, 3=Dai, 4=Jennings
+     real(r8) :: tw_threshold          ! wetbulb temperature threshold for snow [K], default 274.15
+     real(r8) :: thin_snow_damping     ! damping factor for thin snow energy [0-1], 0=off
+     real(r8) :: thin_snow_threshold   ! SWE threshold for damping [kg/m2 or mm], default 50.0
+     real(r8) :: snow_tcrit            ! initial T classification threshold above tfrz [K], default 2.5
+     real(r8) :: snow_t_low            ! CLM method lower T threshold [K], default 273.16
+     real(r8) :: snow_t_high           ! CLM method upper T threshold [K], default 275.16
+     real(r8) :: snow_transition_width ! WetbulbLinear half-width [K], default 1.0
+     real(r8) :: dai_a                 ! Dai (2008) coefficient a, default -48.2292
+     real(r8) :: dai_b                 ! Dai (2008) coefficient b, default 0.7205
+     real(r8) :: dai_c                 ! Dai (2008) coefficient c, default 1.1662
+     real(r8) :: dai_d                 ! Dai (2008) coefficient d, default 1.0223
+     real(r8) :: jennings_a            ! Jennings (2018) intercept, default -10.04
+     real(r8) :: jennings_b            ! Jennings (2018) T coefficient, default 1.41
+     real(r8) :: jennings_g            ! Jennings (2018) RH coefficient, default 0.09
+
+! SZA-based snow melt damping parameters @RMM 2025
+     real(r8) :: coszen                  ! current cosine of solar zenith angle (stored from clm_main)
+     real(r8) :: sza_snow_damping        ! damping factor at high SZA [0-1], 1.0=disabled
+     real(r8) :: sza_damping_coszen_ref  ! reference coszen below which damping applies, default 0.5
+     real(r8) :: sza_damping_coszen_min  ! coszen at which max damping applies, default 0.1
+
+! Snow albedo parameterization options @RMM 2025
+     integer  :: albedo_scheme         ! albedo scheme: 0=CLM, 1=VIC, 2=Tarboton
+     real(r8) :: albedo_vis_new        ! fresh snow VIS albedo [0-1], default 0.95
+     real(r8) :: albedo_nir_new        ! fresh snow NIR albedo [0-1], default 0.65
+     real(r8) :: albedo_min            ! minimum albedo floor [0-1], default 0.4
+     real(r8) :: albedo_decay_vis      ! VIS decay coefficient [0-1], default 0.5
+     real(r8) :: albedo_decay_nir      ! NIR decay coefficient [0-1], default 0.2
+     real(r8) :: albedo_accum_a        ! VIC cold-phase decay base, default 0.94
+     real(r8) :: albedo_thaw_a         ! VIC melt-phase decay base, default 0.82
+
+! Fractional snow covered area (frac_sno) options @RMM 2025
+     integer  :: frac_sno_type         ! frac_sno scheme: 0=CLM (default), 1=SZA-modulated
+     real(r8) :: frac_sno_roughness    ! roughness length for frac_sno [m], default=zlnd (case 0)
+     real(r8) :: frac_sno_roughness_min ! min roughness for SZA interp [m], default 1e-8 (case 1)
+     real(r8) :: frac_sno_roughness_max ! max roughness for SZA interp [m], default 0.2 (case 1)
+     real(r8) :: frac_sno_gamma_sza    ! SZA power-law exponent [-], default 4.0
+     real(r8) :: frac_sno_tau_sza      ! EMA smoothing window [hours], default 72.0
+     real(r8) :: coszen_avg            ! exponentially smoothed cos(SZA) for frac_sno [-]
+
+! Snow age configurable parameters - VIS/NIR separation @RMM 2025
+     real(r8) :: snowage_tau0_vis        ! VIS e-folding time [s], default 1e6
+     real(r8) :: snowage_tau0_nir        ! NIR e-folding time [s], default 1e6
+     real(r8) :: snowage_grain_growth_vis ! VIS grain growth factor [K], default 5000
+     real(r8) :: snowage_grain_growth_nir ! NIR grain growth factor [K], default 5000
+     real(r8) :: snowage_dirt_soot_vis   ! VIS dirt/soot factor [-], default 0.3
+     real(r8) :: snowage_dirt_soot_nir   ! NIR dirt/soot factor [-], default 0.3
+     real(r8) :: snowage_reset_factor    ! fresh snow reset factor [-], default 0.1
+
      real(r8) :: eflx_snomelt   ! added to be consistent with lsm hybrid code
      real(r8) :: eflx_impsoil   ! implicit evaporation for soil temperature equation (W/m**2)
      real(r8) :: eflx_lh_vege   ! veg evaporation heat flux (W/m**2) [+ to atm]
@@ -330,6 +383,16 @@ module clmtype
 
      integer :: soi_z ! NBE added
 
+! ET formulation improvements @RMM 2026
+! (placed at end of struct to preserve existing field offsets)
+     logical  :: photosyn_custom ! true when drv_vegp.dat provides PFT photosynthesis params
+     integer  :: stomata_scheme  ! stomatal model: 0=BallBerry (default), 1=Medlyn
+     real(r8) :: g1_medlyn       ! Medlyn stomatal slope parameter (kPa^0.5)
+     real(r8) :: interception_fpi_max ! max interception fraction coefficient [-]
+     real(r8) :: fwet_exponent        ! power-law exponent for wet canopy fraction [-]
+     integer  :: interception_scheme  ! interception scheme: 0=CLM3, 1=CLM5Tanh @RMM 2026
+     real(r8) :: interception_tanh_alpha ! CLM5 tanh scaling coeff [-], default 1.0 @RMM 2026
+     real(r8) :: clump_index         ! vegetation clumping index [0-1], 1=no clumping @RMM 2026
 
 !=== End Variable List ===================================================
 

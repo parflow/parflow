@@ -7,6 +7,10 @@ name: MacOS CI Tests
 
 on: [push, pull_request]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: ${{ matrix.config.name }}
@@ -120,7 +124,7 @@ jobs:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          URL=https://github.com/LLNL/Silo/archive/refs/tags/4.11.1.tar.gz
+          URL=https://github.com/LLNL/Silo/archive/refs/tags/4.12.0.tar.gz
           mkdir silo
           cd silo
           curl -L $URL | tar --strip-components=1 -xz
@@ -133,7 +137,7 @@ jobs:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          URL=https://github.com/hypre-space/hypre/archive/v2.26.0.tar.gz
+          URL=https://github.com/hypre-space/hypre/archive/v2.33.0.tar.gz
           mkdir hypre
           cd hypre
           curl -L $URL | tar --strip-components=1 -xz

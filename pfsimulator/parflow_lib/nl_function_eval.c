@@ -27,6 +27,7 @@
 **********************************************************************EHEADER*/
 
 #include "parflow.h"
+#include "seepage.h"
 #include "llnlmath.h"
 #include "llnltyps.h"
 //#include "math.h"
@@ -41,6 +42,7 @@ typedef struct {
   double SpinupDampP1;      // NBE
   double SpinupDampP2;      // NBE
   int tfgupwind;           //@RMM added for TFG formulation switch
+  SeepageLookup seepage;
 } PublicXtra;
 
 typedef struct {
@@ -108,10 +110,14 @@ int     KINSolFunctionEval(
   Vector       *y_velocity = StateYvel(((State*)current_state));
   Vector       *z_velocity = StateZvel(((State*)current_state));
 
+  Vector       *q_overlnd_x = StateQxOverland(((State*)current_state));
+  Vector       *q_overlnd_y = StateQyOverland(((State*)current_state));
+
   PFModuleInvokeType(NlFunctionEvalInvoke, nl_function_eval,
                      (pressure, fval, problem_data, saturation, old_saturation,
                       density, old_density, dt, time, old_pressure, evap_trans,
-                      ovrl_bc_flx, x_velocity, y_velocity, z_velocity));
+                      ovrl_bc_flx, x_velocity, y_velocity, z_velocity,
+                      q_overlnd_x, q_overlnd_y));
 
   return(0);
 }
@@ -141,10 +147,14 @@ void     KINSolFunctionEval(
   Vector       *y_velocity = StateYvel(((State*)current_state));
   Vector       *z_velocity = StateZvel(((State*)current_state));
 
+  Vector       *q_overlnd_x = StateQxOverland(((State*)current_state));
+  Vector       *q_overlnd_y = StateQyOverland(((State*)current_state));
+
   PFModuleInvokeType(NlFunctionEvalInvoke, nl_function_eval,
                      (pressure, fval, problem_data, saturation, old_saturation,
                       density, old_density, dt, time, old_pressure, evap_trans,
-                      ovrl_bc_flx, x_velocity, y_velocity, z_velocity));
+                      ovrl_bc_flx, x_velocity, y_velocity, z_velocity,
+                      q_overlnd_x, q_overlnd_y));
 
   return;
 }
@@ -168,7 +178,9 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                     Vector *     ovrl_bc_flx, /*sk overland flow boundary fluxes*/
                     Vector *     x_velocity, /* velocity vectors jjb */
                     Vector *     y_velocity,
-                    Vector *     z_velocity)
+                    Vector *     z_velocity,
+                    Vector *     q_overlnd_x,
+                    Vector *     q_overlnd_y)
 {
   PUSH_NVTX("NlFunctionEval", 0)
 
@@ -201,10 +213,12 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   Vector      *qx = (instance_xtra->qx);
   Vector      *qy = (instance_xtra->qy);
   Subvector   *kw_sub, *ke_sub, *kn_sub, *ks_sub, *qx_sub, *qy_sub;
+  Subvector   *q_overlnd_x_sub = NULL, *q_overlnd_y_sub = NULL;
   Subvector   *x_sl_sub;
   // Subvector *y_sl_sub;
   // Subvector *mann_sub;
-  double      *kw_, *ke_, *kn_, *ks_, *qx_, *qy_;
+  double      *kw_ = NULL, *ke_ = NULL, *kn_ = NULL, *ks_ = NULL, *qx_ = NULL, *qy_ = NULL;
+  double      *q_overlnd_x_ = NULL, *q_overlnd_y_ = NULL;
 
   Vector      *porosity = ProblemDataPorosity(problem_data);
   Vector      *permeability_x = ProblemDataPermeabilityX(problem_data);
@@ -233,6 +247,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   Subvector   *FBx_sub, *FBy_sub, *FBz_sub;  //@RMM
   double      *FBx_dat = NULL, *FBy_dat = NULL, *FBz_dat = NULL;   //@RMM
 
+/* RMM Top patch indicator for multiple / combined overland BC */
+  Vector      *patch = ProblemDataPatchIndexOfDomainTop(problem_data);
+  Subvector   *patch_sub;
+  double      *patch_dat = NULL;
 
   double gravity = ProblemGravity(problem);
   double viscosity = ProblemPhaseViscosity(problem, 0);
@@ -337,6 +355,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     FBx_sub = VectorSubvector(FBx, is);
     FBy_sub = VectorSubvector(FBy, is);
     FBz_sub = VectorSubvector(FBz, is);
+
+    /* RMM added to provide patch access */
+    patch_sub = VectorSubvector(patch, is);
+    patch_dat = SubvectorData(patch_sub);
 
     /* @RMM added to provide FB values */
     FBx_dat = SubvectorData(FBx_sub);
@@ -622,6 +644,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     /* @RMM added to provide access to zmult */
     z_mult_sub = VectorSubvector(z_mult, is);
 
+    /* RMM added to provide patch access */
+    patch_sub = VectorSubvector(patch, is);
+    patch_dat = SubvectorData(patch_sub);
+
     /* RDF: assumes resolutions are the same in all 3 directions */
     r = SubgridRX(subgrid);
 
@@ -853,6 +879,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     x_ssl_sub = VectorSubvector(x_ssl, is);
     y_ssl_sub = VectorSubvector(y_ssl, is);
 
+    /* RMM added to provide patch access */
+    patch_sub = VectorSubvector(patch, is);
+    patch_dat = SubvectorData(patch_sub);
+
     // sk Overland flow
     if ((instance_xtra->using_overland_flow) == TRUE)
     {
@@ -869,6 +899,18 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       ks_ = SubvectorData(ks_sub);
       qx_ = SubvectorData(qx_sub);
       qy_ = SubvectorData(qy_sub);
+
+      if (q_overlnd_x)
+      {
+        q_overlnd_x_sub = VectorSubvector(q_overlnd_x, is);
+        q_overlnd_x_ = SubvectorData(q_overlnd_x_sub);
+      }
+
+      if (q_overlnd_y)
+      {
+        q_overlnd_y_sub = VectorSubvector(q_overlnd_y, is);
+        q_overlnd_y_ = SubvectorData(q_overlnd_y_sub);
+      }
     }
     x_sl_sub = VectorSubvector(x_sl, is);
     // y_sl_sub = VectorSubvector(y_sl, is);
@@ -1603,6 +1645,16 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                 / viscosity;
         u_new = h;
 
+        if (q_overlnd_x_)
+        {
+          q_overlnd_x_[io] = ke_[io];
+        }
+
+        if (q_overlnd_y_)
+        {
+          q_overlnd_y_[io] = kn_[io];
+        }
+
         /* Add overland contribs */
         q_overlnd = 0.0;
         q_overlnd = vol
@@ -1930,11 +1982,31 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                 / viscosity;
         u_new = h;
 
+        if (q_overlnd_x_)
+        {
+          q_overlnd_x_[io] = ke_[io];
+        }
+
+        if (q_overlnd_y_)
+        {
+          q_overlnd_y_[io] = kn_[io];
+        }
+
         q_overlnd = 0.0;
-        q_overlnd = vol
-                    * (pfmax(pp[ip], 0.0) - pfmax(opp[ip], 0.0)) / dz +
-                    dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy)
-                    / dz;
+        // RMM, switch seepage face on optionally for specified surface patches
+        if (IsSeepagePatch(&(public_xtra->seepage), (int)patch_dat[io]))
+        {
+          q_overlnd = vol
+                      * (pfmax(pp[ip], 0.0) - 0.0) / dz;
+        }
+        else
+        {
+          q_overlnd = vol
+                      * (pfmax(pp[ip], 0.0) - pfmax(opp[ip], 0.0)) / dz +
+                      dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy)
+                      / dz;
+        }
+
         fp[ip] += q_overlnd;
       }),
                            CellFinalize(
@@ -2153,6 +2225,15 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                 / viscosity;
         u_new = h;
 
+        if (q_overlnd_x_)
+        {
+          q_overlnd_x_[io] = ke_[io];
+        }
+
+        if (q_overlnd_y_)
+        {
+          q_overlnd_y_[io] = kn_[io];
+        }
 
         q_overlnd = 0.0;
         q_overlnd = vol
@@ -2395,6 +2476,9 @@ PFModule   *NlFunctionEvalNewPublicXtra(char *name)
   sprintf(key, "OverlandSpinupDampP2");
   public_xtra->SpinupDampP2 = GetDoubleDefault(key, 0.0);    //NBE
 
+  /* Collect seepage patches from Patch.<name>.BCPressure.Seepage flags. */
+  PopulateSeepagePatchesFromBCPressure(&(public_xtra->seepage));
+
   ///* parameters for upwinding formulation for TFG */
   upwind_switch_na = NA_NewNameArray("Original UpwindSine Upwind");
   sprintf(key, "Solver.TerrainFollowingGrid.SlopeUpwindFormulation");
@@ -2447,6 +2531,7 @@ void  NlFunctionEvalFreePublicXtra()
 
   if (public_xtra)
   {
+    SeepageLookupFree(&(public_xtra->seepage));
     tfree(public_xtra);
   }
 }

@@ -7,7 +7,19 @@ if (${PARFLOW_HAVE_CLM})
   if (${PARFLOW_HAVE_HYPRE})
     list(APPEND CLM_TESTS
       clm-reuse
-      clm_rz_water_stress)
+      clm_rz_water_stress
+      clm_snow_defaults
+      clm_snow_partition
+      clm_snow_albedo
+      clm_snow_dai
+      clm_snow_jennings
+      clm_snow_sza_damping
+      clm_snow_age_params
+      clm_snow_sza_fsca
+      clm_et_pft_photosynthesis
+      clm_et_interception
+      clm_et_medlyn
+      clm_et_canopy_clumping)
 
     list(APPEND CLM_2D_TESTS
       clm_slope)

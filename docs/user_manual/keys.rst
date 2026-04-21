@@ -335,7 +335,7 @@ defined for this problem.
 
 *string* **GeomInput.\ *geom_input_name*.InputType** no default This
 defines the input type for the geometry input with *geom_input_name*.
-This key must be one of: **SolidFile, IndicatorField**, **Box**.
+This key must be one of: **SolidFile, IndicatorField, IndicatorFieldNC**, **Box**.
 
 .. container:: list
 
@@ -350,9 +350,9 @@ list of the names of the geometries defined by the geometry input. For a
 geometry input type of Box, the list should contain a single geometry
 name. For the SolidFile geometry type this should contain a list with
 the same number of gemetries as were defined using GMS. The order of
-geometries in the SolidFile should match the names. For IndicatorField
-types you need to specify the value in the input field which matches the
-name using GeomInput.\ *geom_input_name*.Value.
+geometries in the SolidFile should match the names. For IndicatorField and
+IndicatorFieldNC types you need to specify the value in the input field
+which matches the name using GeomInput.\ *geom_input_name*.Value.
 
 .. container:: list
 
@@ -364,8 +364,8 @@ name using GeomInput.\ *geom_input_name*.Value.
       <runname>.GeomInput.solidinput.GeomNames = "domain bottomlayer middlelayer toplayer"  ## Python syntax
 
 *string* **GeomInput.\ *geom_input_name*.Filename** no default For
-IndicatorField and SolidFile geometry inputs this key specifies the
-input filename which contains the field or solid information.
+IndicatorField, IndicatorFieldNC and SolidFile geometry inputs this key
+specifies the input filename which contains the field or solid information.
 
 .. container:: list
 
@@ -376,9 +376,10 @@ input filename which contains the field or solid information.
       <runname>.GeomInput.solidinput.FileName = "ocwd.pfsol"   ## Python syntax
 
 *integer* **GeomInput.\ *geometry_input_name*.Value** no default For
-IndicatorField geometry inputs you need to specify the mapping between
-values in the input file and the geometry names. The named geometry will
-be defined wherever the input file is equal to the specified value.
+IndicatorField, IndicatorFieldNC geometry inputs you need to specify the
+mapping between values in the input file and the geometry names. The named
+geometry will be defined wherever the input file is equal to the specified
+value.
 
 .. container:: list
 
@@ -3362,6 +3363,35 @@ solid specified by the Patch.\ *patch_name*.BCPressure.RefGeom key.
 
       pfset Patch.top.BCPressure.RefPatch    "bottom"
 
+*bool* **Patch.\ *patch_name*.BCPressure.Seepage** False When set to
+True for an OverlandKinematic pressure boundary condition, this patch
+will be treated as a seepage patch for the overland kinematic wave
+formulation.
+
+Example of mixed boundary conditions: 
+
+::
+   CONUS2.Geom.domain.Patches = "ocean land top lake sink bottom"
+   CONUS2.BCPressure.PatchNames ="ocean land top lake sink bottom"
+
+In this example, the top gets assigned to the **OverlandKinematic** BC
+and the sink and lake will be treated as a seepage patch for the
+overland kinematic wave formulation
+ 
+::
+   
+   CONUS2.Patch.top.BCPressure.Type = 'OverlandKinematic'
+   CONUS2.Patch.lake.BCPressure.Type = 'OverlandKinematic'
+   CONUS2.Patch.lake.BCPressure.Seepage = True
+   CONUS2.Patch.sink.BCPressure.Type = 'OverlandKinematic'
+   CONUS2.Patch.sink.BCPressure.Seepage = True
+
+.. container:: list
+
+   ::
+
+      pfset Patch.top.BCPressure.Seepage    "True"
+      
 *double* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.Value** no
 default This key specifies the reference pressure value for the
 **DirEquilRefPatch** boundary condition or the constant flux value for
@@ -3960,6 +3990,21 @@ wells for which input data will be given.
 
       Wells.Names "test_well inj_well ext_well"
 
+*bool* **Wells.CorrectForVarDz** False This key specifies whether well
+fluxes be adjusted for variable dz spacing.  For backwards
+compatability the default value is **False** and the well volume used
+to calculate well fluxes is incorrectly set using the single **dz**
+value (:math:`nx * ny * nz * dx * dy * dz`).  When set to **True** the
+volume will be computed by the user specified variable dz values.  It is
+recommended to set the flag to **True** rather than do the correction
+manually.
+
+.. container:: list
+
+   ::
+
+      Wells.CorrectForVarDz "True"
+
 *string* **Wells.\ *well_name*.InputType** no default This key specifies
 the type of well to be defined for the given well, *well_name*. This key
 can be either **Vertical** or **Recirc**. The value **Vertical**
@@ -4544,6 +4589,42 @@ ParFlow binary file.
 
       <runname>.Solver.PrintSaturation = False  ## Python syntax
 
+*string* **Solver.PrintQxOverland** False This key is used to turn on
+printing of the x-direction overland flow data. The printing of the data is 
+controlled by values in the timing information section. The data is written 
+as a 2D ParFlow binary file with dimensions [NY, NX]. The values represent 
+the x-direction surface flow velocity (ke_) in m/hr. For OverlandKinematic 
+and OverlandDiffusive, values are located at cell edges (x-faces). For 
+OverlandFlow, values are located at cell centers. To convert to volumetric 
+flux, multiply by dy and dt. This key produces files in the format 
+``<runname>.out.qx_overland.00000.pfb``.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.PrintQxOverland True           ## TCL syntax
+
+      <runname>.Solver.PrintQxOverland = True     ## Python syntax
+
+*string* **Solver.PrintQyOverland** False This key is used to turn on
+printing of the y-direction overland flow data. The printing of the data is 
+controlled by values in the timing information section. The data is written 
+as a 2D ParFlow binary file with dimensions [NY, NX]. The values represent 
+the y-direction surface flow velocity (kn_) in m/hr. For OverlandKinematic 
+and OverlandDiffusive, values are located at cell edges (y-faces). For 
+OverlandFlow, values are located at cell centers. To convert to volumetric 
+flux, multiply by dx and dt. This key produces files in the format 
+``<runname>.out.qy_overland.00000.pfb``.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.PrintQyOverland True           ## TCL syntax
+
+      <runname>.Solver.PrintQyOverland = True     ## Python syntax
+
 *string* **Solver.PrintConcentration** True This key is used to turn on
 printing of the concentration data. The printing of the data is
 controlled by values in the timing information section. The data is
@@ -4688,6 +4769,36 @@ information section.
       pfset Solver.WriteSiloVelocities True           ## TCL syntax
 
       <runname>.Solver.WriteSiloVelocities = True     ## Python syntax
+
+*string* **Solver.WriteSiloQxOverland** False This key is used to
+specify printing of the x-direction overland flow data in silo binary format.
+The printing of the data is controlled by values in the timing information 
+section. The values represent x-direction surface flow velocity (ke_) in m/hr. 
+For OverlandKinematic and OverlandDiffusive, values are located at cell edges 
+(x-faces). For OverlandFlow, values are located at cell centers.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WriteSiloQxOverland True           ## TCL syntax
+
+      <runname>.Solver.WriteSiloQxOverland = True     ## Python syntax
+
+*string* **Solver.WriteSiloQyOverland** False This key is used to
+specify printing of the y-direction overland flow data in silo binary format.
+The printing of the data is controlled by values in the timing information 
+section. The values represent y-direction surface flow velocity (kn_) in m/hr. 
+For OverlandKinematic and OverlandDiffusive, values are located at cell edges 
+(y-faces). For OverlandFlow, values are located at cell centers.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WriteSiloQyOverland True           ## TCL syntax
+
+      <runname>.Solver.WriteSiloQyOverland = True     ## Python syntax
 
 *string* **Solver.WriteSiloSlopes** False This key is used to specify
 printing of the x and y slope data using silo binary format. The
@@ -4892,6 +5003,38 @@ an (i,j) column does not intersect the domain.
       pfset Solver.WritePDIVelocities  True            ## TCL syntax
 
       <runname>.Solver.WritePDIVelocities = True       ## Python syntax
+
+*string* **Solver.WritePDIQxOverland** False This key is used to specify exposure of
+      x-direction overland flow data to PDI library. The values represent x-direction 
+      surface flow velocity (ke_) in m/hr. For OverlandKinematic and OverlandDiffusive, 
+      values are located at cell edges (x-faces). For OverlandFlow, values are located 
+      at cell centers. The data exposure is controlled by values in the timing 
+      information section and is subsequently managed by the PDI plugin according to 
+      the specification tree defined in conf.yaml.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WritePDIQxOverland  True            ## TCL syntax
+
+      <runname>.Solver.WritePDIQxOverland = True       ## Python syntax
+
+*string* **Solver.WritePDIQyOverland** False This key is used to specify exposure of
+      y-direction overland flow data to PDI library. The values represent y-direction 
+      surface flow velocity (kn_) in m/hr. For OverlandKinematic and OverlandDiffusive, 
+      values are located at cell edges (y-faces). For OverlandFlow, values are located 
+      at cell centers. The data exposure is controlled by values in the timing 
+      information section and is subsequently managed by the PDI plugin according to 
+      the specification tree defined in conf.yaml.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.WritePDIQyOverland  True            ## TCL syntax
+
+      <runname>.Solver.WritePDIQyOverland = True       ## Python syntax
 
 *string* **Solver.WritePDISaturation** False This key is used to specify exposre of
       the saturation data to PDI library. The data exposure is controlled by
@@ -5451,6 +5594,16 @@ help with slope errors and issues and provides some diagnostic information.  The
 
       pfset Solver.SurfacePredictor.PrintValues        True        ## TCL syntax
       <runname>.Solver.SurfacePredictor.PrintValue  = "True"    ## Python syntax
+
+
+*logical* **Solver.SurfacePredictor.LateralFlows** False This key enables the use of overland flow lateral fluxes (qx_overland and qy_overland) in the surface predictor water balance calculation. When enabled, the predictor uses these surface flow values in addition to the subsurface fluxes to compute lateral flux divergence at the land surface. This improves the surface predictor's ability to estimate when ponding will occur by accounting for lateral redistribution of surface water.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.SurfacePredictor.LateralFlows        True        ## TCL syntax
+      <runname>.Solver.SurfacePredictor.LateralFlows  = "True"    ## Python syntax
 
 
 *logical* **Solver.EvapTransFile** False This key specifies specifies
@@ -6200,6 +6353,590 @@ to be active.
    <runname>.Solver.CLM.UseSlopeAspect = True   ## Python syntax
 
 
+.. _CLM Snow Parameterization:
+
+CLM Snow Parameterization
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+These keys control snow physics options for improved snow modeling.
+All keys default to backward-compatible behavior when not set.
+Note that ``CLM`` must be compiled and linked at runtime for these
+options to be active.
+
+**Rain-Snow Partitioning**
+
+Standard ``CLM`` uses air temperature to partition precipitation into rain
+and snow. However, falling hydrometeors cool via evaporation, making
+wet-bulb temperature a better predictor, especially in dry mountain
+climates where snow can persist at air temperatures above 0°C.
+Reference: :cite:p:`Wang2019`.
+
+*string* **Solver.CLM.SnowPartition** CLM Selects the method for
+partitioning precipitation into rain and snow. The valid types for
+this key are **CLM**, **WetbulbThreshold**, **WetbulbLinear**, **Dai**, **Jennings**.
+
+**CLM**:
+   Standard air temperature threshold with linear transition (default).
+   Uses configurable SnowTLow and SnowTHigh thresholds.
+
+**WetbulbThreshold**:
+   Sharp threshold at wet-bulb temperature. Better for dry mountain climates.
+
+**WetbulbLinear**:
+   Linear transition around wet-bulb temperature threshold.
+   Uses configurable SnowTransitionWidth for transition zone.
+
+**Dai**:
+   Sigmoidal function of air temperature from :cite:p:`Dai2008`.
+   Uses configurable DaiCoeffA/B/C/D coefficients.
+
+**Jennings**:
+   Bivariate logistic regression with air temperature and relative humidity
+   from :cite:p:`Jennings2018`. Uses configurable JenningsCoeffA/B/G coefficients.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowPartition "Dai"         ## TCL syntax
+      <runname>.Solver.CLM.SnowPartition = "Dai"   ## Python syntax
+
+*double* **Solver.CLM.SnowTCrit** 2.5 Initial classification threshold
+above freezing (K) for determining precipitation type in drv_getforce.
+If air temperature exceeds tfrz + SnowTCrit, precipitation is initially
+classified as rain. Default 2.5 K matches the hardcoded CLM value.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowTCrit 2.5         ## TCL syntax
+      <runname>.Solver.CLM.SnowTCrit = 2.5   ## Python syntax
+
+*double* **Solver.CLM.SnowTLow** 273.16 CLM method lower temperature
+threshold (K) below which all precipitation is snow. Default 273.16 K (freezing).
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowTLow 273.16         ## TCL syntax
+      <runname>.Solver.CLM.SnowTLow = 273.16   ## Python syntax
+
+*double* **Solver.CLM.SnowTHigh** 275.16 CLM method upper temperature
+threshold (K) above which the liquid fraction reaches maximum (40%).
+Default 275.16 K (tfrz + 2).
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowTHigh 275.16         ## TCL syntax
+      <runname>.Solver.CLM.SnowTHigh = 275.16   ## Python syntax
+
+*double* **Solver.CLM.SnowTransitionWidth** 1.0 WetbulbLinear method
+half-width (K) of transition zone. Transition spans threshold +/- this value.
+Default 1.0 K for 2K total range.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowTransitionWidth 1.0         ## TCL syntax
+      <runname>.Solver.CLM.SnowTransitionWidth = 1.0   ## Python syntax
+
+*double* **Solver.CLM.WetbulbThreshold** 274.15 Threshold temperature in
+Kelvin for wetbulb partitioning methods. Default 274.15 K (1°C). Only
+used when ``Solver.CLM.SnowPartition`` is ``WetbulbThreshold`` or
+``WetbulbLinear``.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.WetbulbThreshold 274.15         ## TCL syntax
+      <runname>.Solver.CLM.WetbulbThreshold = 274.15   ## Python syntax
+
+**Dai Coefficients**
+
+The Dai (2008) method uses a hyperbolic tangent function fitted to 30 years
+of global weather station observations. Reference: :cite:p:`Dai2008`.
+
+Formula: F(%) = a * [tanh(b*(T-c)) - d], where T is in Celsius.
+Defaults are from Table 1a (Land, annual) of Dai (2008).
+
+*double* **Solver.CLM.DaiCoeffA** -48.2292 Dai coefficient a (scaling factor, negative).
+
+*double* **Solver.CLM.DaiCoeffB** 0.7205 Dai coefficient b (slope at half-frequency T).
+
+*double* **Solver.CLM.DaiCoeffC** 1.1662 Dai coefficient c (half-frequency temperature in C,
+where snow probability is ~50%).
+
+*double* **Solver.CLM.DaiCoeffD** 1.0223 Dai coefficient d (asymmetry parameter, ~1.0).
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.DaiCoeffA -48.2292         ## TCL syntax
+      <runname>.Solver.CLM.DaiCoeffA = -48.2292   ## Python syntax
+
+**Jennings Coefficients**
+
+The Jennings (2018) method uses bivariate logistic regression:
+psnow = 1 / (1 + exp(a + b*T + g*RH)), where T is in Celsius and RH in percent.
+
+*double* **Solver.CLM.JenningsCoeffA** -10.04 Jennings intercept coefficient.
+
+*double* **Solver.CLM.JenningsCoeffB** 1.41 Jennings temperature coefficient.
+
+*double* **Solver.CLM.JenningsCoeffG** 0.09 Jennings relative humidity coefficient.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.JenningsCoeffA -10.04         ## TCL syntax
+      <runname>.Solver.CLM.JenningsCoeffA = -10.04   ## Python syntax
+
+**Thin Snow Damping**
+
+Thin early-season snowpacks can experience spurious melt due to warm
+ground heat flux. This option reduces melt energy for shallow snowpacks
+to prevent premature ablation.
+
+*double* **Solver.CLM.ThinSnowDamping** 1.0 Fraction of melt energy
+retained for thin snowpacks. A value of 1.0 means no damping (default,
+backward compatible). A value of 0.1 means only 10% of melt energy is
+applied (90% reduction).
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.ThinSnowDamping 0.3         ## TCL syntax
+      <runname>.Solver.CLM.ThinSnowDamping = 0.3   ## Python syntax
+
+*double* **Solver.CLM.ThinSnowThreshold** 50.0 Snow water equivalent
+threshold in mm below which thin snow damping applies.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.ThinSnowThreshold 50.0         ## TCL syntax
+      <runname>.Solver.CLM.ThinSnowThreshold = 50.0   ## Python syntax
+
+**SZA-Based Snow Damping**
+
+CLM's narrowband snow optical parameters are computed assuming a solar
+zenith angle (SZA) of 60 degrees. At higher zenith angles, actual snow
+albedo is higher than CLM assumes, meaning less energy should be available
+for melt. This is particularly relevant for high-latitude sites during
+accumulation season. Reference: :cite:p:`Dang2019`.
+
+*double* **Solver.CLM.SZASnowDamping** 1.0 Fraction of melt energy
+retained at high solar zenith angles. A value of 1.0 means no damping
+(default, disabled). A value of 0.8 means 20% energy reduction at high SZA.
+Damping varies linearly with cosine of zenith angle between the reference
+and minimum thresholds.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SZASnowDamping 0.8         ## TCL syntax
+      <runname>.Solver.CLM.SZASnowDamping = 0.8   ## Python syntax
+
+*double* **Solver.CLM.SZADampingCoszenRef** 0.5 Reference cosine of solar
+zenith angle below which SZA damping applies. Default 0.5 corresponds to
+SZA of 60 degrees (matching CLM's assumption for optical parameters).
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SZADampingCoszenRef 0.5         ## TCL syntax
+      <runname>.Solver.CLM.SZADampingCoszenRef = 0.5   ## Python syntax
+
+*double* **Solver.CLM.SZADampingCoszenMin** 0.1 Cosine of solar zenith
+angle at which maximum SZA damping applies. Default 0.1 corresponds to
+SZA of approximately 84 degrees. Must be less than SZADampingCoszenRef.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SZADampingCoszenMin 0.1         ## TCL syntax
+      <runname>.Solver.CLM.SZADampingCoszenMin = 0.1   ## Python syntax
+
+Note: Both thin snow damping and SZA damping can be enabled simultaneously.
+When both are active, they combine multiplicatively.
+
+**Albedo Schemes**
+
+Snow albedo controls the radiation balance and strongly influences melt
+timing. Three schemes are available:
+
+*string* **Solver.CLM.AlbedoScheme** CLM Snow albedo calculation method.
+The valid types for this key are **CLM**, **VIC**, **Tarboton**.
+
+**CLM**:
+   Age-based exponential decay using the snowage variable (default).
+
+**VIC**:
+   Separate decay rates for cold (accumulating) and warm (melting)
+   conditions based on ground temperature. Reference: :cite:p:`Andreadis2009`.
+
+**Tarboton**:
+   Arrhenius temperature-dependent aging where decay accelerates near
+   the melting point. Reference: :cite:p:`Tarboton1996`.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoScheme "Tarboton"         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoScheme = "Tarboton"   ## Python syntax
+
+*double* **Solver.CLM.AlbedoVisNew** 0.95 Fresh snow visible-band albedo.
+Physically ranges 0.85-0.98.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoVisNew 0.95         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoVisNew = 0.95   ## Python syntax
+
+*double* **Solver.CLM.AlbedoNirNew** 0.65 Fresh snow near-infrared albedo.
+Physically ranges 0.5-0.7.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoNirNew 0.65         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoNirNew = 0.65   ## Python syntax
+
+*double* **Solver.CLM.AlbedoMin** 0.4 Minimum snow albedo floor for aged
+or dirty snow.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoMin 0.4         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoMin = 0.4   ## Python syntax
+
+*double* **Solver.CLM.AlbedoDecayVis** 0.5 Visible albedo decay coefficient
+for ``CLM`` and ``Tarboton`` schemes.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoDecayVis 0.5         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoDecayVis = 0.5   ## Python syntax
+
+*double* **Solver.CLM.AlbedoDecayNir** 0.2 NIR albedo decay coefficient
+for ``CLM`` and ``Tarboton`` schemes. NIR typically decays faster than visible.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoDecayNir 0.2         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoDecayNir = 0.2   ## Python syntax
+
+*double* **Solver.CLM.AlbedoAccumA** 0.94 VIC scheme cold-phase
+(accumulation) decay base per hour. Should be greater than ``AlbedoThawA``.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoAccumA 0.94         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoAccumA = 0.94   ## Python syntax
+
+*double* **Solver.CLM.AlbedoThawA** 0.82 VIC scheme melt-phase decay base
+per hour. Should be less than ``AlbedoAccumA`` since melt conditions age
+snow faster.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.AlbedoThawA 0.82         ## TCL syntax
+      <runname>.Solver.CLM.AlbedoThawA = 0.82   ## Python syntax
+
+**Snow Age VIS/NIR Parameters**
+
+The BATS snow aging scheme uses three physical processes (grain growth,
+dirt/soot accumulation, and fresh snow reset) to evolve a dimensionless
+snow age variable that controls albedo decay. By default, VIS and NIR
+bands share the same aging parameters. These keys allow independent
+calibration of VIS and NIR aging rates, following :cite:p:`AbolafiaRosenzweig2022`
+who found that VIS and NIR bands require different aging parameters for
+Western US snowpacks.
+
+*double* **Solver.CLM.SnowAgeTau0Vis** 1.0e6 VIS band snow age e-folding
+time [s]. Controls the rate of snow aging for visible albedo decay.
+Larger values produce slower aging. Default matches original CLM
+hardcoded value. AR2022 optimal for WUS: 3.05e6 s.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeTau0Vis 3.05e6         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeTau0Vis = 3.05e6   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeTau0Nir** 1.0e6 NIR band snow age e-folding
+time [s]. Controls the rate of snow aging for near-infrared albedo decay.
+Larger values produce slower aging. Default matches original CLM
+hardcoded value. AR2022 optimal for WUS: 5.29e5 s (faster aging than VIS).
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeTau0Nir 5.29e5         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeTau0Nir = 5.29e5   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeGrainGrowthVis** 5000.0 VIS band grain growth
+activation energy factor [K]. Controls temperature dependence of snow
+aging for visible albedo. Larger values produce stronger temperature
+sensitivity. Default matches original CLM hardcoded value.
+AR2022 optimal for WUS: 9287 K.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeGrainGrowthVis 9287.0         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeGrainGrowthVis = 9287.0   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeGrainGrowthNir** 5000.0 NIR band grain growth
+activation energy factor [K]. Controls temperature dependence of snow
+aging for NIR albedo. Larger values produce stronger temperature
+sensitivity. Default matches original CLM hardcoded value.
+AR2022 optimal for WUS: 7715 K.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeGrainGrowthNir 7715.0         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeGrainGrowthNir = 7715.0   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeDirtSootVis** 0.3 VIS band dirt/soot aging
+factor [-]. Represents background aging from contaminant accumulation on
+the snow surface. Default matches original CLM hardcoded value.
+AR2022 optimal for WUS: 0.25.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeDirtSootVis 0.25         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeDirtSootVis = 0.25   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeDirtSootNir** 0.3 NIR band dirt/soot aging
+factor [-]. Represents background aging from contaminant accumulation on
+the snow surface. Contaminants are less absorbing in the NIR, so this
+value is typically lower than the VIS counterpart. Default matches
+original CLM hardcoded value. AR2022 optimal for WUS: 0.11.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeDirtSootNir 0.11         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeDirtSootNir = 0.11   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeResetFactor** 0.1 Fresh snow age reset rate
+[-]. Controls how much new snowfall resets snow age toward zero. Larger
+values produce faster age reset with fresh snowfall. Default matches
+original CLM hardcoded value (BATS formulation,
+:cite:p:`Dickinson1993`).
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeResetFactor 0.1         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeResetFactor = 0.1   ## Python syntax
+
+**Fractional Snow Cover**
+
+The fractional snow covered area (frac_sno) affects surface energy balance
+by weighting snow and bare ground contributions. The CLM formulation uses
+a tanh-like relationship with snow depth and surface roughness.
+
+*string* **Solver.CLM.FracSnoScheme** CLM Selects the fractional snow cover
+calculation method.
+
+**CLM**:
+   Standard formulation: frac_sno = snowdp / (10*roughness + snowdp),
+   using FracSnoRoughness as the roughness length.
+
+**SZA**:
+   SZA-modulated formulation that interpolates the effective roughness
+   between FracSnoRoughnessMin and FracSnoRoughnessMax using a power-law
+   weight w = coszen_avg^GammaSZA, creating a continuous energy-driven
+   accumulation/melt asymmetry in fractional snow cover. Naturally
+   latitude-aware.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FracSnoScheme "CLM"         ## TCL syntax
+      <runname>.Solver.CLM.FracSnoScheme = "CLM"   ## Python syntax
+
+*double* **Solver.CLM.FracSnoRoughness** 0.01 Roughness length scale for
+fractional snow cover calculation [m]. Used by FracSnoScheme=CLM (case 0).
+Default 0.01 m matches CLM's zlnd parameter for backward compatibility.
+Larger values reduce snow cover fraction for a given snow depth.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FracSnoRoughness 0.01         ## TCL syntax
+      <runname>.Solver.CLM.FracSnoRoughness = 0.01   ## Python syntax
+
+*double* **Solver.CLM.FracSnoRoughnessMin** 1.0e-8 Minimum effective
+roughness length for SZA-modulated fractional snow cover [m]. Used by
+FracSnoScheme=SZA. At low sun angles (small coszen_avg), the
+effective roughness approaches this value, yielding higher frac_sno.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FracSnoRoughnessMin 1.0e-8       ## TCL syntax
+      <runname>.Solver.CLM.FracSnoRoughnessMin = 1.0e-8  ## Python syntax
+
+*double* **Solver.CLM.FracSnoRoughnessMax** 0.2 Maximum effective
+roughness length for SZA-modulated fractional snow cover [m]. Used by
+FracSnoScheme=SZA. At high sun angles (large coszen_avg), the
+effective roughness approaches this value, yielding lower frac_sno.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FracSnoRoughnessMax 0.2           ## TCL syntax
+      <runname>.Solver.CLM.FracSnoRoughnessMax = 0.2     ## Python syntax
+
+*double* **Solver.CLM.FracSnoGammaSZA** 4.0 Power-law exponent for the SZA
+interpolation weight w = coszen_avg^GammaSZA in fractional snow cover when
+FracSnoScheme=SZA. Higher values sharpen the transition between min and max
+roughness. Dimensionless.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FracSnoGammaSZA 4.0             ## TCL syntax
+      <runname>.Solver.CLM.FracSnoGammaSZA = 4.0       ## Python syntax
+
+*double* **Solver.CLM.FracSnoAvgWindow** 72.0 Exponential moving average
+window for smoothed cos(SZA) [hours]. Used by FracSnoScheme=SZA to prevent
+diurnal artifacts in fractional snow cover. Typical range 48-96 hours.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FracSnoAvgWindow 72.0           ## TCL syntax
+      <runname>.Solver.CLM.FracSnoAvgWindow = 72.0     ## Python syntax
+
+**ET Formulation Improvements**
+
+These keys improve CLM's evapotranspiration calculations. Default values
+reproduce original CLM3 behavior for backward compatibility. PFT-dependent
+photosynthesis parameters (vcmx25, c3psn, mp, bp, qe25, folnmx) can be
+provided in drv_vegp.dat; when detected, improved stomata physics
+(dark respiration, smooth colimitation, niter=5) activates automatically.
+
+*double* **Solver.CLM.InterceptionFpiMax** 0.25 Maximum interception
+fraction coefficient. CLM3 default 0.25 caps canopy interception at 25%
+even for dense canopies. CLM5 uses higher values.
+Formula: fpi = InterceptionFpiMax * (1 - exp(-0.5*(LAI+SAI)))
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.InterceptionFpiMax 0.25           ## TCL syntax
+      <runname>.Solver.CLM.InterceptionFpiMax = 0.25     ## Python syntax
+
+*double* **Solver.CLM.FwetExponent** 0.6667 Power-law exponent for wet
+canopy fraction. CLM default 2/3. Lower values keep the canopy wet longer,
+increasing wet canopy evaporation.
+Formula: fwet = (h2ocan/(dewmx*LAI))^FwetExponent
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FwetExponent 0.6667               ## TCL syntax
+      <runname>.Solver.CLM.FwetExponent = 0.6667         ## Python syntax
+
+*string* **Solver.CLM.StomataScheme** BallBerry Selects the stomatal
+conductance model.
+
+**BallBerry**:
+   CLM3 default. Uses relative humidity in the conductance equation.
+
+**Medlyn**:
+   Medlyn et al. (2011) model. Uses vapor pressure deficit (VPD) instead
+   of relative humidity. Requires g1_medlyn parameter in drv_vegp.dat for
+   PFT-dependent slope values.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.StomataScheme BallBerry            ## TCL syntax
+      <runname>.Solver.CLM.StomataScheme = "BallBerry"   ## Python syntax
+
+*string* **Solver.CLM.InterceptionScheme** CLM3 Selects the canopy
+interception scheme.
+
+**CLM3**:
+   CLM3 default exponential formulation.
+   Formula: fpi = InterceptionFpiMax * (1 - exp(-0.5*(LAI+SAI)))
+   Asymptotes to InterceptionFpiMax (default 0.25) regardless of LAI.
+
+**CLM5Tanh**:
+   CLM5 tanh formulation (Lawrence et al. 2019).
+   Formula: fpi = InterceptionTanhAlpha * tanh(LAI+SAI)
+   Approaches InterceptionTanhAlpha (default 1.0) for LAI > 2, correcting
+   the CLM3 structural low bias in canopy interception for dense canopies.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.InterceptionScheme CLM3              ## TCL syntax
+      <runname>.Solver.CLM.InterceptionScheme = "CLM3"     ## Python syntax
+
+*double* **Solver.CLM.InterceptionTanhAlpha** 1.0 Scaling coefficient for
+CLM5 tanh interception scheme. Formula: fpi = alpha * tanh(LAI+SAI).
+Default 1.0 matches CLM5. Only used when InterceptionScheme is CLM5Tanh.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.InterceptionTanhAlpha 1.0             ## TCL syntax
+      <runname>.Solver.CLM.InterceptionTanhAlpha = 1.0      ## Python syntax
+
+
 .. _ParFlow NetCDF4 Parallel I/O:
 
 ParFlow NetCDF4 Parallel I/O
@@ -6259,6 +6996,32 @@ coefficients to be written in NetCDF4 file.
 
       pfset NetCDF.WriteMannings	    True    ## TCL syntax
       <runname>.NetCDF.WriteMannings = True  ## Python syntax
+
+*string* **NetCDF.WriteQxOverland** False This key sets x-direction 
+overland flow (qx_overland) to be written in NetCDF4 file. The values 
+represent x-direction surface flow velocity (ke_) in m/hr. For 
+OverlandKinematic and OverlandDiffusive, values are located at cell 
+edges (x-faces). For OverlandFlow, values are located at cell centers.
+
+.. container:: list
+
+   ::
+
+      pfset NetCDF.WriteQxOverland    True      ## TCL syntax
+      <runname>.NetCDF.WriteQxOverland = True   ## Python syntax
+
+*string* **NetCDF.WriteQyOverland** False This key sets y-direction 
+overland flow (qy_overland) to be written in NetCDF4 file. The values 
+represent y-direction surface flow velocity (kn_) in m/hr. For 
+OverlandKinematic and OverlandDiffusive, values are located at cell 
+edges (y-faces). For OverlandFlow, values are located at cell centers.
+
+.. container:: list
+
+   ::
+
+      pfset NetCDF.WriteQyOverland    True      ## TCL syntax
+      <runname>.NetCDF.WriteQyOverland = True   ## Python syntax
 
 *string* **NetCDF.WriteSubsurface** False This key sets subsurface
 data (permeabilities, porosity, specific storage) to be written in
