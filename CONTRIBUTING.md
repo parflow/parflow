@@ -215,9 +215,9 @@ error prone.
 
 ParFlow uses automated code formatters to check code as one of the
 checks in our CI system.  Incorrectly formatted code will fail the
-check and won't be merged.  The check is done using Uncrustify for C
-and Black for Python.  A script is provided to automatically reformat 
-code and do the check.
+check and won't be merged.  The check is done using Uncrustify for
+C/C++, Black for Python and gersemi for CMake.  A script is provided
+to automatically reformat code and do the check.
 
 To check if the coding style is correct run the pfformat script at the 
 root of the PF source tree:
@@ -234,18 +234,16 @@ cd parflow
 ./bin/pfformat
 ```
 
-You must have installed **Uncrustify version 0.79.0** in order for this to
-work.  For Python, ParFlow uses the **Black code formatter pinned to
-version 26.3.1**.  Black is installed into the ParFlow Python
-environment during installation, so you normally don't need to install
-it manually, but if you do you should ensure that you are using
-**Black 26.3.1** to match the version used in CI.
+The pfformat command uses an installed Python environment and 
+should get the correct versions of the formatting tools.
 
 Information and source on these tools can be found here:
 
 [Uncrustify](https://github.com/uncrustify/uncrustify)
 
 [Black](https://github.com/psf/black)
+
+[gersemi](https://github.com/BlankSpruce/gersemi)
 
 ### Why auto code formatting?
 
