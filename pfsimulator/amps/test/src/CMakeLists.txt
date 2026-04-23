@@ -78,6 +78,7 @@ foreach(test ${ALL_TESTS})
   endif (${PARFLOW_HAVE_MPI})
 endforeach()
 
+
 foreach(test ${SEQUENTIAL_TESTS})
   pf_add_amps_sequential_test(${test} 1)
 endforeach()
