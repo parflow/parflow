@@ -11,35 +11,7 @@
 - Optimization of the pftools code: fixing issues related to dask, code refactoring, and reducing the number of reads.
 - Handling of NaN values.
 
-The library also includes [dask](https://www.dask.org/) wrappers for the [hydrology](https://github.com/parflow/parflow/blob/master/pftools/python/parflow/tools/hydrology.py) functions of pftools and other functions for processing with xarray in `pfb_backend.xarray_utils`. 
-
-## Installation
-
-### Basic
-
-```bash
-pip install git+https://gricad-gitlab.univ-grenoble-alpes.fr/phyrev/public/pfb_backend.git
-```
-
-or
-
-```bash
-pip install git+git@gricad-gitlab.univ-grenoble-alpes.fr:phyrev/public/pfb_backend.git
-```
-
-### Developer
-
-- Clone
-```bash
-git clone https://gricad-gitlab.univ-grenoble-alpes.fr/phyrev/public/pfb_backend.git
-```
-
-- Install
-
-```bash
-cd pfb_backend
-pip install -e .
-```
+The library also includes [dask](https://www.dask.org/) wrappers for the [hydrology](https://github.com/parflow/parflow/blob/master/pftools/python/parflow/tools/hydrology.py) functions of pftools and other functions for processing with xarray in `parflow.tools.backend.xarray_utils`.
 
 ## Usage
 
@@ -136,7 +108,7 @@ In particular, in `pyproject.toml`, the following lines enable the installation 
 
 ```script
 [project.entry-points.“xarray.backends”]
-pf_ige = “pfb_backend.backend:ParflowBackendEntrypoint”
+pf_ige = "parflow.tools.backend.backend:ParflowBackendEntrypoint"
 ```
 
 An engine is based on the creation of a class that inherits (child class) from the `BackendEntrypoint` class of xarray.
