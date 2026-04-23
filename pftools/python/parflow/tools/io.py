@@ -25,6 +25,7 @@ import itertools
 import json
 from pathlib import Path
 import shutil
+from .util import read_start_stop_n
 
 try:
     from numba import jit, njit
@@ -130,15 +131,9 @@ def read_pfb(
             data = pfb.read_all_subgrids(mode=mode, z_first=z_first)
         else:
             base_header = pfb.header
-            start_x = keys.get("x", {}).get("start", None) or 0
-            start_y = keys.get("y", {}).get("start", None) or 0
-            start_z = keys.get("z", {}).get("start", None) or 0
-            stop_x = keys.get("x", {}).get("stop", None) or base_header["nx"]
-            stop_y = keys.get("y", {}).get("stop", None) or base_header["ny"]
-            stop_z = keys.get("z", {}).get("stop", None) or base_header["nz"]
-            nx = np.max([stop_x - start_x, 1])
-            ny = np.max([stop_y - start_y, 1])
-            nz = np.max([stop_z - start_z, 1])
+            start_x, stop_x, nx = read_start_stop_n(keys, "x", 0, base_header["nx"])
+            start_y, stop_y, ny = read_start_stop_n(keys, "y", 0, base_header["ny"])
+            start_z, stop_z, nz = read_start_stop_n(keys, "z", 0, base_header["nz"])
             data = pfb.read_subarray(
                 start_x, start_y, start_z, nx, ny, nz, z_first=z_first
             )

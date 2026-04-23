@@ -47,6 +47,7 @@ Documentation = "https://parflow.readthedocs.io/en/latest/"
 
 [project.entry-points."xarray.backends"]
 parflow = "parflow.tools.pf_backend:ParflowBackendEntrypoint"
+pf_ige = "parflow.tools.backend.backend:ParflowBackendEntrypoint"
 
 [tool.setuptools.packages.find]
 where = ["."]

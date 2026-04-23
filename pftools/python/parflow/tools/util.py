@@ -19,6 +19,13 @@ def _check_key_is_empty(key: slice) -> bool:
     return False
 
 
+def read_start_stop_n(dic: dict, dim: str, default_start, default_stop) -> tuple[int, int, int]:
+    dim_dict = dic.get(dim, {}) # Little trick here
+    start = dim_dict.get("start", default_start)
+    stop = dim_dict.get("stop", default_stop)
+    return start, stop, max(stop - start, 1)
+
+
 def _key_to_explicit_accessor(key: Union[slice, int, Iterable]) -> dict:
     """
     Unifies key accessor types for simpler indexing on xarray datasets.
@@ -32,9 +39,9 @@ def _key_to_explicit_accessor(key: Union[slice, int, Iterable]) -> dict:
         xarray selectors.
     """
     if isinstance(key, slice):
-        start = key.start if key.start is not None else 0
-        stop = key.stop + 1 if key.stop is not None else -1
-        needs_squeeze = (stop - start) == 1
+        needs_squeeze = False
+        if key.stop is not None and key.start is not None:
+            needs_squeeze = (key.stop - key.start) == 1
         accessor = {
             "start": key.start,
             "stop": key.stop,
@@ -55,4 +62,6 @@ def _key_to_explicit_accessor(key: Union[slice, int, Iterable]) -> dict:
             "indices": np.array(key) - np.min(key),
             "squeeze": False,
         }
+    else:
+        raise ValueError(f"Unknown type of key: {key} (type={type(key)})")
     return accessor
