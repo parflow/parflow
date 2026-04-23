@@ -19,8 +19,10 @@ def _check_key_is_empty(key: slice) -> bool:
     return False
 
 
-def read_start_stop_n(dic: dict, dim: str, default_start, default_stop) -> tuple[int, int, int]:
-    dim_dict = dic.get(dim, {}) # Little trick here
+def read_start_stop_n(
+    dic: dict, dim: str, default_start, default_stop
+) -> tuple[int, int, int]:
+    dim_dict = dic.get(dim, {})  # Little trick here
     start = dim_dict.get("start", default_start)
     stop = dim_dict.get("stop", default_stop)
     return start, stop, max(stop - start, 1)

@@ -13,7 +13,8 @@ from parflow.tools.backend.header import Header
 
 
 class Run(BaseRun):
-    """ Run from parflow but without loading CLM files """
+    """Run from parflow but without loading CLM files"""
+
     @classmethod
     def from_definition(cls, file_path):
         """Method to generate a Run object from a file.
@@ -33,34 +34,31 @@ class Run(BaseRun):
         file_path = Path(get_absolute_path(file_path))
         name, ext = file_path.stem, file_path.suffix[1:]
 
-        ext_map = {
-            'yaml': 'yaml_file',
-            'yml': 'yaml_file',
-            'pfidb': 'pfidb_file'
-        }
+        ext_map = {"yaml": "yaml_file", "yml": "yaml_file", "pfidb": "pfidb_file"}
 
         if ext not in ext_map:
-            raise Exception(f'Unknown extension: {ext}')
+            raise Exception(f"Unknown extension: {ext}")
 
         new_run = cls(name, file_path)
         kwargs = {ext_map[ext]: file_path}
         new_run.pfset(silence_if_undefined=True, **kwargs)
 
         # Try to solve order sensitive property settings
-        while '_pfstore_' in new_run.__dict__:
-            invalid_props = new_run.__dict__.pop('_pfstore_')
+        while "_pfstore_" in new_run.__dict__:
+            invalid_props = new_run.__dict__.pop("_pfstore_")
             previous_size = len(invalid_props)
             for key, value in invalid_props.items():
                 new_run.pfset(key, value, silence_if_undefined=True)
 
             # Break if no key was able to be mapped outside pfstore
-            if ('_pfstore_' in new_run.__dict__ and
-                    previous_size == len(new_run.__dict__['_pfstore_'])):
+            if "_pfstore_" in new_run.__dict__ and previous_size == len(
+                new_run.__dict__["_pfstore_"]
+            ):
                 break
 
         # Print any remaining key with no mapping
-        if '_pfstore_' in new_run.__dict__:
-            invalid_props = new_run.__dict__.pop('_pfstore_')
+        if "_pfstore_" in new_run.__dict__:
+            invalid_props = new_run.__dict__.pop("_pfstore_")
             for key, value in invalid_props.items():
                 new_run.pfset(key, value)
 
@@ -77,7 +75,8 @@ class Run(BaseRun):
 
 @dataclass
 class TimeInfo:
-    """ Used by the backend to transmit temporal information to handlers.  """
+    """Used by the backend to transmit temporal information to handlers."""
+
     start_date: np.datetime64
     time_shift: float
     default_forcing_ts: int
@@ -89,6 +88,7 @@ class PfbInfo:
     """
     Class associated with a pfb file that allows various information (name, simulation, etc.) to be associated with it.
     """
+
     def __init__(self, filename: str, pfidb: Optional[str] = None):
         self.filename = filename
         self.name: Optional[str] = None
@@ -167,7 +167,10 @@ class AbstractSelector:
         if self.selection is None:
             return
 
-        print(f"{self.__class__.__name__}: {self.count_accepted}/{self.count_tested} files accepted (arg=\"{self.selection})\"")
+        print(
+            f'{self.__class__.__name__}: {self.count_accepted}/{self.count_tested} files accepted (arg="{self.selection})"'
+        )
+
 
 class DropVariables(AbstractSelector):
     def _is_accepted(self, pfb_info: PfbInfo) -> bool:
@@ -176,12 +179,14 @@ class DropVariables(AbstractSelector):
 
         return not any(name.lower() in pfb_info.name for name in self.selection)
 
+
 class SelectVariables(AbstractSelector):
     def _is_accepted(self, pfb_info: PfbInfo) -> bool:
         if self.selection is None:
             return True
 
         return any(name.lower() in pfb_info.name for name in self.selection)
+
 
 class SelectSimulation(AbstractSelector):
     def __init__(self, selection: Optional[str | list[str]]):
@@ -203,14 +208,20 @@ class SelectSimulation(AbstractSelector):
         print(f"Found files for simulations: {self.simulations}")
         super().print_stats()
 
+
 class VariableSelector:
-    """ Filter for selecting variables compatible with the dataset parameters.  """
-    def __init__(self, select_variables: Optional[str | list[str]], select_sim: Optional[str],
-                 drop_variables: Optional[str | list[str]]):
+    """Filter for selecting variables compatible with the dataset parameters."""
+
+    def __init__(
+        self,
+        select_variables: Optional[str | list[str]],
+        select_sim: Optional[str],
+        drop_variables: Optional[str | list[str]],
+    ):
         self.selectors: list[AbstractSelector] = [
             SelectVariables(select_variables),
             SelectSimulation(select_sim),
-            DropVariables(drop_variables)
+            DropVariables(drop_variables),
         ]
 
     def is_accepted(self, pfb_info: PfbInfo) -> bool:

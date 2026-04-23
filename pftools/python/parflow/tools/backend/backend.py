@@ -6,15 +6,31 @@ import xarray as xr
 import numpy as np
 from xarray.backends import BackendEntrypoint
 
-from parflow.tools.backend.generic import PfbInfo, TimeInfo, Run, VariableSelector, LoadingOption
-from parflow.tools.backend.handler import FileHandler, InputHandler, OutputHandler, ClmOutputHandler, TemporalOutputHandler, ForcingHandler, verbose_merge
+from parflow.tools.backend.generic import (
+    PfbInfo,
+    TimeInfo,
+    Run,
+    VariableSelector,
+    LoadingOption,
+)
+from parflow.tools.backend.handler import (
+    FileHandler,
+    InputHandler,
+    OutputHandler,
+    ClmOutputHandler,
+    TemporalOutputHandler,
+    ForcingHandler,
+    verbose_merge,
+)
 
 
 def is_pfb(s: str) -> bool:
-    return os.path.isfile(s) and s.endswith('.pfb')
+    return os.path.isfile(s) and s.endswith(".pfb")
+
 
 def is_pfidb(s: str) -> bool:
-    return os.path.isfile(s) and s.endswith('.pfidb')
+    return os.path.isfile(s) and s.endswith(".pfidb")
+
 
 def is_seq(seq: list[str], func: Callable[[str], bool]) -> bool:
     return all(func(element) for element in seq)
@@ -44,16 +60,26 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         "output": OutputHandler,
         "clm": ClmOutputHandler,
         "temporal_output": TemporalOutputHandler,
-        "forcing": ForcingHandler
+        "forcing": ForcingHandler,
     }
 
-    def open_dataset(self, filename_or_obj: str | list[str], *, drop_variables = None,
-                     start_date: str | np.datetime64 = "2000-01-01",
-                     default_forcing_ts: int = 1800, default_clm_ts: int = 10800, default_output_ts: int = 10800,
-                     time_label: Literal["right", "left", "center"] = "right",
-                     select_types: Optional[str | list[str]] = None, select_variables: Optional[list[str]] = None,
-                     select_sim: Optional[str] = None, z_first: bool = True, replace_fill_value: bool = True,
-                     compute_time: bool = True) -> xr.Dataset:
+    def open_dataset(
+        self,
+        filename_or_obj: str | list[str],
+        *,
+        drop_variables=None,
+        start_date: str | np.datetime64 = "2000-01-01",
+        default_forcing_ts: int = 1800,
+        default_clm_ts: int = 10800,
+        default_output_ts: int = 10800,
+        time_label: Literal["right", "left", "center"] = "right",
+        select_types: Optional[str | list[str]] = None,
+        select_variables: Optional[list[str]] = None,
+        select_sim: Optional[str] = None,
+        z_first: bool = True,
+        replace_fill_value: bool = True,
+        compute_time: bool = True,
+    ) -> xr.Dataset:
         """
         :param filename_or_obj: PFB file, PFIDB file, or directory containing PFB (and possibly PFIDB) files or a list of one of these items.
         :param drop_variables: A variable or list of variables to exclude from being parsed from the dataset. This may be useful to drop variables with problems or inconsistent values.
@@ -76,10 +102,19 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
 
         time_shift = dict(right=0, center=-0.5, left=-1)[time_label]
 
-        time_info = TimeInfo(start_date=start_date, time_shift=time_shift, default_forcing_ts=default_forcing_ts,
-                             default_clm_ts=default_clm_ts, default_output_ts=default_output_ts)
+        time_info = TimeInfo(
+            start_date=start_date,
+            time_shift=time_shift,
+            default_forcing_ts=default_forcing_ts,
+            default_clm_ts=default_clm_ts,
+            default_output_ts=default_output_ts,
+        )
 
-        loading_option = LoadingOption(z_first=z_first, replace_fill_value=replace_fill_value, compute_time=compute_time)
+        loading_option = LoadingOption(
+            z_first=z_first,
+            replace_fill_value=replace_fill_value,
+            compute_time=compute_time,
+        )
 
         if isinstance(filename_or_obj, str):
             filename_or_obj = [filename_or_obj]
@@ -94,7 +129,9 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             pfbs = [PfbInfo(pfb) for pfb in filename_or_obj]
         elif is_seq(filename_or_obj, is_pfidb):
             for pfidb in filename_or_obj:
-                glob_pfbs = glob.glob(os.path.join(os.path.dirname(pfidb), "**/*.pfb"), recursive=True)
+                glob_pfbs = glob.glob(
+                    os.path.join(os.path.dirname(pfidb), "**/*.pfb"), recursive=True
+                )
                 pfbs += [PfbInfo(pfb, pfidb) for pfb in glob_pfbs]
         elif is_seq(filename_or_obj, os.path.isdir):
             for path in filename_or_obj:
@@ -106,7 +143,9 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         print(f"{len(pfbs)} file found!")
 
         # Register pfb files in corresponding handlers
-        handlers: dict[str, FileHandler] = {name: handler() for name, handler in self.handler_classes.items()}
+        handlers: dict[str, FileHandler] = {
+            name: handler() for name, handler in self.handler_classes.items()
+        }
         runs: dict[str, Run] = {}
 
         pfbs = sorted(pfbs, key=lambda x: x.filename)
@@ -118,17 +157,31 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             else:
                 print(f"No handler found for: {pfb_info.filename}")
 
-        print("Files per handler:", {name: handler.file_count for name, handler in handlers.items()})
+        print(
+            "Files per handler:",
+            {name: handler.file_count for name, handler in handlers.items()},
+        )
 
         if select_types is not None:
             if isinstance(select_types, str):
                 select_types = [select_types]
-            handlers = {name: handler for name, handler in handlers.items() if name in select_types}
+            handlers = {
+                name: handler
+                for name, handler in handlers.items()
+                if name in select_types
+            }
             print(f"Selected handlers (ie select_types): {select_types}")
 
-        variable_selector = VariableSelector(select_variables, select_sim, drop_variables)
+        variable_selector = VariableSelector(
+            select_variables, select_sim, drop_variables
+        )
 
-        handlers_ds = [handler.load(variable_selector=variable_selector, loading_option=loading_option) for handler in handlers.values()]
+        handlers_ds = [
+            handler.load(
+                variable_selector=variable_selector, loading_option=loading_option
+            )
+            for handler in handlers.values()
+        ]
 
         variable_selector.print_stats()
 

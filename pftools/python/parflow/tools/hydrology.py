@@ -2,6 +2,7 @@
 
 Helper functions to calculate standard hydrology measures
 """
+
 from typing import Optional
 from numbers import Number
 
@@ -68,8 +69,13 @@ def compute_water_table_depth(saturation, top, dz):
                 print(f"Error: Index in top (k={top_k}) is outside of domain (nz={nz})")
 
 
-def calculate_water_table_depth(pressure: np.ndarray, saturation: np.ndarray, dz: np.ndarray,
-                                ssat: Optional[Number | np.ndarray] = None, epsilon: float = 0.001) -> np.ndarray:
+def calculate_water_table_depth(
+    pressure: np.ndarray,
+    saturation: np.ndarray,
+    dz: np.ndarray,
+    ssat: Optional[Number | np.ndarray] = None,
+    epsilon: float = 0.001,
+) -> np.ndarray:
     """
     Calculate water table depth from the land surface
     :param pressure: A nz-by-ny-by-nx ndarray of pressure values (bottom layer to top layer)
@@ -99,8 +105,10 @@ def calculate_water_table_depth(pressure: np.ndarray, saturation: np.ndarray, dz
         pass
     else:
         if ssat is not None:
-            print(f"Invalid ssat argument ({ssat} {type(ssat)}): must be None, an np.array, or a Number. "
-                  f"Switching to automatic retrieval of the value from the saturation file.")
+            print(
+                f"Invalid ssat argument ({ssat} {type(ssat)}): must be None, an np.array, or a Number. "
+                f"Switching to automatic retrieval of the value from the saturation file."
+            )
         ssat = np.nanmax(saturation)
         print(f"Automatic ssat value retrieved from saturation: {ssat}")
 
@@ -111,7 +119,12 @@ def calculate_water_table_depth(pressure: np.ndarray, saturation: np.ndarray, dz
     dz = np.hstack([dz, 0])
     # An unsaturated layer at the top
     # pad_width is a tuple of (n_before, n_after) for each dimension
-    saturation = np.pad(saturation, pad_width=((0, 1), (0, 0), (0, 0)), mode='constant', constant_values=0)
+    saturation = np.pad(
+        saturation,
+        pad_width=((0, 1), (0, 0), (0, 0)),
+        mode="constant",
+        constant_values=0,
+    )
 
     # Elevation of the center of each layer from the bottom (bottom layer to top layer)
     _elevation = np.cumsum(dz) - (dz / 2)
@@ -128,18 +141,23 @@ def calculate_water_table_depth(pressure: np.ndarray, saturation: np.ndarray, dz
     we will not encounter this case.
     """
     z_indices = np.maximum(
-        np.argmax(saturation < (ssat - epsilon), axis=0) - 1,  # find first unsaturated layer; back up one cell
-        0  # clamp min. index value to 0
+        np.argmax(saturation < (ssat - epsilon), axis=0)
+        - 1,  # find first unsaturated layer; back up one cell
+        0,  # clamp min. index value to 0
     )
 
     # Make 3D with shape (1, ny, nx) to allow subsequent operations
     z_indices = z_indices[np.newaxis, ...]
 
-    saturation_elevation = np.take_along_axis(_elevation, z_indices, axis=0)  # shape (1, ny, nx)
+    saturation_elevation = np.take_along_axis(
+        _elevation, z_indices, axis=0
+    )  # shape (1, ny, nx)
     ponding_depth = np.take_along_axis(pressure, z_indices, axis=0)  # shape (1, ny, nx)
 
     wt_height = saturation_elevation + ponding_depth  # shape (1, ny, nx)
-    wt_height = np.clip(wt_height, 0, domain_thickness)  # water table height clamped between 0<->domain thickness
+    wt_height = np.clip(
+        wt_height, 0, domain_thickness
+    )  # water table height clamped between 0<->domain thickness
     wtd = domain_thickness - wt_height  # shape (1, ny, nx)
 
     return wtd.squeeze(axis=0)  # shape (ny, nx)

@@ -7,7 +7,13 @@ from xarray.structure.alignment import AlignmentError
 from xarray.core import indexing
 
 from parflow.tools.backend.backend_array import ParflowBackendArray
-from parflow.tools.backend.generic import PfbInfo, Run, TimeInfo, VariableSelector, LoadingOption
+from parflow.tools.backend.generic import (
+    PfbInfo,
+    Run,
+    TimeInfo,
+    VariableSelector,
+    LoadingOption,
+)
 
 
 def verbose_merge(objects: Iterable[xr.DataArray | xr.Dataset | xr.DataTree]):
@@ -16,15 +22,19 @@ def verbose_merge(objects: Iterable[xr.DataArray | xr.Dataset | xr.DataTree]):
         try:
             xr.align(ds_final, obj, join="exact", exclude=["time"])
         except AlignmentError:
-            print(f"Error while adding: {obj} \nto: {ds_final}. This may be due to data from different simulations or "
-                  f"to files from the same simulation with different headers (in particular x0, y0, z0, for example).")
+            print(
+                f"Error while adding: {obj} \nto: {ds_final}. This may be due to data from different simulations or "
+                f"to files from the same simulation with different headers (in particular x0, y0, z0, for example)."
+            )
             raise
         ds_final = xr.merge([ds_final, obj], join="outer")
     return ds_final
 
 
-def get_z_values(var: xr.Variable, run: Optional[Run], z_first: bool) -> tuple[str, np.array, dict]:
-    """ Return z values associated with the given variable and run """
+def get_z_values(
+    var: xr.Variable, run: Optional[Run], z_first: bool
+) -> tuple[str, np.array, dict]:
+    """Return z values associated with the given variable and run"""
     if z_first:
         if len(var.shape) == 4:  # time, z, y, x
             len_z = var.shape[1]
@@ -33,19 +43,29 @@ def get_z_values(var: xr.Variable, run: Optional[Run], z_first: bool) -> tuple[s
     else:  # time, y, x, z or y, x, z
         len_z = var.shape[-1]
 
-    if run is None or len(run.data_accessor.dz) != len_z: # pfb only or clm (z = clm_variables)
+    if (
+        run is None or len(run.data_accessor.dz) != len_z
+    ):  # pfb only or clm (z = clm_variables)
         z = np.arange(len_z)
         return "z", z, dict(units="layer")
 
     return "z", np.cumsum(run.data_accessor.dz[::-1])[::-1], dict(units="meters")
 
 
-def variable_from_files(list_pfb_info: PfbInfo | list[PfbInfo], loading_option: LoadingOption, z_is: str="z") -> xr.Variable:
+def variable_from_files(
+    list_pfb_info: PfbInfo | list[PfbInfo],
+    loading_option: LoadingOption,
+    z_is: str = "z",
+) -> xr.Variable:
     """
     Create a xr.variable from pfb files.
     """
-    backend_array = ParflowBackendArray(list_pfb_info, z_first=loading_option.z_first, z_is=z_is,
-                                        replace_fill_value=loading_option.replace_fill_value)
+    backend_array = ParflowBackendArray(
+        list_pfb_info,
+        z_first=loading_option.z_first,
+        z_is=z_is,
+        replace_fill_value=loading_option.replace_fill_value,
+    )
 
     chunks = {d: c for d, c in zip(backend_array.dims, backend_array.default_chunk)}
 
@@ -75,7 +95,9 @@ def load_single_file(pfb_info: PfbInfo, loading_option: LoadingOption) -> xr.Dat
     return xr.DataArray(var, coords=coords)
 
 
-def load_sequence_of_pfb(list_pfb_info: list[PfbInfo], loading_option: LoadingOption) -> xr.DataArray:
+def load_sequence_of_pfb(
+    list_pfb_info: list[PfbInfo], loading_option: LoadingOption
+) -> xr.DataArray:
     """
     Load a sequence of `pfb` files (stored in pfb_info) in a xr.DataArray
     """
@@ -98,7 +120,9 @@ def load_sequence_of_pfb(list_pfb_info: list[PfbInfo], loading_option: LoadingOp
     coords["x"] = ("x", x, dict(units="meters"))
 
     if "z" in var.dims:
-        coords["z"] = get_z_values(var, run=list_pfb_info[0].run, z_first=loading_option.z_first)
+        coords["z"] = get_z_values(
+            var, run=list_pfb_info[0].run, z_first=loading_option.z_first
+        )
 
     if loading_option.compute_time:
         times = np.array([pfb_info.time for pfb_info in list_pfb_info])
@@ -110,7 +134,9 @@ def load_sequence_of_pfb(list_pfb_info: list[PfbInfo], loading_option: LoadingOp
     return xr.DataArray(var, coords=coords)
 
 
-def load_sequence_of_forcing(list_pfb_info: list[PfbInfo], loading_option: LoadingOption) -> xr.DataArray:
+def load_sequence_of_forcing(
+    list_pfb_info: list[PfbInfo], loading_option: LoadingOption
+) -> xr.DataArray:
     """
     Load a sequence of `pfb` forcing files, ie z_is == "time" (stored in pfb_info) in a xr.DataArray
     """
@@ -133,7 +159,12 @@ def load_sequence_of_forcing(list_pfb_info: list[PfbInfo], loading_option: Loadi
     if loading_option.compute_time:
         times = np.concatenate([pfb_info.time for pfb_info in list_pfb_info])
     else:
-        times = np.concatenate([list(range(pfb_info.timestep[0], pfb_info.timestep[1] + 1)) for pfb_info in list_pfb_info])
+        times = np.concatenate(
+            [
+                list(range(pfb_info.timestep[0], pfb_info.timestep[1] + 1))
+                for pfb_info in list_pfb_info
+            ]
+        )
 
     coords["time"] = ("time", times, {})
 
@@ -156,7 +187,7 @@ class FileHandler:
 
     @abstractmethod
     def _valid_file(self, pfb_info: PfbInfo) -> bool:
-        """ Test whether the file given as input is accepted by this Handler.
+        """Test whether the file given as input is accepted by this Handler.
 
         :param pfb_info: PfbInfo to test
         :return: True if accepted
@@ -165,7 +196,7 @@ class FileHandler:
 
     @abstractmethod
     def _add_to_files(self, pfb_info: PfbInfo):
-        """ Update the PfbInfo attributes from the pfb_info.basename_split and store it internally
+        """Update the PfbInfo attributes from the pfb_info.basename_split and store it internally
         (usually in self.content).
 
         :param pfb_info: PfbInfo to update and store
@@ -174,7 +205,7 @@ class FileHandler:
         pass
 
     def _update_time(self, pfb_info: PfbInfo, time_info: TimeInfo):
-        """ Update the PfbInfo time attribute from the pfb_info.timestep, pfb_info.run and time_info.
+        """Update the PfbInfo time attribute from the pfb_info.timestep, pfb_info.run and time_info.
         Only implemented in temporal Handler.
 
         :param pfb_info: PfbInfo to update
@@ -183,8 +214,10 @@ class FileHandler:
         """
         pass
 
-    def try_to_add(self, pfb_info: PfbInfo, runs: dict[str, Run], time_info: TimeInfo) -> bool:
-        """ The first of two methods called by open_dataset. It tests whether the Handler accepts the given file.
+    def try_to_add(
+        self, pfb_info: PfbInfo, runs: dict[str, Run], time_info: TimeInfo
+    ) -> bool:
+        """The first of two methods called by open_dataset. It tests whether the Handler accepts the given file.
         If so, it updates and saves it.
 
         :param pfb_info: PfbInfo to test
@@ -205,8 +238,10 @@ class FileHandler:
         return False
 
     @abstractmethod
-    def load(self, variable_selector: VariableSelector, loading_option: LoadingOption) -> xr.Dataset:
-        """ The last of the two methods called directly by open_dataset.
+    def load(
+        self, variable_selector: VariableSelector, loading_option: LoadingOption
+    ) -> xr.Dataset:
+        """The last of the two methods called directly by open_dataset.
         It initiates the creation of xr.DataArray for the variables it contains.
 
         :param variable_selector: VariableSelector used to select the variables to used.
@@ -217,7 +252,8 @@ class FileHandler:
 
 
 class InputHandler(FileHandler):
-    """ Input variables: Static input variables, such as Porosity, Ksat..."""
+    """Input variables: Static input variables, such as Porosity, Ksat..."""
+
     def __init__(self):
         super().__init__()
         self.content: list[PfbInfo] = []
@@ -229,9 +265,15 @@ class InputHandler(FileHandler):
         pfb_info.name = pfb_info.basename_split[0]
         self.content.append(pfb_info)
 
-    def load(self, variable_selector: VariableSelector, loading_option: LoadingOption) -> xr.Dataset:
+    def load(
+        self, variable_selector: VariableSelector, loading_option: LoadingOption
+    ) -> xr.Dataset:
         # Select Variables
-        self.content = [pfb_info for pfb_info in self.content if variable_selector.is_accepted(pfb_info)]
+        self.content = [
+            pfb_info
+            for pfb_info in self.content
+            if variable_selector.is_accepted(pfb_info)
+        ]
 
         # Remove duplicates files
         dic = {}
@@ -243,20 +285,24 @@ class InputHandler(FileHandler):
         new_content = []
         for name, l in dic.items():
             if len(l) > 1:
-                print(f"Removing {len(l[:-1])} duplicate files for the variable {name}.")
+                print(
+                    f"Removing {len(l[:-1])} duplicate files for the variable {name}."
+                )
             new_content.append(l[-1])
 
         self.content = new_content
 
         # Generate dict name -> DataArray
         da_dict = {
-            f"input_{pfb_info.name}": load_single_file(pfb_info, loading_option) for pfb_info in self.content
+            f"input_{pfb_info.name}": load_single_file(pfb_info, loading_option)
+            for pfb_info in self.content
         }
         return verbose_merge([da.rename(name) for name, da in da_dict.items()])
 
 
 class OutputHandler(FileHandler):
-    """ Output variables: Static output variables, exported by Parflow, such as Porosity, Permeability, Slope..."""
+    """Output variables: Static output variables, exported by Parflow, such as Porosity, Permeability, Slope..."""
+
     def __init__(self):
         super().__init__()
         self.content: list[PfbInfo] = []
@@ -269,9 +315,15 @@ class OutputHandler(FileHandler):
         pfb_info.name = pfb_info.basename_split[2]
         self.content.append(pfb_info)
 
-    def load(self, variable_selector: VariableSelector, loading_option: LoadingOption) -> xr.Dataset:
+    def load(
+        self, variable_selector: VariableSelector, loading_option: LoadingOption
+    ) -> xr.Dataset:
         # Select variables
-        self.content = [pfb_info for pfb_info in self.content if variable_selector.is_accepted(pfb_info)]
+        self.content = [
+            pfb_info
+            for pfb_info in self.content
+            if variable_selector.is_accepted(pfb_info)
+        ]
 
         # Remove duplicates files
         dic = {}
@@ -283,7 +335,9 @@ class OutputHandler(FileHandler):
         new_content = []
         for name, l in dic.items():
             if len(l) > 1:
-                print(f"Removing {len(l[:-1])} duplicate files for the variable {name}.")
+                print(
+                    f"Removing {len(l[:-1])} duplicate files for the variable {name}."
+                )
             new_content.append(l[-1])
 
         self.content = new_content
@@ -297,7 +351,8 @@ class OutputHandler(FileHandler):
 
 
 class TemporalOutputHandler(FileHandler):
-    """ Temporal output: Temporal output variables, exported by Parflow, such as press, evaptrans, satur..."""
+    """Temporal output: Temporal output variables, exported by Parflow, such as press, evaptrans, satur..."""
+
     def __init__(self):
         super().__init__()
         self.content: dict[str, list[PfbInfo]] = {}
@@ -314,7 +369,9 @@ class TemporalOutputHandler(FileHandler):
         file_list.append(pfb_info)
         self.content[pfb_info.name] = file_list
 
-    def load(self, variable_selector: VariableSelector, loading_option: LoadingOption) -> xr.Dataset:
+    def load(
+        self, variable_selector: VariableSelector, loading_option: LoadingOption
+    ) -> xr.Dataset:
         new_content = {}
         for var_name, pfbs in self.content.items():
             pfbs = [pfb for pfb in pfbs if variable_selector.is_accepted(pfb)]
@@ -324,7 +381,8 @@ class TemporalOutputHandler(FileHandler):
         self.content = new_content
 
         da_dict = {
-            var_name: load_sequence_of_pfb(pfbs, loading_option) for var_name, pfbs in self.content.items()
+            var_name: load_sequence_of_pfb(pfbs, loading_option)
+            for var_name, pfbs in self.content.items()
         }
         return verbose_merge([da.rename(name) for name, da in da_dict.items()])
 
@@ -337,23 +395,31 @@ class TemporalOutputHandler(FileHandler):
             if dump_interval < 0:
                 dump_interval = abs(dump_interval * pfb_info.run.TimingInfo.BaseUnit)
 
-            if pfb_info.run.Solver.LSM == "CLM" and dump_interval > pfb_info.run.Solver.CLM.CLMDumpInterval:
+            if (
+                pfb_info.run.Solver.LSM == "CLM"
+                and dump_interval > pfb_info.run.Solver.CLM.CLMDumpInterval
+            ):
                 s = int(timestep * 3600 * pfb_info.run.Solver.CLM.CLMDumpInterval)
             else:
                 s = int(timestep * 3600 * dump_interval)
             s += time_info.time_shift * dump_interval * 3600
-        pfb_info.time = time_info.start_date + np.timedelta64(s, 's')
+        pfb_info.time = time_info.start_date + np.timedelta64(s, "s")
 
 
 class ClmOutputHandler(FileHandler):
-    """ CLM output: Temporal CLM output variables, exported by Parflow, such as clm and RST_clm"""
+    """CLM output: Temporal CLM output variables, exported by Parflow, such as clm and RST_clm"""
+
     def __init__(self):
         super().__init__()
         self.content: list[PfbInfo] = []
 
     def _valid_file(self, pfb_info: PfbInfo) -> bool:
-        return (len(pfb_info.basename_split) == 6 and pfb_info.basename_split[1] == "out"
-                and pfb_info.basename_split[2] == "clm_output" and pfb_info.basename_split[4] == "C")
+        return (
+            len(pfb_info.basename_split) == 6
+            and pfb_info.basename_split[1] == "out"
+            and pfb_info.basename_split[2] == "clm_output"
+            and pfb_info.basename_split[4] == "C"
+        )
 
     def _add_to_files(self, pfb_info: PfbInfo):
         pfb_info.name = "clm_output"
@@ -362,13 +428,19 @@ class ClmOutputHandler(FileHandler):
 
         self.content.append(pfb_info)
 
-    def load(self, variable_selector: VariableSelector, loading_option: LoadingOption) -> xr.Dataset:
-        self.content = [pfb for pfb in self.content if variable_selector.is_accepted(pfb)]
+    def load(
+        self, variable_selector: VariableSelector, loading_option: LoadingOption
+    ) -> xr.Dataset:
+        self.content = [
+            pfb for pfb in self.content if variable_selector.is_accepted(pfb)
+        ]
 
         if not self.content:
             return xr.Dataset()
 
-        da = load_sequence_of_pfb(self.content, loading_option).rename({"z": "clm_z", "time": "clm_time"})
+        da = load_sequence_of_pfb(self.content, loading_option).rename(
+            {"z": "clm_z", "time": "clm_time"}
+        )
         return da.rename("clm").to_dataset()
 
     def _update_time(self, pfb_info: PfbInfo, time_info: TimeInfo):
@@ -377,17 +449,20 @@ class ClmOutputHandler(FileHandler):
             s = int(timestep * time_info.default_clm_ts)
         else:
             s = int(timestep * 3600 * pfb_info.run.Solver.CLM.CLMDumpInterval)
-        pfb_info.time = time_info.start_date + np.timedelta64(s, 's')
+        pfb_info.time = time_info.start_date + np.timedelta64(s, "s")
 
 
 class ForcingHandler(FileHandler):
-    """ Forcing variables: Temporal Forcing variables, such as APCP, Temp, LAI..."""
+    """Forcing variables: Temporal Forcing variables, such as APCP, Temp, LAI..."""
+
     def __init__(self):
         super().__init__()
         self.content: dict[str, list[PfbInfo]] = {}
 
     def _valid_file(self, pfb_info: PfbInfo) -> bool:
-        return len(pfb_info.basename_split) == 4 and "_to_" in pfb_info.basename_split[2]
+        return (
+            len(pfb_info.basename_split) == 4 and "_to_" in pfb_info.basename_split[2]
+        )
 
     def _add_to_files(self, pfb_info: PfbInfo):
         pfb_info.name = "forc_" + pfb_info.basename_split[1]
@@ -398,14 +473,23 @@ class ForcingHandler(FileHandler):
         files.append(pfb_info)
         self.content[pfb_info.name] = files
 
-    def load(self, variable_selector: VariableSelector, loading_option: LoadingOption) -> xr.Dataset:
+    def load(
+        self, variable_selector: VariableSelector, loading_option: LoadingOption
+    ) -> xr.Dataset:
         da_dict = {
-            var_name: load_sequence_of_forcing(pfbs, loading_option).rename({"time": "forc_time"})
-            for var_name, pfbs in self.content.items() if variable_selector.is_accepted(pfbs[0])
+            var_name: load_sequence_of_forcing(pfbs, loading_option).rename(
+                {"time": "forc_time"}
+            )
+            for var_name, pfbs in self.content.items()
+            if variable_selector.is_accepted(pfbs[0])
         }
         return verbose_merge([da.rename(name) for name, da in da_dict.items()])
 
     def _update_time(self, pfb_info: PfbInfo, time_info: TimeInfo):
-        timesteps = [np.timedelta64(int((i + time_info.time_shift) * time_info.default_forcing_ts), 's')
-                     for i in range(pfb_info.timestep[0], pfb_info.timestep[1] + 1)]
+        timesteps = [
+            np.timedelta64(
+                int((i + time_info.time_shift) * time_info.default_forcing_ts), "s"
+            )
+            for i in range(pfb_info.timestep[0], pfb_info.timestep[1] + 1)
+        ]
         pfb_info.time = time_info.start_date + np.array(timesteps)

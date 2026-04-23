@@ -4,7 +4,8 @@ import numpy as np
 
 
 class Header:
-    """ Header class generated during pfb files reading """
+    """Header class generated during pfb files reading"""
+
     def __init__(self, pfb_filename: str):
         with open(pfb_filename, "rb") as src:
             src.seek(0)

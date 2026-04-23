@@ -14,7 +14,7 @@ from parflow.tools.util import read_start_stop_n
 
 
 def magic_get_fill_value(data: np.ndarray):
-    """ Try to determine the fill_value used for the data """
+    """Try to determine the fill_value used for the data"""
     v_min = np.min(data)
     if v_min == -9999:
         return v_min
@@ -30,6 +30,7 @@ class UpdatedParflowBinaryReader(ParflowBinaryReader):
     - usage of precompute_subgrid_info and read_sg_info
     - performance improvement in read_subarray
     """
+
     def __init__(
         self,
         file: str,
@@ -191,7 +192,8 @@ class UpdatedParflowBinaryReader(ParflowBinaryReader):
 
 @dataclass
 class SubGrid:
-    """ Dataclass for subgrid data. Mainly used to simplify the code. """
+    """Dataclass for subgrid data. Mainly used to simplify the code."""
+
     subgrid_offsets: np.array
     subgrid_locations: np.array
     subgrid_start_indices: np.array
@@ -201,8 +203,14 @@ class SubGrid:
 
     @classmethod
     def save(cls, pfb: ParflowBinaryReader):
-        return cls(pfb.subgrid_offsets, pfb.subgrid_locations, pfb.subgrid_start_indices,
-                   pfb.subgrid_shapes, pfb.chunks, pfb.coords)
+        return cls(
+            pfb.subgrid_offsets,
+            pfb.subgrid_locations,
+            pfb.subgrid_start_indices,
+            pfb.subgrid_shapes,
+            pfb.chunks,
+            pfb.coords,
+        )
 
     def apply(self, pfb: ParflowBinaryReader):
         pfb.subgrid_offsets = self.subgrid_offsets
@@ -212,12 +220,19 @@ class SubGrid:
         pfb.coords = self.coords
         pfb.chunks = self.chunks
 
+
 class PfbReader:
     """
     PFB file reader, with a single header read for a sequence and internal methods for the different types of
     sequences encountered (with keys, with z_is=="time" ...).
     """
-    def __init__(self, file_seq: PfbInfo | Iterable[PfbInfo], z_first: bool = True, z_is: str = "z"):
+
+    def __init__(
+        self,
+        file_seq: PfbInfo | Iterable[PfbInfo],
+        z_first: bool = True,
+        z_is: str = "z",
+    ):
         if isinstance(file_seq, PfbInfo):
             file_seq = [file_seq]
 
@@ -250,7 +265,11 @@ class PfbReader:
         return self._subgrid
 
     def _read_all(self):
-        nx, ny, nz = self.base_header["nx"], self.base_header["ny"], self.base_header["nz"]
+        nx, ny, nz = (
+            self.base_header["nx"],
+            self.base_header["ny"],
+            self.base_header["nz"],
+        )
 
         if self.z_first:
             seq_size = (len(self.list_pfb_info), nz, ny, nx)
@@ -259,7 +278,9 @@ class PfbReader:
         pfb_seq = np.empty(seq_size, dtype=np.float64)
         for i, pfb_info in enumerate(self.list_pfb_info):
             with UpdatedParflowBinaryReader(
-                    pfb_info.filename, precompute_subgrid_info=False, header=self.base_header
+                pfb_info.filename,
+                precompute_subgrid_info=False,
+                header=self.base_header,
             ) as pfb:
                 self.subgrid.apply(pfb)
                 subseq_data = pfb.read_all_subgrids(mode="full", z_first=self.z_first)
@@ -290,7 +311,9 @@ class PfbReader:
 
         start_x, stop_x, nx = read_start_stop_n(keys, "x", 0, self.base_header["nx"])
         start_y, stop_y, ny = read_start_stop_n(keys, "y", 0, self.base_header["ny"])
-        start_z, stop_z, nz = read_start_stop_n(keys, self.z_is, 0, self.base_header["nz"])
+        start_z, stop_z, nz = read_start_stop_n(
+            keys, self.z_is, 0, self.base_header["nz"]
+        )
 
         if self.z_first:
             seq_size = (len(file_seq), nz, ny, nx)
@@ -299,7 +322,9 @@ class PfbReader:
         pfb_seq = np.empty(seq_size, dtype=np.float64)
         for i, pfb_info in enumerate(file_seq):
             with UpdatedParflowBinaryReader(
-                    pfb_info.filename, precompute_subgrid_info=False, header=self.base_header
+                pfb_info.filename,
+                precompute_subgrid_info=False,
+                header=self.base_header,
             ) as pfb:
                 self.subgrid.apply(pfb)
                 subseq_data = pfb.read_subarray(
@@ -308,7 +333,6 @@ class PfbReader:
                 pfb_seq[i, :, :, :] = subseq_data
 
         return pfb_seq
-
 
     def _read_keys_z_is_time(self, keys):
         z_size = len(self.list_pfb_info) * self.base_header["nz"]
@@ -336,32 +360,47 @@ class PfbReader:
             output_stop_z = start + file_stop_z - start_z
 
             with UpdatedParflowBinaryReader(
-                    pfb_info.filename, precompute_subgrid_info=False, header=self.base_header
+                pfb_info.filename,
+                precompute_subgrid_info=False,
+                header=self.base_header,
             ) as pfb:
                 self.subgrid.apply(pfb)
                 subseq_data = pfb.read_subarray(
-                    start_x, start_y, file_start_z, nx, ny, file_nz, z_first=self.z_first
+                    start_x,
+                    start_y,
+                    file_start_z,
+                    nx,
+                    ny,
+                    file_nz,
+                    z_first=self.z_first,
                 )
 
                 if self.z_first:
-                    pfb_seq[output_start_z: output_stop_z, :, :] = subseq_data
+                    pfb_seq[output_start_z:output_stop_z, :, :] = subseq_data
                 else:
-                    pfb_seq[output_start_z: output_stop_z, :, :] = np.moveaxis(subseq_data, -1, 0)
+                    pfb_seq[output_start_z:output_stop_z, :, :] = np.moveaxis(
+                        subseq_data, -1, 0
+                    )
 
         return pfb_seq
-
 
     def _read_single(self, keys):
         # read_pfb from parflow.tools.io
         with UpdatedParflowBinaryReader(
-                self.list_pfb_info[0].filename, header=self.base_header
+            self.list_pfb_info[0].filename, header=self.base_header
         ) as pfb:
             if not keys:
                 data = pfb.read_all_subgrids(z_first=self.z_first)
             else:
-                start_x, stop_x, nx = read_start_stop_n(keys, "x", 0, self.base_header["nx"])
-                start_y, stop_y, ny = read_start_stop_n(keys, "y", 0, self.base_header["ny"])
-                start_z, stop_z, nz = read_start_stop_n(keys, self.z_is, 0, self.base_header["nz"])
+                start_x, stop_x, nx = read_start_stop_n(
+                    keys, "x", 0, self.base_header["nx"]
+                )
+                start_y, stop_y, ny = read_start_stop_n(
+                    keys, "y", 0, self.base_header["ny"]
+                )
+                start_z, stop_z, nz = read_start_stop_n(
+                    keys, self.z_is, 0, self.base_header["nz"]
+                )
 
                 data = pfb.read_subarray(
                     start_x, start_y, start_z, nx, ny, nz, z_first=self.z_first
@@ -371,7 +410,7 @@ class PfbReader:
     def read(self, keys: Optional = None):
         if len(self.list_pfb_info) == 1:
             return self._read_single(keys)
-        if keys is None: # Not used ?
+        if keys is None:  # Not used ?
             return self._read_all()
         if self.z_is == "time":
             return self._read_keys_z_is_time(keys)
@@ -468,7 +507,7 @@ class ParflowBackendArray(BackendArray):
                     _lens[dim] = self._size_from_key([self.init_key[dim]])[0]
 
         if _lens["z"] == 1 and self.z_is != "time":
-            self._squeeze_dims = (_dims.index("z"))
+            self._squeeze_dims = _dims.index("z")
             _default_chunk.remove("z")
             _dims.remove("z")
 
@@ -516,7 +555,9 @@ class ParflowBackendArray(BackendArray):
         :return:
             A numpy array of the data
         """
-        accessor = {d: util._key_to_explicit_accessor(k) for d, k in zip(self.dims, key)}
+        accessor = {
+            d: util._key_to_explicit_accessor(k) for d, k in zip(self.dims, key)
+        }
 
         sub = self.reader.read(accessor)
 
