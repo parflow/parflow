@@ -90,8 +90,12 @@ fluxes). The hydraulic conductivity can be written as,
    :label: hydcond
 
    \begin{aligned}
-   K(p) =  \frac{{\bar k}k_r(p)}{\mu}
+   K(p) =  \frac{{\bar k} k_r(p) \rho g}{\mu},
    \end{aligned}
+
+where :math:`\bar k` is the intrinsic permeability tensor, :math:`k_r(p)` is
+the relative permeability, :math:`\rho` is the density, :math:`g` is the
+gravitational acceleration, and :math:`\mu` is the viscosity.
 
 Boundary conditions can be stated as,
 
