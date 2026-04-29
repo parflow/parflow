@@ -97,8 +97,7 @@ pfset_test.Geom.pfset(yaml_file="$PF_SRC/test/input/GeomChildren.yaml")
 # pfset: yaml_content
 # ---------------------------------------------------------
 
-pfset_test.Geom.source_region.pfset(
-    yaml_content="""
+pfset_test.Geom.source_region.pfset(yaml_content="""
 Lower:
   X: 65.56
   Y: 79.34
@@ -107,12 +106,10 @@ Upper:
   X: 74.44
   Y: 89.99
   Z: 5.5
-"""
-)
+""")
 
 
-pfset_test.Geom.concen_region.pfset(
-    yaml_content="""
+pfset_test.Geom.concen_region.pfset(yaml_content="""
 Lower:
   X: 60.0
   Y: 80.0
@@ -121,8 +118,7 @@ Upper:
   X: 80.0
   Y: 100.0
   Z: 6.0
-"""
-)
+""")
 
 # -----------------------------------------------------------------------------
 # pfset: flat_map

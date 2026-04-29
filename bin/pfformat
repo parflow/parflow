@@ -16,7 +16,7 @@
 OPTIND=1         # Reset in case getopts has been used previously in the shell.
 
 UNCRUSTIFY_VERSION='0.79.0'
-BLACK_VERSION='25.12.0'
+BLACK_VERSION='26.3.1'
 
 # Exit script
 # $1 (required): Message to print on exit
@@ -128,7 +128,7 @@ function main() {
    do
       if $check
       then
-	 if output=$(uncrustify --check -c bin/parflow.cfg $i)
+	 if output=$(uncrustify --check -c bin/parflow.cfg $i 2>&1)
 	 then
 	    log 'pfformat PASSED %s\n' $i
 	 else
@@ -140,10 +140,9 @@ function main() {
       fi
    done
 
-   # Disable this for now while Python is being refactored.
    if $check
    then
-      if output=$($PARFLOW_DIR/bin/pfpython -m black . --check)
+      if output=$($PARFLOW_DIR/bin/pfpython -m black . --check 2>&1)
       then
 	 log 'pfformat PASSED %s\n' $i
       else
@@ -152,6 +151,19 @@ function main() {
       fi
    else
       $PARFLOW_DIR/bin/pfpython -m black .
+   fi
+
+   if $check
+   then
+      if output=$($PARFLOW_DIR/bin/pfpython -m gersemi . --check 2>&1)
+      then
+	 log 'pfformat PASSED %s\n' $i
+      else
+	 printf 'pfFormat FAILED\nCMake style checker gersemi output was «%s»\n' "$output\n"
+	 failed=true
+      fi
+   else
+      $PARFLOW_DIR/bin/pfpython -m gersemi --in-place .
    fi
 
    if $check

@@ -30,6 +30,7 @@
 
 #include "seepage.h"
 
+#include <string.h>
 
 /**
  * @brief Populate Seepage patch information from input database
