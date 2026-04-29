@@ -19,7 +19,8 @@ if (${PARFLOW_HAVE_CLM})
       clm_et_pft_photosynthesis
       clm_et_interception
       clm_et_medlyn
-      clm_et_canopy_clumping)
+      clm_et_canopy_clumping
+      clm_rz_compensatory)
 
     list(APPEND CLM_2D_TESTS
       clm_slope)
