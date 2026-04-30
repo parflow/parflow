@@ -538,7 +538,9 @@ crater.run(working_directory=new_output_dir_name)
 runcheck = 1
 
 if not runcheck:
-    print(f"{run_name} : runcheck disabled (set runcheck = 1 after generating correct_output)")
+    print(
+        f"{run_name} : runcheck disabled (set runcheck = 1 after generating correct_output)"
+    )
     sys.exit(0)
 
 passed = True
