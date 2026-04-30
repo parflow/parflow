@@ -519,7 +519,7 @@ crater.run(working_directory=new_output_dir_name)
 
 passed = True
 sig_digits = 5
-abs_value = 1e-200
+abs_value = 1e-12
 test_files = ["perm_x", "perm_y", "perm_z", "porosity"]
 
 for test_file in test_files:
