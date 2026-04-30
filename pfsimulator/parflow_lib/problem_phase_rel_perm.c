@@ -152,9 +152,12 @@ VanGTable *VanGComputeTable(
   a_der = new_table->a_der;
   d_der = new_table->d_der;
 
-  double h[num_sample_points + 1];
-  double f[num_sample_points + 1], del[num_sample_points + 1], f_der[num_sample_points + 1];
-  double del_der[num_sample_points + 1];
+  /* Heap-allocated workspace (avoids ~MB-sized VLA at large num_sample_points) */
+  double *h = ctalloc(double, num_sample_points + 1);
+  double *f = ctalloc(double, num_sample_points + 1);
+  double *del = ctalloc(double, num_sample_points + 1);
+  double *f_der = ctalloc(double, num_sample_points + 1);
+  double *del_der = ctalloc(double, num_sample_points + 1);
   double alph, beta, magn;
   int index;
   double interval, m;
@@ -224,7 +227,7 @@ VanGTable *VanGComputeTable(
 
   // GCC 11.3.0 WITH optimization warns that del is possibly used without initialization.
   // This silences the warning.   Looks like a false warning, what is the opt doing?
-  memset(del, num_sample_points + 1, sizeof(double));
+  memset(del, 0, (num_sample_points + 1) * sizeof(double));
   // begin monotonic spline (see Fritsch and Carlson, SIAM J. Num. Anal., 17 (2), 1980)
   for (index = 0; index < num_sample_points; index++)
   {
@@ -283,6 +286,13 @@ VanGTable *VanGComputeTable(
       }
     }
   }
+
+  tfree(h);
+  tfree(f);
+  tfree(del);
+  tfree(f_der);
+  tfree(del_der);
+
   return new_table;
 }
 
@@ -323,9 +333,10 @@ static inline double VanGLookupSpline(
     // we have uniformly spaced points.
     double interval = lookup_table->interval;
     pt = (int)floor((pressure_head - h_s) / interval);
-    if (pt > max)
+    /* Clamp to last valid spline interval [pt, pt+1]: pt in [0, num_sample_points-1] */
+    if (pt >= num_sample_points)
     {
-      pt = max - 1;
+      pt = num_sample_points - 1;
     }
 
 #if 0
@@ -415,7 +426,9 @@ static inline double VanGLookupLinear(
     // we have uniformly spaced points.
 
     pt = (int)floor(pressure_head / interval);
-    assert(pt < max);
+    /* Clamp to last valid interval (FP rounding can push pt to num_sample_points) */
+    if (pt >= num_sample_points)
+      pt = num_sample_points - 1;
 
     // using cubic Hermite interpolation
 
@@ -785,7 +798,9 @@ void         PhaseRelPerm(
                         else if (head < fabs(min_pressure_head))
                         {
                           int pt = (int)floor((head - table_h_s) / interval);
-                          assert(pt < max);
+                          /* Clamp to last valid interval (FP rounding can push pt to num_sample_points) */
+                          if (pt >= num_sample_points)
+                            pt = num_sample_points - 1;
 
                           prdat[ipr] = lookup_table->a[pt] + lookup_table->slope[pt] *
                                        (head - lookup_table->x[pt]);
@@ -925,7 +940,9 @@ void         PhaseRelPerm(
                         else if (head < fabs(min_pressure_head))
                         {
                           int pt = (int)floor((head - table_h_s) / interval);
-                          assert(pt < max);
+                          /* Clamp to last valid interval (FP rounding can push pt to num_sample_points) */
+                          if (pt >= num_sample_points)
+                            pt = num_sample_points - 1;
 
                           prdat[ipr] = lookup_table->a_der[pt] + lookup_table->slope_der[pt] *
                                        (head - lookup_table->x[pt]);
@@ -1199,7 +1216,9 @@ void         PhaseRelPerm(
                         else if (head < fabs(min_pressure_head))
                         {
                           int pt = (int)floor((head - table_h_s) / interval);
-                          assert(pt < max);
+                          /* Clamp to last valid interval (FP rounding can push pt to num_sample_points) */
+                          if (pt >= num_sample_points)
+                            pt = num_sample_points - 1;
 
                           prdat[ipr] = lookup_table->a[pt] + lookup_table->slope[pt] *
                                        (head - lookup_table->x[pt]);
@@ -1324,7 +1343,9 @@ void         PhaseRelPerm(
                         else if (head < fabs(min_pressure_head))
                         {
                           int pt = (int)floor((head - table_h_s) / interval);
-                          assert(pt < max);
+                          /* Clamp to last valid interval (FP rounding can push pt to num_sample_points) */
+                          if (pt >= num_sample_points)
+                            pt = num_sample_points - 1;
 
                           prdat[ipr] = lookup_table->a_der[pt] + lookup_table->slope_der[pt] *
                                        (head - lookup_table->x[pt]);

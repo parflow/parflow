@@ -171,9 +171,12 @@ SatTable *SatComputeTable(
   a_der = new_table->a_der;
   d_der = new_table->d_der;
 
-  double h[num_sample_points + 1];
-  double f[num_sample_points + 1], del[num_sample_points + 1], f_der[num_sample_points + 1];
-  double del_der[num_sample_points + 1];
+  /* Heap-allocated workspace (avoids ~MB-sized VLA at large num_sample_points) */
+  double *h = ctalloc(double, num_sample_points + 1);
+  double *f = ctalloc(double, num_sample_points + 1);
+  double *del = ctalloc(double, num_sample_points + 1);
+  double *f_der = ctalloc(double, num_sample_points + 1);
+  double *del_der = ctalloc(double, num_sample_points + 1);
   double alph, beta, magn;
   int index;
   double interval, m;
@@ -219,7 +222,7 @@ SatTable *SatComputeTable(
   }
 
   /* Monotonic Hermite spline (Fritsch & Carlson 1980) */
-  memset(del, num_sample_points + 1, sizeof(double));
+  memset(del, 0, (num_sample_points + 1) * sizeof(double));
   for (index = 0; index < num_sample_points; index++)
   {
     h[index] = x[index + 1] - x[index];
@@ -275,6 +278,13 @@ SatTable *SatComputeTable(
       }
     }
   }
+
+  tfree(h);
+  tfree(f);
+  tfree(del);
+  tfree(f_der);
+  tfree(del_der);
+
   return new_table;
 }
 
@@ -289,7 +299,6 @@ static inline double SatLookupSpline(
   int num_sample_points = lookup_table->num_sample_points;
   double min_pressure_head = lookup_table->min_pressure_head;
   double h_s = lookup_table->h_s;
-  int max = num_sample_points + 1;
 
   assert(pressure_head >= 0);
 
@@ -313,9 +322,10 @@ static inline double SatLookupSpline(
 
   double interval = lookup_table->interval;
   pt = (int)floor((pressure_head - h_s) / interval);
-  if (pt > max)
+  /* Clamp to last valid spline interval [pt, pt+1]: pt in [0, num_sample_points-1] */
+  if (pt >= num_sample_points)
   {
-    pt = max - 1;
+    pt = num_sample_points - 1;
   }
 
   double x = lookup_table->x[pt];
