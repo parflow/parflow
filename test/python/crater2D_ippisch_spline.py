@@ -495,7 +495,7 @@ crater.KnownSolution = "NoKnownSolution"
 crater.Solver = "Richards"
 crater.Solver.MaxIter = 10000
 
-crater.Solver.Nonlinear.MaxIter = 15
+crater.Solver.Nonlinear.MaxIter = 30
 crater.Solver.Nonlinear.ResidualTol = 1e-9
 crater.Solver.Nonlinear.StepTol = 1e-9
 crater.Solver.Nonlinear.UseJacobian = True
