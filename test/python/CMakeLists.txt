@@ -10,8 +10,10 @@ set(TESTS
   crater2D
   crater2D_vangtable_spline
   crater2D_vangtable_linear
+  crater2D_vangtable_linear_sat
   crater2D_ippisch_constant
   crater2D_ippisch_spline
+  crater2D_ippisch_linear
   small_domain
   richards_hydrostatic_equilibrium
   indicator_field
