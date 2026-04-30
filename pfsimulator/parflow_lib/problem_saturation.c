@@ -358,6 +358,30 @@ static inline double SatLookupSpline(
   return sat;
 }
 
+__host__ __device__
+static inline double SatLookupLinear(
+                                     double    pressure_head,
+                                     SatTable *lookup_table,
+                                     int       fcn)
+{
+  PF_UNUSED(pressure_head);
+  PF_UNUSED(lookup_table);
+  PF_UNUSED(fcn);
+
+  /* Stub: linear interpolation for the saturation table is not yet
+   * implemented. Mirror the rel-perm SatLookupLinear structure when
+   * adding it. Aborts because parsing accepts InterpolationMethod=Linear. */
+#ifndef __CUDA_ARCH__
+  if (!amps_Rank(amps_CommWorld))
+  {
+    amps_Printf("Error: Saturation linear interpolation not yet implemented; "
+                "use Geom.<region>.Saturation.InterpolationMethod = \"Spline\".\n");
+  }
+  exit(1);
+#endif
+  return 0.0;
+}
+
 /*--------------------------------------------------------------------------
  * Saturation:
  *    This routine returns a Vector of saturations based on pressures.
@@ -537,7 +561,10 @@ void     Saturation(
                 else
                 {
                   double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                  psdat[ips] = SatLookupSpline(head, sat_table, fcn);
+                  if (sat_table->interpolation_method == 1)
+                    psdat[ips] = SatLookupLinear(head, sat_table, fcn);
+                  else
+                    psdat[ips] = SatLookupSpline(head, sat_table, fcn);
                 }
               });
             }
@@ -1262,7 +1289,7 @@ PFModule   *SaturationNewPublicXtra()
             case 2:  /* InverseAlpha */
               if (dummy1->alphas[ir] <= 0.0)
               {
-                InputError("Error: AirEntryMode InverseAlpha requires alpha > 0 for region <%s>",
+                InputError("Error: AirEntryMode InverseAlpha requires alpha > 0 for region <%s>: %s\n",
                            region, "alpha must be positive");
               }
               h_s = 1.0 / dummy1->alphas[ir];
@@ -1281,8 +1308,20 @@ PFModule   *SaturationNewPublicXtra()
 
           if (num_sample_points)
           {
+            if (num_sample_points < 2)
+            {
+              InputError("Error: Saturation.NumSamplePoints must be >= 2 for region <%s>: %s\n",
+                         region, "table interpolation requires at least two points");
+            }
+
             sprintf(key, "Geom.%s.Saturation.MinPressureHead", region);
             double min_pressure_head = GetDouble(key);
+
+            if (fabs(min_pressure_head) <= h_s)
+            {
+              InputError("Error: |Saturation.MinPressureHead| must exceed AirEntryHead h_s for region <%s>: %s\n",
+                         region, "saturation table has zero or negative range");
+            }
 
             NameArray interp_na = NA_NewNameArray("Spline Linear");
             sprintf(key, "Geom.%s.Saturation.InterpolationMethod", region);

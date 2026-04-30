@@ -2081,7 +2081,7 @@ PFModule   *PhaseRelPermNewPublicXtra()
             case 2:  /* InverseAlpha */
               if (dummy1->alphas[ir] <= 0.0)
               {
-                InputError("Error: AirEntryMode InverseAlpha requires alpha > 0 for region <%s>",
+                InputError("Error: AirEntryMode InverseAlpha requires alpha > 0 for region <%s>: %s\n",
                            region, "alpha must be positive");
               }
               h_s = 1.0 / dummy1->alphas[ir];
@@ -2100,8 +2100,20 @@ PFModule   *PhaseRelPermNewPublicXtra()
 
           if (num_sample_points)
           {
+            if (num_sample_points < 2)
+            {
+              InputError("Error: RelPerm.NumSamplePoints must be >= 2 for region <%s>: %s\n",
+                         region, "table interpolation requires at least two points");
+            }
+
             sprintf(key, "Geom.%s.RelPerm.MinPressureHead", region);
             double min_pressure_head = GetDouble(key);
+
+            if (fabs(min_pressure_head) <= h_s)
+            {
+              InputError("Error: |RelPerm.MinPressureHead| must exceed AirEntryHead h_s for region <%s>: %s\n",
+                         region, "relative permeability table has zero or negative range");
+            }
 
             type_na = NA_NewNameArray("Spline Linear");
 
