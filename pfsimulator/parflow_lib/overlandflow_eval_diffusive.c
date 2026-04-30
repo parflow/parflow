@@ -152,12 +152,14 @@ void    OverlandFlowEvalDiff(
         ip = SubvectorEltIndex(p_sub, i, j, k1);
         ipp1 = (int)SubvectorEltIndex(p_sub, i + 1, j, k1x);
         ippsy = (int)SubvectorEltIndex(p_sub, i, j + 1, k1y);
-        Pupx = pfmax(pp[ipp1], 0.0);
-        Pupy = pfmax(pp[ippsy], 0.0);
-        Pupox = pfmax(opp[ipp1], 0.0);
-        Pupoy = pfmax(opp[ippsy], 0.0);
         Pdown = pfmax(pp[ip], 0.0);
         Pdowno = pfmax(opp[ip], 0.0);
+        /* At domain boundaries (k1x/k1y < 0), zero gradient — no physical
+         * neighbor. Revert to bed slope in that direction. */
+        Pupx = (k1x >= 0) ? pfmax(pp[ipp1], 0.0) : Pdown;
+        Pupy = (k1y >= 0) ? pfmax(pp[ippsy], 0.0) : Pdown;
+        Pupox = (k1x >= 0) ? pfmax(opp[ipp1], 0.0) : Pdowno;
+        Pupoy = (k1y >= 0) ? pfmax(opp[ippsy], 0.0) : Pdowno;
 
         Sf_x = sx_dat[io] + (Pupx - Pdown) / dx;
         Sf_y = sy_dat[io] + (Pupy - Pdown) / dy;
@@ -176,16 +178,16 @@ void    OverlandFlowEvalDiff(
         qy_v[io] = -(Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
       }
 
-      //fix for lower x boundary
+      //fix for lower x boundary — use bed slope only (no gradient to ghost h=0)
       if (k0x < 0.0)
       {
         Press_x = pfmax((pp[ip]), 0.0);
-        Sf_x = sx_dat[io] + (Press_x - 0.0) / dx;
+        Sf_x = sx_dat[io];
 
         Pupox = pfmax(opp[ip], 0.0);
-        Sf_xo = sx_dat[io] + (Pupox - 0.0) / dx;
+        Sf_xo = sx_dat[io];
 
-        double Sf_mag = RPowerR(Sf_xo * Sf_xo + Sf_yo * Sf_yo, 0.5);                               //+ov_epsilon;
+        double Sf_mag = RPowerR(Sf_xo * Sf_xo + Sf_yo * Sf_yo, 0.5);
         if (Sf_mag < ov_epsilon)
           Sf_mag = ov_epsilon;
         if (Sf_x > 0.0)
@@ -194,16 +196,16 @@ void    OverlandFlowEvalDiff(
         }
       }
 
-      //fix for lower y boundary
+      //fix for lower y boundary — use bed slope only (no gradient to ghost h=0)
       if (k0y < 0.0)
       {
         Press_y = pfmax((pp[ip]), 0.0);
-        Sf_y = sy_dat[io] + (Press_y - 0.0) / dx;
+        Sf_y = sy_dat[io];
 
         Pupoy = pfmax(opp[ip], 0.0);
-        Sf_yo = sy_dat[io] + (Pupoy - 0.0) / dx;
+        Sf_yo = sy_dat[io];
 
-        double Sf_mag = RPowerR(Sf_xo * Sf_xo + Sf_yo * Sf_yo, 0.5);                               //Note that the sf_xo was already corrected above
+        double Sf_mag = RPowerR(Sf_xo * Sf_xo + Sf_yo * Sf_yo, 0.5);
         if (Sf_mag < ov_epsilon)
           Sf_mag = ov_epsilon;
 
@@ -213,8 +215,6 @@ void    OverlandFlowEvalDiff(
         }
 
         // Recalculating the x flow in the case with both the lower and left boundaries
-        // This is exactly the same as the q_x in the left boundary conditional above but
-        // recalculating qx_v here again because the sf_mag will be adjusted with the new sf_yo above
         if (k0x < 0.0)
         {
           if (Sf_x > 0.0)
@@ -278,12 +278,14 @@ void    OverlandFlowEvalDiff(
         ip = SubvectorEltIndex(p_sub, i, j, k1);
         ipp1 = (int)SubvectorEltIndex(p_sub, i + 1, j, k1x);
         ippsy = (int)SubvectorEltIndex(p_sub, i, j + 1, k1y);
-        Pupx = pfmax(pp[ipp1], 0.0);
-        Pupy = pfmax(pp[ippsy], 0.0);
-        Pupox = pfmax(opp[ipp1], 0.0);
-        Pupoy = pfmax(opp[ippsy], 0.0);
         Pdown = pfmax(pp[ip], 0.0);
         Pdowno = pfmax(opp[ip], 0.0);
+        /* At domain boundaries (k1x/k1y < 0), zero gradient — no physical
+         * neighbor. Revert to bed slope in that direction. */
+        Pupx = (k1x >= 0) ? pfmax(pp[ipp1], 0.0) : Pdown;
+        Pupy = (k1y >= 0) ? pfmax(pp[ippsy], 0.0) : Pdown;
+        Pupox = (k1x >= 0) ? pfmax(opp[ipp1], 0.0) : Pdowno;
+        Pupoy = (k1y >= 0) ? pfmax(opp[ippsy], 0.0) : Pdowno;
 
         Sf_x = sx_dat[io] + (Pupx - Pdown) / dx;
         Sf_y = sy_dat[io] + (Pupy - Pdown) / dy;
@@ -340,14 +342,14 @@ void    OverlandFlowEvalDiff(
         }
       }
 
-      //fix for lower x boundary
+      //fix for lower x boundary — use bed slope only (no gradient to ghost h=0)
       if (k0x < 0.0)
       {
         Pupx = pfmax((pp[ip]), 0.0);
-        Sf_x = sx_dat[io] + (Pupx - 0.0) / dx;
+        Sf_x = sx_dat[io];
 
         Pupox = pfmax(opp[ip], 0.0);
-        Sf_xo = sx_dat[io] + (Pupox - 0.0) / dx;
+        Sf_xo = sx_dat[io];
 
         double Sf_mag = RPowerR(Sf_xo * Sf_xo + Sf_yo * Sf_yo, 0.5);
         if (Sf_mag < ov_epsilon)
@@ -371,16 +373,16 @@ void    OverlandFlowEvalDiff(
         }
       }
 
-      //fix for lower y boundary
+      //fix for lower y boundary — use bed slope only (no gradient to ghost h=0)
       if (k0y < 0.0)
       {
         Pupy = pfmax((pp[ip]), 0.0);
-        Sf_y = sy_dat[io] + (Pupy - 0.0) / dy;
+        Sf_y = sy_dat[io];
 
         Pupoy = pfmax(opp[ip], 0.0);
-        Sf_yo = sy_dat[io] + (Pupoy - 0.0) / dy;
+        Sf_yo = sy_dat[io];
 
-        double Sf_mag = RPowerR(Sf_xo * Sf_xo + Sf_yo * Sf_yo, 0.5);                      //Note that the sf_xo was already corrected above
+        double Sf_mag = RPowerR(Sf_xo * Sf_xo + Sf_yo * Sf_yo, 0.5);
         if (Sf_mag < ov_epsilon)
           Sf_mag = ov_epsilon;
 
@@ -402,8 +404,6 @@ void    OverlandFlowEvalDiff(
         }
 
         // Recalculating the x flow in the case with both the lower and left boundaries
-        // This is exactly the same as the q_x in the left boundary conditional above but
-        // recalculating qx_v here again because the sf_mag will be adjusted with the new sf_yo above
         if (k0x < 0.0)
         {
           if (Sf_x < 0)
