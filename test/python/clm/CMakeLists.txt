@@ -23,7 +23,7 @@ if(${PARFLOW_HAVE_CLM})
             clm_et_canopy_clumping
             clm_clean_defaults
             clm_best_practices
-            clm_best_practices_forest)
+            clm_best_practices_forest
         )
 
         list(APPEND CLM_2D_TESTS clm_slope)
