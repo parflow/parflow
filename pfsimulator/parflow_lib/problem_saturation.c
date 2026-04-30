@@ -30,6 +30,8 @@
 
 #include <string.h>
 #include <float.h>
+#include <assert.h>
+#include <math.h>
 
 /*--------------------------------------------------------------------------
  * Structures
@@ -55,6 +57,29 @@ typedef struct {
 } Type0;
 
 typedef struct {
+  double min_pressure_head;
+  double h_s;
+  int num_sample_points;
+
+  double *x;
+  double *a;          /* S(h) values */
+  double *d;          /* spline slopes for S */
+  double *a_der;      /* dS/dh values */
+  double *d_der;      /* spline slopes for dS/dh */
+
+  /* used by linear interpolation method */
+  double *slope;
+  double *slope_der;
+
+  int interpolation_method;
+
+  double interval;
+
+  double s_res;
+  double s_sat;
+} SatTable;
+
+typedef struct {
   int num_regions;
   int    *region_indices;
   int data_from_file;
@@ -66,6 +91,8 @@ typedef struct {
   double *ns;
   double *s_ress;
   double *s_difs;
+  double *h_s_values;           /* per-region Ippisch air-entry head */
+  SatTable **lookup_tables;     /* per-region saturation lookup tables */
   Vector *alpha_values;
   Vector *n_values;
   Vector *s_res_values;
@@ -99,6 +126,291 @@ typedef struct {
   Vector  *satRF;
 } Type5;                      /* Spatially varying field over entire domain
                                * read from a file */
+
+/*--------------------------------------------------------------------------
+ * SatComputeTable:
+ *    Builds a saturation lookup table mirroring VanGComputeTable pattern.
+ *--------------------------------------------------------------------------*/
+
+SatTable *SatComputeTable(
+                          int    interpolation_method,
+                          int    num_sample_points,
+                          double min_pressure_head,
+                          double alpha,
+                          double n,
+                          double h_s,
+                          double s_res,
+                          double s_sat)
+{
+  double *x, *a, *d, *a_der, *d_der;
+
+  SatTable *new_table = ctalloc(SatTable, 1);
+
+  new_table->interpolation_method = interpolation_method;
+  new_table->num_sample_points = num_sample_points;
+  new_table->min_pressure_head = min_pressure_head;
+  new_table->h_s = h_s;
+  new_table->s_res = s_res;
+  new_table->s_sat = s_sat;
+
+  new_table->x = ctalloc(double, num_sample_points + 1);
+  new_table->a = ctalloc(double, num_sample_points + 1);
+  new_table->d = ctalloc(double, num_sample_points + 1);
+  new_table->a_der = ctalloc(double, num_sample_points + 1);
+  new_table->d_der = ctalloc(double, num_sample_points + 1);
+
+  if (interpolation_method == 1)
+  {
+    new_table->slope = ctalloc(double, num_sample_points + 1);
+    new_table->slope_der = ctalloc(double, num_sample_points + 1);
+  }
+
+  x = new_table->x;
+  a = new_table->a;
+  d = new_table->d;
+  a_der = new_table->a_der;
+  d_der = new_table->d_der;
+
+  /* Heap-allocated workspace (avoids ~MB-sized VLA at large num_sample_points) */
+  double *h = ctalloc(double, num_sample_points + 1);
+  double *f = ctalloc(double, num_sample_points + 1);
+  double *del = ctalloc(double, num_sample_points + 1);
+  double *f_der = ctalloc(double, num_sample_points + 1);
+  double *del_der = ctalloc(double, num_sample_points + 1);
+  double alph, beta, magn;
+  int index;
+  double interval, m;
+
+  double s_dif = s_sat - s_res;
+  m = 1.0e0 - (1.0e0 / n);
+
+  /* Ippisch: precompute Scs (1.0 when h_s = 0) */
+  double Scs = 1.0;
+  if (h_s > 0.0)
+  {
+    Scs = pow(1.0 + pow(alpha * h_s, n), -m);
+  }
+
+  /* Table domain: h_s to fabs(min_pressure_head), evenly spaced over
+   * num_sample_points segments using num_sample_points + 1 sample points
+   * (indices 0..num_sample_points). Use range/N (not range/(N-1)) so that
+   * x[num_sample_points] lands exactly on |min_pressure_head|. */
+  double table_range = fabs(min_pressure_head) - h_s;
+  interval = table_range / (double)num_sample_points;
+  new_table->interval = interval;
+
+  for (index = 0; index <= num_sample_points; index++)
+  {
+    x[index] = h_s + index * interval;
+
+    double Sc = pow(1.0 + pow(alpha * x[index], n), -m);
+    /* S(h) with Ippisch normalization */
+    a[index] = s_dif * (Sc / Scs) + s_res;
+
+    /* dS/dh (positive magnitude, matching existing convention) */
+    a_der[index] = (m * n * alpha * pow(alpha * x[index], (n - 1))) * s_dif
+                   / (Scs * pow(1.0 + pow(alpha * x[index], n), m + 1));
+  }
+
+  /* Fill in slope for linear interpolation */
+  if (interpolation_method == 1)
+  {
+    for (index = 0; index < num_sample_points; index++)
+    {
+      new_table->slope[index] = (a[index + 1] - a[index]) /
+                                new_table->interval;
+      new_table->slope_der[index] = (a_der[index + 1] - a_der[index]) /
+                                    new_table->interval;
+    }
+  }
+
+  /* Monotonic Hermite spline (Fritsch & Carlson 1980) */
+  memset(del, 0, (num_sample_points + 1) * sizeof(double));
+  for (index = 0; index < num_sample_points; index++)
+  {
+    h[index] = x[index + 1] - x[index];
+    f[index] = a[index + 1] - a[index];
+    del[index] = f[index] / h[index];
+    f_der[index] = a_der[index + 1] - a_der[index];
+    del_der[index] = f_der[index] / h[index];
+  }
+  d[0] = del[0];
+  d[num_sample_points] = del[num_sample_points - 1];
+  d_der[0] = del_der[0];
+  d_der[num_sample_points] = del_der[num_sample_points - 1];
+
+  for (index = 1; index < num_sample_points; index++)
+  {
+    d[index] = (del[index - 1] + del[index]) / 2;
+    d_der[index] = (del_der[index - 1] + del_der[index]) / 2;
+  }
+
+  for (index = 0; index < num_sample_points; index++)
+  {
+    if (del[index] == 0.0)
+    {
+      d[index] = 0;
+      d[index + 1] = 0;
+    }
+    else
+    {
+      alph = d[index] / del[index];
+      beta = d[index + 1] / del[index];
+      magn = pow(alph, 2) + pow(beta, 2);
+      if (magn > 9.0)
+      {
+        d[index] = 3 * alph * del[index] / magn;
+        d[index + 1] = 3 * beta * del[index] / magn;
+      }
+    }
+
+    if (del_der[index] == 0.0)
+    {
+      d_der[index] = 0;
+      d_der[index + 1] = 0;
+    }
+    else
+    {
+      alph = d_der[index] / del_der[index];
+      beta = d_der[index + 1] / del_der[index];
+      magn = pow(alph, 2) + pow(beta, 2);
+      if (magn > 9.0)
+      {
+        d_der[index] = 3 * alph * del_der[index] / magn;
+        d_der[index + 1] = 3 * beta * del_der[index] / magn;
+      }
+    }
+  }
+
+  tfree(h);
+  tfree(f);
+  tfree(del);
+  tfree(f_der);
+  tfree(del_der);
+
+  return new_table;
+}
+
+__host__ __device__
+static inline double SatLookupSpline(
+                                     double    pressure_head,
+                                     SatTable *lookup_table,
+                                     int       fcn)
+{
+  double sat, t;
+  int pt = 0;
+  int num_sample_points = lookup_table->num_sample_points;
+  double min_pressure_head = lookup_table->min_pressure_head;
+  double h_s = lookup_table->h_s;
+
+  assert(pressure_head >= 0);
+
+  /* Air-entry zone: saturated */
+  if (pressure_head <= h_s)
+  {
+    if (fcn == CALCFCN)
+      return lookup_table->s_sat;
+    else
+      return 0.0;
+  }
+
+  /* Beyond dry end of table */
+  if (pressure_head >= fabs(min_pressure_head))
+  {
+    if (fcn == CALCFCN)
+      return lookup_table->s_res;
+    else
+      return 0.0;
+  }
+
+  double interval = lookup_table->interval;
+  pt = (int)floor((pressure_head - h_s) / interval);
+  /* Clamp to last valid spline interval [pt, pt+1]: pt in [0, num_sample_points-1] */
+  if (pt >= num_sample_points)
+  {
+    pt = num_sample_points - 1;
+  }
+
+  double x = lookup_table->x[pt];
+  double a = lookup_table->a[pt];
+  double d = lookup_table->d[pt];
+  double a_der = lookup_table->a_der[pt];
+  double d_der = lookup_table->d_der[pt];
+
+  if (fcn == CALCFCN)
+  {
+    t = (pressure_head - x) / (lookup_table->x[pt + 1] - x);
+    sat = (2.0 * pow(t, 3) - 3.0 * pow(t, 2) + 1.0) * a
+          + (pow(t, 3) - 2.0 * pow(t, 2) + t)
+          * (lookup_table->x[pt + 1] - x) * d + (-2.0 * pow(t, 3)
+                                                 + 3.0 * pow(t, 2)) * (lookup_table->a[pt + 1])
+          + (pow(t, 3) - pow(t, 2)) * (lookup_table->x[pt + 1] - x)
+          * (lookup_table->d[pt + 1]);
+  }
+  else
+  {
+    t = (pressure_head - x) / (lookup_table->x[pt + 1] - x);
+    sat = (2.0 * pow(t, 3) - 3.0 * pow(t, 2) + 1.0) * a_der
+          + (pow(t, 3) - 2.0 * pow(t, 2) + t)
+          * (lookup_table->x[pt + 1] - x) * d_der + (-2.0 * pow(t, 3)
+                                                     + 3.0 * pow(t, 2)) * (lookup_table->a_der[pt + 1])
+          + (pow(t, 3) - pow(t, 2)) * (lookup_table->x[pt + 1] - x)
+          * (lookup_table->d_der[pt + 1]);
+  }
+
+  return sat;
+}
+
+__host__ __device__
+static inline double SatLookupLinear(
+                                     double    pressure_head,
+                                     SatTable *lookup_table,
+                                     int       fcn)
+{
+  int pt = 0;
+  int num_sample_points = lookup_table->num_sample_points;
+  double min_pressure_head = lookup_table->min_pressure_head;
+  double h_s = lookup_table->h_s;
+
+  assert(pressure_head >= 0);
+
+  /* Air-entry zone: saturated */
+  if (pressure_head <= h_s)
+  {
+    if (fcn == CALCFCN)
+      return lookup_table->s_sat;
+    else
+      return 0.0;
+  }
+
+  /* Beyond dry end of table */
+  if (pressure_head >= fabs(min_pressure_head))
+  {
+    if (fcn == CALCFCN)
+      return lookup_table->s_res;
+    else
+      return 0.0;
+  }
+
+  double interval = lookup_table->interval;
+  pt = (int)floor((pressure_head - h_s) / interval);
+  /* Clamp to last valid linear segment [pt, pt+1]: pt in [0, num_sample_points-1] */
+  if (pt >= num_sample_points)
+  {
+    pt = num_sample_points - 1;
+  }
+
+  double x = lookup_table->x[pt];
+
+  if (fcn == CALCFCN)
+  {
+    return lookup_table->a[pt] + lookup_table->slope[pt] * (pressure_head - x);
+  }
+  else
+  {
+    return lookup_table->a_der[pt] + lookup_table->slope_der[pt] * (pressure_head - x);
+  }
+}
 
 /*--------------------------------------------------------------------------
  * Saturation:
@@ -221,7 +533,7 @@ void     Saturation(
     case 1: /* Van Genuchten saturation curve */
     {
       int data_from_file;
-      double *alphas, *ns, *s_ress, *s_difs;
+      double *alphas, *ns, *s_ress, *s_difs, *h_s_values;
 
       Vector *n_values, *alpha_values, *s_res_values, *s_sat_values;
 
@@ -233,6 +545,7 @@ void     Saturation(
       ns = (dummy1->ns);
       s_ress = (dummy1->s_ress);
       s_difs = (dummy1->s_difs);
+      h_s_values = (dummy1->h_s_values);
       data_from_file = (dummy1->data_from_file);
 
       if (data_from_file == 0) /* Soil parameters given by region */
@@ -262,53 +575,98 @@ void     Saturation(
             ppdat = SubvectorData(pp_sub);
             pddat = SubvectorData(pd_sub);
 
-            if (fcn == CALCFCN)
+            if (dummy1->lookup_tables && dummy1->lookup_tables[ir])
             {
+              /* Saturation lookup table */
+              SatTable *sat_table = dummy1->lookup_tables[ir];
+
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
               {
                 int ips = SubvectorEltIndex(ps_sub, i, j, k);
                 int ipp = SubvectorEltIndex(pp_sub, i, j, k);
                 int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-                double alpha = alphas[ir];
-                double n = ns[ir];
-                double m = 1.0e0 - (1.0e0 / n);
-                double s_res = s_ress[ir];
-                double s_dif = s_difs[ir];
-
                 if (ppdat[ipp] >= 0.0)
-                  psdat[ips] = s_dif + s_res;
+                  psdat[ips] = (fcn == CALCFCN) ? sat_table->s_sat : 0.0;
                 else
                 {
                   double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                  psdat[ips] = s_dif / pow(1.0 + pow((alpha * head), n), m)
-                               + s_res;
+                  if (sat_table->interpolation_method == 1)
+                    psdat[ips] = SatLookupLinear(head, sat_table, fcn);
+                  else
+                    psdat[ips] = SatLookupSpline(head, sat_table, fcn);
                 }
               });
-            }    /* End if clause */
-            else /* fcn = CALCDER */
+            }
+            else
             {
-              GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+              /* Direct evaluation (with Ippisch modification if h_s > 0) */
+              double h_s_val = h_s_values ? h_s_values[ir] : 0.0;
+              double Scs = 1.0;
+              if (h_s_val > 0.0)
               {
-                int ips = SubvectorEltIndex(ps_sub, i, j, k);
-                int ipp = SubvectorEltIndex(pp_sub, i, j, k);
-                int ipd = SubvectorEltIndex(pd_sub, i, j, k);
+                double alpha_r = alphas[ir];
+                double n_r = ns[ir];
+                double m_r = 1.0e0 - (1.0e0 / n_r);
+                Scs = pow(1.0 + pow(alpha_r * h_s_val, n_r), -m_r);
+              }
 
-                double alpha = alphas[ir];
-                double n = ns[ir];
-                double m = 1.0e0 - (1.0e0 / n);
-                double s_dif = s_difs[ir];
-
-                if (ppdat[ipp] >= 0.0)
-                  psdat[ips] = 0.0;
-                else
+              if (fcn == CALCFCN)
+              {
+                GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                 {
-                  double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                  psdat[ips] = (m * n * alpha * pow(alpha * head, (n - 1))) * s_dif
-                               / (pow(1.0 + pow(alpha * head, n), m + 1));
-                }
-              });
-            }   /* End else clause */
+                  int ips = SubvectorEltIndex(ps_sub, i, j, k);
+                  int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+                  int ipd = SubvectorEltIndex(pd_sub, i, j, k);
+
+                  double alpha = alphas[ir];
+                  double n = ns[ir];
+                  double m = 1.0e0 - (1.0e0 / n);
+                  double s_res = s_ress[ir];
+                  double s_dif = s_difs[ir];
+
+                  if (ppdat[ipp] >= 0.0)
+                    psdat[ips] = s_dif + s_res;
+                  else
+                  {
+                    double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                    if (head <= h_s_val)
+                      psdat[ips] = s_dif + s_res;
+                    else
+                    {
+                      double Sc = pow(1.0 + pow(alpha * head, n), -m);
+                      psdat[ips] = s_dif * (Sc / Scs) + s_res;
+                    }
+                  }
+                });
+              }    /* End if clause */
+              else /* fcn = CALCDER */
+              {
+                GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+                {
+                  int ips = SubvectorEltIndex(ps_sub, i, j, k);
+                  int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+                  int ipd = SubvectorEltIndex(pd_sub, i, j, k);
+
+                  double alpha = alphas[ir];
+                  double n = ns[ir];
+                  double m = 1.0e0 - (1.0e0 / n);
+                  double s_dif = s_difs[ir];
+
+                  if (ppdat[ipp] >= 0.0)
+                    psdat[ips] = 0.0;
+                  else
+                  {
+                    double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                    if (head <= h_s_val)
+                      psdat[ips] = 0.0;
+                    else
+                      psdat[ips] = (m * n * alpha * pow(alpha * head, (n - 1))) * s_dif
+                                   / (Scs * pow(1.0 + pow(alpha * head, n), m + 1));
+                  }
+                });
+              }   /* End else clause */
+            }     /* End table/direct-eval branch */
           }     /* End subgrid loop */
         }       /* End loop over regions */
       }         /* End if data not from file */
@@ -899,6 +1257,24 @@ PFModule   *SaturationNewPublicXtra()
         (dummy1->ns) = ctalloc(double, num_regions);
         (dummy1->s_ress) = ctalloc(double, num_regions);
         (dummy1->s_difs) = ctalloc(double, num_regions);
+        (dummy1->h_s_values) = ctalloc(double, num_regions);
+        (dummy1->lookup_tables) = ctalloc(SatTable*, num_regions);
+
+        /* Read Ippisch air-entry mode */
+        int air_entry_mode = 0;  /* 0=None, 1=Constant, 2=InverseAlpha, 3=PerRegion */
+        double global_h_s = 0.0;
+        {
+          NameArray air_entry_na = NA_NewNameArray("None Constant InverseAlpha PerRegion");
+          char *air_entry_name = GetStringDefault("Phase.Saturation.VanGenuchten.AirEntryMode", "None");
+          air_entry_mode = NA_NameToIndexExitOnError(air_entry_na, air_entry_name,
+                                                     "Phase.Saturation.VanGenuchten.AirEntryMode");
+          NA_FreeNameArray(air_entry_na);
+
+          if (air_entry_mode == 1)  /* Constant */
+          {
+            global_h_s = GetDouble("Phase.Saturation.VanGenuchten.AirEntryHead");
+          }
+        }
 
         for (ir = 0; ir < num_regions; ir++)
         {
@@ -927,6 +1303,76 @@ PFModule   *SaturationNewPublicXtra()
           s_sat = GetDouble(key);
 
           (dummy1->s_difs[ir]) = s_sat - (dummy1->s_ress[ir]);
+
+          /* Compute h_s for this region based on AirEntryMode */
+          double h_s = 0.0;
+          switch (air_entry_mode)
+          {
+            case 0:  /* None */
+              h_s = 0.0;
+              break;
+
+            case 1:  /* Constant */
+              h_s = global_h_s;
+              break;
+
+            case 2:  /* InverseAlpha */
+              if (dummy1->alphas[ir] <= 0.0)
+              {
+                InputError("Error: AirEntryMode InverseAlpha requires alpha > 0 for region <%s>: %s\n",
+                           region, "alpha must be positive");
+              }
+              h_s = 1.0 / dummy1->alphas[ir];
+              break;
+
+            case 3:  /* PerRegion */
+              sprintf(key, "Geom.%s.Saturation.AirEntryHead", region);
+              h_s = GetDouble(key);
+              break;
+          }
+          dummy1->h_s_values[ir] = h_s;
+
+          /* Build saturation lookup table if requested */
+          sprintf(key, "Geom.%s.Saturation.NumSamplePoints", region);
+          int num_sample_points = GetIntDefault(key, 0);
+
+          if (num_sample_points)
+          {
+            if (num_sample_points < 2)
+            {
+              InputError("Error: Saturation.NumSamplePoints must be >= 2 for region <%s>: %s\n",
+                         region, "table interpolation requires at least two points");
+            }
+
+            sprintf(key, "Geom.%s.Saturation.MinPressureHead", region);
+            double min_pressure_head = GetDouble(key);
+
+            if (fabs(min_pressure_head) <= h_s)
+            {
+              InputError("Error: |Saturation.MinPressureHead| must exceed AirEntryHead h_s for region <%s>: %s\n",
+                         region, "saturation table has zero or negative range");
+            }
+
+            NameArray interp_na = NA_NewNameArray("Spline Linear");
+            sprintf(key, "Geom.%s.Saturation.InterpolationMethod", region);
+            char *interp_name = GetStringDefault(key, "Spline");
+            int interpolation_method = NA_NameToIndexExitOnError(interp_na, interp_name, key);
+            NA_FreeNameArray(interp_na);
+
+            dummy1->lookup_tables[ir] = SatComputeTable(
+                                                        interpolation_method,
+                                                        num_sample_points,
+                                                        min_pressure_head,
+                                                        dummy1->alphas[ir],
+                                                        dummy1->ns[ir],
+                                                        h_s,
+                                                        dummy1->s_ress[ir],
+                                                        s_sat);
+          }
+          else
+          {
+            dummy1->lookup_tables[ir] = NULL;
+          }
         }
 
         dummy1->alpha_file = NULL;
@@ -955,6 +1401,8 @@ PFModule   *SaturationNewPublicXtra()
         dummy1->ns = NULL;
         dummy1->s_ress = NULL;
         dummy1->s_difs = NULL;
+        dummy1->h_s_values = NULL;
+        dummy1->lookup_tables = NULL;
       }
 
       (public_xtra->data) = (void*)dummy1;
@@ -1130,6 +1578,27 @@ void  SaturationFreePublicXtra()
           tfree(dummy1->ns);
           tfree(dummy1->s_ress);
           tfree(dummy1->s_difs);
+          tfree(dummy1->h_s_values);
+
+          if (dummy1->lookup_tables)
+          {
+            int num_regions = dummy1->num_regions;
+            for (int ir = 0; ir < num_regions; ir++)
+            {
+              if (dummy1->lookup_tables[ir])
+              {
+                tfree(dummy1->lookup_tables[ir]->x);
+                tfree(dummy1->lookup_tables[ir]->a);
+                tfree(dummy1->lookup_tables[ir]->d);
+                tfree(dummy1->lookup_tables[ir]->a_der);
+                tfree(dummy1->lookup_tables[ir]->d_der);
+                tfree(dummy1->lookup_tables[ir]->slope);
+                tfree(dummy1->lookup_tables[ir]->slope_der);
+                tfree(dummy1->lookup_tables[ir]);
+              }
+            }
+            tfree(dummy1->lookup_tables);
+          }
         }
 
         tfree(dummy1);
