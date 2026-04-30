@@ -191,9 +191,12 @@ SatTable *SatComputeTable(
     Scs = pow(1.0 + pow(alpha * h_s, n), -m);
   }
 
-  /* Table domain: h_s to fabs(min_pressure_head), evenly spaced */
+  /* Table domain: h_s to fabs(min_pressure_head), evenly spaced over
+   * num_sample_points segments using num_sample_points + 1 sample points
+   * (indices 0..num_sample_points). Use range/N (not range/(N-1)) so that
+   * x[num_sample_points] lands exactly on |min_pressure_head|. */
   double table_range = fabs(min_pressure_head) - h_s;
-  interval = table_range / (double)(num_sample_points - 1);
+  interval = table_range / (double)num_sample_points;
   new_table->interval = interval;
 
   for (index = 0; index <= num_sample_points; index++)
