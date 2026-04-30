@@ -367,22 +367,49 @@ static inline double SatLookupLinear(
                                      SatTable *lookup_table,
                                      int       fcn)
 {
-  PF_UNUSED(pressure_head);
-  PF_UNUSED(lookup_table);
-  PF_UNUSED(fcn);
+  int pt = 0;
+  int num_sample_points = lookup_table->num_sample_points;
+  double min_pressure_head = lookup_table->min_pressure_head;
+  double h_s = lookup_table->h_s;
 
-  /* Stub: linear interpolation for the saturation table is not yet
-   * implemented. Mirror the rel-perm SatLookupLinear structure when
-   * adding it. Aborts because parsing accepts InterpolationMethod=Linear. */
-#ifndef __CUDA_ARCH__
-  if (!amps_Rank(amps_CommWorld))
+  assert(pressure_head >= 0);
+
+  /* Air-entry zone: saturated */
+  if (pressure_head <= h_s)
   {
-    amps_Printf("Error: Saturation linear interpolation not yet implemented; "
-                "use Geom.<region>.Saturation.InterpolationMethod = \"Spline\".\n");
+    if (fcn == CALCFCN)
+      return lookup_table->s_sat;
+    else
+      return 0.0;
   }
-  exit(1);
-#endif
-  return 0.0;
+
+  /* Beyond dry end of table */
+  if (pressure_head >= fabs(min_pressure_head))
+  {
+    if (fcn == CALCFCN)
+      return lookup_table->s_res;
+    else
+      return 0.0;
+  }
+
+  double interval = lookup_table->interval;
+  pt = (int)floor((pressure_head - h_s) / interval);
+  /* Clamp to last valid linear segment [pt, pt+1]: pt in [0, num_sample_points-1] */
+  if (pt >= num_sample_points)
+  {
+    pt = num_sample_points - 1;
+  }
+
+  double x = lookup_table->x[pt];
+
+  if (fcn == CALCFCN)
+  {
+    return lookup_table->a[pt] + lookup_table->slope[pt] * (pressure_head - x);
+  }
+  else
+  {
+    return lookup_table->a_der[pt] + lookup_table->slope_der[pt] * (pressure_head - x);
+  }
 }
 
 /*--------------------------------------------------------------------------
