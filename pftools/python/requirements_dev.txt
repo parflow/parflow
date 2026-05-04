@@ -1,3 +1,4 @@
 ###### Requirements for development of PFTools package ######
 twine
-black
+black==26.3.1
+gersemi==0.27.2

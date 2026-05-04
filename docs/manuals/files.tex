@@ -381,7 +381,7 @@ pfset GeomInput.Names    "solidinput indinput boxinput"
 {
 This defines the input type for the geometry input with
 {\em geom\_input\_name}.
-This key must be one of: {\bf SolidFile, IndicatorField}, {\bf Box}.
+This key must be one of: {\bf SolidFile, IndicatorField, IndicatorFieldNC}, {\bf Box}.
 }
 \begin{display}\begin{verbatim}
 pfset GeomInput.solidinput.InputType  SolidFile
@@ -394,7 +394,7 @@ input.  For a geometry input type of Box, the list should contain a
 single geometry name.  For the SolidFile geometry type this should
 contain a list with the same number of gemetries as were defined
 using GMS.  The order of geometries in the SolidFile should match the
-names.  For IndicatorField types you need to specify the value in the
+names.  For IndicatorField and IndicatorFieldNC types you need to specify the value in the
 input field which matches the name using
 GeomInput.{\em geom\_input\_name}.Value.
 }
@@ -405,7 +405,7 @@ pfset GeomInput.solidinput.GeomNames "domain bottomlayer \
 
 \pfkey{string}{GeomInput.{\em geom\_input\_name}.Filename}{no default}
 {
-For IndicatorField and SolidFile geometry inputs this key specifies
+For IndicatorField, IndicatorFieldNC and SolidFile geometry inputs this key specifies
 the input filename which contains the field or solid information.
 }
 \begin{display}\begin{verbatim}
@@ -415,7 +415,7 @@ pfset GeomInput.solidinput.FileName   ocwd.pfsol
 
 \pfkey{integer}{GeomInput.{\em geometry\_input\_name}.Value}{no default}
 {
-For IndicatorField geometry inputs you need to specify the mapping between
+For IndicatorField and IndicatorFieldNC geometry inputs you need to specify the mapping between
 values in the input file and the geometry names.  The named geometry will
 be defined wherever the input file is equal to the specified value.
 }

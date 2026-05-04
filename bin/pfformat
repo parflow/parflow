@@ -16,6 +16,7 @@
 OPTIND=1         # Reset in case getopts has been used previously in the shell.
 
 UNCRUSTIFY_VERSION='0.79.0'
+BLACK_VERSION='26.3.1'
 
 # Exit script
 # $1 (required): Message to print on exit
@@ -74,6 +75,20 @@ function parse_params() {
     done
 }
 
+function check_black_version() {
+   # Check if black is available as a command
+   if ! command -v pfpython -m black >/dev/null 2>&1; then
+      script_exit "black is not installed"
+   fi
+
+   # Get the installed version
+   version="$(pfpython -m black --version 2>/dev/null | awk '{print $4}')"
+
+   if [ "$version" != "$BLACK_VERSION" ]; then
+      script_exit "Python black package must be version ${BLACK_VERSION}, found ${version}"
+   fi
+}
+
 function check_version() {
    if command -v "uncrustify" &>/dev/null; then
       version=$(uncrustify --version)
@@ -81,8 +96,7 @@ function check_version() {
 	 *${UNCRUSTIFY_VERSION}*)
 	 ;;
 	 *)
-	    script_exit "Uncrustify must be version ${UNCRUSTIFY_VERSION}"
-	    exit 1
+	    script_exit "Uncrustify must be version ${UNCRUSTIFY_VERSION}, found ${version}"
 	    ;;
       esac
    else
@@ -106,13 +120,15 @@ function main() {
    
    check_version
 
+   check_black_version 
+
    failed=false
 
    for i in $(find . -name \*.[ch] | grep -v './build\|third_party\|./py-env')
    do
       if $check
       then
-	 if output=$(uncrustify --check -c bin/parflow.cfg $i)
+	 if output=$(uncrustify --check -c bin/parflow.cfg $i 2>&1)
 	 then
 	    log 'pfformat PASSED %s\n' $i
 	 else
@@ -124,10 +140,9 @@ function main() {
       fi
    done
 
-   # Disable this for now while Python is being refactored.
    if $check
    then
-      if output=$($PARFLOW_DIR/bin/pfpython -m black . --check)
+      if output=$($PARFLOW_DIR/bin/pfpython -m black . --check 2>&1)
       then
 	 log 'pfformat PASSED %s\n' $i
       else
@@ -136,6 +151,19 @@ function main() {
       fi
    else
       $PARFLOW_DIR/bin/pfpython -m black .
+   fi
+
+   if $check
+   then
+      if output=$($PARFLOW_DIR/bin/pfpython -m gersemi . --check 2>&1)
+      then
+	 log 'pfformat PASSED %s\n' $i
+      else
+	 printf 'pfFormat FAILED\nCMake style checker gersemi output was «%s»\n' "$output\n"
+	 failed=true
+      fi
+   else
+      $PARFLOW_DIR/bin/pfpython -m gersemi --in-place .
    fi
 
    if $check

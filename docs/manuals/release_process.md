@@ -19,6 +19,7 @@ Use standard Git/GitHub commands to create a branch for editing some files for t
 ```shell
 VERSION=v3.13.0
 git clone git@github.com:parflow/parflow.git
+cd parflow
 git checkout -b $VERSION
 ```
 
@@ -30,7 +31,9 @@ release changes to the RELEASE notes.
 
 Edit `./VERSION` file with current version.
 
-Edit `./docs/user_Manual/conf.py` and update version number.
+Edit `./docs/user_manual/conf.py` and update version number.
+
+Edit `./CMakeLists.txt` and update version number in project specification.
 
 ### Update pftools version number 
 
@@ -120,8 +123,39 @@ Check PyPI to make sure your package update was published correctly.
 
 ## Check ParFlow User Manual
 
-The manual update should be automated by ReadTheDocs.   Check that a new version has been uploaded after the 
-release has been merged on GitHub.
-  
+The manual update should be automated by [ReadTheDocs](https://parflow.readthedocs.io/en/latest/).   Check that a new version has been uploaded after the release has been done on GitHub.
 
+## Check Zenodo
 
+Check to ensure a new DOI number has been generated for the release.
+The generic DOI number for all releases can be found at
+[Zenodo](https://doi.org/10.5281/zenodo.4816884).  A new unique DOI
+number for the release should have been generated if the Github
+integration is working correctly.
+
+## Email announcement
+
+Send Email announcement to the [ParFlow Google Group](https://groups.google.com/g/parflow).
+
+A template for the email is:
+
+```
+Hello ParFlow users,
+
+Thanks to the generous contributions of the ParFlow community, a new version has been published to GitHub. ParFlow v3.14.0 includes new features, bug fixes, performance enhancements, and portability improvements.
+
+A summary of the updates is available on the GitHub site:
+
+    https://github.com/parflow/parflow/blob/master/RELEASE-NOTES.md
+
+The release source is available for download at:
+
+    https://github.com/parflow/parflow/releases
+
+Docker image download information is available here:
+
+    https://github.com/parflow/docker
+
+Thank you to everyone in the community for your contributions and bug fixes.
+
+```

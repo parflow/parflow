@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-subroutine clm_dynvegpar (clm)
+subroutine clm_dynvegpar (clm,clm_forc_veg)
 
 !=========================================================================
 !
@@ -36,6 +36,12 @@ subroutine clm_dynvegpar (clm)
 
   real(r8) seasb   !temperature dependence of vegetation cover [-]
   real(r8) fb      !fraction of canopy layer covered by snow
+  real(r8) tau_seconds  !EMA smoothing window in seconds
+  real(r8) alpha_ema    !EMA blending coefficient
+  real(r8) coszen_pos   !non-negative coszen
+  real(r8) z0_eff       !effective roughness length for SZA frac_sno
+  real(r8) w_sza        !SZA interpolation weight
+  integer,intent(in)  :: clm_forc_veg
 
 !=== End Variable List ===================================================
 
@@ -61,8 +67,10 @@ subroutine clm_dynvegpar (clm)
   fb=min(dble(1.) ,fb) 
   !fb = fb/(1.+fb) !- never covers grass
 
-  clm%elai = clm%tlai*(1.-fb)
-  clm%esai = clm%tsai*(1.-fb)
+  if  (clm_forc_veg == 0) then
+      clm%elai = clm%tlai*(1.-fb)
+      clm%esai = clm%tsai*(1.-fb)
+  endif
 
   if (clm%elai < 0.05) clm%elai = 0._r8
   if (clm%esai < 0.05) clm%esai = 0._r8
@@ -76,7 +84,36 @@ subroutine clm_dynvegpar (clm)
   endif
   
 ! Fraction of soil covered by snow
+! @RMM 2025: Added configurable frac_sno schemes and adjustable roughness parameter
 
-  clm%frac_sno = clm%snowdp/(10.*clm%zlnd + clm%snowdp)  
+! Update exponentially smoothed coszen for SZA-modulated frac_sno
+  if (clm%frac_sno_type == 1) then
+     tau_seconds = clm%frac_sno_tau_sza * 3600.0d0
+     alpha_ema = min(1.0d0, clm%dtime / tau_seconds)
+     coszen_pos = max(0.0d0, clm%coszen)
+     if (clm%coszen_avg < 1.0d-10 .and. coszen_pos > 0.0d0) then
+        clm%coszen_avg = coszen_pos
+     else
+        clm%coszen_avg = alpha_ema * coszen_pos &
+             + (1.0d0 - alpha_ema) * clm%coszen_avg
+     endif
+  endif
+
+  select case (clm%frac_sno_type)
+
+  case (0)  ! CLM default
+     ! Use configurable roughness parameter (defaults to zlnd for backward compatibility)
+     clm%frac_sno = clm%snowdp / (10.0d0 * clm%frac_sno_roughness + clm%snowdp)
+
+  case (1)  ! SZA-modulated fractional snow cover (interpolation form)
+     w_sza = clm%coszen_avg ** clm%frac_sno_gamma_sza
+     z0_eff = clm%frac_sno_roughness_min * (1.0d0 - w_sza) &
+          + clm%frac_sno_roughness_max * w_sza
+     clm%frac_sno = clm%snowdp / (10.0d0 * z0_eff + clm%snowdp)
+
+  case default  ! Default to CLM formulation
+     clm%frac_sno = clm%snowdp / (10.0d0 * clm%frac_sno_roughness + clm%snowdp)
+
+  end select
 
 end subroutine clm_dynvegpar

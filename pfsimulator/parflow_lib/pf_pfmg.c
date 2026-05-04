@@ -43,6 +43,8 @@ typedef struct {
   int smoother;
   int raptype;
 
+  int hypre_logging;
+
   int time_index_pfmg;
   int time_index_copy_hypre;
 } PublicXtra;
@@ -83,23 +85,12 @@ void         PFMG(
 
   HYPRE_StructSolver hypre_pfmg_data = instance_xtra->hypre_pfmg_data;
 
-  int num_iterations;
-  double rel_norm;
-
   /* Copy rhs to hypre_b vector. */
   BeginTiming(public_xtra->time_index_copy_hypre);
 
   CopyParFlowVectorToHypreVector(rhs, &hypre_b);
 
   EndTiming(public_xtra->time_index_copy_hypre);
-
-  if (tol > 0.0)
-  {
-    IfLogging(1)
-    {
-      HYPRE_StructPFMGSetLogging(instance_xtra->hypre_pfmg_data, 1);
-    }
-  }
 
   /* Invoke the preconditioner using a zero initial guess */
   HYPRE_StructPFMGSetZeroGuess(hypre_pfmg_data);
@@ -110,10 +101,13 @@ void         PFMG(
 
   EndTiming(public_xtra->time_index_pfmg);
 
-  if (tol > 0.0)
+  if (public_xtra->hypre_logging)
   {
     IfLogging(1)
     {
+      int num_iterations;
+      double rel_norm;
+
       FILE  *log_file;
 
       HYPRE_StructPFMGGetNumIterations(hypre_pfmg_data, &num_iterations);
@@ -224,6 +218,16 @@ PFModule  *PFMGInitInstanceXtra(
     HYPRE_StructPFMGSetDxyz(instance_xtra->hypre_pfmg_data,
                             instance_xtra->dxyz);
 
+    /* Enable logging BEFORE setup so that norms arrays are allocated */
+    if (public_xtra->hypre_logging)
+    {
+      IfLogging(1)
+      {
+        HYPRE_StructPFMGSetLogging(instance_xtra->hypre_pfmg_data, 1);
+        HYPRE_StructPFMGSetPrintLevel(instance_xtra->hypre_pfmg_data, 2);
+      }
+    }
+
     HYPRE_StructPFMGSetup(instance_xtra->hypre_pfmg_data,
                           instance_xtra->hypre_mat,
                           instance_xtra->hypre_b, instance_xtra->hypre_x);
@@ -311,6 +315,11 @@ PFModule  *PFMGNewPublicXtra(char *name)
   {
     InputError("Error: Galerkin RAPType is not compatible with Smoother <%s>.\n",
                smoother_name, key);
+  }
+
+  {
+    char *hypre_logging_str = GetStringDefault("Solver.Linear.Preconditioner.HypreLogging", "False");
+    public_xtra->hypre_logging = (!strcmp(hypre_logging_str, "True")) ? 1 : 0;
   }
 
   public_xtra->time_index_pfmg = RegisterTiming("PFMG");
