@@ -131,6 +131,7 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
             list(APPEND PARALLEL_3DTOPO_TESTS
                 default_richards_restart_netcdf
             )
+        endif()
     endif()
 
     list(APPEND PARALLEL_2DTOPO_TESTS
