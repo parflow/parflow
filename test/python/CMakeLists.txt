@@ -1,25 +1,25 @@
 include(ParflowTest)
 
 set(TESTS
-  default_single
-  default_single_read_porosity
-  default_richards_wells
-  forsyth2
-  harvey_flow
-  harvey_flow_pgs
-  crater2D
-  crater2D_vangtable_spline
-  crater2D_vangtable_linear
-  small_domain
-  richards_hydrostatic_equilibrium
-  indicator_field
-  LW_surface_press
-  overland_tiltedV_MGSemiTest
-  deep_aquifer_infiltration
-  deep_aquifer_slab
-  deep_aquifer_vcatch
-  deep_aquifer_vcatch_kin
-  deep_aquifer_vcatch_diff
+    default_single
+    default_single_read_porosity
+    default_richards_wells
+    forsyth2
+    harvey_flow
+    harvey_flow_pgs
+    crater2D
+    crater2D_vangtable_spline
+    crater2D_vangtable_linear
+    small_domain
+    richards_hydrostatic_equilibrium
+    indicator_field
+    LW_surface_press
+    overland_tiltedV_MGSemiTest
+    deep_aquifer_infiltration
+    deep_aquifer_slab
+    deep_aquifer_vcatch
+    deep_aquifer_vcatch_kin
+    deep_aquifer_vcatch_diff
 )
 
 if(${PARFLOW_HAVE_HYPRE})
@@ -132,21 +132,21 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
                 default_richards_restart_netcdf
             )
         endif()
-    endif()
 
-    list(APPEND PARALLEL_2DTOPO_TESTS
-        default_overland
-        default_overland.pfmg.jac
-        default_overland.pfmg_octree.fulljac
-        LW_var_dz
-        LW_var_dz_spinup
-        overland_slopingslab_KWE
-        richards_box_proctest_vardz
-        reservoir_mpi_test
-    )
-
-    if(${PARFLOW_HAVE_SILO})
-        list(APPEND PARALLEL_2DTOPO_TESTS default_overland.pfmg_octree.jac)
+        list(APPEND PARALLEL_2DTOPO_TESTS
+            default_overland
+            default_overland.pfmg.jac
+            default_overland.pfmg_octree.fulljac
+            LW_var_dz
+            LW_var_dz_spinup
+            overland_slopingslab_KWE
+            richards_box_proctest_vardz
+            reservoir_mpi_test
+        )
+        
+        if(${PARFLOW_HAVE_SILO})
+            list(APPEND PARALLEL_2DTOPO_TESTS default_overland.pfmg_octree.jac)
+        endif()
     endif()
 endif()
 
@@ -165,13 +165,11 @@ endforeach()
 ###################################################################
 
 foreach(inputfile ${PARALLEL_2DTOPO_TESTS})
-
-  pf_add_py_parallel_test(${inputfile} 1 2 1)
-  pf_add_py_parallel_test(${inputfile} 2 1 1)
-  pf_add_py_parallel_test(${inputfile} 1 4 1)
-  pf_add_py_parallel_test(${inputfile} 4 1 1)
-  pf_add_py_parallel_test(${inputfile} 2 2 1)
-
+    pf_add_py_parallel_test(${inputfile} 1 2 1)
+    pf_add_py_parallel_test(${inputfile} 2 1 1)
+    pf_add_py_parallel_test(${inputfile} 1 4 1)
+    pf_add_py_parallel_test(${inputfile} 4 1 1)
+    pf_add_py_parallel_test(${inputfile} 2 2 1)
 endforeach()
 
 foreach(inputfile ${PARALLEL_3DTOPO_TESTS})
