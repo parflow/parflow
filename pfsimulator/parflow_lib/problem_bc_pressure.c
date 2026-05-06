@@ -1126,6 +1126,21 @@ BCStruct    *BCPressure(
 
           break;
         } /* End OverlandDiffusive */
+
+        case DeepAquifer:
+        {
+          GetBCPressureTypeStruct(DeepAquifer, interval_data, bc_pressure_data,
+                                  ipatch, interval_number);
+
+          /* interval data is empty - do nothing */
+
+          ForSubgridI(is, subgrids)
+          {
+            values[ipatch][is] = NULL;
+          }
+
+          break;
+        }
       }
     }
   }

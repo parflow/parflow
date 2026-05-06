@@ -110,6 +110,7 @@ typedef struct {
   PFModule  *overlandflow_eval;        //DOK
   PFModule  *overlandflow_eval_diff;         //@RMM
   PFModule  *overlandflow_eval_kin;  //@MCB
+  PFModule  *deepaquifer_eval;
 
   /* @RMM Variable dZ */
   PFModule  *dz_mult;           //rmm
@@ -172,6 +173,12 @@ typedef struct {
   Vector *wc_x;
   Vector *wc_y;
   Vector *mann;
+
+  /* deep aquifer */
+  Vector *deep_aquifer_permeability;
+  Vector *deep_aquifer_specific_yield;
+  Vector *deep_aquifer_elevation;
+  double deep_aquifer_aquifer_depth;
 
   /* @RMM terrain grid */
   Vector *x_sslope;
@@ -243,6 +250,7 @@ typedef struct {
 #define ProblemOverlandFlowEval(problem)          ((problem)->overlandflow_eval)   //DOK
 #define ProblemOverlandFlowEvalDiff(problem)          ((problem)->overlandflow_eval_diff)   //@RMM
 #define ProblemOverlandFlowEvalKin(problem)  ((problem)->overlandflow_eval_kin) //@MCB
+#define ProblemDeepAquiferEval(problem)           ((problem)->deepaquifer_eval)
 
 #define ProblemdzScale(problem)            ((problem)->dz_mult)    //RMM
 #define ProblemRealSpaceZ(problem)            ((problem)->real_space_z)
@@ -300,6 +308,12 @@ typedef struct {
 #define ProblemDataChannelWidthX(problem_data)  ((problem_data)->wc_x)
 #define ProblemDataChannelWidthY(problem_data)  ((problem_data)->wc_y)
 #define ProblemDataMannings(problem_data)       ((problem_data)->mann)   //sk
+
+#define ProblemDataDeepAquiferPermeability(problem_data)   ((problem_data)->deep_aquifer_permeability)
+#define ProblemDataDeepAquiferSpecificYield(problem_data)  ((problem_data)->deep_aquifer_specific_yield)
+#define ProblemDataDeepAquiferAquiferDepth(problem_data)      ((problem_data)->deep_aquifer_aquifer_depth)
+#define ProblemDataDeepAquiferElevation(problem_data)      ((problem_data)->deep_aquifer_elevation)
+
 #define ProblemDataSSlopeX(problem_data)        ((problem_data)->x_sslope)   //RMM
 #define ProblemDataSSlopeY(problem_data)        ((problem_data)->y_sslope)   //RMM
 #define ProblemDataZmult(problem_data)          ((problem_data)->dz_mult)    //RMM
