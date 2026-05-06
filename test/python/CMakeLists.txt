@@ -82,18 +82,16 @@ if(${PARFLOW_HAVE_SILO})
 endif()
 
 if(${PARFLOW_HAVE_NETCDF})
-  list(APPEND TESTS
-    indicator_field_netcdf
-    deep_aquifer_slab_netcdf
-  )
+    list(APPEND TESTS indicator_field_netcdf deep_aquifer_slab_netcdf)
 
-  if(${PARFLOW_HAVE_HYPRE})
-    #This test is failing on several platforms
-    list(APPEND TESTS
-      #    	default_richards_with_netcdf
-      default_richards_restart_netcdf
-    )
-  endif()
+    if(${PARFLOW_HAVE_HYPRE})
+        # This test is failing on several platforms
+        list(
+            APPEND TESTS
+            # default_richards_with_netcdf
+            default_richards_restart_netcdf
+        )
+    endif()
 endif()
 
 set(SAMRAI_TESTS)
@@ -108,13 +106,15 @@ endif()
 list(APPEND PARALLEL_3DTOPO_TESTS "")
 list(APPEND PARALLEL_2DTOPO_TESTS "")
 
-if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
-    list(APPEND PARALLEL_3DTOPO_TESTS
+if(${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI)
+    list(
+        APPEND PARALLEL_3DTOPO_TESTS
         default_single
         default_single_read_porosity
     )
 
-    list(APPEND PARALLEL_2DTOPO_TESTS
+    list(
+        APPEND PARALLEL_2DTOPO_TESTS
         deep_aquifer_slab
         deep_aquifer_vcatch
         deep_aquifer_vcatch_kin
@@ -122,18 +122,18 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
     )
 
     if(${PARFLOW_HAVE_HYPRE})
-        list(APPEND PARALLEL_3DTOPO_TESTS
+        list(
+            APPEND PARALLEL_3DTOPO_TESTS
             default_richards
             default_richards_restart
         )
 
         if(${PARFLOW_HAVE_NETCDF})
-            list(APPEND PARALLEL_3DTOPO_TESTS
-                default_richards_restart_netcdf
-            )
+            list(APPEND PARALLEL_3DTOPO_TESTS default_richards_restart_netcdf)
         endif()
 
-        list(APPEND PARALLEL_2DTOPO_TESTS
+        list(
+            APPEND PARALLEL_2DTOPO_TESTS
             default_overland
             default_overland.pfmg.jac
             default_overland.pfmg_octree.fulljac
@@ -143,7 +143,7 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
             richards_box_proctest_vardz
             reservoir_mpi_test
         )
-        
+
         if(${PARFLOW_HAVE_SILO})
             list(APPEND PARALLEL_2DTOPO_TESTS default_overland.pfmg_octree.jac)
         endif()

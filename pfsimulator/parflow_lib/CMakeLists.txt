@@ -1,4 +1,4 @@
-set (SRC_FILES_CONST
+set(SRC_FILES_CONST
     advect.F
     advection_godunov.c
     bc_lb.c

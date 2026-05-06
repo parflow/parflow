@@ -67,13 +67,12 @@ if(${PARFLOW_HAVE_SILO})
 endif()
 
 if(${PARFLOW_HAVE_NETCDF})
-    list(APPEND TESTS
-        deep_aquifer_slab_netcdf.tcl
-    )
+    list(APPEND TESTS deep_aquifer_slab_netcdf.tcl)
 
     if(${PARFLOW_HAVE_HYPRE})
-        #This test is failing on several platforms
-        list(APPEND TESTS
+        # This test is failing on several platforms
+        list(
+            APPEND TESTS
             default_richards_with_netcdf.tcl
             default_richards_with_netcdf_compressed.tcl
             default_richards_restart_netcdf.tcl
@@ -93,12 +92,11 @@ endif()
 list(APPEND PARALLEL_3DTOPO_TESTS "")
 list(APPEND PARALLEL_2DTOPO_TESTS "")
 
-if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
-    list(APPEND PARALLEL_3DTOPO_TESTS
-        default_single.tcl
-    )
+if(${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI)
+    list(APPEND PARALLEL_3DTOPO_TESTS default_single.tcl)
 
-    list(APPEND PARALLEL_2DTOPO_TESTS
+    list(
+        APPEND PARALLEL_2DTOPO_TESTS
         deep_aquifer_slab.tcl
         deep_aquifer_vcatch.tcl
         deep_aquifer_vcatch_kin.tcl
@@ -169,9 +167,16 @@ foreach(inputfile ${PARALLEL_3DTOPO_TESTS})
 endforeach()
 
 foreach(inputfile ${PARALLEL_2DTOPO_TESTS})
-  foreach(processor_topology "1 2 1" "2 1 1" "1 4 1" "4 1 1" "2 2 1")
-    pf_add_parallel_test(${inputfile} ${processor_topology})
-  endforeach()
+    foreach(
+        processor_topology
+        "1 2 1"
+        "2 1 1"
+        "1 4 1"
+        "4 1 1"
+        "2 2 1"
+    )
+        pf_add_parallel_test(${inputfile} ${processor_topology})
+    endforeach()
 endforeach()
 
 foreach(inputfile ${SAMRAI_TESTS})
