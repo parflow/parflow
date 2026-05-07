@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required (VERSION 3.26)
 
 project(PARFLOW VERSION 3.15.0 LANGUAGES C Fortran CXX)
 
@@ -540,6 +540,33 @@ if(${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
         set(HAVE_SLURM ${PARFLOW_HAVE_SLURM})
     endif(${SLURM_FOUND})
 endif(${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
+
+#-----------------------------------------------------------------------------
+# LIKWID
+#-----------------------------------------------------------------------------
+option(PARFLOW_ENABLE_LIKWID "Build with LIKWID" "OFF")
+if (${PARFLOW_ENABLE_LIKWID} OR DEFINED LIKWID_ROOT)
+    find_package(LIKWID)
+    if (${LIKWID_FOUND})
+        set ( PARFLOW_HAVE_LIKWID "yes" )
+        set ( HAVE_LIKWID ${PARFLOW_HAVE_LIKWID} )
+        add_definitions ( "-DLIKWID_PERFMON" )
+    else (${LIKWID_FOUND})
+        message ( WARNING "likwid marker library not found. Set environment variable LIKWID_ROOT" )
+    endif (${LIKWID_FOUND})
+endif (${PARFLOW_ENABLE_LIKWID} OR DEFINED LIKWID_ROOT)
+
+#-----------------------------------------------------------------------------
+# PYSTENCILS
+#-----------------------------------------------------------------------------
+option(PARFLOW_ENABLE_PYSTENCILS "Build with Pystencils" "OFF")
+if (${PARFLOW_ENABLE_PYSTENCILS})
+    find_package(PystencilsSfg REQUIRED)
+    if (${PystencilsSfg_FOUND})
+        set(PARFLOW_HAVE_PYSTENCILS "yes")
+        set(HAVE_PYSTENCILS ${PARFLOW_HAVE_PYSTENCILS})
+    endif (${PystencilsSfg_FOUND})
+endif (${PARFLOW_ENABLE_PYSTENCILS})
 
 #-----------------------------------------------------------------------------
 # libm
