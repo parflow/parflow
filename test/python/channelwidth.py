@@ -269,7 +269,6 @@ wc_test.Solver.MaxIter = 9000
 wc_test.Solver.Nonlinear.MaxIter = 100
 wc_test.Solver.Nonlinear.ResidualTol = 1e-5
 wc_test.Solver.Nonlinear.EtaChoice = "Walker1"
-wc_test.Solver.Nonlinear.EtaValue = 0.01
 wc_test.Solver.Nonlinear.UseJacobian = True
 wc_test.Solver.Nonlinear.DerivativeEpsilon = 1e-12
 wc_test.Solver.Nonlinear.StepTol = 1e-30

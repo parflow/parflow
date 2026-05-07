@@ -350,6 +350,21 @@ Here are some common packages:
 - __SZLIB__: builds ParFlow with SZlib compression library
 - __ZLIB__: builds ParFlow with Zlib compression library
 
+### KINSOL Solver
+
+There are two compile options for the KINSOL solver used by ParFlow.
+The current default is to use an old version of KINSOL that is
+embedded in ParFlow.  The newer option is to use KINSOL from the
+SUNDIALS package.   To use the SUNDIALS package you will need to have a 
+SUNDIALS install that includes KINSOL and specify during the CMake configuration:
+
+```shell
+   -DSUNDIALS_ROOT=<directory of the location of sundials install>
+```
+
+The GitHub repository for [SUNDIALS](https://github.com/LLNL/sundials)
+has downloads and build instructions.
+
 ### How to specify the launcher command used to run MPI applications
 
 There are multiple ways to run MPI applications such as mpiexec,

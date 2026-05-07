@@ -466,7 +466,6 @@ forsyth2.Solver.MaxIter = 10000
 forsyth2.Solver.Nonlinear.MaxIter = 15
 forsyth2.Solver.Nonlinear.ResidualTol = 1e-9
 forsyth2.Solver.Nonlinear.StepTol = 1e-9
-forsyth2.Solver.Nonlinear.EtaValue = 1e-5
 forsyth2.Solver.Nonlinear.UseJacobian = True
 forsyth2.Solver.Nonlinear.DerivativeEpsilon = 1e-7
 

@@ -160,12 +160,13 @@ GeomInput:
       help: >
         [Type: string] This defines the type for the geometry input with the
         given input name. This key must be one of: SolidFile, IndicatorField,
-        or Box.
+        IndicatorFieldNC, or Box.
       domains:
         EnumDomain:
           enum_list:
             - SolidFile
             - IndicatorField
+            - IndicatorFieldNC
             - Box
 
     # Will ParFlow return an error if you use singular vs. plural?
@@ -194,8 +195,9 @@ GeomInput:
         GeomName should be used. For the SolidFile geometry type this
         should contain a list with the same number of geometries as were defined
         using GMS. The order of geometries in the SolidFile should match the
-        names. For IndicatorField types you need to specify the value in the
-        input field which matches the name using GeomInput.geom_input_name.Value.
+        names. For IndicatorField and IndicatorFieldNC types you need to
+        specify the value in the input field which matches the name using
+        GeomInput.geom_input_name.Value.
       domains:
         AnyString:
       handlers:
@@ -211,9 +213,9 @@ GeomInput:
     # FileName is for solid files and indicator fields only
     FileName: # typo: this is capitalized incorrectly in the manual
       help: >
-        [Type: string] For IndicatorField and SolidFile geometry inputs, this
-        key specifies the input filename which contains the field or solid
-        information.
+        [Type: string] For IndicatorField, IndicatorFieldNC and SolidFile
+        geometry inputs, this key specifies the input filename which contains
+        the field or solid information.
       domains:
         AnyString:
         ValidFile:
@@ -221,8 +223,9 @@ GeomInput:
     # Value is for indicator field only
     Value:
       help: >
-        [Type: int] For IndicatorField geometry inputs, you need to specify
-        the mapping between values in the input file and the geometry names.
+        [Type: int] For IndicatorField and IndicatorFieldNC geometry inputs,
+        you need to specify the mapping between values in the input file and
+        the geometry names.
         The named geometry will be defined wherever the input file is equal
         to the specified value.
       domains:

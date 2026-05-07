@@ -309,7 +309,6 @@ ifield.Solver.MaxIter = 1
 ifield.Solver.Nonlinear.MaxIter = 15
 ifield.Solver.Nonlinear.ResidualTol = 1e-9
 ifield.Solver.Nonlinear.StepTol = 1e-9
-ifield.Solver.Nonlinear.EtaValue = 1e-5
 ifield.Solver.Nonlinear.UseJacobian = True
 ifield.Solver.Nonlinear.DerivativeEpsilon = 1e-7
 

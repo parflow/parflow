@@ -35,7 +35,6 @@
 #define _VECTOR_HEADER
 
 #include "grid.h"
-#include "n_vector.h"
 
 #ifdef HAVE_SAMRAI
 #include "SAMRAI/xfer/RefineAlgorithm.h"
@@ -89,6 +88,8 @@ typedef struct _Vector {
 
   int size;                     /* Total number of coefficients */
 
+  int num_ghost;                /* Number of ghost cells */
+
   /* Information on how to update boundary */
   CommPkg *comm_pkg[NumUpdateModes];
 
@@ -104,8 +105,9 @@ typedef struct _Vector {
 #endif
 } Vector;
 
-
+#ifndef PARFLOW_HAVE_SUNDIALS
 typedef Vector *N_Vector;
+#endif
 
 typedef struct _VectorUpdateCommHandle {
   Vector *vector;
@@ -150,7 +152,9 @@ typedef struct _VectorUpdateCommHandle {
 #define VectorSize(vector)          ((vector)->size)
 #define VectorCommPkg(vector, mode) ((vector)->comm_pkg[mode])
 
-#define SizeOfVector(vector)  ((vector)->data_size)
+#define SizeOfVector(vector)        ((vector)->data_size)
+#define VectorNumGhost(vector)      ((vector)->num_ghost)
+#define VectorType(vector)      ((vector)->type)
 
 #endif
 

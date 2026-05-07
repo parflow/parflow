@@ -75,7 +75,11 @@ void CopyParFlowVectorToHypreVector(Vector *            rhs,
       index[1] = j;
       index[2] = k;
 
+#if HYPRE_RELEASE_NUMBER >= 30000
+      HYPRE_StructVectorSetValues(*hypre_b, index, &rhs_ptr[iv]);
+#else
       HYPRE_StructVectorSetValues(*hypre_b, index, rhs_ptr[iv]);
+#endif
     });
   }
   HYPRE_StructVectorAssemble(*hypre_b);

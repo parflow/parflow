@@ -10,7 +10,6 @@ from parflow import Run
 from parflow.tools.fs import mkdir, cp, chdir, get_absolute_path
 from parflow.tools.io import read_pfb, write_pfb
 
-
 LW_Test = Run("LW_Test", __file__)
 
 # -----------------------------------------------------------------------------

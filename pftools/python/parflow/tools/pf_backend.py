@@ -295,13 +295,11 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         where the variable ordering is fixed and each file represents an
         individual timestep
         """
-        warnings.warn(
-            """
+        warnings.warn("""
             Reading CLM output is not officially supported,
             at this time. We'll try our best to load the data,
             but this may break in the future!
-            """
-        )
+            """)
         varnames = [
             "latent_heat_flux",
             "outgoing_longwave",
@@ -593,7 +591,7 @@ class ParflowBackendArray(BackendArray):
             if self.z_first:
                 _dims = ["time", "z", "y", "x"]
             else:
-                _dims = ["time", "x", "y", "x"]
+                _dims = ["time", "x", "y", "z"]
         # Add some logic for dealing with clm output's inconsistent format
         if self.init_key:
             for i, (dim, size) in enumerate(zip(_dims, _shape)):

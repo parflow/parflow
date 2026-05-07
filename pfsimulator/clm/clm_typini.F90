@@ -140,9 +140,12 @@ subroutine clm_typini (ntiles, clm, istep_pf)
      clm(k)%h2osoi_liq(:)      = NaN   ! liquid water (kg/m2)
      clm(k)%h2osoi_ice(:)      = NaN   ! ice lens (kg/m2)
      clm(k)%frac_sno           = NaN   ! fractional snow cover
+     clm(k)%coszen_avg         = 0.0d0 ! exponentially smoothed cos(SZA) for SZA frac_sno
      clm(k)%t_veg              = NaN   ! leaf temperature [K]
      clm(k)%h2ocan             = NaN   ! depth of water on foliage [kg/m2/s]
      clm(k)%snowage            = NaN   ! non dimensional snow age [-]
+     clm(k)%snowage_vis        = NaN   ! VIS band snow age [-] @RMM 2025
+     clm(k)%snowage_nir        = NaN   ! NIR band snow age [-] @RMM 2025
      clm(k)%h2osno             = NaN   ! snow mass (kg/m2)
      clm(k)%h2osno_old         = NaN   ! snow mass for previous time step (kg/m2)
      clm(k)%snowdp             = NaN   ! snow depth (m)
@@ -289,6 +292,18 @@ subroutine clm_typini (ntiles, clm, istep_pf)
      clm(k)%folnmx            = NaN    ! foliage nitrogen concentration when f(n)=1 (%)
      clm(k)%folnvt            = NaN    ! foliage nitrogen concentration (%)
      clm(k)%c3psn             = NaN    ! photosynthetic pathway: 0. = c4, 1. = c3
+     clm(k)%photosyn_custom   = .false. ! PFT photosynthesis params not yet set @RMM 2026
+
+     ! stomatal conductance scheme @RMM 2026
+     clm(k)%stomata_scheme    = 0       ! 0=BallBerry (default), 1=Medlyn
+     clm(k)%g1_medlyn         = NaN     ! Medlyn slope parameter (kPa^0.5)
+
+     ! canopy interception parameters @RMM 2026
+     clm(k)%interception_fpi_max = NaN  ! max interception fraction coefficient
+     clm(k)%fwet_exponent     = NaN     ! power-law exponent for wet canopy fraction
+     clm(k)%interception_scheme = 0     ! 0=CLM3 (default), 1=CLM5Tanh
+     clm(k)%interception_tanh_alpha = NaN ! CLM5 tanh scaling coefficient
+     clm(k)%clump_index       = 1.0d0 ! no clumping by default (bit-for-bit)
 
      ! alma output
      clm(k)%diffusion         = NaN  ! heat diffusion through layer zero interface 
@@ -301,7 +316,47 @@ subroutine clm_typini (ntiles, clm, istep_pf)
      
      ! topomasks - parflow-clm couple parameters
      clm(k)%topo_mask(:)      = NaN  
-     clm(k)%planar_mask       = 0.0  ! was NaN...init to 0.0 
+     clm(k)%planar_mask       = 0.0  ! was NaN...init to 0.0
+
+     ! for SZA snow damping @RMM 2025
+     clm(k)%sza_snow_damping        = 1.0
+     clm(k)%sza_damping_coszen_ref  = NaN
+     clm(k)%sza_damping_coszen_min  = NaN
+     clm(k)%coszen                  = 0.5d0  ! initialize to reference value
+     
+     ! for snow albedo parameterization @RMM 2025
+     clm(k)%albedo_scheme        = 0
+     clm(k)%albedo_vis_new       = NaN
+     clm(k)%albedo_nir_new       = NaN
+     clm(k)%albedo_min           = NaN
+     clm(k)%albedo_decay_vis     = NaN
+     clm(k)%albedo_decay_nir     = NaN
+     clm(k)%albedo_accum_a       = NaN
+     clm(k)%albedo_thaw_a        = NaN
+     
+     ! for frac_sno parameterization @RMM 2025
+     clm(k)%frac_sno_type        = 0
+     clm(k)%frac_sno_roughness   = NaN
+     clm(k)%frac_sno_roughness_min = NaN
+     clm(k)%frac_sno_roughness_max = NaN
+     clm(k)%frac_sno_gamma_sza   = NaN
+     clm(k)%frac_sno_tau_sza     = NaN
+     
+     ! for snow age VIS/NIR separation @RMM 2025
+     clm(k)%snowage_tau0_vis        = NaN
+     clm(k)%snowage_tau0_nir        = NaN
+     clm(k)%snowage_grain_growth_vis = NaN
+     clm(k)%snowage_grain_growth_nir = NaN
+     clm(k)%snowage_dirt_soot_vis   = NaN
+     clm(k)%snowage_dirt_soot_nir   = NaN
+     clm(k)%snowage_reset_factor    = NaN
+     
+     ! for ET formulation improvements @RMM 2026
+     clm(k)%interception_fpi_max = NaN
+     clm(k)%fwet_exponent        = NaN
+     clm(k)%stomata_scheme       = 0
+     clm(k)%interception_scheme  = 0
+     clm(k)%interception_tanh_alpha = NaN
 
   end do
 
