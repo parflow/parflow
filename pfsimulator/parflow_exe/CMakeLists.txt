@@ -84,8 +84,8 @@ if(${PARFLOW_ENABLE_PROFILING})
 endif(${PARFLOW_ENABLE_PROFILING})
 
 if (${PARFLOW_HAVE_LIKWID})
-  target_include_directories (parflow PUBLIC "${LIKWID_INCLUDE_DIRS}")
-  target_link_libraries (parflow ${LIKWID_LIBRARIES})
+    target_include_directories (parflow PUBLIC "${LIKWID_INCLUDE_DIRS}")
+    target_link_libraries (parflow ${LIKWID_LIBRARIES})
 endif (${PARFLOW_HAVE_LIKWID})
 
 if(DEFINED PARFLOW_LINKER_FLAGS)
