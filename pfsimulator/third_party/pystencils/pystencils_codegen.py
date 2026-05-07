@@ -16,8 +16,12 @@ def get_kernel_cfg(
     allow_vect: bool,
 ):
     if target := sfg.context.project_info["target"]:
+        # gpus often lack hardware support for int64
+        index_dtype = SInt(32) if sfg.context.project_info.get("use_cuda") else SInt(64)
+
         kernel_cfg = ps.CreateKernelConfig(
             target=target,
+            index_dtype=index_dtype
         )
 
         if optimize:

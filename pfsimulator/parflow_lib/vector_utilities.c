@@ -795,64 +795,21 @@ double PFVDotProd(
     yp = SubvectorElt(y_sub, ix, iy, iz);
 
     BeginTiming(VDotProductTimingIndex);
-    // TODO: ad-hoc solution to get accurate kernel timings
 #ifdef PARFLOW_HAVE_PYSTENCILS
-    if (nx > 0 && ny > 0 && nz > 0) {
-    #ifdef PARFLOW_HAVE_CUDA
-        double* reduction_writeback_ptr = (double*)_talloc_device(sizeof(double));
-        MemPrefetchDeviceToHost_cuda(reduction_writeback_ptr, sizeof(double), 0);
-        *reduction_writeback_ptr = 0.0;
-        MemPrefetchHostToDevice_cuda(reduction_writeback_ptr, sizeof(double), 0);
-    #else
-        double* reduction_writeback_ptr = talloc(double, 1);
-        *reduction_writeback_ptr = 0.0;
-    #endif
-
-    #ifdef PARFLOW_HAVE_CUDA
-        CUDA_ERR(cudaStreamSynchronize(0));
-    #endif
-        BeginTiming(VDotProductKernelTimingIndex);
-        PyCodegen_VDotProd(xp, yp,
-          nx, ny, nz,
-          1, nx_x, nx_x * ny_x,
-          1, nx_y, nx_y * ny_y,
-          reduction_writeback_ptr
-        );
-    #ifdef PARFLOW_HAVE_CUDA
-        CUDA_ERR(cudaStreamSynchronize(0));
-    #endif
-        EndTiming(VDotProductKernelTimingIndex);
-
-    #ifdef PARFLOW_HAVE_CUDA
-        CUDA_ERR(cudaPeekAtLastError());
-        CUDA_ERR(cudaStreamSynchronize(0));
-        MemPrefetchDeviceToHost_cuda(reduction_writeback_ptr, sizeof(double), 0);
-    #endif
-
-        sum = *reduction_writeback_ptr;
-        tfree(reduction_writeback_ptr);
-    }
+    sum = PyCodegen_VDotProd_wrapper(xp, yp,
+                                     nx, ny, nz,
+                                     1, nx_x, nx_x * ny_x,
+                                     1, nx_y, nx_y * ny_y);
 #else
     i_x = 0;
     i_y = 0;
-    #ifdef PARFLOW_HAVE_CUDA
-        TimedBoxLoopReduceI2_cuda(sum,
-                        i, j, k, ix, iy, iz, nx, ny, nz,
-                        i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-                        i_y, nx_y, ny_y, nz_y, 1, 1, 1,
-        {
-          ReduceSum(sum, xp[i_x] * yp[i_y]);
-        },
-        VDotProductKernelTimingIndex);
-    #else
-        BoxLoopReduceI2(sum,
-                        i, j, k, ix, iy, iz, nx, ny, nz,
-                        i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-                        i_y, nx_y, ny_y, nz_y, 1, 1, 1,
-        {
-          ReduceSum(sum, xp[i_x] * yp[i_y]);
-        });
-    #endif
+    BoxLoopReduceI2(sum,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i_y, nx_y, ny_y, nz_y, 1, 1, 1,
+    {
+      ReduceSum(sum, xp[i_x] * yp[i_y]);
+    });
 #endif
     EndTiming(VDotProductTimingIndex);
   }

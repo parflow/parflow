@@ -68,7 +68,6 @@ void  NewTiming()
   RegisterTiming("RBGS Zero Optimization");
   RegisterTiming("RBGS 7pt");
   RegisterTiming("VDotProduct");
-  RegisterTiming("VDotProduct Kernel");
 #ifdef VECTOR_UPDATE_TIMING
   RegisterTiming("VectorUpdate");
 #endif
