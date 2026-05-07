@@ -19,7 +19,5 @@ def project_info():
         "target": ps.Target.CUDA,
         "default_block_size": (1024, 1, 1),
         "use_cub_reductions": True,
-        "use_manual_exec_cfg_cuda": True,
-        "manual_grid_size": (864, 1, 1),
         "gpu_indexing_scheme": "gridstrided_linear1d",
     }

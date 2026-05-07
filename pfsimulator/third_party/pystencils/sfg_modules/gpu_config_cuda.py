@@ -27,8 +27,4 @@ def project_info():
         "use_cub_reductions": False,
         # determines how kernels are launched
         "gpu_indexing_scheme": "linear3d",
-        # launch configuration is set manually with `default_block_size` and `manual_grid_size`
-        "use_manual_exec_cfg_cuda": False,
-        # only effective if `use_manual_exec_cfg_cuda` is set
-        "manual_grid_size": (32, 32, 32),
     }

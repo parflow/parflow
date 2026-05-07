@@ -64,11 +64,6 @@ def get_kernel_cfg(
                     else:
                         raise ValueError(f"Unsupported indexing scheme: {indexing_scheme}")
 
-                # makes user responsible for setting GPU block/grid size.
-                # this can be well combined with the "gridstrided_linear3d" indexing scheme
-                if sfg.context.project_info.get("use_manual_exec_cfg_cuda"):
-                    kernel_cfg.gpu.manual_launch_grid = True
-
         return kernel_cfg
     else:
         raise ValueError("Target not specified in platform file.")
@@ -106,60 +101,10 @@ def create_kernel_func(
             sfg.function(func_name)(sfg.call(kernel))
     elif target.is_gpu() and sfg.context.project_info.get("use_cuda"):
         # invocation for GPUs with (potentially manual) specification of CUDA grid/block size
-        sfg.include("<stdio.h>")
-
-        if optimize and sfg.context.project_info.get("use_manual_exec_cfg_cuda"):
-            index_type = UInt(32)
-            index_type_c_str = deconstify(index_type).c_string()
-
-            def _div_ceil(a, b):
-                return AugExpr(index_type).format("( {a} + {b} - 1 ) / {b}", a=a, b=b)
-
-            def _prod_list(l):
-                e = l[0]
-                for ll in l[1:]:
-                    e = AugExpr(index_type).format("( {a} * {b} )", a=e, b=ll)
-                return e
-
-            def _uint_cast(a):
-                return AugExpr(index_type).format("{t} ( {a} )", t=index_type_c_str, a=a)
-
-            def _min(a, b):
-                return AugExpr(index_type).format("min( {a}, {b} )", a=a, b=b)
-
-            block_size = cuda.dim3(const=True).var("block_size")
-            grid_size = cuda.dim3(const=True).var("grid_size")
-
-            # get manual block and grid sizes from user configuration
-            default_bs = sfg.context.project_info.get("default_block_size")
-            manual_gs = sfg.context.project_info.get("manual_grid_size")
-            indexing_scheme = sfg.context.project_info.get("gpu_indexing_scheme")
-
-            # convert block/grid sizes to sfg expressions
-            block_sizes = [AugExpr.format(str(bs)) for bs in default_bs]
-            manual_grid_sizes = [AugExpr.format(str(gs)) for gs in manual_gs]
-
-            # get work items from kernel parameters and determine automatic grid size via ceiling divide
-            work_items = [pw for pw in kernel.parameters if pw.wrapped.get_properties(FieldShape)]
-            if indexing_scheme == "gridstrided_linear1d" or indexing_scheme == "linear1d":
-                automatic_grid_sizes = [_div_ceil(_uint_cast(_prod_list(work_items)), default_bs[0]), "1", "1"]
-            else:
-                automatic_grid_sizes = [_div_ceil(_uint_cast(wit), bs) for wit, bs in zip(work_items, default_bs)]
-
-            # final grid size is minimum of automatic and manual grid sizes
-            final_grid_sizes = [
-                _min(a_gs, m_gs) for a_gs, m_gs in zip(automatic_grid_sizes, manual_grid_sizes)
-            ]
-
-            kernel_call = [
-                sfg.init(block_size)(*block_sizes),
-                sfg.init(grid_size)(*final_grid_sizes),
-                sfg.gpu_invoke(kernel, block_size=block_size, grid_size=grid_size)
-            ]
-        else:
-            kernel_call = [sfg.gpu_invoke(kernel)]
+        kernel_call = [sfg.gpu_invoke(kernel)]
 
         # automatically extend kernel call with error handling
+        sfg.include("<stdio.h>")
         sfg.function(func_name)(
             *(kernel_call + [
                 "cudaError_t err = cudaPeekAtLastError();",
