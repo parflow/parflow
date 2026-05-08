@@ -17,7 +17,7 @@ def project_info():
         "use_cuda": True,
         "use_openmp": False,
         "target": ps.Target.CUDA,
-        "default_block_size": (64, 1, 16),
+        "default_block_size": (8, 8, 4),
         "use_cub_reductions": True,
         "gpu_indexing_scheme": "gridstrided_linear3d",
     }
