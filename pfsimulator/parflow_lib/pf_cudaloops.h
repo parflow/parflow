@@ -57,19 +57,19 @@ extern "C++" {
  * It is also important that the total blocksize (the product of x, y,
  * and z-blocksizes) is divisible by the warp size (32).
  */
-#define BLOCKSIZE_X 32
+#define BLOCKSIZE_X 8
 
 /**
  * The default blocksize for the y-dimension. Blocksizes along y and
  * z-dimensions are less important compared to the x-dimension.
  */
-#define BLOCKSIZE_Y 4
+#define BLOCKSIZE_Y 8
 
 /**
  * The default blocksize for the z-dimension. Blocksizes along y and
  * z-dimensions are less important compared to the x-dimension.
  */
-#define BLOCKSIZE_Z 2
+#define BLOCKSIZE_Z 4
 
 /*--------------------------------------------------------------------------
  * CUDA lambda definition (visible for host and device functions)
