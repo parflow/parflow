@@ -47,7 +47,7 @@ extern "C++" {
  * --maxrregcount 64 compiler flag, but NVIDIA recommends specifying
  * this kernel-by-kernel basis by __launch_bounds__() identifier.
  */
-#define BLOCKSIZE_MAX 256
+#define BLOCKSIZE_MAX 1024
 
 /**
  * The blocksize for the x-dimension. This is is set to 32,
@@ -57,13 +57,13 @@ extern "C++" {
  * It is also important that the total blocksize (the product of x, y,
  * and z-blocksizes) is divisible by the warp size (32).
  */
-#define BLOCKSIZE_X 8
+#define BLOCKSIZE_X 64
 
 /**
  * The default blocksize for the y-dimension. Blocksizes along y and
  * z-dimensions are less important compared to the x-dimension.
  */
-#define BLOCKSIZE_Y 8
+#define BLOCKSIZE_Y 4
 
 /**
  * The default blocksize for the z-dimension. Blocksizes along y and
