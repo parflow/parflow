@@ -126,6 +126,10 @@ jobs:
         # Re-run bundler to pick up any new MPI library references.
         ./scripts/macos-bundle-deps.sh "$PARFLOW_DIR" "$PARFLOW_DEP_DIR" /opt/homebrew
 
+    # ── Ensure all files are user-writable (for xattr on user's Mac) ─
+    - name: Fix permissions
+      run: chmod -R u+w "$PARFLOW_DIR"
+
     # ── Smoke test: verify the binaries load without Homebrew ────────
     - name: Smoke test
       run: |

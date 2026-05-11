@@ -137,6 +137,43 @@ while [[ "$(cat "$CHANGED_FLAG")" != "0" ]]; do
 done
 rm -f "$CHANGED_FLAG"
 
+# Phase 1b — Resolve @rpath references by searching dep dirs for the library.
+CHANGED_FLAG=$(mktemp)
+# Libraries like libgfortran reference libgcc_s via @rpath, which the bundler
+# can't resolve from the path alone. We search all dep dirs for a match.
+echo "--- Phase 1b: resolving @rpath references ---"
+echo 1 > "$CHANGED_FLAG"
+while [[ "$(cat "$CHANGED_FLAG")" != "0" ]]; do
+  echo 0 > "$CHANGED_FLAG"
+  while IFS= read -r macho; do
+    otool -L "$macho" 2>/dev/null | tail -n +2 | awk '{print $1}' | while read -r ref; do
+      [[ "$ref" != @rpath/* ]] && continue
+      base="${ref#@rpath/}"
+      # Already in our lib dir? Skip.
+      [[ -f "${LIB_DIR}/${base}" ]] && continue
+
+      # Search dep dirs and common Homebrew/GCC paths for this library.
+      found=""
+      for search_dir in "${DEP_DIRS[@]+"${DEP_DIRS[@]}"}" \
+                        /opt/homebrew/lib \
+                        /opt/homebrew/opt/gcc/lib/gcc/current; do
+        candidate=$(find "$search_dir" -name "$base" -type f 2>/dev/null | head -1)
+        if [[ -n "$candidate" ]]; then
+          found="$candidate"
+          break
+        fi
+      done
+
+      if [[ -n "$found" ]]; then
+        echo "    Resolved @rpath/${base} -> ${found}"
+        ensure_in_prefix "$found" > /dev/null
+        echo 1 > "$CHANGED_FLAG"
+      fi
+    done
+  done < <(collect_machos)
+done
+rm -f "$CHANGED_FLAG"
+
 # Phase 2 — Fix install names of all dylibs in lib/ to @rpath/basename.
 echo "--- Phase 2: normalising install names ---"
 find "${LIB_DIR}" -name '*.dylib' -type f | while read -r lib; do
@@ -188,6 +225,15 @@ if [[ "$(cat "$PROBLEMS_FLAG")" == "0" ]]; then
   echo "  All references are bundled or system-provided."
 fi
 rm -f "$PROBLEMS_FLAG"
+
+# Phase 6 — Ad-hoc code sign all Mach-O files.
+# install_name_tool invalidates existing signatures; re-sign so macOS
+# (especially Apple Silicon) accepts the modified binaries.
+echo
+echo "--- Phase 6: ad-hoc code signing ---"
+while IFS= read -r macho; do
+  codesign --force --sign - "$macho" 2>/dev/null || true
+done < <(collect_machos)
 
 echo
 echo "=== Done ==="
