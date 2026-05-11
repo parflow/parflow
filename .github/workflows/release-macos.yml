@@ -1,0 +1,161 @@
+name: macOS Release Build
+
+on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-package:
+    name: macOS arm64 release
+    runs-on: macos-14
+
+    steps:
+    # ── Checkout ──────────────────────────────────────────────────────
+    - uses: actions/checkout@v4
+
+    # ── Toolchains ───────────────────────────────────────────────────
+    - uses: fortran-lang/setup-fortran@v1
+      with:
+        compiler: gcc
+    - uses: mpi4py/setup-mpi@v1
+      with:
+        mpi: openmpi
+
+    - name: HDF5 Install
+      run: brew install hdf5-mpi
+
+    - name: TCL Link
+      run: brew link tcl-tk@8
+
+    # ── Dependency cache ─────────────────────────────────────────────
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      id: cache-deps
+      with:
+        path: "~/depend"
+        key: release-macos-14-${{ hashFiles('**/.github/workflows/release-macos.yml') }}
+
+    # ── Directory setup ──────────────────────────────────────────────
+    - name: Directory Setup
+      run: |
+        mkdir -p $HOME/install
+        mkdir -p $HOME/depend/{include,lib}
+        echo "PARFLOW_DIR=$HOME/install" >> $GITHUB_ENV
+        echo "PARFLOW_DEP_DIR=$HOME/depend" >> $GITHUB_ENV
+        echo "$HOME/depend/bin" >> $GITHUB_PATH
+
+    # ── Build dependencies from source ───────────────────────────────
+    - name: NetCDF Install
+      env:
+        CACHE_HIT: ${{ steps.cache-deps.outputs.cache-hit }}
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          URL=https://github.com/Unidata/netcdf-c/archive/v4.9.0.tar.gz
+          mkdir netcdf-c && cd netcdf-c
+          curl -L $URL | tar --strip-components=1 -xz
+          CC=mpicc CPPFLAGS=-I/opt/homebrew/include LDFLAGS=-L/opt/homebrew/lib/ \
+            ./configure --prefix=$PARFLOW_DEP_DIR
+          make -j 3 && make install
+          cd ..
+
+          URL=https://github.com/Unidata/netcdf-fortran/archive/v4.5.4.tar.gz
+          mkdir netcdf-fortran && cd netcdf-fortran
+          curl -L $URL | tar --strip-components=1 -xz
+          CC=mpicc FC=mpifort \
+            CPPFLAGS=-I${PARFLOW_DEP_DIR}/include \
+            LDFLAGS=-L${PARFLOW_DEP_DIR}/lib \
+            ./configure --prefix=${PARFLOW_DEP_DIR}
+          make -j 3 && make install
+        fi
+        echo "NETCDF_FLAGS=-DNETCDF_DIR=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_HDF5=TRUE" >> $GITHUB_ENV
+
+    - name: HYPRE Install
+      env:
+        CACHE_HIT: ${{ steps.cache-deps.outputs.cache-hit }}
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          URL=https://github.com/hypre-space/hypre/archive/v2.33.0.tar.gz
+          mkdir hypre && cd hypre
+          curl -L $URL | tar --strip-components=1 -xz
+          cd src
+          CC=mpicc CXX=mpic++ FC=mpif77 F77=mpif90 \
+            ./configure --prefix=$PARFLOW_DEP_DIR
+          make -j 3 install
+        fi
+
+    # ── Build ParFlow ────────────────────────────────────
+    - name: ParFlow CMake Configure
+      run: |
+        CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 \
+          cmake -Bbuild \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS="-Wall -Wno-unused-result -Wno-unused-function" \
+            -DPARFLOW_ENABLE_TIMING=TRUE \
+            -DPARFLOW_AMPS_LAYER=mpi1 \
+            -DPARFLOW_AMPS_SEQUENTIAL_IO=true \
+            -DPARFLOW_HAVE_CLM=ON \
+            -DHYPRE_ROOT=$PARFLOW_DEP_DIR \
+            $NETCDF_FLAGS \
+            -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR \
+            -DTCL_INCLUDE_PATH=/opt/homebrew/bin/usr/include \
+            -DTCL_LIBRARY=/opt/homebrew/lib/libtcl8.6.dylib \
+            -DTCL_TCLSH=/opt/homebrew/bin/tclsh8.6
+
+    - name: ParFlow CMake Build and Install
+      run: cmake --build build --parallel 3 --target install
+
+    # ── Bundle dependencies into install tree ────────────────────────
+    - name: Bundle shared libraries
+      run: |
+        chmod +x scripts/macos-bundle-deps.sh
+        ./scripts/macos-bundle-deps.sh "$PARFLOW_DIR" "$PARFLOW_DEP_DIR"
+
+    # ── Copy OpenMPI into the prefix so users don't need it ──────────
+    - name: Bundle OpenMPI runtime
+      run: |
+        # The setup-mpi action installs into /opt/homebrew.
+        # Copy MPI binaries and libraries the user will need.
+        for bin in mpirun mpiexec orterun orted; do
+          src=$(which $bin 2>/dev/null || true)
+          if [[ -n "$src" && -f "$src" ]]; then
+            cp -L "$src" "$PARFLOW_DIR/bin/" 2>/dev/null || true
+          fi
+        done
+        # Re-run bundler to pick up any new MPI library references.
+        ./scripts/macos-bundle-deps.sh "$PARFLOW_DIR" "$PARFLOW_DEP_DIR" /opt/homebrew
+
+    # ── Smoke test: verify the binaries load without Homebrew ────────
+    - name: Smoke test
+      run: |
+        echo "--- Clearing Homebrew from PATH/DYLD to simulate a clean Mac ---"
+        CLEAN_PATH="/usr/bin:/bin:/usr/sbin:/sbin:${PARFLOW_DIR}/bin"
+        env -i HOME="$HOME" PATH="$CLEAN_PATH" TMPDIR="$TMPDIR" \
+          "$PARFLOW_DIR/bin/parflow" -v
+        echo "Smoke test passed."
+
+    # ── Package ──────────────────────────────────────────────────────
+    - name: Determine version string
+      id: version
+      run: |
+        VER="$(git describe --tags --always 2>/dev/null || echo 'dev')"
+        echo "ver=${VER}" >> "$GITHUB_OUTPUT"
+
+    - name: Create tarball
+      run: |
+        VER="${{ steps.version.outputs.ver }}"
+        ARCHIVE="parflow-${VER}-macos-arm64.tar.gz"
+        # Include the binary readme at the top level of the archive.
+        cp README-BINARY.md "$PARFLOW_DIR/" 2>/dev/null || true
+        tar -C "$(dirname "$PARFLOW_DIR")" \
+            -czf "${ARCHIVE}" \
+            "$(basename "$PARFLOW_DIR")"
+        echo "ARCHIVE=${ARCHIVE}" >> $GITHUB_ENV
+
+    # ── Upload as workflow artifact ──────────────────────────────────
+    - name: Upload workflow artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: parflow-macos-arm64
+        path: ${{ env.ARCHIVE }}
