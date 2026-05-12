@@ -112,19 +112,43 @@ jobs:
         chmod +x scripts/macos-bundle-deps.sh
         ./scripts/macos-bundle-deps.sh "$PARFLOW_DIR" "$PARFLOW_DEP_DIR"
 
-    # ── Copy OpenMPI into the prefix so users don't need it ──────────
+    # ── Copy full OpenMPI runtime into the prefix ──────────────────
     - name: Bundle OpenMPI runtime
       run: |
-        # The setup-mpi action installs into /opt/homebrew.
-        # Copy MPI binaries and libraries the user will need.
-        for bin in mpirun mpiexec orterun orted; do
-          src=$(which $bin 2>/dev/null || true)
-          if [[ -n "$src" && -f "$src" ]]; then
-            cp -L "$src" "$PARFLOW_DIR/bin/" 2>/dev/null || true
+        # Find the Homebrew OpenMPI prefix (e.g. /opt/homebrew/Cellar/open-mpi/5.x.x)
+        OMPI_PREFIX="$(brew --prefix open-mpi)"
+
+        # Copy binaries
+        for bin in mpirun mpiexec prterun prted; do
+          src="${OMPI_PREFIX}/bin/${bin}"
+          if [[ -f "$src" ]]; then
+            cp -L "$src" "$PARFLOW_DIR/bin/"
           fi
         done
-        # Re-run bundler to pick up any new MPI library references.
+
+        # Copy runtime support directories (help text, configs, MCA plugins)
+        for dir in share/openmpi share/prte share/pmix etc/openmpi etc/prte etc/pmix lib/openmpi lib/prte lib/pmix; do
+          if [[ -d "${OMPI_PREFIX}/${dir}" ]]; then
+            mkdir -p "$PARFLOW_DIR/${dir}"
+            cp -RL "${OMPI_PREFIX}/${dir}/" "$PARFLOW_DIR/${dir}/"
+          fi
+        done
+
+        # Re-run bundler to pick up MPI library references.
         ./scripts/macos-bundle-deps.sh "$PARFLOW_DIR" "$PARFLOW_DEP_DIR" /opt/homebrew
+
+    # ── Patch config for relocatable paths ───────────────────────────
+    - name: Patch config for relocatable install
+      run: |
+        CFG="$PARFLOW_DIR/config/pf-cmake-env.sh"
+
+        # Replace hardcoded MPIEXEC path with one relative to PARFLOW_DIR
+        sed -i '' 's|^MPIEXEC=.*|MPIEXEC="${PARFLOW_DIR}/bin/mpiexec"|' "$CFG"
+
+        # Tell OpenMPI to find its support files relative to PARFLOW_DIR
+        echo '' >> "$CFG"
+        echo '# Relocatable OpenMPI — resolve share/etc/lib at runtime' >> "$CFG"
+        echo 'export OPAL_PREFIX="${PARFLOW_DIR}"' >> "$CFG"
 
     # ── Ensure all files are user-writable (for xattr on user's Mac) ─
     - name: Fix permissions
@@ -136,6 +160,7 @@ jobs:
         echo "--- Clearing Homebrew from PATH/DYLD to simulate a clean Mac ---"
         CLEAN_PATH="/usr/bin:/bin:/usr/sbin:/sbin:${PARFLOW_DIR}/bin"
         env -i HOME="$HOME" PATH="$CLEAN_PATH" TMPDIR="$TMPDIR" \
+          PARFLOW_DIR="$PARFLOW_DIR" \
           "$PARFLOW_DIR/bin/parflow" -v
         echo "Smoke test passed."
 
