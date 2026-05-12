@@ -161,6 +161,9 @@ jobs:
         echo 'export OPAL_PREFIX="${PARFLOW_DIR}"' >> "$CFG"
         echo 'export PMIX_PREFIX="${PARFLOW_DIR}"' >> "$CFG"
         echo 'export PRTE_PREFIX="${PARFLOW_DIR}"' >> "$CFG"
+        echo '' >> "$CFG"
+        echo '# Suppress PMIx compression warning (zlib plugin not available in bundled PMIx)' >> "$CFG"
+        echo 'export PMIX_MCA_pcompress_base_silence_warning=1' >> "$CFG"
 
     # ── Ensure all files are user-writable (for xattr on user's Mac) ─
     - name: Fix permissions
