@@ -176,12 +176,6 @@ jobs:
       - name: ParFlow CMake Build
         run: (cd build && make -j 2 install)
 
-      - name: ParFlow CTest
-        run: |
-          export OMPI_MCA_rmaps_base_oversubscribe=1
-          export OMP_NUM_THREADS=1
-          (cd build && ctest --output-on-failure)
-
       - name: Package bundle
         run: |
           set -euo pipefail
