@@ -67,6 +67,20 @@ should have format of `ParFlow Version X.Y.Z`.  The GitHub release
 description can be copied from the release notes markdown file that
 was created in a prior step.
 
+## macOS Pre-Built Binary
+
+A GitHub Actions workflow (`.github/workflows/release-macos.yml`)
+automatically builds a self-contained macOS arm64 binary archive and
+uploads it to the GitHub Release page whenever a release is published.
+No manual steps are required.
+
+To test the workflow before a real release, trigger it manually via
+**Actions > macOS Release Build > Run workflow** and supply a tag string
+(e.g. `dev`). The resulting tarball will be available as a workflow
+artifact.
+
+See `README-BINARY.md` in the repository root for end-user instructions.
+
 ## Generate Docker
 
 ```shell
