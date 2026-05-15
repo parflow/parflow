@@ -111,20 +111,6 @@ jobs:
           fi
           echo "NETCDF_FLAGS=-DNETCDF_DIR=$PARFLOW_DEP_DIR -DNETCDF_Fortran_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_HDF5=TRUE" >> "$GITHUB_ENV"
 
-      - name: SILO Install
-        env:
-          CACHE_HIT: ${{ steps.cache-parflow-dependencies.outputs.cache-hit }}
-        run: |
-          if [[ "$CACHE_HIT" != 'true' ]]; then
-            URL=https://github.com/LLNL/Silo/archive/refs/tags/4.12.0.tar.gz
-            mkdir silo
-            cd silo
-            curl -L "$URL" | tar --strip-components=1 -xz
-            ./configure --disable-silex --disable-hzip --disable-fpzip --enable-shared=yes \
-              --prefix="$PARFLOW_DEP_DIR"
-            make -j 2 install
-          fi
-
       - name: HYPRE Install
         env:
           CACHE_HIT: ${{ steps.cache-parflow-dependencies.outputs.cache-hit }}
@@ -167,7 +153,6 @@ jobs:
             -DPARFLOW_HAVE_CLM=${HAVE_CLM} \
             -DHYPRE_ROOT="$PARFLOW_DEP_DIR" \
             -DOAS3_ROOT="$PARFLOW_DEP_DIR" \
-            -DSILO_ROOT="$PARFLOW_DEP_DIR" \
             -DPARFLOW_ENABLE_PYTHON=ON \
             -DPARFLOW_ENABLE_TCL=ON \
             -DCMAKE_INSTALL_PREFIX="$PARFLOW_DIR" \
