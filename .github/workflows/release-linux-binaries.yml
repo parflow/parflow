@@ -1,0 +1,207 @@
+name: Release Linux binaries
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-linux-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-upload:
+    name: Build and package (Ubuntu 22.04 GCC)
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout commit
+        uses: actions/checkout@v4
+
+      - name: Package Install
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -qq install curl cmake build-essential tcl-dev tk-dev gfortran \
+            hdf5-helpers libcurl4 libcurl4-gnutls-dev
+
+      - name: HDF5 and OpenMPI Install on Ubuntu 22.04
+        run: |
+          sudo apt-get -qq update
+          sudo apt -qq install libhdf5-openmpi-103 libhdf5-openmpi-dev
+
+      - name: Python Package Install
+        run: |
+          sudo apt-get -qq update
+          sudo apt -qq install python3 python3-venv
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        id: cache-parflow-dependencies
+        with:
+          path: "~/depend"
+          key: release-linux-${{ hashFiles('**/.github/workflows/release-linux-binaries.yml') }}
+
+      - name: Directory Setup
+        run: |
+          mkdir -p "$HOME/install"
+
+          PARFLOW_DIR="$HOME/install"
+          PARFLOW_DEP_DIR="$HOME/depend"
+          LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/lib64:${PARFLOW_DEP_DIR}/lib
+
+          mkdir -p "${PARFLOW_DIR}" "${PARFLOW_DEP_DIR}/include" "${PARFLOW_DEP_DIR}/lib"
+
+          echo "PARFLOW_DIR=${PARFLOW_DIR}" >> "$GITHUB_ENV"
+          echo "PARFLOW_DEP_DIR=${PARFLOW_DEP_DIR}" >> "$GITHUB_ENV"
+          echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
+          echo "$HOME/depend/bin" >> "$GITHUB_PATH"
+          echo "$PARFLOW_DIR/bin" >> "$GITHUB_PATH"
+
+      - name: Configure OpenMPI backend compiler
+        run: |
+          echo "OMPI_CC=gcc" >> "$GITHUB_ENV"
+          echo "OMPI_CXX=g++" >> "$GITHUB_ENV"
+          echo "OMPI_FC=gfortran" >> "$GITHUB_ENV"
+          echo "  mpicc: $(mpicc --version | head -n 1)"
+          echo " mpicxx: $(mpicxx --version | head -n 1)"
+          echo "mpifort: $(mpifort --version | head -n 1)"
+
+      - name: CMake Install
+        env:
+          CACHE_HIT: ${{ steps.cache-parflow-dependencies.outputs.cache-hit }}
+        run: |
+          if [[ "$CACHE_HIT" != 'true' ]]; then
+            echo "Installing CMake v3.26.5"
+            cd "$HOME/depend"
+            echo "release-linux" > "$HOME/depend/cache-key"
+            wget -nv --no-check-certificate \
+              https://github.com/Kitware/CMake/releases/download/v3.26.5/cmake-3.26.5-linux-x86_64.tar.gz
+            tar -xf cmake-3.26.5-linux-x86_64.tar.gz
+            "$HOME/depend/cmake-3.26.5-linux-x86_64/bin/cmake" --version
+          fi
+          echo "$HOME/depend/cmake-3.26.5-linux-x86_64/bin" >> "$GITHUB_PATH"
+
+      - name: NetCDF Install
+        env:
+          CACHE_HIT: ${{ steps.cache-parflow-dependencies.outputs.cache-hit }}
+        run: |
+          if [[ "$CACHE_HIT" != 'true' ]]; then
+            URL=https://github.com/Unidata/netcdf-c/archive/v4.9.0.tar.gz
+            mkdir netcdf-c
+            cd netcdf-c
+            curl -L "$URL" | tar --strip-components=1 -xz
+            CC=mpicc CPPFLAGS=-I/usr/include/hdf5/openmpi \
+              LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi \
+              ./configure --prefix="$PARFLOW_DEP_DIR"
+            make
+            make install
+            cd ..
+
+            URL=https://github.com/Unidata/netcdf-fortran/archive/v4.5.4.tar.gz
+            mkdir netcdf-fortran
+            cd netcdf-fortran
+            curl -L "$URL" | tar --strip-components=1 -xz
+            CC=mpicc FC=mpifort CPPFLAGS=-I"${PARFLOW_DEP_DIR}/include" \
+              LDFLAGS=-L"${PARFLOW_DEP_DIR}/lib" \
+              ./configure --prefix="${PARFLOW_DEP_DIR}"
+            make
+            make install
+          fi
+          echo "NETCDF_FLAGS=-DNETCDF_DIR=$PARFLOW_DEP_DIR -DNETCDF_Fortran_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_HDF5=TRUE" >> "$GITHUB_ENV"
+
+      - name: SILO Install
+        env:
+          CACHE_HIT: ${{ steps.cache-parflow-dependencies.outputs.cache-hit }}
+        run: |
+          if [[ "$CACHE_HIT" != 'true' ]]; then
+            URL=https://github.com/LLNL/Silo/archive/refs/tags/4.12.0.tar.gz
+            mkdir silo
+            cd silo
+            curl -L "$URL" | tar --strip-components=1 -xz
+            ./configure --disable-silex --disable-hzip --disable-fpzip --enable-shared=yes \
+              --prefix="$PARFLOW_DEP_DIR"
+            make -j 2 install
+          fi
+
+      - name: HYPRE Install
+        env:
+          CACHE_HIT: ${{ steps.cache-parflow-dependencies.outputs.cache-hit }}
+        run: |
+          if [[ "$CACHE_HIT" != 'true' ]]; then
+            wget https://github.com/hypre-space/hypre/archive/v2.33.0.tar.gz
+            tar xf v2.33.0.tar.gz && cd hypre-2.33.0
+
+            cmake -S src -B build \
+              -DCMAKE_C_COMPILER=mpicc \
+              -DCMAKE_CXX_COMPILER=mpicxx \
+              -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}" \
+              -DHYPRE_ENABLE_MPI="ON" \
+              -DHYPRE_ENABLE_CUDA="OFF"
+            cmake --build build --parallel 4
+            cmake --install build
+          fi
+
+      - name: ParFlow CMake Configure
+        run: |
+          cat "$HOME/depend/cache-key"
+          export OMPI_MCA_rmaps_base_oversubscribe=1
+          export OMP_NUM_THREADS=1
+          gcc -v
+          mpicc -v
+          HAVE_CLM="ON"
+          CFLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function -Wno-stringop-overread"
+          CFLAGS="${CFLAGS} -Wno-stringop-overread"
+          export CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 CUDAHOSTCXX=mpicxx
+          # shellcheck disable=SC2086
+          cmake -Bbuild \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS="$CFLAGS" \
+            -DPARFLOW_ENABLE_TIMING=TRUE \
+            -DPARFLOW_AMPS_LAYER=mpi1 \
+            -DMPIEXEC_POSTFLAGS='--oversubscribe' \
+            -DPARFLOW_ACCELERATOR_BACKEND=none \
+            -DCMAKE_CUDA_ARCHITECTURES="60;70;75;80" \
+            -DPARFLOW_AMPS_SEQUENTIAL_IO=true \
+            -DPARFLOW_HAVE_CLM=${HAVE_CLM} \
+            -DHYPRE_ROOT="$PARFLOW_DEP_DIR" \
+            -DOAS3_ROOT="$PARFLOW_DEP_DIR" \
+            -DSILO_ROOT="$PARFLOW_DEP_DIR" \
+            -DPARFLOW_ENABLE_PYTHON=ON \
+            -DPARFLOW_ENABLE_TCL=ON \
+            -DCMAKE_INSTALL_PREFIX="$PARFLOW_DIR" \
+            $NETCDF_FLAGS
+
+      - name: ParFlow CMake Build
+        run: (cd build && make -j 2 install)
+
+      - name: ParFlow CTest
+        run: |
+          export OMPI_MCA_rmaps_base_oversubscribe=1
+          export OMP_NUM_THREADS=1
+          (cd build && ctest --output-on-failure)
+
+      - name: Package bundle
+        run: |
+          set -euo pipefail
+          BUNDLE_DIR="$(mktemp -d)"
+          cp -a "$HOME/install" "$BUNDLE_DIR/parflow"
+          cp -a "$HOME/depend" "$BUNDLE_DIR/deps"
+          install -m 0644 "$GITHUB_WORKSPACE/misc/release/parflow-env.sh" "$BUNDLE_DIR/parflow-env.sh"
+
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            VERSION="pr-${{ github.event.pull_request.number }}-${{ github.sha }}"
+          else
+            VERSION="${{ github.event_name }}-${{ github.sha }}"
+          fi
+          OUT="parflow-${VERSION}-linux-x86_64-ubuntu22.04.tar.gz"
+          tar -czf "$GITHUB_WORKSPACE/${OUT}" -C "$BUNDLE_DIR" .
+          echo "ASSET_NAME=${OUT}" >> "$GITHUB_ENV"
+          ls -lh "$GITHUB_WORKSPACE/${OUT}"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ASSET_NAME }}
+          path: ${{ env.ASSET_NAME }}
