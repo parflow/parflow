@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Iterable, Optional, Mapping
+from typing import Iterable, Optional, Mapping, Sequence
 import itertools
 
 import xarray as xr
@@ -229,28 +229,35 @@ class PfbReader:
 
     def __init__(
         self,
-        file_seq: PfbInfo | Iterable[PfbInfo],
+        file_seq: PfbInfo | Sequence[PfbInfo],
         z_first: bool = True,
         z_is: str = "z",
     ):
-        if isinstance(file_seq, PfbInfo):
-            file_seq = [file_seq]
-
         self.list_pfb_info = file_seq
         self.z_first = z_first
         self.z_is = z_is
 
         self._base_header = None
         self._subgrid = None
+        self._first_file = None
 
     def _set_header_subgrid(self):
-        with UpdatedParflowBinaryReader(self.list_pfb_info[0].filename) as pfb_init:
+        with UpdatedParflowBinaryReader(self.first_file) as pfb_init:
             base_header = pfb_init.header
-            if self.list_pfb_info[0].run is not None:
-                base_header["x"] = self.list_pfb_info[0].run.ComputationalGrid.Lower.X
-                base_header["y"] = self.list_pfb_info[0].run.ComputationalGrid.Lower.Y
+            if self.first_file.run is not None:
+                base_header["x"] = self.first_file.run.ComputationalGrid.Lower.X
+                base_header["y"] = self.first_file.run.ComputationalGrid.Lower.Y
             self._base_header = base_header
             self._subgrid = SubGrid.save(pfb_init)
+
+    @property
+    def first_file(self):
+        if self._first_file is None:
+            if isinstance(self.list_pfb_info, PfbInfo):
+                self._first_file = self.list_pfb_info
+            else:
+                self._first_file = self.list_pfb_info[0]
+        return self._first_file
 
     @property
     def base_header(self):
@@ -387,7 +394,7 @@ class PfbReader:
     def _read_single(self, keys):
         # read_pfb from parflow.tools.io
         with UpdatedParflowBinaryReader(
-            self.list_pfb_info[0].filename, header=self.base_header
+            self.first_file.filename, header=self.base_header
         ) as pfb:
             if not keys:
                 data = pfb.read_all_subgrids(z_first=self.z_first)
@@ -408,7 +415,7 @@ class PfbReader:
         return data
 
     def read(self, keys: Optional = None):
-        if len(self.list_pfb_info) == 1:
+        if isinstance(self.list_pfb_info, PfbInfo):
             return self._read_single(keys)
         if keys is None:  # Not used ?
             return self._read_all()
