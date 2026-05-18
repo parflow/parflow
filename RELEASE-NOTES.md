@@ -1,3 +1,223 @@
+# ParFlow Release Notes 3.15.0
+------------------------------
+
+This release contains several significant feature additions, bug fixes, and infrastructure improvements. Notable enhancements include expanded CLM snow physics options, improved overland flow output capabilities, KINSOL solver flexibility, and enhanced CI/CD infrastructure.
+
+ParFlow development and bug-fixes would not be possible without contributions of the ParFlow community. Thank you for all the great contributions.
+
+***
+
+# VERY IMPORTANT: TCL support and ParFlow 4.x
+
+# ParFlow 4.x
+
+This will likely be the last release of ParFlow 3.x.
+
+We will be rolling out ParFlow 4.0, and we will likely break some compatibility in order to address long-standing ParFlow issues. One change we plan to make is to deprecate TCL support. ParFlow releases in January 2027 and beyond may or may not include TCL 8.x support depending on support costs, and we have no plans to update ParFlow to support TCL 9.x.
+
+## TCL 9.x does not work with ParFlow
+
+TCL 9.x has been released and is not backward compatible with TCL 8.x. ParFlow does not fully work with TCL 9.x. Please use a TCL 8.x release, or use the Python pftools API instead.
+
+If you have TCL 9.x installed, only the ParFlow development branch currently compiles with it. We have patched ParFlow to compile with TCL 9.x, but not all custom TCL commands work. If you only have TCL 9.x, you should use the Python interface only and can compile without TCL.
+
+To check your TCL version:
+
+```
+tclsh
+info patchlevel
+Configuring CMake to use a TCL 8.x installation
+If you have a TCL 8.x install on your system, you can point CMake to it, for example:
+TCL_DIR=<path to where TCL is installed>
+cmake \
+  -DTCL_TCLSH=${TCL_DIR}/bin/tclsh8.6 \
+  -DTCL_LIBRARY=${TCL_DIR}/lib/libtcl8.6.so \
+  <your other cmake options>
+```
+
+## Building without TCL
+
+TCL has been a required dependency of all previous versions of ParFlow but you can now disable TCL if you are only using Python.   Add the "-DPARFLOW_ENABLE_TCL=NO" flag to your CMake configuration to disable TCL.
+
+## Why are we deprecating TCL?
+
+TCL 9.x is incompatible with the TCL 8.x versions we have been using. Supporting TCL 9.x will take time. Given the small size of the ParFlow developer community, supporting both Python and TCL reduces the time available for other support and development activities.  Most scripting interface development is occurring on the Python side, and we do not have resources to port everything to both APIs. The developer community has therefore decided to deprecate TCL.
+
+## What should you do if you are using TCL?
+In the short term, the key point is: ParFlow does not work with TCL 9.x, so use a TCL 8.x release.
+For new problem setups, consider using the Python interface, and plan to update existing TCL workflows over time.
+
+## Is there help to convert TCL scripts to Python?
+
+We have automated scripts that can convert substational parts of a ParFlow TCL input script to Python. Conversion of pfset commands is automated, but additional TCL logic (moving files, simple calculations, etc.) will require manual updates.  AI tools can also help with code conversion. Asking how to convert specific TCL statements to Python often produces reasonable results.
+
+The ParFlow documentation includes a short tutorial on TCL to Python conversion, see [From TCL to Python](https://parflow.readthedocs.io/en/latest/python/tutorials/tcl2py.html).
+
+If you have concerns about this change feel free to post to [ParFlow User Group](https://groups.google.com/g/parflow).   We will try to help with this conversion as much as we can.
+
+***
+
+## Overview of Changes
+
+Version 3.15.0 introduces major enhancements to CLM snow parameterization with multiple rain-snow partitioning schemes, improved output options for overland flow dynamics, and more flexible KINSOL solver configuration.
+
+## User Visible Changes
+
+### CLM Snow Parameterization Enhancements
+
+Comprehensive updates to CLM snow physics have been added to improve snow modeling in diverse climates:
+
+#### Rain-Snow Partitioning Methods
+Multiple rain-snow partitioning methods are now available as alternatives to the standard air temperature threshold:
+- **WetbulbThreshold** and **WetbulbLinear**: Account for evaporative cooling of falling hydrometeors, particularly beneficial for dry mountain climates
+- **Dai (2008)**: Sigmoidal temperature-dependent function
+- **Jennings (2018)**: Bivariate logistic regression using temperature and relative humidity
+
+Configure via `Solver.CLM.SnowPartition` key. Reference: Wang et al. (2019) GRL, Dai (2008) GRL, Jennings et al. (2018) Nat Commun.
+
+#### Thin Snow Damping
+New `Solver.CLM.ThinSnowDamping` key reduces spurious melt energy in shallow early-season snowpacks to prevent premature ablation.
+
+#### Solar Zenith Angle (SZA) Snow Damping
+The `Solver.CLM.SZASnowDamping` key corrects for CLM's narrowband snow optical parameters which assume a 60° solar zenith angle. At higher zenith angles, actual snow albedo is higher than CLM assumes, requiring damping of melt energy. Reference: Dang et al. (2019) The Cryosphere.
+
+#### Advanced Albedo Schemes
+Three snow albedo calculation methods are now available:
+- **CLM**: Age-based exponential decay (default)
+- **VIC**: Separate decay rates for cold and warm conditions
+- **Tarboton**: Arrhenius temperature-dependent aging
+
+Configure via `Solver.CLM.AlbedoScheme` key.
+
+#### Fractional Snow Cover Options
+Enhanced fractional snow covered area calculations:
+- **CLM**: Standard formulation using roughness length
+- **SZA**: Solar zenith angle-modulated formulation for energy-driven accumulation/melt asymmetry
+
+Configure via `Solver.CLM.FracSnoScheme` key.
+
+#### Snow Age Parameterization for VIS/NIR Bands
+Separate aging parameters for visible and near-infrared bands following Abolafia-Rosenzweig et al. (2022), allowing independent calibration per spectral band.
+
+#### ET Formulation Improvements
+New options for improving evapotranspiration calculations:
+- **StomataScheme**: Ball-Berry (default) or Medlyn stomatal conductance models
+- **InterceptionScheme**: CLM3 exponential or CLM5 tanh-based canopy interception
+- Enhanced interception and wet canopy fraction parameters
+
+### Overland Flow Output Enhancements
+
+New output capabilities for overland flow analysis:
+- `Solver.PrintQxOverland` and `Solver.PrintQyOverland`: Print x and y direction surface flow velocities as 2D ParFlow binary files
+- `Solver.WriteSiloQxOverland` and `Solver.WriteSiloQyOverland`: Silo format output for surface flow velocities
+- `Solver.WritePDIQxOverland` and `Solver.WritePDIQyOverland`: PDI library exposure of overland flow data
+- `NetCDF.WriteQxOverland` and `NetCDF.WriteQyOverland`: NetCDF4 output for surface flow velocities
+
+### Bottom of Domain Output
+Complementary to existing top-of-domain output:
+- `Solver.PrintBottom`: Control writing of bottom Z-index files
+- `Solver.WriteSiloBottom`: Silo format output for bottom domain data
+
+### Surface Predictor Lateral Flow Enhancement
+New `Solver.SurfacePredictor.LateralFlows` key enables use of overland flow lateral fluxes in the surface predictor water balance calculation for improved ponding predictions.
+
+### Well Flux Corrections for Variable dz
+The `Wells.CorrectForVarDz` key enables correction of well fluxes for variable dz cell thickness spacing, ensuring physically accurate volumetric flux calculations. Recommended to set to True rather than apply manual corrections.
+
+### Seepage Patch Support for Overland Kinematic BC
+New `Patch.{patch_name}.BCPressure.Seepage` key allows designation of specific patches as seepage patches in OverlandKinematic boundary condition formulations.
+
+### IndicatorFieldNC Geometry Input Type
+New `IndicatorFieldNC` geometry input type added alongside existing IndicatorField and SolidFile types for improved NetCDF geometry support.
+
+### Flexible KINSOL Solver Configuration
+ParFlow now supports choosing between:
+- **Embedded KINSOL**: Original version embedded in ParFlow (default for backward compatibility)
+- **External SUNDIALS**: Newer KINSOL from the SUNDIALS package via `SUNDIALS_ROOT` CMake variable
+
+When using external SUNDIALS, additional solver options and improved numerical methods are available.
+
+### Improved TCL Deprecation Handling
+While TCL support remains available, it is now explicitly marked as deprecated with migration guidance to Python-based pftools. Warnings are issued at build time for Tcl 9.x compatibility issues. New `PARFLOW_ENABLE_TCL` CMake flag allows disabling TCL entirely if desired.
+
+### Improved CONTRIBUTING.md Documentation
+Enhanced documentation on code formatting requirements and Black version specifications for contributors.
+
+## Bug Fixes
+
+### CUDA 13+ Compatibility
+Updated CUDA memory prefetch API calls to use `cudaMemPrefetchAsync` with new `cudaMemLocation` struct for compatibility with CUDA 13.0 and later.
+
+### CMake Enhancements
+- Fixed CMake minimum version to 3.22 (was 3.14)
+- Updated FindHYPRE.cmake and FindSILO.cmake with proper case-sensitive names
+- Improved libm math library detection for platforms requiring explicit linking
+- Fixed Fortran source file extension handling for free-form Fortran compilation
+
+### Dependency Updates
+- Silo updated to version 4.12.0 (with --enable-shared support)
+- Hypre updated to 2.33.0 in CI testing
+- Python updated to 3.13 in macOS CI
+- RMM pinned to v25.08.00 with depth-limited cloning
+- Umpire updated to v2025.03.1
+
+### Kokkos Backend Detection
+Enhanced Kokkos configuration to properly detect and report active backends (CUDA, HIP, SYCL, OpenMP Target, Serial).
+
+### AMPS/GPU Memory Management
+Improved AMPS CMakeLists.txt organization with better dependency handling for RMM and Umpire. Added C++17 requirement detection when using newer RMM (≥25.06.00) or Umpire (≥2025.09.0) versions.
+
+### CI/CD Improvements
+- Added GitHub Actions concurrency controls to prevent duplicate workflow runs
+- Updated Ubuntu testing from 22.04/24.04 to primarily 24.04
+- Added Sundials external package testing
+- Enhanced TCL deprecation testing with configuration option
+- Improved self-hosted GPU runner support for CUDA testing
+- Fixed Docker container architecture detection for multi-platform builds
+
+### Valgrind Suppressions
+Added suppressions for Intel MPI and libmlx4/libibverbs memory leak reports to reduce false positives in valgrind analysis.
+
+## Internal/Developer Changes
+
+### Python Code Style Enforcement
+Black code formatter version pinned to **26.3.1** for consistent CI style checking. Updated `pfformat` script enforces this version requirement.
+
+### CMake Configuration Enhancements
+- Memory manager (UMPIRE/RMM) configuration messages improved
+- Accelerator backend reporting enhanced with detailed status messages
+- SILO find module now uses SILO in uppercase for consistency
+- HYPRE find module now uses HYPRE in uppercase for consistency
+
+### Documentation Updates
+- Release process documentation clarified with additional directory navigation step
+- User manual moved from docs/user_Manual/ to docs/user_manual/ (lowercase)
+- Extended keys.rst documentation with additional CLM snow physics keys and output options
+
+### Removed Legacy Build Files
+Old Makefile.depend files removed from AMPS transport layer directories (common, mpi1, oas3, smpi, cuda) as CMake now handles dependencies.
+
+### Code Formatting and Style
+- ParFlow AMPS CMakeLists.txt refactored for improved readability and consistency
+- RMM wrapper C++ code formatting improved with modern style
+- Umpire wrapper significantly enhanced with better resource selection logic and detailed comments
+- Removed unnecessary blank lines and improved code organization throughout
+
+### Python pftools Updates
+- Python package configuration updated for modern pyproject.toml workflow
+- Example scripts cleaned up with removed trailing blank lines
+
+## Known Issues
+
+See https://github.com/parflow/parflow/issues for current bug/issue reports.
+
+### Deprecated Features
+
+- **TCL Support**: Marked as deprecated. Users are strongly encouraged to migrate to Python-based pftools. See https://github.com/parflow/parflow/issues/707 for migration guidance.
+  - Tcl 9.x is not compatible with PFIDB file creation/reading due to API changes in Tcl.
+  - Using Tcl 8.x is recommended if TCL support is still needed.
+
+
 # ParFlow Release Notes 3.14.1
 ------------------------------
 

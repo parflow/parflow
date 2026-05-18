@@ -448,6 +448,8 @@ void         PhaseSource(
           /*  Get the intersection of the reservoir with the subgrid  */
           if ((tmp_subgrid = IntersectSubgrids(subgrid, reservoir_release_subgrid)))
           {
+            ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) = flux * volume;
+
             /*  If an intersection;  loop over it, and insert value  */
             ix = SubgridIX(tmp_subgrid);
             iy = SubgridIY(tmp_subgrid);
@@ -474,7 +476,6 @@ void         PhaseSource(
                       ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
             {
               data[ips] += weight * flux;
-              ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) = flux * volume;
             });
           }
         }
