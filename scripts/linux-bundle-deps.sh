@@ -122,6 +122,39 @@ set_rpath() {
   fi
 }
 
+# RPATH for ELFs under install/: bin/ -> ../lib; lib/foo.so -> $ORIGIN;
+# lib/openmpi/mca/... -> $ORIGIN/../..[/..]:$ORIGIN so libmpi.so.40 in lib/ resolves.
+compute_install_rpath() {
+  local elf="$1"
+  if [[ "$elf" == "${BIN_DIR}"/* ]]; then
+    echo '$ORIGIN/../lib'
+    return
+  fi
+  if [[ "$elf" != "${LIB_DIR}"/* ]]; then
+    echo '$ORIGIN/../lib'
+    return
+  fi
+  local elf_dir
+  elf_dir=$(dirname "$elf")
+  if [[ "$elf_dir" == "${LIB_DIR}" ]]; then
+    echo '$ORIGIN'
+    return
+  fi
+  local rel="${elf_dir#"${LIB_DIR}"/}"
+  local n
+  n=$(awk -F/ '{print NF}' <<< "$rel")
+  local up='$ORIGIN'
+  local i
+  for ((i = 0; i < n; i++)); do
+    up="${up}/.."
+  done
+  echo "${up}:\$ORIGIN"
+}
+
+set_install_rpath() {
+  set_rpath "$1" "$(compute_install_rpath "$1")"
+}
+
 # Replace a NEEDED entry; return 0 if the entry was updated.
 rewrite_needed() {
   local elf="$1" old="$2" newname="$3"
@@ -143,11 +176,7 @@ echo
 # Phase 0 — RPATH first so ldd behaves consistently in later phases.
 echo "--- Phase 0: setting RPATH ---"
 while IFS= read -r elf; do
-  case "$elf" in
-    "${BIN_DIR}"/*) set_rpath "$elf" '$ORIGIN/../lib' ;;
-    "${LIB_DIR}"/*) set_rpath "$elf" '$ORIGIN' ;;
-    *) set_rpath "$elf" '$ORIGIN/../lib' ;;
-  esac
+  set_install_rpath "$elf"
 done < <(collect_elfs)
 
 # Phase 1 — Copy external libraries; rewrite NEEDED to soname immediately.
@@ -226,11 +255,7 @@ done < <(collect_elfs)
 # Phase 3 — Re-apply RPATH after patchelf edits.
 echo "--- Phase 3: refreshing RPATH ---"
 while IFS= read -r elf; do
-  case "$elf" in
-    "${BIN_DIR}"/*) set_rpath "$elf" '$ORIGIN/../lib' ;;
-    "${LIB_DIR}"/*) set_rpath "$elf" '$ORIGIN' ;;
-    *) set_rpath "$elf" '$ORIGIN/../lib' ;;
-  esac
+  set_install_rpath "$elf"
 done < <(collect_elfs)
 
 # Phase 4 — Verify with ldd.
