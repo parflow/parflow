@@ -129,7 +129,10 @@ while [[ "$(cat "$CHANGED_FLAG")" != "0" ]]; do
   echo "  pass ${PASS}"
   while IFS= read -r elf; do
     while IFS= read -r line; do
-      [[ "$line" == *"not found"* ]] || [[ "$line" == *"=>"*" ]] || continue
+      case "$line" in
+        *"not found"*|*" => "*) ;;
+        *) continue ;;
+      esac
       soname="${line%% =>*}"
       soname="${soname%% *}"
 
