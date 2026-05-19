@@ -7,7 +7,7 @@
 # Usage:
 #   ./scripts/linux-bundle-deps.sh <install-prefix> [extra-search-dir ...]
 #
-# Requires: patchelf, file, readelf, ldd
+# Requires: patchelf, file
 
 set -euo pipefail
 
@@ -17,6 +17,7 @@ SEARCH_DIRS=("$@")
 
 LIB_DIR="${PREFIX}/lib"
 BIN_DIR="${PREFIX}/bin"
+MAX_PASSES=32
 
 mkdir -p "${LIB_DIR}"
 
@@ -41,8 +42,16 @@ is_system_lib() {
   return 1
 }
 
+is_system_soname() {
+  is_system_lib "$1"
+}
+
 is_inside_prefix() {
   [[ "$1" == "${PREFIX}"/* ]]
+}
+
+is_absolute_path() {
+  [[ "$1" == /* ]]
 }
 
 resolve_lib() {
@@ -86,6 +95,7 @@ collect_elfs() {
   done
 }
 
+# Copy library into LIB_DIR. Prints "new" or "existing".
 ensure_in_prefix() {
   local src="$1"
   local base
@@ -96,8 +106,10 @@ ensure_in_prefix() {
     cp -L "$src" "$dst"
     chmod u+w "$dst"
     patchelf --set-soname "$base" "$dst" 2>/dev/null || true
+    echo "new"
+  else
+    echo "existing"
   fi
-  echo "$dst"
 }
 
 set_rpath() {
@@ -110,11 +122,17 @@ set_rpath() {
   fi
 }
 
+# Replace a NEEDED entry; return 0 if the entry was updated.
 rewrite_needed() {
   local elf="$1" old="$2" newname="$3"
-  if patchelf --print-needed "$elf" 2>/dev/null | grep -qF "$old"; then
-    patchelf --replace-needed "$old" "$newname" "$elf" 2>/dev/null || true
+  if [[ "$old" == "$newname" ]]; then
+    return 1
   fi
+  if patchelf --print-needed "$elf" 2>/dev/null | grep -qF "$old"; then
+    patchelf --replace-needed "$old" "$newname" "$elf" 2>/dev/null
+    return 0
+  fi
+  return 1
 }
 
 echo "=== ParFlow Linux dependency bundler ==="
@@ -122,60 +140,8 @@ echo "PREFIX: ${PREFIX}"
 echo "SEARCH_DIRS: ${SEARCH_DIRS[*]+"${SEARCH_DIRS[*]}"}"
 echo
 
-# Phase 1 — copy missing shared libraries and fix NEEDED entries
-echo "--- Phase 1: copying dependency libraries into prefix ---"
-CHANGED_FLAG=$(mktemp)
-echo 1 > "$CHANGED_FLAG"
-PASS=0
-while [[ "$(cat "$CHANGED_FLAG")" != "0" ]]; do
-  echo 0 > "$CHANGED_FLAG"
-  PASS=$((PASS + 1))
-  echo "  pass ${PASS}"
-  while IFS= read -r elf; do
-    while IFS= read -r line; do
-      case "$line" in
-        *"not found"*|*" => "*) ;;
-        *) continue ;;
-      esac
-      soname="${line%% =>*}"
-      soname="${soname%% *}"
-
-      ref=""
-      if [[ "$line" == *"not found"* ]]; then
-        ref="$soname"
-      else
-        ref=$(echo "$line" | awk '{print $3}')
-      fi
-
-      [[ "$soname" == linux-vdso* ]] && continue
-      [[ "$soname" == ld-linux-* ]] && continue
-      is_system_lib "$ref" && continue
-      is_inside_prefix "$ref" && continue
-
-      resolved=""
-      if [[ -f "$ref" ]]; then
-        resolved="$ref"
-      elif resolved=$(resolve_lib "$ref" 2>/dev/null); then
-        :
-      elif resolved=$(resolve_lib "$soname" 2>/dev/null); then
-        :
-      else
-        echo "    WARNING: cannot resolve ${soname} (from $(basename "$elf"))"
-        continue
-      fi
-
-      ensure_in_prefix "$resolved" >/dev/null
-      if [[ "$line" != *"not found"* && "$ref" != "$soname" ]]; then
-        rewrite_needed "$elf" "$ref" "$soname"
-      fi
-      echo 1 > "$CHANGED_FLAG"
-    done < <(ldd "$elf" 2>/dev/null || true)
-  done < <(collect_elfs)
-done
-rm -f "$CHANGED_FLAG"
-
-# Phase 2 — set RPATH on all ELF files
-echo "--- Phase 2: setting RPATH ---"
+# Phase 0 — RPATH first so ldd behaves consistently in later phases.
+echo "--- Phase 0: setting RPATH ---"
 while IFS= read -r elf; do
   case "$elf" in
     "${BIN_DIR}"/*) set_rpath "$elf" '$ORIGIN/../lib' ;;
@@ -184,26 +150,114 @@ while IFS= read -r elf; do
   esac
 done < <(collect_elfs)
 
-# Phase 3 — verify
+# Phase 1 — Copy external libraries; rewrite NEEDED to soname immediately.
+# CHANGED only when a new .so is copied (macOS-style convergence).
+echo "--- Phase 1: copying dependency libraries into prefix ---"
+CHANGED_FLAG=$(mktemp)
+echo 1 > "$CHANGED_FLAG"
+PASS=0
+while [[ "$(cat "$CHANGED_FLAG")" != "0" ]]; do
+  if [[ $PASS -ge $MAX_PASSES ]]; then
+    echo "ERROR: exceeded ${MAX_PASSES} passes in phase 1; bundling is not converging" >&2
+    rm -f "$CHANGED_FLAG"
+    exit 1
+  fi
+  echo 0 > "$CHANGED_FLAG"
+  PASS=$((PASS + 1))
+  echo "  pass ${PASS}"
+
+  while IFS= read -r elf; do
+    while IFS= read -r needed; do
+      [[ -z "$needed" ]] && continue
+      # Already a bare soname and present in lib/
+      if ! is_absolute_path "$needed"; then
+        if [[ -f "${LIB_DIR}/${needed}" ]] || is_system_soname "$needed"; then
+          continue
+        fi
+      fi
+
+      [[ "$needed" == linux-vdso* ]] && continue
+      [[ "$needed" == ld-linux-* ]] && continue
+      is_system_lib "$needed" && continue
+      is_inside_prefix "$needed" && continue
+
+      _base=$(basename "$needed")
+      _soname="$_base"
+      _resolved=""
+
+      if [[ -f "$needed" ]]; then
+        _resolved="$needed"
+      elif _resolved=$(resolve_lib "$needed" 2>/dev/null); then
+        :
+      elif _resolved=$(resolve_lib "$_soname" 2>/dev/null); then
+        :
+      else
+        echo "    WARNING: cannot resolve ${needed} (from $(basename "$elf"))"
+        continue
+      fi
+
+      _status=$(ensure_in_prefix "$_resolved")
+      if [[ "$_status" == "new" ]]; then
+        echo 1 > "$CHANGED_FLAG"
+      fi
+      if rewrite_needed "$elf" "$needed" "$_soname"; then
+        echo 1 > "$CHANGED_FLAG"
+      fi
+    done < <(patchelf --print-needed "$elf" 2>/dev/null || true)
+  done < <(collect_elfs)
+done
+rm -f "$CHANGED_FLAG"
+
+# Phase 2 — Bulk rewrite: any remaining absolute NEEDED -> soname if in lib/.
+echo "--- Phase 2: rewriting remaining absolute references ---"
+while IFS= read -r elf; do
+  while IFS= read -r needed; do
+    [[ -z "$needed" ]] && continue
+    is_absolute_path "$needed" || continue
+    is_system_lib "$needed" && continue
+    is_inside_prefix "$needed" && continue
+    base=$(basename "$needed")
+    if [[ -f "${LIB_DIR}/${base}" ]]; then
+      rewrite_needed "$elf" "$needed" "$base" || true
+    fi
+  done < <(patchelf --print-needed "$elf" 2>/dev/null || true)
+done < <(collect_elfs)
+
+# Phase 3 — Re-apply RPATH after patchelf edits.
+echo "--- Phase 3: refreshing RPATH ---"
+while IFS= read -r elf; do
+  case "$elf" in
+    "${BIN_DIR}"/*) set_rpath "$elf" '$ORIGIN/../lib' ;;
+    "${LIB_DIR}"/*) set_rpath "$elf" '$ORIGIN' ;;
+    *) set_rpath "$elf" '$ORIGIN/../lib' ;;
+  esac
+done < <(collect_elfs)
+
+# Phase 4 — Verify with ldd.
 echo
 echo "=== Verification ==="
 PROBLEMS_FLAG=$(mktemp)
 echo 0 > "$PROBLEMS_FLAG"
 while IFS= read -r elf; do
-  ldd "$elf" 2>/dev/null | grep -q 'not found' && {
-    echo "  UNRESOLVED: $(basename "$elf")"
-    ldd "$elf" 2>/dev/null | grep 'not found' | sed 's/^/    /'
-    echo 1 > "$PROBLEMS_FLAG"
-  }
+  while IFS= read -r line; do
+    case "$line" in
+      *"not found"*)
+        echo "  UNRESOLVED: $(basename "$elf")"
+        echo "    ${line}"
+        echo 1 > "$PROBLEMS_FLAG"
+        ;;
+    esac
+  done < <(ldd "$elf" 2>/dev/null || true)
 done < <(collect_elfs)
 
 if [[ "$(cat "$PROBLEMS_FLAG")" == "0" ]]; then
   echo "  All non-system dependencies resolve."
 else
   echo "  Some dependencies are still missing (see above)."
+  rm -f "$PROBLEMS_FLAG"
   exit 1
 fi
 rm -f "$PROBLEMS_FLAG"
 
 echo
-echo "=== Done ==="
+echo "=== Done (${PASS} pass(es) in phase 1) ==="
