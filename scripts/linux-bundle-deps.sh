@@ -17,6 +17,7 @@ SEARCH_DIRS=("$@")
 
 LIB_DIR="${PREFIX}/lib"
 BIN_DIR="${PREFIX}/bin"
+LIBEXEC_DIR="${PREFIX}/libexec"
 MAX_PASSES=32
 
 mkdir -p "${LIB_DIR}"
@@ -89,6 +90,7 @@ collect_elfs() {
   local -a dirs=()
   [[ -d "${BIN_DIR}" ]] && dirs+=("${BIN_DIR}")
   [[ -d "${LIB_DIR}" ]] && dirs+=("${LIB_DIR}")
+  [[ -d "${LIBEXEC_DIR}" ]] && dirs+=("${LIBEXEC_DIR}")
   [[ ${#dirs[@]} -eq 0 ]] && return 0
   find "${dirs[@]}" -type f 2>/dev/null | while read -r f; do
     is_elf "$f" && echo "$f"
@@ -122,25 +124,29 @@ set_rpath() {
   fi
 }
 
-# RPATH for ELFs under install/: bin/ -> ../lib; lib/foo.so -> $ORIGIN;
-# lib/openmpi/mca/... -> $ORIGIN/../..[/..]:$ORIGIN so libmpi.so.40 in lib/ resolves.
+# RPATH for ELFs under install/: bin/ -> ../lib; lib/*.so -> $ORIGIN;
+# lib/openmpi/mca/... and libexec/openmpi/orted -> prefix-relative path to lib/.
 compute_install_rpath() {
   local elf="$1"
+  local elf_dir
+  elf_dir=$(dirname "$elf")
+
   if [[ "$elf" == "${BIN_DIR}"/* ]]; then
     echo '$ORIGIN/../lib'
     return
   fi
-  if [[ "$elf" != "${LIB_DIR}"/* ]]; then
-    echo '$ORIGIN/../lib'
-    return
-  fi
-  local elf_dir
-  elf_dir=$(dirname "$elf")
+
   if [[ "$elf_dir" == "${LIB_DIR}" ]]; then
     echo '$ORIGIN'
     return
   fi
-  local rel="${elf_dir#"${LIB_DIR}"/}"
+
+  if [[ "$elf" != "${PREFIX}"/* ]]; then
+    echo '$ORIGIN/../lib'
+    return
+  fi
+
+  local rel="${elf_dir#"${PREFIX}/"}"
   local n
   n=$(awk -F/ '{print NF}' <<< "$rel")
   local up='$ORIGIN'
@@ -148,7 +154,7 @@ compute_install_rpath() {
   for ((i = 0; i < n; i++)); do
     up="${up}/.."
   done
-  echo "${up}:\$ORIGIN"
+  echo "${up}/lib:\$ORIGIN"
 }
 
 set_install_rpath() {

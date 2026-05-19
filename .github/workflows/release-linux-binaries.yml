@@ -164,14 +164,14 @@ jobs:
             cp -an "$PARFLOW_DEP_DIR/lib64/." "$PARFLOW_DIR/lib/"
           fi
 
-          # MPI launchers and OpenMPI runtime layout
-          for bin in mpiexec mpirun ompi_info prte prted; do
+          # MPI launchers and OpenMPI runtime layout (orted lives under libexec; also copy to bin when present)
+          for bin in mpiexec mpirun ompi_info orted orterun prte prted; do
             if [[ -f "$PARFLOW_DEP_DIR/bin/$bin" ]]; then
               cp -a "$PARFLOW_DEP_DIR/bin/$bin" "$PARFLOW_DIR/bin/"
             fi
           done
 
-          for dir in share/openmpi share/prte share/pmix etc/openmpi etc/prte etc/pmix lib/openmpi lib/prte lib/pmix; do
+          for dir in libexec/openmpi libexec/prte share/openmpi share/prte share/pmix etc/openmpi etc/prte etc/pmix lib/openmpi lib/prte lib/pmix; do
             if [[ -d "$PARFLOW_DEP_DIR/$dir" ]]; then
               mkdir -p "$PARFLOW_DIR/$(dirname "$dir")"
               cp -a "$PARFLOW_DEP_DIR/$dir" "$PARFLOW_DIR/$(dirname "$dir")/"
@@ -207,6 +207,7 @@ jobs:
             PARFLOW_DIR="$PARFLOW_DIR" \
             OPAL_PREFIX="$PARFLOW_DIR" OMPI_HOME="$PARFLOW_DIR" \
             PMIX_INSTALL_PREFIX="$PARFLOW_DIR" \
+            PMIX_MCA_pcompress_base_silence_warning=1 \
             "$PARFLOW_DIR/bin/parflow" -v
 
       - name: Package bundle
