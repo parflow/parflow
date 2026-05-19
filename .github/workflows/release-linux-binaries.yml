@@ -149,8 +149,6 @@ jobs:
             -DPARFLOW_AMPS_SEQUENTIAL_IO=true \
             -DPARFLOW_HAVE_CLM=ON \
             -DHYPRE_ROOT="$PARFLOW_DEP_DIR" \
-            -DPARFLOW_ENABLE_PYTHON=ON \
-            -DPARFLOW_ENABLE_TCL=ON \
             -DCMAKE_INSTALL_PREFIX="$PARFLOW_DIR" \
             $NETCDF_FLAGS
 
