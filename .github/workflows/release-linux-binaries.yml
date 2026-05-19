@@ -74,8 +74,9 @@ jobs:
         run: |
           if [[ "$CACHE_HIT" != 'true' ]]; then
             URL=https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.14/hdf5-1.14.3/src/hdf5-1.14.3.tar.gz
-            mkdir hdf5 && cd hdf5
-            curl -L "$URL" | tar --strip-components=1 -xz
+            mkdir -p hdf5-build && cd hdf5-build
+            curl -L "$URL" | tar -xz
+            cd hdf5-1.14.3
             CC=mpicc CXX=mpicxx ./configure \
               --prefix="$PARFLOW_DEP_DIR" \
               --enable-shared \
