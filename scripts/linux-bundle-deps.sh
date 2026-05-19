@@ -77,7 +77,11 @@ resolve_lib() {
 }
 
 collect_elfs() {
-  find "${PREFIX}" -type f | while read -r f; do
+  local -a dirs=()
+  [[ -d "${BIN_DIR}" ]] && dirs+=("${BIN_DIR}")
+  [[ -d "${LIB_DIR}" ]] && dirs+=("${LIB_DIR}")
+  [[ ${#dirs[@]} -eq 0 ]] && return 0
+  find "${dirs[@]}" -type f 2>/dev/null | while read -r f; do
     is_elf "$f" && echo "$f"
   done
 }
