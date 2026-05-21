@@ -1,84 +1,104 @@
 # ParFlow Pre-Built Binary (macOS arm64)
 
-This archive contains a self-contained ParFlow installation for
-Apple-Silicon Macs (arm64). All required shared libraries (MPI, HDF5,
-NetCDF, HYPRE, TCL, etc.) are bundled — no Homebrew or other package
-manager is needed to run ParFlow itself.
+Apple Silicon (arm64) builds are distributed as a signed, notarized
+**ParFlow.app** (recommended) or as an unsigned `install/` tarball from CI
+test runs.
 
-## Quick start
+## Recommended: ParFlow.app (signed release)
+
+### Install
+
+1. Download from [GitHub Releases](https://github.com/parflow/parflow/releases):
+   - `parflow-<version>-macos-arm64.dmg`, or
+   - `parflow-<version>-macos-arm64.app.zip`
+2. **DMG:** open the disk image and drag **ParFlow** to **Applications**.
+3. **ZIP:** unzip and move **ParFlow.app** to **Applications**.
+
+No `xattr` step is required for signed, notarized releases.
+
+### Run from Terminal
+
+ParFlow is a **command-line** tool. The `.app` bundle is a signed container
+for the same `bin/`, `lib/`, and MPI stack as a source install.
 
 ```bash
-# 1. Download and extract (substitute the actual version)
-curl -LO https://github.com/parflow/parflow/releases/download/vX.Y.Z/parflow-vX.Y.Z-macos-arm64.tar.gz
-tar xzf parflow-vX.Y.Z-macos-arm64.tar.gz
+export PARFLOW_DIR="/Applications/ParFlow.app/Contents/Resources/parflow"
+export PATH="$PARFLOW_DIR/bin:$PATH"
 
-# 2. Remove macOS quarantine flag
-xattr -dr com.apple.quarantine install/
-
-# 3. Set environment (add to your shell profile for persistence)
-export PARFLOW_DIR=$PWD/install
-export PATH=$PARFLOW_DIR/bin:$PATH
-
-OR in your python script add
-```python
-import os
-os.environ["PARFLOW_DIR"] = '/path/to/your/download/'
-
-# 4. Verify
 parflow -v
 ```
 
-## Gatekeeper / quarantine
+Or invoke the launcher (sets `PARFLOW_DIR` and runs `parflow`):
 
-The `xattr` step above is required because the binaries are not
-Apple-notarized. If you skip it, macOS may block execution or silently
-kill processes.
+```bash
+/Applications/ParFlow.app/Contents/MacOS/ParFlow -v
+```
 
-## Python tools (pftools)
+### Python (`pftools`)
 
-The Python package (`pftools`) is **not** included in this archive.
-Install it from PyPI into your own Python environment:
+The Python package is **not** inside the app. Install from PyPI:
 
 ```bash
 pip install pftools
 ```
 
-## Running with MPI
+In Python, point at the bundled install:
 
-The bundled OpenMPI binaries (`mpirun`, `mpiexec`) are included under
-`install/bin/`. A typical parallel run:
+```python
+import os
+os.environ["PARFLOW_DIR"] = "/Applications/ParFlow.app/Contents/Resources/parflow"
+```
+
+### MPI
 
 ```bash
+export PARFLOW_DIR="/Applications/ParFlow.app/Contents/Resources/parflow"
+export PATH="$PARFLOW_DIR/bin:$PATH"
 mpirun -np 4 parflow my_simulation
 ```
 
-## Important: `PARFLOW_DIR`
+`PARFLOW_DIR` must point at `Contents/Resources/parflow` so OpenMPI/PMIx/PRTE
+find their config and plugin directories.
 
-The `PARFLOW_DIR` environment variable **must** be set and point to the
-extracted `install/` directory. Both the ParFlow `run` script and the
-bundled OpenMPI runtime depend on it to locate configuration files and
-support data at runtime.
+---
 
-## What is included
+## Alternative: unsigned `install/` tarball (CI artifacts)
+
+Development workflow artifacts may ship as `parflow-*-macos-arm64.tar.gz`
+with a top-level `install/` directory (not notarized).
+
+```bash
+curl -LO https://github.com/parflow/parflow/releases/download/vX.Y.Z/parflow-vX.Y.Z-macos-arm64.tar.gz
+tar xzf parflow-vX.Y.Z-macos-arm64.tar.gz
+
+# Required for unsigned builds only:
+xattr -dr com.apple.quarantine install/
+
+export PARFLOW_DIR=$PWD/install
+export PATH=$PARFLOW_DIR/bin:$PATH
+parflow -v
+```
+
+---
+
+## What is inside the app
 
 ```
-install/
-  bin/           ParFlow executables, MPI launchers, helper scripts
-  lib/           ParFlow libraries and all bundled shared dependencies
-  lib/openmpi/   OpenMPI MCA plugin modules
-  config/        CMake/build metadata (including pf-cmake-env.sh)
-  share/openmpi/ OpenMPI help text and runtime data
-  etc/           OpenMPI configuration files
+ParFlow.app/Contents/
+  MacOS/ParFlow              small launcher → parflow
+  Resources/parflow/         same layout as install/
+    bin/                     parflow, mpirun, mpiexec, …
+    lib/                     libraries and OpenMPI plugins
+    config/                  pf-cmake-env.sh, …
+    share/, etc/             OpenMPI / PMIx / PRTE data
 ```
 
 ## Supported platform
 
 - **Architecture:** Apple Silicon (arm64)
-- **Minimum macOS:** 14 (Sonoma) — the version used by the CI build
-  runner. Newer versions should work; older versions may or may not.
+- **Minimum macOS:** 14 (Sonoma) — matches the CI runner
 
 ## Building from source
 
-If you need a different configuration (GPU acceleration, OASIS coupling,
-x86_64, etc.) please build from source. See the main
-[README](https://github.com/parflow/parflow#readme) for instructions.
+For GPU, OASIS, x86_64, or custom options, build from source. See the main
+[README](https://github.com/parflow/parflow#readme).

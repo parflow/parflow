@@ -69,17 +69,34 @@ was created in a prior step.
 
 ## macOS Pre-Built Binary
 
-A GitHub Actions workflow (`.github/workflows/release-macos.yml`)
-automatically builds a self-contained macOS arm64 binary archive and
-uploads it to the GitHub Release page whenever a release is published.
-No manual steps are required.
+The workflow `.github/workflows/release-macos.yml` builds a self-contained
+macOS arm64 ParFlow install, wraps it in **ParFlow.app**, signs with a
+**cloud-managed Developer ID** certificate, notarizes with App Store Connect
+API keys, and attaches release assets when a GitHub Release is published:
 
-To test the workflow before a real release, trigger it manually via
-**Actions > macOS Release Build > Run workflow** and supply a tag string
-(e.g. `dev`). The resulting tarball will be available as a workflow
-artifact.
+- `parflow-<version>-macos-arm64.dmg`
+- `parflow-<version>-macos-arm64.app.zip`
 
-See `README-BINARY.md` in the repository root for end-user instructions.
+### Repository secrets (org or repo settings)
+
+| Secret | Purpose |
+|--------|---------|
+| `APP_STORE_CONNECT_KEY` | API private key (`.p8` PEM or base64) |
+| `APP_STORE_CONNECT_KEY_ID` | Key ID |
+| `APP_STORE_CONNECT_ISSUER_ID` | Issuer ID |
+
+The Apple team must provide a **Cloud Managed Developer ID** distribution
+certificate for automatic signing (team `Y3TW367T4G` in `ExportOptions.plist`).
+
+### Test signing before a release
+
+**Actions → macOS Release Build → Run workflow** (`workflow_dispatch`).
+Requires the secrets above. Artifacts: signed `.dmg` and `.app.zip`.
+
+Pull-request runs produce an unsigned `install/` tarball only (no secrets).
+
+Packaging sources live under `packaging/macos/`. See `README-BINARY.md` for
+end-user install instructions.
 
 ## Generate Docker
 

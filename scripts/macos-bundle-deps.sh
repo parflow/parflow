@@ -226,14 +226,18 @@ if [[ "$(cat "$PROBLEMS_FLAG")" == "0" ]]; then
 fi
 rm -f "$PROBLEMS_FLAG"
 
-# Phase 6 — Ad-hoc code sign all Mach-O files.
-# install_name_tool invalidates existing signatures; re-sign so macOS
-# (especially Apple Silicon) accepts the modified binaries.
+# Phase 6 — Re-sign Mach-O files after install_name_tool.
+# Ad-hoc signing satisfies the build runner; release builds use Xcode
+# cloud-managed Developer ID signing (set PARFLOW_ADHOC_SIGN=0 to skip).
 echo
-echo "--- Phase 6: ad-hoc code signing ---"
-while IFS= read -r macho; do
-  codesign --force --sign - "$macho" 2>/dev/null || true
-done < <(collect_machos)
+if [[ "${PARFLOW_ADHOC_SIGN:-1}" == "0" ]]; then
+  echo "--- Phase 6: skipping ad-hoc code signing (Xcode will sign) ---"
+else
+  echo "--- Phase 6: ad-hoc code signing ---"
+  while IFS= read -r macho; do
+    codesign --force --sign - "$macho" 2>/dev/null || true
+  done < <(collect_machos)
+fi
 
 echo
 echo "=== Done ==="
