@@ -46,7 +46,11 @@
 #include <hdf.h>
 #endif
 
+#ifdef PARFLOW_HAVE_TCL
 #include <tcl.h>
+#endif
+
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -113,7 +117,9 @@ typedef enum {
 Databox *NewDatabox(size_t nx, size_t ny, size_t nz, double x, double y, double z, double dx, double dy, double dz);
 Databox *NewDataboxDefault(size_t nx, size_t ny, size_t nz, double x, double y, double z, double dx, double dy, double dz,
                            double default_value);
+#ifdef PARFLOW_HAVE_TCL
 void GetDataboxGrid(Tcl_Interp *interp, Databox *databox);
+#endif
 void SetDataboxGrid(Databox *databox, int nx, int ny, int nz, double x, double y, double z,
                     double dx, double dy, double dz);
 void FreeDatabox(Databox *databox);

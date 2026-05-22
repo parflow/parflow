@@ -116,6 +116,8 @@ Databox         *NewDataboxDefault(
  * print Databox grid info
  *-----------------------------------------------------------------------*/
 
+#ifdef PARFLOW_HAVE_TCL
+
 void            GetDataboxGrid(
                                Tcl_Interp *interp,
                                Databox *   databox)
@@ -162,6 +164,8 @@ void            GetDataboxGrid(
 
   Tcl_ListObjAppendElement(interp, result, list_obj);
 }
+
+#endif // PARFLOW_HAVE_TCL
 
 
 // IMF

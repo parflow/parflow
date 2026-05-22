@@ -10,40 +10,49 @@
 
 include(FindPackageHandleStandardArgs)
 
-find_path (SUNDIALS_DIR include/sundials/sundials_config.h HINTS ${SUNDIALS_ROOT} 
-  DOC "Sundials Directory")
+find_path(
+    SUNDIALS_DIR
+    include/sundials/sundials_config.h
+    HINTS ${SUNDIALS_ROOT}
+    DOC "Sundials Directory"
+)
 
-if (SUNDIALS_DIR)
+if(SUNDIALS_DIR)
+    set(SUNDIALS_FOUND YES)
 
-  set(SUNDIALS_FOUND YES)
+    set(SUNDIALS_INCLUDE_DIR ${SUNDIALS_DIR}/include)
+    set(SUNDIALS_LIBRARY_DIR ${SUNDIALS_DIR}/lib)
 
-  set(SUNDIALS_INCLUDE_DIR ${SUNDIALS_DIR}/include)
-  set(SUNDIALS_LIBRARY_DIR ${SUNDIALS_DIR}/lib)
+    if(SUNDIALS_FIND_COMPONENTS)
+        foreach(comp ${SUNDIALS_FIND_COMPONENTS})
+            # Need to make sure variable to search for isn't set
+            unset(SUNDIALS_LIB CACHE)
 
-  if(SUNDIALS_FIND_COMPONENTS)
-    
-    foreach(comp ${SUNDIALS_FIND_COMPONENTS})
+            find_library(
+                SUNDIALS_LIB
+                NAMES ${comp}
+                HINTS ${SUNDIALS_LIBRARY_DIR}
+                NO_DEFAULT_PATH
+            )
 
-      # Need to make sure variable to search for isn't set
-      unset(SUNDIALS_LIB CACHE)
-
-      find_library(SUNDIALS_LIB
-        NAMES ${comp}
-	HINTS ${SUNDIALS_LIBRARY_DIR}
-	NO_DEFAULT_PATH)
-
-      if(SUNDIALS_LIB)
-        list(APPEND SUNDIALS_LIBRARIES ${SUNDIALS_LIB})
-      else(SUNDIALS_LIB)	    
-        message(FATAL_ERROR "Could not find required Sundials library : ${comp}")
-      endif(SUNDIALS_LIB)
-    
-    endforeach(comp)
-
-  endif(SUNDIALS_FIND_COMPONENTS)
+            if(SUNDIALS_LIB)
+                list(APPEND SUNDIALS_LIBRARIES ${SUNDIALS_LIB})
+            else(SUNDIALS_LIB)
+                message(
+                    FATAL_ERROR
+                    "Could not find required Sundials library : ${comp}"
+                )
+            endif(SUNDIALS_LIB)
+        endforeach(comp)
+    endif(SUNDIALS_FIND_COMPONENTS)
 
 else(SUNDIALS_DIR)
-  set(SUNDIALS_FOUND NO)
+    set(SUNDIALS_FOUND NO)
 endif(SUNDIALS_DIR)
 
-find_package_handle_standard_args(SUNDIALS DEFAULT_MSG SUNDIALS_LIBRARIES SUNDIALS_INCLUDE_DIR)
+find_package_handle_standard_args(
+    SUNDIALS
+    DEFAULT_MSG
+    SUNDIALS_LIBRARIES
+    SUNDIALS_INCLUDE_DIR
+)
