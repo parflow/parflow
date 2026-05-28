@@ -14,111 +14,65 @@ concurrency:
 
 jobs:
   build-and-upload:
-    name: Build and package (Ubuntu 22.04 GCC)
-    runs-on: ubuntu-22.04
+    name: Build and package (self-hosted HPC)
+    if: github.repository == 'parflow/parflow'
+    runs-on: self-hosted
     steps:
       - name: Checkout commit
         uses: actions/checkout@v4
 
-      - name: Package Install
+      - name: Load modules and verify tools
         run: |
-          sudo apt-get -qq update
-          sudo apt-get -qq install curl cmake build-essential tcl-dev tk-dev gfortran \
-            zlib1g-dev libcurl4-openssl-dev patchelf file
+          module purge
+          module load openmpi/gcc/4.1.6
+          module load hdf5/gcc/openmpi-4.1.6/1.14.4
+          module load netcdf/gcc/hdf5-1.14.4/openmpi-4.1.6/4.9.2
+          module list
+          for cmd in cmake mpicc mpicxx mpifort mpif90 make wget patchelf file nc-config h5pcc; do
+            if ! command -v "$cmd" >/dev/null 2>&1; then
+              echo "ERROR: required command not found: $cmd" >&2
+              exit 1
+            fi
+          done
+          MPI_PREFIX=$(mpicc --showme:prefix)
+          HDF5_PREFIX="${HDF5_ROOT:-$(h5pcc -showconfig 2>/dev/null | sed -n 's/^ *PREFIX *= *//p' | head -1)}"
+          NETCDF_PREFIX="$(nc-config --prefix)"
+          for name in MPI HDF5 NETCDF; do
+            var="${name}_PREFIX"
+            val="${!var}"
+            if [[ -z "$val" || ! -d "$val" ]]; then
+              echo "ERROR: invalid ${var}=${val:-<empty>}" >&2
+              exit 1
+            fi
+            echo "PARFLOW_${name}_PREFIX=${val}" >> "$GITHUB_ENV"
+          done
+          echo "NETCDF_FLAGS=-DNETCDF_DIR=${NETCDF_PREFIX} -DNETCDF_Fortran_ROOT=${NETCDF_PREFIX} -DPARFLOW_ENABLE_HDF5=TRUE -DHDF5_ROOT=${HDF5_PREFIX}" >> "$GITHUB_ENV"
 
-      - name: Cache dependencies
+      - name: Cache HYPRE build
         uses: actions/cache@v4
-        id: cache-parflow-dependencies
+        id: cache-hypre
         with:
-          path: "~/depend"
-          key: release-linux-bundle-${{ hashFiles('**/.github/workflows/release-linux-binaries.yml') }}
+          path: ${{ github.workspace }}/release-depend
+          key: release-linux-hypre-${{ hashFiles('**/.github/workflows/release-linux-binaries.yml') }}
 
       - name: Directory Setup
         run: |
-          mkdir -p "$HOME/install"
-          mkdir -p "$HOME/depend"/{include,lib,bin}
+          mkdir -p "${{ github.workspace }}/release-install"/{bin,lib}
+          mkdir -p "${{ github.workspace }}/release-depend"/{include,lib,lib64,bin}
 
-          echo "PARFLOW_DIR=$HOME/install" >> "$GITHUB_ENV"
-          echo "PARFLOW_DEP_DIR=$HOME/depend" >> "$GITHUB_ENV"
-          echo "$HOME/depend/bin" >> "$GITHUB_PATH"
-          echo "$HOME/install/bin" >> "$GITHUB_PATH"
-
-      - name: CMake Install
-        env:
-          CACHE_HIT: ${{ steps.cache-parflow-dependencies.outputs.cache-hit }}
-        run: |
-          if [[ "$CACHE_HIT" != 'true' ]]; then
-            cd "$HOME/depend"
-            wget -nv --no-check-certificate \
-              https://github.com/Kitware/CMake/releases/download/v3.26.5/cmake-3.26.5-linux-x86_64.tar.gz
-            tar -xf cmake-3.26.5-linux-x86_64.tar.gz
-          fi
-          echo "$HOME/depend/cmake-3.26.5-linux-x86_64/bin" >> "$GITHUB_PATH"
-
-      - name: OpenMPI Install
-        env:
-          CACHE_HIT: ${{ steps.cache-parflow-dependencies.outputs.cache-hit }}
-        run: |
-          if [[ "$CACHE_HIT" != 'true' ]]; then
-            URL=https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.6.tar.gz
-            mkdir openmpi && cd openmpi
-            curl -L "$URL" | tar --strip-components=1 -xz
-            ./configure --prefix="$PARFLOW_DEP_DIR" --disable-static
-            make -j "$(nproc)"
-            make install
-          fi
-
-      - name: HDF5 Install
-        env:
-          CACHE_HIT: ${{ steps.cache-parflow-dependencies.outputs.cache-hit }}
-        run: |
-          if [[ "$CACHE_HIT" != 'true' ]]; then
-            URL=https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.14/hdf5-1.14.3/src/hdf5-1.14.3.tar.gz
-            mkdir -p hdf5-build && cd hdf5-build
-            curl -L "$URL" | tar -xz
-            cd hdf5-1.14.3
-            CC=mpicc CXX=mpicxx ./configure \
-              --prefix="$PARFLOW_DEP_DIR" \
-              --enable-shared \
-              --enable-parallel \
-              --disable-static
-            make -j "$(nproc)"
-            make install
-          fi
-
-      - name: NetCDF Install
-        env:
-          CACHE_HIT: ${{ steps.cache-parflow-dependencies.outputs.cache-hit }}
-        run: |
-          if [[ "$CACHE_HIT" != 'true' ]]; then
-            URL=https://github.com/Unidata/netcdf-c/archive/v4.9.0.tar.gz
-            mkdir netcdf-c && cd netcdf-c
-            curl -L "$URL" | tar --strip-components=1 -xz
-            CC=mpicc \
-              CPPFLAGS="-I${PARFLOW_DEP_DIR}/include" \
-              LDFLAGS="-L${PARFLOW_DEP_DIR}/lib" \
-              ./configure --prefix="$PARFLOW_DEP_DIR" --enable-shared
-            make -j "$(nproc)"
-            make install
-            cd ..
-
-            URL=https://github.com/Unidata/netcdf-fortran/archive/v4.5.4.tar.gz
-            mkdir netcdf-fortran && cd netcdf-fortran
-            curl -L "$URL" | tar --strip-components=1 -xz
-            CC=mpicc FC=mpifort \
-              CPPFLAGS="-I${PARFLOW_DEP_DIR}/include" \
-              LDFLAGS="-L${PARFLOW_DEP_DIR}/lib" \
-              ./configure --prefix="${PARFLOW_DEP_DIR}"
-            make -j "$(nproc)"
-            make install
-          fi
-          echo "NETCDF_FLAGS=-DNETCDF_DIR=$PARFLOW_DEP_DIR -DNETCDF_Fortran_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_HDF5=TRUE" >> "$GITHUB_ENV"
+          echo "PARFLOW_DIR=${{ github.workspace }}/release-install" >> "$GITHUB_ENV"
+          echo "PARFLOW_DEP_DIR=${{ github.workspace }}/release-depend" >> "$GITHUB_ENV"
+          echo "${{ github.workspace }}/release-depend/bin" >> "$GITHUB_PATH"
+          echo "${{ github.workspace }}/release-install/bin" >> "$GITHUB_PATH"
 
       - name: HYPRE Install
         env:
-          CACHE_HIT: ${{ steps.cache-parflow-dependencies.outputs.cache-hit }}
+          CACHE_HIT: ${{ steps.cache-hypre.outputs.cache-hit }}
         run: |
+          module purge
+          module load openmpi/gcc/4.1.6
           if [[ "$CACHE_HIT" != 'true' ]]; then
+            cd "$PARFLOW_DEP_DIR"
             wget -q https://github.com/hypre-space/hypre/archive/v2.33.0.tar.gz
             tar xf v2.33.0.tar.gz && cd hypre-2.33.0
             cmake -S src -B build \
@@ -133,19 +87,16 @@ jobs:
 
       - name: ParFlow CMake Configure
         run: |
-          export OMPI_MCA_rmaps_base_oversubscribe=1
-          export OMP_NUM_THREADS=1
-          export OMPI_CC=gcc OMPI_CXX=g++ OMPI_FC=gfortran
-          export CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90
-          CFLAGS="-Wall -Wno-unused-result -Wno-unused-function -Wno-stringop-overread"
+          module purge
+          module load openmpi/gcc/4.1.6
+          module load hdf5/gcc/openmpi-4.1.6/1.14.4
+          module load netcdf/gcc/hdf5-1.14.4/openmpi-4.1.6/4.9.2
+          cd "$GITHUB_WORKSPACE"
           # shellcheck disable=SC2086
           cmake -Bbuild \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_C_FLAGS="$CFLAGS" \
             -DPARFLOW_ENABLE_TIMING=TRUE \
             -DPARFLOW_AMPS_LAYER=mpi1 \
-            -DMPIEXEC_POSTFLAGS='--oversubscribe' \
-            -DPARFLOW_ACCELERATOR_BACKEND=none \
             -DPARFLOW_AMPS_SEQUENTIAL_IO=true \
             -DPARFLOW_HAVE_CLM=ON \
             -DHYPRE_ROOT="$PARFLOW_DEP_DIR" \
@@ -153,35 +104,65 @@ jobs:
             $NETCDF_FLAGS
 
       - name: ParFlow CMake Build
-        run: cmake --build build --parallel "$(nproc)" --target install
+        run: |
+          module purge
+          module load openmpi/gcc/4.1.6
+          module load hdf5/gcc/openmpi-4.1.6/1.14.4
+          module load netcdf/gcc/hdf5-1.14.4/openmpi-4.1.6/4.9.2
+          cd "$GITHUB_WORKSPACE"
+          cmake --build build --parallel "$(nproc)" --target install
 
-      - name: Merge dependency prefix into install tree
+      - name: Merge dependencies and MPI into install tree
         run: |
           set -euo pipefail
-          # Libraries and headers built for ParFlow deps
-          cp -an "$PARFLOW_DEP_DIR/lib/." "$PARFLOW_DIR/lib/"
-          if [[ -d "$PARFLOW_DEP_DIR/lib64" ]]; then
-            cp -an "$PARFLOW_DEP_DIR/lib64/." "$PARFLOW_DIR/lib/"
-          fi
+          mkdir -p "$PARFLOW_DIR"/{bin,lib}
 
-          # MPI launchers and OpenMPI runtime layout (orted lives under libexec; also copy to bin when present)
+          copy_prefix_libs() {
+            local root="$1"
+            for libdir in lib lib64; do
+              if [[ -d "$root/$libdir" ]]; then
+                cp -an "$root/$libdir/." "$PARFLOW_DIR/lib/"
+              fi
+            done
+          }
+
+          # HYPRE (built into release-depend)
+          copy_prefix_libs "$PARFLOW_DEP_DIR"
+
+          # HDF5, NetCDF, OpenMPI (HPC modules)
+          copy_prefix_libs "$PARFLOW_HDF5_PREFIX"
+          copy_prefix_libs "$PARFLOW_NETCDF_PREFIX"
+          copy_prefix_libs "$PARFLOW_MPI_PREFIX"
+
+          MPI_PREFIX="${PARFLOW_MPI_PREFIX}"
           for bin in mpiexec mpirun ompi_info orted orterun prte prted; do
-            if [[ -f "$PARFLOW_DEP_DIR/bin/$bin" ]]; then
-              cp -a "$PARFLOW_DEP_DIR/bin/$bin" "$PARFLOW_DIR/bin/"
-            fi
+            for bindir in "$MPI_PREFIX/bin" "$PARFLOW_DEP_DIR/bin"; do
+              if [[ -f "$bindir/$bin" ]]; then
+                cp -a "$bindir/$bin" "$PARFLOW_DIR/bin/"
+              fi
+            done
           done
 
           for dir in libexec/openmpi libexec/prte share/openmpi share/prte share/pmix etc/openmpi etc/prte etc/pmix lib/openmpi lib/prte lib/pmix; do
-            if [[ -d "$PARFLOW_DEP_DIR/$dir" ]]; then
-              mkdir -p "$PARFLOW_DIR/$(dirname "$dir")"
-              cp -a "$PARFLOW_DEP_DIR/$dir" "$PARFLOW_DIR/$(dirname "$dir")/"
-            fi
+            for root in "$MPI_PREFIX" "$PARFLOW_DEP_DIR"; do
+              if [[ -d "$root/$dir" ]]; then
+                mkdir -p "$PARFLOW_DIR/$(dirname "$dir")"
+                cp -a "$root/$dir" "$PARFLOW_DIR/$(dirname "$dir")/"
+              fi
+            done
           done
 
       - name: Bundle shared libraries
         run: |
           chmod +x scripts/linux-bundle-deps.sh
-          ./scripts/linux-bundle-deps.sh "$PARFLOW_DIR" "$PARFLOW_DEP_DIR" /usr/lib/x86_64-linux-gnu
+          ./scripts/linux-bundle-deps.sh \
+            "$PARFLOW_DIR" \
+            "$PARFLOW_DEP_DIR" \
+            "$PARFLOW_MPI_PREFIX" \
+            "$PARFLOW_HDF5_PREFIX" \
+            "$PARFLOW_NETCDF_PREFIX" \
+            /lib64 \
+            /usr/lib64
 
       - name: Patch config for relocatable install
         run: |
@@ -205,6 +186,7 @@ jobs:
           CLEAN_PATH="/usr/bin:/bin:/usr/sbin:/sbin:${PARFLOW_DIR}/bin"
           env -i HOME="$HOME" PATH="$CLEAN_PATH" TMPDIR="${TMPDIR:-/tmp}" \
             PARFLOW_DIR="$PARFLOW_DIR" \
+            LD_LIBRARY_PATH="${PARFLOW_DIR}/lib" \
             OPAL_PREFIX="$PARFLOW_DIR" OMPI_HOME="$PARFLOW_DIR" \
             PMIX_INSTALL_PREFIX="$PARFLOW_DIR" \
             PMIX_MCA_pcompress_base_silence_warning=1 \
@@ -220,7 +202,7 @@ jobs:
           else
             VERSION="${{ github.event_name }}-${{ github.sha }}"
           fi
-          OUT="parflow-${VERSION}-linux-x86_64-ubuntu22.04.tar.gz"
+          OUT="parflow-${VERSION}-linux-x86_64.tar.gz"
           tar -czf "$GITHUB_WORKSPACE/${OUT}" -C "$(dirname "$PARFLOW_DIR")" "$(basename "$PARFLOW_DIR")"
           echo "ASSET_NAME=${OUT}" >> "$GITHUB_ENV"
           ls -lh "$GITHUB_WORKSPACE/${OUT}"
