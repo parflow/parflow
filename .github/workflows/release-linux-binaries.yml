@@ -27,15 +27,19 @@ jobs:
           module load hdf5/gcc/openmpi-4.1.6/1.14.4
           module load netcdf/gcc/hdf5-1.14.4/openmpi-4.1.6/4.9.2
           module list
-          for cmd in cmake mpicc mpicxx mpifort mpif90 make wget patchelf file nc-config h5pcc; do
+          for cmd in cmake mpicc mpicxx mpifort mpif90 make wget patchelf file; do
             if ! command -v "$cmd" >/dev/null 2>&1; then
               echo "ERROR: required command not found: $cmd" >&2
               exit 1
             fi
           done
-          MPI_PREFIX=$(mpicc --showme:prefix)
-          HDF5_PREFIX="${HDF5_ROOT:-$(h5pcc -showconfig 2>/dev/null | sed -n 's/^ *PREFIX *= *//p' | head -1)}"
-          NETCDF_PREFIX="$(nc-config --prefix)"
+          # Prefixes from module setenv (see: module show openmpi|hdf5|netcdf)
+          MPI_PREFIX="${OPENMPI_HOME:-${MPI_HOME:-${MPIHOME}}}"
+          HDF5_PREFIX="${HDF5_ROOT:-${HDF5DIR}}"
+          NETCDF_PREFIX="${NETCDFDIR:-${NETCDF_DIR:-}}"
+          echo "MPI_PREFIX=${MPI_PREFIX}"
+          echo "HDF5_PREFIX=${HDF5_PREFIX}"
+          echo "NETCDF_PREFIX=${NETCDF_PREFIX}"
           for name in MPI HDF5 NETCDF; do
             var="${name}_PREFIX"
             val="${!var}"
