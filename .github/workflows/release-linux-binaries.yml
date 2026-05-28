@@ -15,7 +15,6 @@ concurrency:
 jobs:
   build-and-upload:
     name: Build and package (self-hosted HPC)
-    if: github.repository == 'parflow/parflow'
     runs-on: self-hosted
     steps:
       - name: Checkout commit
