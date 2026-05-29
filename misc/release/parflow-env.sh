@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Source this file after unpacking a ParFlow Linux binary bundle:
-#   tar xf parflow-*-linux-x86_64.tar.gz
-#   source /path/to/install/parflow-env.sh
+#   unzip parflow-*-linux-x86_64.tar.gz.zip
+#   tar -xvf parflow-*-linux-x86_64.tar.gz
+#   source parflow-env.sh
 #
 # Layout:
 #   install/
