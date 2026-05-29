@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
-# Source this file after unpacking a ParFlow Linux binary bundle:
-#   unzip parflow-*-linux-x86_64.tar.gz.zip
-#   tar -xvf parflow-*-linux-x86_64.tar.gz
-#   source parflow-env.sh
+# Source this file after unpacking a ParFlow Linux release bundle:
+#   tar xf parflow-<tag>-linux-x86_64.tar.gz
+#   cd release-install && source parflow-env.sh
 #
 # Layout:
-#   install/
+#   release-install/
 #     bin/ lib/ config/ share/ etc/ parflow-env.sh
 #     (self-contained: ParFlow, OpenMPI, HDF5, NetCDF, HYPRE, …)
 

@@ -1,24 +1,25 @@
 name: Release Linux binaries
 
 on:
-  push:
-  pull_request:
-  workflow_dispatch:
+  release:
+    types: [published]
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: release-linux-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: release-linux-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
 
 jobs:
   build-and-upload:
     name: Build and package (self-hosted HPC)
     runs-on: self-hosted
     steps:
-      - name: Checkout commit
+      - name: Checkout release tag
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
 
       - name: Load modules and verify tools
         run: |
@@ -199,19 +200,13 @@ jobs:
         run: |
           set -euo pipefail
           cp README-LINUX-BINARY.md "$PARFLOW_DIR/" || true
-
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            VERSION="pr-${{ github.event.pull_request.number }}-${{ github.sha }}"
-          else
-            VERSION="${{ github.event_name }}-${{ github.sha }}"
-          fi
-          OUT="parflow-${VERSION}-linux-x86_64.tar.gz"
+          TAG="${{ github.event.release.tag_name }}"
+          OUT="parflow-${TAG}-linux-x86_64.tar.gz"
           tar -czf "$GITHUB_WORKSPACE/${OUT}" -C "$(dirname "$PARFLOW_DIR")" "$(basename "$PARFLOW_DIR")"
           echo "ASSET_NAME=${OUT}" >> "$GITHUB_ENV"
           ls -lh "$GITHUB_WORKSPACE/${OUT}"
 
-      - name: Upload workflow artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
         with:
-          name: ${{ env.ASSET_NAME }}
-          path: ${{ env.ASSET_NAME }}
+          files: ${{ env.ASSET_NAME }}

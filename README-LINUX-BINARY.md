@@ -3,46 +3,35 @@
 This archive contains a self-contained ParFlow installation for **Linux x86_64**
 built on the project's **self-hosted HPC runner** using cluster modules for
 OpenMPI, HDF5, and NetCDF. HYPRE is built in CI; all runtime libraries are
-bundled under a single `install/` prefix — no separate `deps/` tree and no
-system MPI/HDF5 packages required to run ParFlow.
+bundled under a single install prefix — no separate `deps/` tree and no system
+MPI/HDF5 packages required to run ParFlow.
+
+Binaries are produced when a [GitHub Release](https://github.com/parflow/parflow/releases)
+is **published** (see workflow `release-linux-binaries.yml`).
 
 ## Downloading the bundle
 
-### From a GitHub Actions workflow (PR / CI testing)
+1. Open the release page for your version (e.g. tag `v3.12.0`).
+2. Under **Assets**, download the Linux x86_64 tarball:
 
-Workflow artifacts are named like:
+   ```text
+   parflow-<tag>-linux-x86_64.tar.gz
+   ```
 
-```text
-parflow-pr-<number>-<sha>-linux-x86_64.tar.gz
-```
+   Example: `parflow-v3.12.0-linux-x86_64.tar.gz`
 
-GitHub **wraps artifacts in an extra ZIP** when you download them from the
-Actions tab. The file on your machine will look like:
+3. Extract:
 
-```text
-parflow-pr-742-<sha>-linux-x86_64.tar.gz.zip
-```
+   ```bash
+   tar -xvf parflow-<tag>-linux-x86_64.tar.gz
+   ```
 
-Extract in two steps:
-
-```bash
-unzip parflow-pr-<number>-<sha>-linux-x86_64.tar.gz.zip
-tar -xvf parflow-pr-<number>-<sha>-linux-x86_64.tar.gz
-```
-
-This creates a `release-install/` directory (the bundled prefix).
-
-### From a GitHub Release (when published)
-
-Release assets are uploaded as plain `.tar.gz` files — **no extra ZIP**:
-
-```bash
-tar -xvf parflow-<version>-linux-x86_64.tar.gz
-```
+   This creates a `release-install/` directory (the bundled prefix).
 
 ## Quick start
 
 ```bash
+cd /path/to/release-install
 source parflow-env.sh
 
 # Verify (use full path; parflow-env.sh does not prepend PATH)
@@ -66,7 +55,7 @@ Both ParFlow and the bundled OpenMPI expect this when launching parallel runs.
 ## What is included
 
 ```
-install/
+release-install/
   bin/           parflow, mpiexec, mpirun, helper scripts
   lib/           ParFlow and bundled shared libraries
   libexec/       OpenMPI ORTE helpers (e.g. orted for singleton MPI_Init)
@@ -79,7 +68,6 @@ install/
 ## Supported platform
 
 - **Architecture:** x86_64
-- **Build host:** Self-hosted HPC runner (OpenMPI/gcc modules used for GPU CI)
 - **GPU:** CPU / MPI1 only (no CUDA/Kokkos in this workflow).
 
 ## Building from source
