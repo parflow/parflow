@@ -67,6 +67,37 @@ should have format of `ParFlow Version X.Y.Z`.  The GitHub release
 description can be copied from the release notes markdown file that
 was created in a prior step.
 
+## macOS Pre-Built Binary
+
+The workflow `.github/workflows/release-macos.yml` builds a self-contained
+macOS arm64 ParFlow install, wraps it in **ParFlow.app**, signs with a
+**cloud-managed Developer ID** certificate, notarizes with App Store Connect
+API keys, and attaches release assets when a GitHub Release is published:
+
+- `parflow-<version>-macos-arm64.dmg`
+- `parflow-<version>-macos-arm64.app.zip`
+
+### Repository secrets (org or repo settings)
+
+| Secret | Purpose |
+|--------|---------|
+| `APP_STORE_CONNECT_KEY` | API private key (`.p8` PEM or base64) |
+| `APP_STORE_CONNECT_KEY_ID` | Key ID |
+| `APP_STORE_CONNECT_ISSUER_ID` | Issuer ID |
+
+The Apple team must provide a **Cloud Managed Developer ID** distribution
+certificate for automatic signing (team `Y3TW367T4G` in `ExportOptions.plist`).
+
+### Test signing before a release
+
+**Actions → macOS Release Build → Run workflow** (`workflow_dispatch`).
+Requires the secrets above. Artifacts: signed `.dmg` and `.app.zip`.
+
+Pull-request runs produce an unsigned `install/` tarball only (no secrets).
+
+Packaging sources live under `packaging/macos/`. See `README-BINARY.md` for
+end-user install instructions.
+
 ## Generate Docker
 
 ```shell

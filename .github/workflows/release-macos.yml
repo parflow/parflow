@@ -1,0 +1,356 @@
+name: macOS Release Build
+
+on:
+  push:
+  pull_request:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-package:
+    name: macOS arm64 release
+    runs-on: macos-14
+    permissions:
+      contents: write
+    env:
+      # Sign, notarize, and ship ParFlow.app on release or manual dispatch.
+      SIGN_RELEASE: ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+    # ── Checkout ──────────────────────────────────────────────────────
+    - uses: actions/checkout@v4
+
+    # ── Toolchains ───────────────────────────────────────────────────
+    - uses: fortran-lang/setup-fortran@v1
+      with:
+        compiler: gcc
+    - uses: mpi4py/setup-mpi@v1
+      with:
+        mpi: openmpi
+
+    - name: HDF5 Install
+      run: brew install hdf5-mpi
+
+    - name: TCL Link
+      run: brew link tcl-tk@8
+
+    # ── Dependency cache ─────────────────────────────────────────────
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      id: cache-deps
+      with:
+        path: "~/depend"
+        key: release-macos-14-${{ hashFiles('**/.github/workflows/release-macos.yml') }}
+
+    # ── Directory setup ──────────────────────────────────────────────
+    - name: Directory Setup
+      run: |
+        mkdir -p $HOME/install
+        mkdir -p $HOME/depend/{include,lib}
+        echo "PARFLOW_DIR=$HOME/install" >> $GITHUB_ENV
+        echo "PARFLOW_DEP_DIR=$HOME/depend" >> $GITHUB_ENV
+        echo "$HOME/depend/bin" >> $GITHUB_PATH
+
+    # ── Build dependencies from source ───────────────────────────────
+    - name: NetCDF Install
+      env:
+        CACHE_HIT: ${{ steps.cache-deps.outputs.cache-hit }}
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          URL=https://github.com/Unidata/netcdf-c/archive/v4.9.0.tar.gz
+          mkdir netcdf-c && cd netcdf-c
+          curl -L $URL | tar --strip-components=1 -xz
+          CC=mpicc CPPFLAGS=-I/opt/homebrew/include LDFLAGS=-L/opt/homebrew/lib/ \
+            ./configure --prefix=$PARFLOW_DEP_DIR
+          make -j 3 && make install
+          cd ..
+
+          URL=https://github.com/Unidata/netcdf-fortran/archive/v4.5.4.tar.gz
+          mkdir netcdf-fortran && cd netcdf-fortran
+          curl -L $URL | tar --strip-components=1 -xz
+          CC=mpicc FC=mpifort \
+            CPPFLAGS=-I${PARFLOW_DEP_DIR}/include \
+            LDFLAGS=-L${PARFLOW_DEP_DIR}/lib \
+            ./configure --prefix=${PARFLOW_DEP_DIR}
+          make -j 3 && make install
+        fi
+        echo "NETCDF_FLAGS=-DNETCDF_DIR=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_HDF5=TRUE" >> $GITHUB_ENV
+
+    - name: HYPRE Install
+      env:
+        CACHE_HIT: ${{ steps.cache-deps.outputs.cache-hit }}
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          URL=https://github.com/hypre-space/hypre/archive/v2.33.0.tar.gz
+          mkdir hypre && cd hypre
+          curl -L $URL | tar --strip-components=1 -xz
+          cd src
+          CC=mpicc CXX=mpic++ FC=mpif77 F77=mpif90 \
+            ./configure --prefix=$PARFLOW_DEP_DIR
+          make -j 3 install
+        fi
+
+    # ── Build ParFlow ────────────────────────────────────
+    - name: ParFlow CMake Configure
+      run: |
+        CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 \
+          cmake -Bbuild \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS="-Wall -Wno-unused-result -Wno-unused-function" \
+            -DPARFLOW_ENABLE_TIMING=TRUE \
+            -DPARFLOW_AMPS_LAYER=mpi1 \
+            -DPARFLOW_AMPS_SEQUENTIAL_IO=true \
+            -DPARFLOW_HAVE_CLM=ON \
+            -DHYPRE_ROOT=$PARFLOW_DEP_DIR \
+            $NETCDF_FLAGS \
+            -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR \
+            -DTCL_INCLUDE_PATH=/opt/homebrew/bin/usr/include \
+            -DTCL_LIBRARY=/opt/homebrew/lib/libtcl8.6.dylib \
+            -DTCL_TCLSH=/opt/homebrew/bin/tclsh8.6
+
+    - name: ParFlow CMake Build and Install
+      run: cmake --build build --parallel 3 --target install
+
+    # ── Bundle dependencies into install tree ────────────────────────
+    - name: Bundle shared libraries
+      run: |
+        chmod +x scripts/macos-bundle-deps.sh
+        ./scripts/macos-bundle-deps.sh "$PARFLOW_DIR" "$PARFLOW_DEP_DIR"
+
+    # ── Copy full OpenMPI/PMIx/PRTE runtime into the prefix ────────
+    - name: Bundle OpenMPI runtime
+      run: |
+        PREFIXES=()
+        for pkg in open-mpi pmix prrte libevent hwloc; do
+          p="$(brew --prefix "$pkg" 2>/dev/null || true)"
+          [[ -n "$p" && -d "$p" ]] && PREFIXES+=("$p")
+        done
+
+        for prefix in "${PREFIXES[@]}"; do
+          for bin in mpirun mpiexec prterun prted; do
+            src="${prefix}/bin/${bin}"
+            if [[ -f "$src" ]]; then
+              cp -L "$src" "$PARFLOW_DIR/bin/"
+            fi
+          done
+        done
+
+        for prefix in "${PREFIXES[@]}"; do
+          for dir in share/openmpi share/prte share/pmix \
+                     etc/openmpi etc/prte etc/pmix \
+                     lib/openmpi lib/prte lib/pmix; do
+            if [[ -d "${prefix}/${dir}" ]]; then
+              mkdir -p "$PARFLOW_DIR/${dir}"
+              cp -RL "${prefix}/${dir}/" "$PARFLOW_DIR/${dir}/"
+            fi
+          done
+        done
+
+        ./scripts/macos-bundle-deps.sh "$PARFLOW_DIR" "$PARFLOW_DEP_DIR" /opt/homebrew
+
+    # ── Patch config for relocatable paths ───────────────────────────
+    - name: Patch config for relocatable install
+      run: |
+        CFG="$PARFLOW_DIR/config/pf-cmake-env.sh"
+
+        sed -i '' 's|^MPIEXEC=.*|MPIEXEC="${PARFLOW_DIR}/bin/mpiexec"|' "$CFG"
+
+        echo '' >> "$CFG"
+        echo '# Relocatable MPI stack — resolve share/etc/lib at runtime' >> "$CFG"
+        echo 'export OPAL_PREFIX="${PARFLOW_DIR}"' >> "$CFG"
+        echo 'export PMIX_PREFIX="${PARFLOW_DIR}"' >> "$CFG"
+        echo 'export PRTE_PREFIX="${PARFLOW_DIR}"' >> "$CFG"
+        echo '' >> "$CFG"
+        echo '# Suppress PMIx compression warning (zlib plugin not available in bundled PMIx)' >> "$CFG"
+        echo 'export PMIX_MCA_pcompress_base_silence_warning=1' >> "$CFG"
+
+    - name: Fix permissions
+      run: chmod -R u+w "$PARFLOW_DIR"
+
+    # ── Smoke test (install prefix, before Xcode signing) ─────────────
+    - name: Smoke test install prefix
+      run: |
+        echo "--- Clearing Homebrew from PATH to simulate a clean Mac ---"
+        CLEAN_PATH="/usr/bin:/bin:/usr/sbin:/sbin:${PARFLOW_DIR}/bin"
+        env -i HOME="$HOME" PATH="$CLEAN_PATH" TMPDIR="$TMPDIR" \
+          PARFLOW_DIR="$PARFLOW_DIR" \
+          "$PARFLOW_DIR/bin/parflow" -v
+        echo "Smoke test passed."
+
+    - name: Determine version string
+      id: version
+      run: |
+        VER="$(git describe --tags --always 2>/dev/null || echo 'dev')"
+        echo "ver=${VER}" >> "$GITHUB_OUTPUT"
+
+    # ══════════════════════════════════════════════════════════════════
+    # Path B: cloud-managed Developer ID via Xcode + notarization
+    # ══════════════════════════════════════════════════════════════════
+    - name: Stage ParFlow.app payload
+      if: env.SIGN_RELEASE == 'true'
+      run: |
+        chmod +x packaging/macos/stage-app-payload.sh
+        ./packaging/macos/stage-app-payload.sh "$PARFLOW_DIR"
+
+    - name: Set app bundle version
+      if: env.SIGN_RELEASE == 'true'
+      run: |
+        VER="${{ steps.version.outputs.ver }}"
+        PLIST="${GITHUB_WORKSPACE}/packaging/macos/ParFlow/Info.plist"
+        /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${VER}" "$PLIST"
+        /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${VER}" "$PLIST"
+
+    - name: Install App Store Connect API key
+      if: env.SIGN_RELEASE == 'true'
+      env:
+        APP_STORE_CONNECT_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
+      run: |
+        KEY_FILE="${RUNNER_TEMP}/AuthKey.p8"
+        if printf '%s' "$APP_STORE_CONNECT_KEY" | grep -q 'BEGIN PRIVATE KEY'; then
+          printf '%s' "$APP_STORE_CONNECT_KEY" > "$KEY_FILE"
+        else
+          printf '%s' "$APP_STORE_CONNECT_KEY" | base64 --decode > "$KEY_FILE"
+        fi
+        chmod 600 "$KEY_FILE"
+        echo "APP_STORE_CONNECT_KEY_PATH=${KEY_FILE}" >> "$GITHUB_ENV"
+
+    - name: Xcode archive (cloud-managed Developer ID)
+      if: env.SIGN_RELEASE == 'true'
+      env:
+        APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+        APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+      run: |
+        set -euo pipefail
+        PROJECT="${GITHUB_WORKSPACE}/packaging/macos/ParFlow.xcodeproj"
+        ARCHIVE_PATH="${GITHUB_WORKSPACE}/build/ParFlow.xcarchive"
+        mkdir -p "${GITHUB_WORKSPACE}/build"
+
+        xcodebuild archive \
+          -project "$PROJECT" \
+          -scheme ParFlow \
+          -configuration Release \
+          -archivePath "$ARCHIVE_PATH" \
+          -allowProvisioningUpdates \
+          -authenticationKeyPath "$APP_STORE_CONNECT_KEY_PATH" \
+          -authenticationKeyID "$APP_STORE_CONNECT_KEY_ID" \
+          -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"
+
+        echo "ARCHIVE_PATH=${ARCHIVE_PATH}" >> "$GITHUB_ENV"
+
+    - name: Xcode export Developer ID app
+      if: env.SIGN_RELEASE == 'true'
+      env:
+        APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+        APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+      run: |
+        set -euo pipefail
+        EXPORT_PATH="${GITHUB_WORKSPACE}/build/export"
+        rm -rf "$EXPORT_PATH"
+        mkdir -p "$EXPORT_PATH"
+
+        xcodebuild -exportArchive \
+          -archivePath "$ARCHIVE_PATH" \
+          -exportOptionsPlist "${GITHUB_WORKSPACE}/packaging/macos/ExportOptions.plist" \
+          -exportPath "$EXPORT_PATH" \
+          -allowProvisioningUpdates \
+          -authenticationKeyPath "$APP_STORE_CONNECT_KEY_PATH" \
+          -authenticationKeyID "$APP_STORE_CONNECT_KEY_ID" \
+          -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"
+
+        echo "EXPORTED_APP=${EXPORT_PATH}/ParFlow.app" >> "$GITHUB_ENV"
+
+    - name: Smoke test signed ParFlow.app
+      if: env.SIGN_RELEASE == 'true'
+      run: |
+        PFROOT="${EXPORTED_APP}/Contents/Resources/parflow"
+        CLEAN_PATH="/usr/bin:/bin:/usr/sbin:/sbin:${PFROOT}/bin"
+        env -i HOME="$HOME" PATH="$CLEAN_PATH" TMPDIR="$TMPDIR" \
+          PARFLOW_DIR="$PFROOT" \
+          "$PFROOT/bin/parflow" -v
+        echo "Signed app smoke test passed."
+
+    - name: Notarize ParFlow.app
+      if: env.SIGN_RELEASE == 'true'
+      env:
+        APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+        APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+      run: |
+        set -euo pipefail
+        NOTARY_ZIP="${GITHUB_WORKSPACE}/build/ParFlow-notarize.zip"
+        ditto -c -k --keepParent "$EXPORTED_APP" "$NOTARY_ZIP"
+
+        xcrun notarytool submit "$NOTARY_ZIP" \
+          --key "$APP_STORE_CONNECT_KEY_PATH" \
+          --key-id "$APP_STORE_CONNECT_KEY_ID" \
+          --issuer "$APP_STORE_CONNECT_ISSUER_ID" \
+          --wait
+
+        xcrun stapler staple "$EXPORTED_APP"
+        xcrun stapler validate "$EXPORTED_APP"
+        echo "Notarization and stapling succeeded."
+
+    - name: Package signed release artifacts
+      if: env.SIGN_RELEASE == 'true'
+      run: |
+        set -euo pipefail
+        VER="${{ steps.version.outputs.ver }}"
+        DMG="${GITHUB_WORKSPACE}/build/parflow-${VER}-macos-arm64.dmg"
+        APP_ZIP="${GITHUB_WORKSPACE}/build/parflow-${VER}-macos-arm64.app.zip"
+
+        hdiutil create \
+          -volname "ParFlow ${VER}" \
+          -srcfolder "$EXPORTED_APP" \
+          -ov -format UDZO \
+          "$DMG"
+
+        ditto -c -k --keepParent "$EXPORTED_APP" "$APP_ZIP"
+
+        echo "RELEASE_DMG=${DMG}" >> "$GITHUB_ENV"
+        echo "RELEASE_APP_ZIP=${APP_ZIP}" >> "$GITHUB_ENV"
+
+    - name: Upload signed release artifacts
+      if: env.SIGN_RELEASE == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: parflow-macos-arm64-signed
+        path: |
+          build/parflow-*-macos-arm64.dmg
+          build/parflow-*-macos-arm64.app.zip
+
+    - name: Attach to GitHub Release
+      if: github.event_name == 'release'
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          build/parflow-*-macos-arm64.dmg
+          build/parflow-*-macos-arm64.app.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # ══════════════════════════════════════════════════════════════════
+    # PR/push: unsigned install tarball (no secrets required)
+    # ══════════════════════════════════════════════════════════════════
+    - name: Create install tarball
+      if: env.SIGN_RELEASE != 'true'
+      run: |
+        set -euo pipefail
+        mkdir -p "${GITHUB_WORKSPACE}/build"
+        VER="${{ steps.version.outputs.ver }}"
+        ARCHIVE="parflow-${VER}-macos-arm64.tar.gz"
+        cp README-BINARY.md "$PARFLOW_DIR/" 2>/dev/null || true
+        tar -C "$(dirname "$PARFLOW_DIR")" \
+            -czf "${GITHUB_WORKSPACE}/build/${ARCHIVE}" \
+            "$(basename "$PARFLOW_DIR")"
+        echo "ARCHIVE=${GITHUB_WORKSPACE}/build/${ARCHIVE}" >> "$GITHUB_ENV"
+
+    - name: Upload install tarball artifact
+      if: env.SIGN_RELEASE != 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: parflow-macos-arm64
+        path: build/parflow-*-macos-arm64.tar.gz

@@ -161,3 +161,7 @@ ipython_config.py
 
 # pyenv
 .python-version
+
+# macOS app bundle payload (staged by CI or stage-app-payload.sh)
+packaging/macos/ParFlow/Resources/parflow/*
+!packaging/macos/ParFlow/Resources/parflow/.gitkeep
