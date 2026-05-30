@@ -43,15 +43,6 @@ Install it from PyPI into your own Python environment:
 pip install pftools
 ```
 
-## Running with MPI
-
-The bundled OpenMPI binaries (`mpirun`, `mpiexec`) are included under
-`install/bin/`. A typical parallel run:
-
-```bash
-mpirun -np 4 parflow my_simulation
-```
-
 ## Important: `PARFLOW_DIR`
 
 The `PARFLOW_DIR` environment variable **must** be set and point to the
