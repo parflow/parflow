@@ -4423,9 +4423,9 @@ pfset Solver.CLM.SoiLayer      4
 \end{verbatim}\end{display}
 
 \pfkey{integer}{Solver.CLM.RZWaterStress}{0}
-{This key sets the distribution of transpiration over the root zone and changes the behavior of plant water limitations.  As discussed in \cite{Ferg16} water stress approaches result in different cut-offs for transpiration.  Two options are currently implemented both use the beta-type water stress defined above.  Option 0 (default) will limit transpiration when the top soil layer drops below wilting point, option 1 limits each layer independently.} 
+{This key sets the distribution of transpiration over the root zone and changes the behavior of plant water limitations.  All options use the beta-type water stress defined by \code{Solver.CLM.VegWaterStress}.  Option~0 (default) distributes transpiration by root fraction only and limits all transpiration when the top soil layer drops below the wilting point.  Option~1 distributes transpiration weighted by both root fraction and per-layer water stress, with no top-layer cutoff \cite{Ferg16}.  Option~2 adds compensatory root water uptake \cite{Li2001}: wet layers compensate for dry layers by boosting the aggregate stress factor \code{btran} up to a PFT-dependent maximum (\code{omega\_max}, set in \code{drv\_vegp.dat}).  When \code{omega\_max}=1.0 (default), this recovers option~1 behavior; values of 2--3 are recommended for deep-rooted trees.}
 \begin{display}\begin{verbatim}
-pfset Solver.CLM.RZWaterStress       1
+pfset Solver.CLM.RZWaterStress       2
 \end{verbatim}\end{display}
 
 %====
