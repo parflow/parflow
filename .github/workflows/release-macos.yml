@@ -18,8 +18,9 @@ jobs:
     permissions:
       contents: write
     env:
-      # Sign, notarize, and ship ParFlow.app on release or manual dispatch.
-      SIGN_RELEASE: ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch' }}
+      # Path B: Xcode sign, notarize, and package (.dmg / .app.zip).
+      # Runs on release and workflow_dispatch; also on push/PR for CI testing.
+      XCODE_PACKAGE: ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event_name == 'pull_request' }}
 
     steps:
     # ── Checkout ──────────────────────────────────────────────────────
@@ -192,13 +193,13 @@ jobs:
     # Path B: cloud-managed Developer ID via Xcode + notarization
     # ══════════════════════════════════════════════════════════════════
     - name: Stage ParFlow.app payload
-      if: env.SIGN_RELEASE == 'true'
+      if: env.XCODE_PACKAGE == 'true'
       run: |
         chmod +x packaging/macos/stage-app-payload.sh
         ./packaging/macos/stage-app-payload.sh "$PARFLOW_DIR"
 
     - name: Set app bundle version
-      if: env.SIGN_RELEASE == 'true'
+      if: env.XCODE_PACKAGE == 'true'
       run: |
         VER="${{ steps.version.outputs.ver }}"
         PLIST="${GITHUB_WORKSPACE}/packaging/macos/ParFlow/Info.plist"
@@ -206,7 +207,7 @@ jobs:
         /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${VER}" "$PLIST"
 
     - name: Install App Store Connect API key
-      if: env.SIGN_RELEASE == 'true'
+      if: env.XCODE_PACKAGE == 'true'
       env:
         APP_STORE_CONNECT_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
       run: |
@@ -220,7 +221,7 @@ jobs:
         echo "APP_STORE_CONNECT_KEY_PATH=${KEY_FILE}" >> "$GITHUB_ENV"
 
     - name: Xcode archive (cloud-managed Developer ID)
-      if: env.SIGN_RELEASE == 'true'
+      if: env.XCODE_PACKAGE == 'true'
       env:
         APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
         APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
@@ -243,7 +244,7 @@ jobs:
         echo "ARCHIVE_PATH=${ARCHIVE_PATH}" >> "$GITHUB_ENV"
 
     - name: Xcode export Developer ID app
-      if: env.SIGN_RELEASE == 'true'
+      if: env.XCODE_PACKAGE == 'true'
       env:
         APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
         APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
@@ -265,7 +266,7 @@ jobs:
         echo "EXPORTED_APP=${EXPORT_PATH}/ParFlow.app" >> "$GITHUB_ENV"
 
     - name: Smoke test signed ParFlow.app
-      if: env.SIGN_RELEASE == 'true'
+      if: env.XCODE_PACKAGE == 'true'
       run: |
         PFROOT="${EXPORTED_APP}/Contents/Resources/parflow"
         CLEAN_PATH="/usr/bin:/bin:/usr/sbin:/sbin:${PFROOT}/bin"
@@ -275,7 +276,7 @@ jobs:
         echo "Signed app smoke test passed."
 
     - name: Notarize ParFlow.app
-      if: env.SIGN_RELEASE == 'true'
+      if: env.XCODE_PACKAGE == 'true'
       env:
         APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
         APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
@@ -295,7 +296,7 @@ jobs:
         echo "Notarization and stapling succeeded."
 
     - name: Package signed release artifacts
-      if: env.SIGN_RELEASE == 'true'
+      if: env.XCODE_PACKAGE == 'true'
       run: |
         set -euo pipefail
         VER="${{ steps.version.outputs.ver }}"
@@ -314,7 +315,7 @@ jobs:
         echo "RELEASE_APP_ZIP=${APP_ZIP}" >> "$GITHUB_ENV"
 
     - name: Upload signed release artifacts
-      if: env.SIGN_RELEASE == 'true'
+      if: env.XCODE_PACKAGE == 'true'
       uses: actions/upload-artifact@v4
       with:
         name: parflow-macos-arm64-signed
@@ -333,10 +334,10 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     # ══════════════════════════════════════════════════════════════════
-    # PR/push: unsigned install tarball (no secrets required)
+    # Fallback: unsigned install tarball when Path B is disabled
     # ══════════════════════════════════════════════════════════════════
     - name: Create install tarball
-      if: env.SIGN_RELEASE != 'true'
+      if: env.XCODE_PACKAGE != 'true'
       run: |
         set -euo pipefail
         mkdir -p "${GITHUB_WORKSPACE}/build"
@@ -349,7 +350,7 @@ jobs:
         echo "ARCHIVE=${GITHUB_WORKSPACE}/build/${ARCHIVE}" >> "$GITHUB_ENV"
 
     - name: Upload install tarball artifact
-      if: env.SIGN_RELEASE != 'true'
+      if: env.XCODE_PACKAGE != 'true'
       uses: actions/upload-artifact@v4
       with:
         name: parflow-macos-arm64
