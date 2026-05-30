@@ -16,7 +16,7 @@ jobs:
     name: macOS arm64 release
     runs-on: macos-14
     permissions:
-      contents: ${{ github.event_name == 'release' && 'write' || 'read' }}
+      contents: write
     env:
       # Sign, notarize, and ship ParFlow.app on release or manual dispatch.
       SIGN_RELEASE: ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch' }}
