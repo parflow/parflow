@@ -305,6 +305,9 @@ subroutine clm_typini (ntiles, clm, istep_pf)
      clm(k)%interception_tanh_alpha = NaN ! CLM5 tanh scaling coefficient
      clm(k)%clump_index       = 1.0d0 ! no clumping by default (bit-for-bit)
 
+     ! compensatory root water uptake @RMM 2026
+     clm(k)%omega_max         = NaN     ! max compensation factor (Li et al 2001)
+
      ! alma output
      clm(k)%diffusion         = NaN  ! heat diffusion through layer zero interface 
      clm(k)%h2osoi_liq_old    = NaN  ! liquid water from previous timestep
