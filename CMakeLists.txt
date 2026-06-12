@@ -76,6 +76,19 @@ if(
     )
 endif()
 
+# v1 chemistry is C-compiled; the 2021 chem sources are not assumed
+# C++-clean (CLAUDE.md hard constraint). Same fatal-error style,
+# regardless of backend.
+if(PARFLOW_ENABLE_ALQUIMIA AND PARFLOW_BUILD_WITH_CPP)
+    message(
+        FATAL_ERROR
+        "PARFLOW_ENABLE_ALQUIMIA=ON is not supported with "
+        "PARFLOW_BUILD_WITH_CPP: v1 reactive-transport chemistry is "
+        "C-compiled. Build without PARFLOW_BUILD_WITH_CPP, or disable "
+        "Alquimia."
+    )
+endif()
+
 if(PARFLOW_ACCELERATOR_BACKEND STREQUAL "none")
 elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
     message(STATUS "ACCELERATOR: CUDA backend selected")
