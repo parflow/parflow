@@ -407,11 +407,16 @@ option(
     "OFF"
 )
 if(${PARFLOW_ENABLE_ALQUIMIA})
-    # find_package(Alquimia) arrives with the find-module commit; enabling
-    # the option currently wires the chem sources and the HAVE_ALQUIMIA
-    # define only.
-    set(PARFLOW_HAVE_ALQUIMIA "yes")
-    set(HAVE_ALQUIMIA ${PARFLOW_HAVE_ALQUIMIA})
+    find_package(Alquimia)
+    if(${ALQUIMIA_FOUND})
+        set(PARFLOW_HAVE_ALQUIMIA "yes")
+        set(HAVE_ALQUIMIA ${PARFLOW_HAVE_ALQUIMIA})
+    else(${ALQUIMIA_FOUND})
+        message(
+            FATAL_ERROR
+            "Alquimia not found, set PARFLOW_ALQUIMIA_ROOT to the install prefix of an Alquimia built with your geochemistry engine (CrunchFlow and/or PFLOTRAN)"
+        )
+    endif(${ALQUIMIA_FOUND})
 endif(${PARFLOW_ENABLE_ALQUIMIA})
 
 #-----------------------------------------------------------------------------

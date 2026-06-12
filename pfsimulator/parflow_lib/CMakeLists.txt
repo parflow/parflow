@@ -325,6 +325,11 @@ else()
     target_link_libraries(pfsimulator pfkinsol)
 endif(${PARFLOW_HAVE_SUNDIALS})
 
+if((${PARFLOW_HAVE_ALQUIMIA}))
+    target_include_directories(pfsimulator PUBLIC ${ALQUIMIA_INCLUDE_DIRS})
+    target_link_libraries(pfsimulator ${ALQUIMIA_LIBRARIES})
+endif((${PARFLOW_HAVE_ALQUIMIA}))
+
 target_link_libraries(pfsimulator amps cjson ${PARFLOW_ETRACE_LIBRARY})
 target_include_directories(pfsimulator PUBLIC "../third_party/cjson")
 
