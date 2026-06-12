@@ -1110,6 +1110,12 @@ void     Godunov(
    * End timing
    *-----------------------------------------------------------------------*/
 
+  /* well_stat / contaminant_stat accumulate advection mass changes but are
+   * not yet reported; they feed the Phase 4b-2 mass-conservation check.
+   * Referenced here to satisfy -Wunused-but-set-variable under -Werror. */
+  (void)well_stat;
+  (void)contaminant_stat;
+
   EndTiming(public_xtra->time_index);
 }
 
@@ -1254,7 +1260,6 @@ PFModule  *GodunovNewPublicXtra()
   int order;
   NameArray switch_na;
   char *switch_name;
-  int switch_value;
 
   switch_na = NA_NewNameArray("False True");
   public_xtra = ctalloc(PublicXtra, 1);
