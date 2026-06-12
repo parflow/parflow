@@ -6,14 +6,15 @@
 #
 # Interface version assumption (react_trans port, v1): this module and the
 # chemistry coupling target the Alquimia v1.0 API as published with
-# Molins et al. 2025 (GMD 18:3241). In particular the per-cell solve is
-# invoked as
+# Molins et al. 2025 (GMD 18:3241). VERIFIED against the real headers
+# (Phase 4a, alquimia-dev master): the per-cell solve signature is
 #
 #   chem.ReactionStepOperatorSplit(engine, delta_t, properties, state,
-#                                  aux_data, status)
+#                                  aux_data, natural_id, status)
 #
-# Phase 4 must re-verify that argument order against the headers of the
-# Alquimia actually found here before enabling chemistry runs.
+# Note the int natural_id parameter (post-2021 addition; -999 = untracked
+# cell). The 2021 react_trans branch predates it; both ParFlow call sites
+# were adapted in Phase 4a.
 #
 # Alquimia is linked against one or more geochemistry engines (CrunchFlow
 # and/or PFLOTRAN) and PETSc. Those are Alquimia's dependencies, not
@@ -112,6 +113,33 @@ if(ALQUIMIA_LIBRARY)
                 "Alquimia engine found: ${ALQUIMIA_${_engine}_LIBRARY}"
             )
             list(APPEND ALQUIMIA_LIBRARIES ${ALQUIMIA_${_engine}_LIBRARY})
+        endif()
+    endforeach()
+
+    # The CrunchFlow/PFLOTRAN engines are Fortran compiled against MPI, so
+    # a C-linked ParFlow needs the MPI Fortran bindings and the Fortran
+    # runtime on the link line. Derive both from the active toolchain:
+    # the MPI library dir from the (wrapper) C compiler location, the
+    # Fortran runtime from CMake's Fortran implicit link info.
+    get_filename_component(_ALQUIMIA_MPI_BINDIR ${CMAKE_C_COMPILER} DIRECTORY)
+    find_library(
+        ALQUIMIA_MPI_FORTRAN_LIBRARY
+        NAMES mpi_mpifh mpifort
+        PATHS ${_ALQUIMIA_MPI_BINDIR}/../lib
+        NO_DEFAULT_PATH
+    )
+    if(ALQUIMIA_MPI_FORTRAN_LIBRARY)
+        list(APPEND ALQUIMIA_LIBRARIES ${ALQUIMIA_MPI_FORTRAN_LIBRARY})
+    endif()
+    foreach(_frt gfortran quadmath)
+        find_library(
+            ALQUIMIA_${_frt}_LIBRARY
+            NAMES ${_frt}
+            PATHS ${CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES}
+            NO_DEFAULT_PATH
+        )
+        if(ALQUIMIA_${_frt}_LIBRARY)
+            list(APPEND ALQUIMIA_LIBRARIES ${ALQUIMIA_${_frt}_LIBRARY})
         endif()
     endforeach()
 

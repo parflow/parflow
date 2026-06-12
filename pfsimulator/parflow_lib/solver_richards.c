@@ -312,6 +312,15 @@ typedef struct {
   PFModule *ic_phase_pressure;
   PFModule *ic_phase_concen;
   PFModule *problem_saturation;
+
+#ifdef HAVE_ALQUIMIA
+  /* Phase 4a init slice: chemistry state only; transport work vectors
+   * arrive with the Phase 4b coupling. */
+  PFModule *init_chem_instance;
+  PFModule *advance_chem_instance;
+  AlquimiaDataPF *alquimia_data;
+  Vector **concentrations;
+#endif
   PFModule *phase_density;
   PFModule *select_time_step;
   PFModule *l2_error_norm;
@@ -1451,11 +1460,49 @@ SetupRichards(PFModule * this_module)
     FinalizeVectorUpdate(handle);
 
 
+    any_file_dumped = 0;
+
+    /*****************************************************************/
+    /*          Initialize the geochemical system (react_trans)      */
+    /*****************************************************************/
+#ifdef HAVE_ALQUIMIA
+    if (GlobalsChemistryFlag)
+    {
+      if (!amps_Rank(amps_CommWorld))
+      {
+        amps_Printf("Initializing geochemical system \n");
+      }
+
+      instance_xtra->concentrations =
+        ctalloc(Vector *, ProblemNumContaminants(problem));
+      for (int concen = 0; concen < ProblemNumContaminants(problem); concen++)
+      {
+        instance_xtra->concentrations[concen] =
+          NewVectorType(grid, 1, 3, vector_cell_centered);
+        InitVectorAll(instance_xtra->concentrations[concen], 0.0);
+        PFModuleInvokeType(ICPhaseConcenInvoke, instance_xtra->ic_phase_concen,
+                           (instance_xtra->concentrations[concen], 0, concen,
+                            problem_data));
+        handle = InitVectorUpdate(instance_xtra->concentrations[concen],
+                                  VectorUpdateGodunov);
+        FinalizeVectorUpdate(handle);
+      }
+
+      instance_xtra->alquimia_data = ctalloc(AlquimiaDataPF, 1);
+
+      PFModuleInvokeType(InitializeChemistryInvoke,
+                         instance_xtra->init_chem_instance,
+                         (problem_data, instance_xtra->alquimia_data,
+                          instance_xtra->concentrations,
+                          instance_xtra->saturation,
+                          &any_file_dumped, 1, t,
+                          instance_xtra->file_number, file_prefix));
+    }
+#endif
+
     /*****************************************************************/
     /*          Print out any of the requested initial data          */
     /*****************************************************************/
-
-    any_file_dumped = 0;
 
     if (print_initial_conditions)
     {
@@ -4892,6 +4939,19 @@ TeardownRichards(PFModule * this_module)
 
   FinalizeMetadata(this_module, GlobalsOutFileName);
 
+#ifdef HAVE_ALQUIMIA
+  if (GlobalsChemistryFlag)
+  {
+    Grid *chem_grid = VectorGrid(instance_xtra->saturation);
+    FreeAlquimiaDataPF(instance_xtra->alquimia_data, chem_grid, problem_data);
+    for (int concen = 0; concen < ProblemNumContaminants(problem); concen++)
+    {
+      FreeVector(instance_xtra->concentrations[concen]);
+    }
+    tfree(instance_xtra->concentrations);
+  }
+#endif
+
   FreeVector(instance_xtra->saturation);
   FreeVector(instance_xtra->density);
   FreeVector(instance_xtra->old_saturation);
@@ -5280,6 +5340,18 @@ SolverRichardsInitInstanceXtra()
                               public_xtra->nonlin_solver,
                               (problem, grid, grid2d, instance_xtra->problem_data,
                                NULL));
+
+#ifdef HAVE_ALQUIMIA
+    if (GlobalsChemistryFlag)
+    {
+      (instance_xtra->init_chem_instance) =
+        PFModuleNewInstanceType(InitializeChemistryInitInstanceXtraType,
+                                public_xtra->init_chem, (problem, grid));
+      (instance_xtra->advance_chem_instance) =
+        PFModuleNewInstanceType(AdvanceChemistryInitInstanceXtraType,
+                                public_xtra->advance_chem, (problem, grid));
+    }
+#endif
   }
   else
   {
@@ -5437,6 +5509,14 @@ SolverRichardsFreeInstanceXtra()
     PFModuleFreeInstance((instance_xtra->select_time_step));
     PFModuleFreeInstance((instance_xtra->l2_error_norm));
     PFModuleFreeInstance((instance_xtra->nonlin_solver));
+
+#ifdef HAVE_ALQUIMIA
+    if (GlobalsChemistryFlag)
+    {
+      PFModuleFreeInstance((instance_xtra->init_chem_instance));
+      PFModuleFreeInstance((instance_xtra->advance_chem_instance));
+    }
+#endif
 
     PFModuleFreeInstance((instance_xtra->permeability_face));
 
