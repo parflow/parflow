@@ -748,7 +748,12 @@ void     Godunov(
     for (well = 0; well < WellDataNumPressWells(well_data); well++)
     {
       flopest = 5 * nx_cells * ny_cells * nz_cells;
-      well_data_physical = WellDataFluxWellPhysical(well_data, well);
+      /* react_trans port fix: the branch indexed the FLUX-well array inside
+       * this PRESS-well loop (NULL deref when no flux wells exist; the
+       * branch's own 02aa93e6 added the press loop). Open question flagged
+       * for wells validation: whether flux wells need a twin of this
+       * region (intent doc, scal[wi] doubt lives here too). */
+      well_data_physical = WellDataPressWellPhysical(well_data, well);
       well_subgrid = WellDataPhysicalSubgrid(well_data_physical);
 
       ForSubgridI(sg, subgrids)
@@ -1078,13 +1083,27 @@ void     Godunov(
    *-----------------------------------------------------------------------*/
   if (!(GlobalsChemistryFlag))
   {
+    /**
+     * Mass-accounting report (react_trans 4b-2): the total concentration
+     * volume plus the advection step's well and decay mass changes, summed
+     * across ranks. With no wells and no decay the concentration volume
+     * must be conserved by pure advection up to boundary fluxes; the
+     * mass-conservation check parses these lines.
+     */
+    amps_Invoice mass_invoice;
+
     field_sum = ComputeTotalConcen(ProblemDataGrDomain(problem_data),
                                    grid, new_concentration, new_porsat_inv);
 
+    mass_invoice = amps_NewInvoice("%d%d", &well_stat, &contaminant_stat);
+    amps_AllReduce(amps_CommWorld, mass_invoice, amps_Add);
+    amps_FreeInvoice(mass_invoice);
 
     if (!amps_Rank(amps_CommWorld))
     {
-      amps_Printf("Concentration volume for phase %1d, component %2d at time %f = %f\n", phase, concentration, time, field_sum);
+      amps_Printf("Concentration volume for phase %1d, component %2d at time %f = %.16e\n", phase, concentration, time, field_sum);
+      amps_Printf("Advection mass change for component %2d: wells = %.16e decay = %.16e\n",
+                  concentration, well_stat, contaminant_stat);
     }
   }
 
@@ -1109,12 +1128,6 @@ void     Godunov(
   /*-----------------------------------------------------------------------
    * End timing
    *-----------------------------------------------------------------------*/
-
-  /* well_stat / contaminant_stat accumulate advection mass changes but are
-   * not yet reported; they feed the Phase 4b-2 mass-conservation check.
-   * Referenced here to satisfy -Wunused-but-set-variable under -Werror. */
-  (void)well_stat;
-  (void)contaminant_stat;
 
   EndTiming(public_xtra->time_index);
 }
