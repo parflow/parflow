@@ -1374,6 +1374,7 @@ void PFVLinearSum(double a, Vector *x, double b, Vector *y, Vector *z);
 void PFVConstInit(double c, Vector *z);
 void PFVProd(Vector *x, Vector *y, Vector *z);
 void PFVInvProd(Vector *x, Vector *y, Vector *z);
+void PFVMinVector(Vector *x, Vector *y, Vector *z);
 void PFVDiv(Vector *x, Vector *y, Vector *z);
 void PFVScale(double c, Vector *x, Vector *z);
 void PFVAbs(Vector *x, Vector *z);
