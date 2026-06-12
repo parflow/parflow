@@ -88,10 +88,12 @@ void CutTimeStepandSolveSingleCell(AlquimiaInterface chem, AlquimiaState *chem_s
   for (int i = 0; i < 10; i++)
   {
     // reduce dt by factor of 10, subcycle geochem solve 10 times
+    /* natural_id -999: see chem_advance.c */
     chem.ReactionStepOperatorSplit(&chem_engine,
                                    tenth_dt, chem_properties,
                                    chem_state,
                                    chem_aux_data,
+                                   -999,
                                    chem_status);
     if (!chem_status->converged)
     {

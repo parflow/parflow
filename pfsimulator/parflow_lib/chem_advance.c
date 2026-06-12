@@ -151,10 +151,13 @@ void AdvanceChemistry(ProblemData *problem_data, AlquimiaDataPF *alquimia_data, 
 
 
       // Solve the geochemical system
+      /* natural_id: post-2021 Alquimia v1.0 API addition; -999 = cell not
+       * tracked by the engine (alquimia-dev TransportDriver convention). */
       alquimia_data->chem.ReactionStepOperatorSplit(&alquimia_data->chem_engine,
                                                     dt_seconds, &alquimia_data->chem_properties[chem_index],
                                                     &alquimia_data->chem_state[chem_index],
                                                     &alquimia_data->chem_aux_data[chem_index],
+                                                    -999,
                                                     &alquimia_data->chem_status);
       if (alquimia_data->chem_status.error != 0)
       {
