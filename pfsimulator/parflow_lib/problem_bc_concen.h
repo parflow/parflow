@@ -42,11 +42,5 @@ int BCConcentrationSizeOfTempData(void);
 #endif
 
 
-void BCConcenCopyPatch(Problem *problem, Grid *grid, Vector **concentrations, int ipatch);
-void BCConcenCopyAdjacent(Problem *problem, Grid *grid, Vector **concentrations);
-void BCConcenPatchExtent(Subgrid *subgrid, int *ix, int *iy, int *iz, int *nx, int *ny, int *nz, int ipatch);
-int BoundaryCell(int ipatch, int i, int j, int k);
-
-
 #endif
 

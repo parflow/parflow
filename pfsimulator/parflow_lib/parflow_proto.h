@@ -107,6 +107,15 @@ double ComputeTotalMaximum(Problem *problem, EvalStruct *eval_struct, double s_l
 /* compute_total_concentration.c */
 double ComputeTotalConcen(GrGeomSolid *gr_domain, Grid *grid, Vector *substance, Vector *porsat_inv);
 
+/* transport_utilities.c */
+double InterpolateTimeCycle(double total_cycle_length, double subcycle_dt);
+void TransportSaturation(Vector *sat_transport_start, Vector *delta_sat, Vector *old_sat, Vector *new_sat);
+void SelectReactTransTimeStep(double max_velocity, double CFL, double PF_dt, double *advect_react_dt, int *num_rt_iterations);
+void BCConcenPatchExtent(Subgrid *subgrid, int *ix, int *iy, int *iz, int *nx, int *ny, int *nz, int ipatch);
+void BCConcenCopyPatch(Problem *problem, Grid *grid, Vector **concentrations, int ipatch);
+void BCConcenCopyAdjacent(Problem *problem, Grid *grid, Vector **concentrations);
+int BoundaryCell(int ipatch, int i, int j, int k);
+
 typedef void (*ConstantRFInvoke) (GeomSolid *geounit, GrGeomSolid *gr_geounit, Vector *field, RFCondData *cdata);
 typedef PFModule *(*ConstantRFInitInstanceXtraInvoke) (Grid *grid, double *temp_data);
 

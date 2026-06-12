@@ -43,80 +43,6 @@
 #endif
 
 
-double InterpolateTimeCycle(double total_cycle_length, double subcycle_dt)
-{
-  return subcycle_dt / total_cycle_length;
-}
-
-/*--------------------------------------------------------------------------
- * TransportSaturation
- * Calculates saturation delta for transient simulations
- * Places old saturation values into vector with 2 ghost layers
- *--------------------------------------------------------------------------*/
-
-void TransportSaturation(Vector *sat_transport_start, Vector *delta_sat, Vector *old_sat, Vector *new_sat)
-{
-  Grid       *grid = VectorGrid(sat_transport_start);
-  Subgrid    *subgrid;
-
-  VectorUpdateCommHandle  *handle;
-
-  Subvector  *os_sub;
-  Subvector  *st_sub;
-
-  double     *os, *st;
-
-  int ix, iy, iz;
-  int nx, ny, nz;
-  int nx_os, ny_os, nz_os;
-  int nx_st, ny_st, nz_st;
-  int sg, i, j, k, os_i, st_i;
-
-  PFVDiff(new_sat, old_sat, delta_sat);
-
-  ForSubgridI(sg, GridSubgrids(grid))
-  {
-    subgrid = GridSubgrid(grid, sg);
-
-    ix = SubgridIX(subgrid);
-    iy = SubgridIY(subgrid);
-    iz = SubgridIZ(subgrid);
-
-    nx = SubgridNX(subgrid);
-    ny = SubgridNY(subgrid);
-    nz = SubgridNZ(subgrid);
-
-    os_sub = VectorSubvector(old_sat, sg);
-    st_sub = VectorSubvector(sat_transport_start, sg);
-
-    nx_os = SubvectorNX(os_sub);
-    ny_os = SubvectorNY(os_sub);
-    nz_os = SubvectorNZ(os_sub);
-
-    nx_st = SubvectorNX(st_sub);
-    ny_st = SubvectorNY(st_sub);
-    nz_st = SubvectorNZ(st_sub);
-
-    os = SubvectorElt(os_sub, ix, iy, iz);
-    st = SubvectorElt(st_sub, ix, iy, iz);
-
-    os_i = 0;
-    st_i = 0;
-
-    BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-              os_i, nx_os, ny_os, nz_os, 1, 1, 1,
-              st_i, nx_st, ny_st, nz_st, 1, 1, 1,
-    {
-      st[st_i] = os[os_i];
-    });
-  }
-
-  // scatter ghosts
-  handle = InitVectorUpdate(sat_transport_start, VectorUpdateAll2);
-  FinalizeVectorUpdate(handle);
-}
-
-
 int SubgridNumCells(Grid *grid)
 {
   SubgridArray  *subgrids = GridSubgrids(grid);
@@ -150,26 +76,6 @@ int SubgridNumCells(Grid *grid)
   return num_cells;
 }
 
-
-void SelectReactTransTimeStep(double max_velocity, double CFL,
-                              double PF_dt, double *advect_react_dt,
-                              int *num_rt_iterations)
-{
-  double cfl_dt;
-
-  cfl_dt = CFL / max_velocity;
-
-  if (PF_dt <= cfl_dt)
-  {
-    *advect_react_dt = PF_dt;
-    *num_rt_iterations = 1;
-  }
-  else
-  {
-    *num_rt_iterations = (int)ceil(PF_dt / cfl_dt);
-    *advect_react_dt = PF_dt / *num_rt_iterations;
-  }
-}
 
 
 #ifdef HAVE_ALQUIMIA

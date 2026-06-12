@@ -30,14 +30,6 @@
 #define CHEM_UTILITIES_H
 
 /* chem_utilities.c  */
-double InterpolateTimeCycle(double total_cycle_length, double subcycle_dt);
-
-void TransportSaturation(Vector *sat_transport_start, Vector *delta_sat, Vector *old_sat, Vector *new_sat);
-
-void SelectReactTransTimeStep(double max_velocity, double CFL,
-                              double PF_dt, double *advect_react_dt,
-                              int *num_rt_iterations);
-
 int  SubgridNumCells(Grid *grid);
 
 #ifdef HAVE_ALQUIMIA

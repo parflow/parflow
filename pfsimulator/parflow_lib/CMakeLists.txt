@@ -126,6 +126,7 @@ set(SRC_FILES_CONST
     time_cycle_data.c
     timing.c
     total_velocity_face.c
+    transport_utilities.c
     turning_bandsRF.c
     usergrid_input.c
     w_jacobi.c

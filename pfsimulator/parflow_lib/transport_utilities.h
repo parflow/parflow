@@ -24,31 +24,28 @@
  *  License along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  *  USA
- *
- *
- **********************************************************************EHEADER */
+ **********************************************************************EHEADER*/
 
-#ifndef PF_ALQUIMIA_H
-#define PF_ALQUIMIA_H
+#ifndef TRANSPORT_UTILITIES_H
+#define TRANSPORT_UTILITIES_H
 
-/* Transport helpers compile unconditionally (no Alquimia dependency) */
-#include "transport_utilities.h"
+/* transport_utilities.c -- transport helpers for the react_trans coupling;
+ * compiled unconditionally (no Alquimia dependency). */
 
-#ifdef HAVE_ALQUIMIA
-#include "chem_advance.h"
-#include "chem_allocate.h"
-#include "chem_datastructs.h"
-#include "chem_datatransfer.h"
-#include "chem_destroy.h"
-#include "chem_initialize.h"
-#include "chem_printdata.h"
-#include "chem_processconds.h"
-#include "chem_utilities.h"
-#include "problem_bc_concen.h"
-#include "problem_geochem_cond.h"
-#include "set_chem_data.h"
-#endif
+double InterpolateTimeCycle(double total_cycle_length, double subcycle_dt);
 
+void TransportSaturation(Vector *sat_transport_start, Vector *delta_sat, Vector *old_sat, Vector *new_sat);
 
+void SelectReactTransTimeStep(double max_velocity, double CFL,
+                              double PF_dt, double *advect_react_dt,
+                              int *num_rt_iterations);
+
+void BCConcenPatchExtent(Subgrid *subgrid, int *ix, int *iy, int *iz, int *nx, int *ny, int *nz, int ipatch);
+
+void BCConcenCopyPatch(Problem *problem, Grid *grid, Vector **concentrations, int ipatch);
+
+void BCConcenCopyAdjacent(Problem *problem, Grid *grid, Vector **concentrations);
+
+int BoundaryCell(int ipatch, int i, int j, int k);
 
 #endif
