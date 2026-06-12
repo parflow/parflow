@@ -169,7 +169,7 @@ void         ICPhaseConcen(
     *************************************************************************/
 
     field_sum = ComputeTotalConcen(ProblemDataGrDomain(problem_data),
-                                   grid, ic_phase_concen);
+                                   grid, ic_phase_concen, NULL);
 
     if (!amps_Rank(amps_CommWorld))
     {

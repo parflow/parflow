@@ -156,8 +156,13 @@ double  MaxPhaseFieldValue(
                            Vector *x_velocity,
                            Vector *y_velocity,
                            Vector *z_velocity,
-                           Vector *phi)
+                           Vector *phi,
+                           Vector *sat)
 {
+  /* sat is reserved for the react_trans saturation-weighted CFL limit;
+   * it is not used yet and callers may pass NULL. */
+  (void)sat;
+
   Grid         *grid;
   Subgrid      *subgrid;
 

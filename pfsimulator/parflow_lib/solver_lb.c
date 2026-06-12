@@ -825,7 +825,8 @@ void      SolverDiffusion()
           phase_maximum = MaxPhaseFieldValue(phase_x_velocity[phase],
                                              phase_y_velocity[phase],
                                              phase_z_velocity[phase],
-                                             ProblemDataPorosity(problem_data));
+                                             ProblemDataPorosity(problem_data),
+                                             NULL);
 
           phase_dt[phase] = CFL / phase_maximum;
           if (phase == 0)

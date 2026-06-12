@@ -105,7 +105,7 @@ double ComputePhaseMaximum(double phase_u_max, double dx, double phase_v_max, do
 double ComputeTotalMaximum(Problem *problem, EvalStruct *eval_struct, double s_lower, double s_upper, double total_u_max, double dx, double total_v_max, double dy, double total_w_max, double beta_max, double dz);
 
 /* compute_total_concentration.c */
-double ComputeTotalConcen(GrGeomSolid *gr_domain, Grid *grid, Vector *substance);
+double ComputeTotalConcen(GrGeomSolid *gr_domain, Grid *grid, Vector *substance, Vector *porsat_inv);
 
 typedef void (*ConstantRFInvoke) (GeomSolid *geounit, GrGeomSolid *gr_geounit, Vector *field, RFCondData *cdata);
 typedef PFModule *(*ConstantRFInitInstanceXtraInvoke) (Grid *grid, double *temp_data);
@@ -411,7 +411,7 @@ void            MatvecJacE(
 
 /* max_field_value.c */
 double MaxFieldValue(Vector *field, Vector *phi, int dir);
-double MaxPhaseFieldValue(Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *phi);
+double MaxPhaseFieldValue(Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *phi, Vector *sat);
 double MaxTotalFieldValue(Problem *problem, EvalStruct *eval_struct, Vector *saturation, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *beta, Vector *phi);
 
 

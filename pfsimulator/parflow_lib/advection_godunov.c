@@ -942,7 +942,7 @@ void     Godunov(
    *-----------------------------------------------------------------------*/
 
   field_sum = ComputeTotalConcen(ProblemDataGrDomain(problem_data),
-                                 grid, new_concentration);
+                                 grid, new_concentration, NULL);
 
 
   if (!amps_Rank(amps_CommWorld))

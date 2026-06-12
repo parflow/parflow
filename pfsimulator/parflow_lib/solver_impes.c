@@ -763,7 +763,8 @@ void      SolverImpes()
                                              phase_y_velocity[phase],
                                              phase_z_velocity[phase],
                                              ProblemDataPorosity(
-                                                                 problem_data));
+                                                                 problem_data),
+                                             NULL);
 
           /* Put in a check for a possibly 0 velocity in this phase */
           if (phase_maximum != 0.0)
