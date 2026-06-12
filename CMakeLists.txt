@@ -56,6 +56,26 @@ set_property(
     PROPERTY STRINGS none cuda kokkos omp
 )
 
+# v1 reactive-transport chemistry is CPU-only (CLAUDE.md hard constraint).
+# Pure flag check, placed before backend initialization and before
+# find_package(Alquimia), so the flag combination alone produces this
+# message -- even on a machine without CUDA/Kokkos installed.
+if(
+    PARFLOW_ENABLE_ALQUIMIA
+    AND (
+        (PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
+        OR (PARFLOW_ACCELERATOR_BACKEND STREQUAL "kokkos")
+    )
+)
+    message(
+        FATAL_ERROR
+        "PARFLOW_ENABLE_ALQUIMIA=ON is not supported with the "
+        "'${PARFLOW_ACCELERATOR_BACKEND}' accelerator backend: v1 "
+        "reactive-transport chemistry is CPU-only. Configure with "
+        "PARFLOW_ACCELERATOR_BACKEND=none (or omp), or disable Alquimia."
+    )
+endif()
+
 if(PARFLOW_ACCELERATOR_BACKEND STREQUAL "none")
 elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
     message(STATUS "ACCELERATOR: CUDA backend selected")
