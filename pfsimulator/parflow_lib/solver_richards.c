@@ -1050,11 +1050,11 @@ SetupRichards(PFModule * this_module)
 
     /* initialize vel vectors - jjb */
     instance_xtra->x_velocity =
-      NewVectorType(x_grid, 1, 1, vector_side_centered_x);
+      NewVectorType(x_grid, 1, 2, vector_side_centered_x);
     InitVectorAll(instance_xtra->x_velocity, 0.0);
 
     instance_xtra->y_velocity =
-      NewVectorType(y_grid, 1, 1, vector_side_centered_y);
+      NewVectorType(y_grid, 1, 2, vector_side_centered_y);
     InitVectorAll(instance_xtra->y_velocity, 0.0);
 
     instance_xtra->z_velocity =
@@ -3702,13 +3702,13 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     }
 
     /* velocity updates - not sure these are necessary jjb */
-    handle = InitVectorUpdate(instance_xtra->x_velocity, VectorUpdateAll);
+    handle = InitVectorUpdate(instance_xtra->x_velocity, VectorUpdateVelX);
     FinalizeVectorUpdate(handle);
 
-    handle = InitVectorUpdate(instance_xtra->y_velocity, VectorUpdateAll);
+    handle = InitVectorUpdate(instance_xtra->y_velocity, VectorUpdateVelY);
     FinalizeVectorUpdate(handle);
 
-    handle = InitVectorUpdate(instance_xtra->z_velocity, VectorUpdateAll);
+    handle = InitVectorUpdate(instance_xtra->z_velocity, VectorUpdateVelZ);
     FinalizeVectorUpdate(handle);
 
 
