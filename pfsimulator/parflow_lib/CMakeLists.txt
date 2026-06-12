@@ -8,15 +8,6 @@ set(SRC_FILES_CONST
     cghs.c
     char_vector.c
     chebyshev.c
-    chem_advance.c
-    chem_allocate.c
-    chem_bndryconds.c
-    chem_datatransfer.c
-    chem_destroy.c
-    chem_initconds.c
-    chem_initialize.c
-    chem_printdata.c
-    chem_utilities.c
     comm_pkg.c
     communication.c
     computation.c
@@ -75,7 +66,6 @@ set(SRC_FILES_CONST
     printmatrix.c
     printvector.c
     problem.c
-    problem_bc_concen.c
     problem_bc_internal.c
     problem_bc_phase_saturation.c
     problem_capillary_pressure.c
@@ -85,7 +75,6 @@ set(SRC_FILES_CONST
     problem_FBx.c
     problem_FBy.c
     problem_FBz.c
-    problem_geochem_cond.c
     problem_geometries.c
     problem_ic_phase_concen.c
     problem_ic_phase_satur.c
@@ -115,7 +104,6 @@ set(SRC_FILES_CONST
     sadvection_godunov.c
     scale.c
     select_time_step.c
-    set_chem_data.c
     set_problem_data.c
     sim_shear.c
     solver.c
@@ -144,6 +132,26 @@ set(SRC_FILES_CONST
     write_parflow_silo.c
     write_parflow_silo_pmpio.c
 )
+
+# Chemistry sources: in the target only when Alquimia is enabled. When OFF
+# they must not reach any compile path (CLAUDE.md hard constraint).
+if((${PARFLOW_HAVE_ALQUIMIA}))
+    list(
+        APPEND SRC_FILES_CONST
+        chem_advance.c
+        chem_allocate.c
+        chem_bndryconds.c
+        chem_datatransfer.c
+        chem_destroy.c
+        chem_initconds.c
+        chem_initialize.c
+        chem_printdata.c
+        chem_utilities.c
+        problem_bc_concen.c
+        problem_geochem_cond.c
+        set_chem_data.c
+    )
+endif((${PARFLOW_HAVE_ALQUIMIA}))
 
 if((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}))
     set(SRC_FILES_ARCH_TYPE_0 clustering.cpp grgeometry.cpp)

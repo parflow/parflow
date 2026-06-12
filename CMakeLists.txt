@@ -399,6 +399,22 @@ if(${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
 endif(${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
 
 #-----------------------------------------------------------------------------
+# Alquimia (reactive-transport geochemistry; react_trans port)
+#-----------------------------------------------------------------------------
+option(
+    PARFLOW_ENABLE_ALQUIMIA
+    "Build with Alquimia reactive-transport chemistry (CPU only)"
+    "OFF"
+)
+if(${PARFLOW_ENABLE_ALQUIMIA})
+    # find_package(Alquimia) arrives with the find-module commit; enabling
+    # the option currently wires the chem sources and the HAVE_ALQUIMIA
+    # define only.
+    set(PARFLOW_HAVE_ALQUIMIA "yes")
+    set(HAVE_ALQUIMIA ${PARFLOW_HAVE_ALQUIMIA})
+endif(${PARFLOW_ENABLE_ALQUIMIA})
+
+#-----------------------------------------------------------------------------
 # NetCDF
 #-----------------------------------------------------------------------------
 option(PARFLOW_ENABLE_NETCDF "Build with NetCDF" "OFF")
