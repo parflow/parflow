@@ -196,6 +196,10 @@ void BCConcenCopyPatch(Problem *problem, Grid *grid,
           concen_dat[iv3] = concen_dat[iv];
         }
       });
+      /* ci is the BoxLoopI1 stride index; the body addresses cells via
+       * SubvectorEltIndex instead, so reference it to keep clang's
+       * -Wunused-but-set-variable (CI -Werror) quiet. */
+      (void)ci;
     }
   }
 }
