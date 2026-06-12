@@ -69,6 +69,10 @@ void   NewGlobals(char *run_name)
   globals_ptr->phase_names = 0;
   globals_ptr->contaminant_names = 0;
 
+  /* Alquimia reactive-transport (react_trans) */
+  globals_ptr->geochem_names = 0;
+  globals_ptr->chem_flag = 0;
+
   /* Timing Cycle information */
   globals_ptr->cycle_names = 0;
   globals_ptr->num_cycles = 0;

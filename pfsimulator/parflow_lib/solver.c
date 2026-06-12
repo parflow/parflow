@@ -103,6 +103,15 @@ NewSolver()
     NA_FreeNameArray(switch_na);
   }
 
+  /* Alquimia reactive-transport (react_trans): chemistry on/off switch */
+  {
+    NameArray chem_na;
+    chem_na = NA_NewNameArray("False True");
+    switch_name = GetStringDefault("Solver.Chemistry", "False");
+    GlobalsChemistryFlag = NA_NameToIndexExitOnError(chem_na, switch_name, "Solver.Chemistry");
+    NA_FreeNameArray(chem_na);
+  }
+
   /*-----------------------------------------------------------------------
    * Initialize SAMRAI hierarchy
    *-----------------------------------------------------------------------*/

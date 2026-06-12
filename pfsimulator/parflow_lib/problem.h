@@ -114,6 +114,13 @@ typedef struct {
   /* @RMM Variable dZ */
   PFModule  *dz_mult;           //rmm
   PFModule  *real_space_z;
+
+#ifdef HAVE_ALQUIMIA
+  /* Alquimia reactive-transport (react_trans) */
+  PFModule *geochemcond;
+  PFModule *bc_concentration;
+  int num_geochem_conds;
+#endif
 } Problem;
 
 typedef struct {
@@ -180,6 +187,11 @@ typedef struct {
   /* @RMM variable dz  */
   Vector *dz_mult;
   Vector *rsz;
+
+#ifdef HAVE_ALQUIMIA
+  /* Alquimia reactive-transport (react_trans) */
+  Vector *geochemcond;
+#endif
 } ProblemData;
 
 /* Values of solver argument to NewProblem function */
@@ -315,6 +327,14 @@ typedef struct {
 #define PermeabilityNewPublicXtra      SubsrfSimNewPublicXtra
 #define PermeabilityFreePublicXtra     SubsrfSimFreePublicXtra
 #define PermeabilitySizeOfTempData     SubsrfSimSizeOfTempData
+
+/* Alquimia reactive-transport (react_trans) accessors */
+#ifdef HAVE_ALQUIMIA
+#define ProblemNumGeochemConds(problem)           ((problem)->num_geochem_conds)
+#define ProblemGeochemCond(problem)               ((problem)->geochemcond)
+#define ProblemBCConcentration(problem)           ((problem)->bc_concentration)
+#define ProblemDataGeochemCond(problem_data)      ((problem_data)->geochemcond)
+#endif
 
 
 #endif

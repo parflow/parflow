@@ -50,6 +50,8 @@
 #include <float.h>
 #include <limits.h>
 
+#include "pf_alquimia.h"
+
 #define PF_CLM_MAX_ROOT_NZ 20
 
 /*--------------------------------------------------------------------------
@@ -292,6 +294,12 @@ typedef struct {
 
   int nc_evap_trans_file_transient;     /* read NetCDF evap_trans as a transient file before advance richards timestep */
   char *nc_evap_trans_filename; /* NetCDF File name for evap trans */
+
+#ifdef HAVE_ALQUIMIA
+  /* Alquimia reactive-transport (react_trans) chemistry modules */
+  PFModule *init_chem;
+  PFModule *advance_chem;
+#endif
 } PublicXtra;
 
 typedef struct {
@@ -7002,6 +7010,14 @@ SolverRichardsNewPublicXtra(char *name)
   sprintf(key, "%s.EvapTrans.FileName", name);
   public_xtra->evap_trans_filename = GetStringDefault(key, "");
 
+#ifdef HAVE_ALQUIMIA
+  if (GlobalsChemistryFlag)
+  {
+    (public_xtra->init_chem) = PFModuleNewModule(InitializeChemistry, ());
+    (public_xtra->advance_chem) = PFModuleNewModule(AdvanceChemistry, ());
+  }
+#endif
+
 
   /* Initialize silo if necessary */
   if (public_xtra->write_silopmpio_subsurf_data ||
@@ -7046,6 +7062,14 @@ SolverRichardsFreePublicXtra()
     PFModuleFreeModule(public_xtra->advect_concen);
     PFModuleFreeModule(public_xtra->permeability_face);
     PFModuleFreeModule(public_xtra->nonlin_solver);
+
+#ifdef HAVE_ALQUIMIA
+    if (GlobalsChemistryFlag)
+    {
+      PFModuleFreeModule(public_xtra->init_chem);
+      PFModuleFreeModule(public_xtra->advance_chem);
+    }
+#endif
     tfree(public_xtra);
   }
 }

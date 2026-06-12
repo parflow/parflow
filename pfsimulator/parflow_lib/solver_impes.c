@@ -39,6 +39,7 @@
 ***************************************************************************/
 
 #include "parflow.h"
+#include "pf_alquimia.h"
 
 #include <string.h>
 
@@ -85,6 +86,12 @@ typedef struct {
   int write_silo_velocities;                      /* print velocities? */
   int write_silo_satur;                           /* print saturations? */
   int write_silo_concen;                          /* print concentrations? */
+
+#ifdef HAVE_ALQUIMIA
+  /* Alquimia reactive-transport (react_trans) chemistry modules */
+  PFModule *init_chem;
+  PFModule *advance_chem;
+#endif
 } PublicXtra;
 
 typedef struct {
@@ -2128,6 +2135,14 @@ PFModule   *SolverImpesNewPublicXtra(char *name)
 
   (public_xtra->advect_satur) = PFModuleNewModule(SatGodunov, ());
   (public_xtra->advect_concen) = PFModuleNewModule(Godunov, ());
+#ifdef HAVE_ALQUIMIA
+  if (GlobalsChemistryFlag)
+  {
+    (public_xtra->init_chem) = PFModuleNewModule(InitializeChemistry, ());
+    (public_xtra->advance_chem) = PFModuleNewModule(AdvanceChemistry, ());
+  }
+#endif
+
   (public_xtra->set_problem_data) = PFModuleNewModule(SetProblemData, ());
 
   (public_xtra->problem) = NewProblem(ImpesSolve);
@@ -2312,6 +2327,15 @@ void   SolverImpesFreePublicXtra()
     PFModuleFreeModule(public_xtra->phase_velocity_face);
     PFModuleFreeModule(public_xtra->permeability_face);
     PFModuleFreeModule(public_xtra->discretize_pressure);
+
+#ifdef HAVE_ALQUIMIA
+    if (GlobalsChemistryFlag)
+    {
+      PFModuleFreeModule(public_xtra->init_chem);
+      PFModuleFreeModule(public_xtra->advance_chem);
+    }
+#endif
+
     tfree(public_xtra);
   }
 }

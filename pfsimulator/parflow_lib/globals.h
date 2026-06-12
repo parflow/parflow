@@ -73,6 +73,10 @@ typedef struct _Globals {
   NameArray phase_names;
   NameArray contaminant_names;
 
+  /* Alquimia reactive-transport (react_trans) */
+  NameArray geochem_names;
+  int chem_flag;
+
   /* Timing Cycle information */
   NameArray cycle_names;
   int num_cycles;
@@ -137,6 +141,8 @@ amps_ThreadLocalDcl(extern IDB *, input_database);
 #define GlobalsRepeatCounts       (globals->repeat_counts)
 
 #define GlobalsContaminatNames    (globals->contaminant_names)
+#define GlobalsGeochemCondNames   (globals->geochem_names)
+#define GlobalsChemistryFlag      (globals->chem_flag)
 #define GlobalsGeometries         (globals->geometries)
 
 #define GlobalsParflowSimulation   (globals->parflow_simulation)
