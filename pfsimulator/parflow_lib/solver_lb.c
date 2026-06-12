@@ -39,6 +39,7 @@
  *****************************************************************************/
 
 #include "parflow.h"
+#include "pf_alquimia.h"
 
 #include <string.h>
 
@@ -61,7 +62,6 @@ typedef struct {
   Problem           *problem;
 
   int sadvect_order;
-  int advect_order;
   double CFL;
   int max_iterations;
   double rel_tol;                            /* relative tolerance */
@@ -132,7 +132,6 @@ void      SolverDiffusion()
   Problem      *problem = (public_xtra->problem);
 
   int sadvect_order = (public_xtra->sadvect_order);
-  int advect_order = (public_xtra->advect_order);
   double CFL = (public_xtra->CFL);
   int max_iterations = (public_xtra->max_iterations);
   double abs_tol = (public_xtra->abs_tol);
@@ -192,7 +191,10 @@ void      SolverDiffusion()
   Vector       *total_x_velocity, *total_y_velocity, *total_z_velocity;
   Vector       *z_permeability;
 
-  Vector       *solidmassfactor;
+  Vector       *retard_vector;
+  Vector       *trans_x_velocity, *trans_y_velocity, *trans_z_velocity;
+  Vector       *old_porsat_rt = NULL;
+  Vector       *new_porsat_rt_inv = NULL;
 
   Matrix       *A;
   Vector       *f;
@@ -387,8 +389,14 @@ void      SolverDiffusion()
   }
   else
   {
-    saturations[0] = NULL;
+    saturations[0] = NewVectorType(grid, 1, 3, vector_cell_centered);
+    InitVectorAll(saturations[0], 1.0);
   }
+
+  old_porsat_rt = NewVectorType(instance_xtra->grid, 1, 1, vector_cell_centered);
+  InitVectorAll(old_porsat_rt, 1.0);
+  new_porsat_rt_inv = NewVectorType(instance_xtra->grid, 1, 2, vector_cell_centered);
+  InitVectorAll(new_porsat_rt_inv, 1.0);
 
   /*-------------------------------------------------------------------
    * If (transient); initialize some stuff
@@ -421,7 +429,7 @@ void      SolverDiffusion()
       if (is_multiphase)
         eval_struct = NewEvalStruct(problem);
 
-      solidmassfactor = NewVectorType(grid, 1, 2, vector_cell_centered);
+      retard_vector = NewVectorType(grid, 1, 2, vector_cell_centered);
 
       /*-------------------------------------------------------------------
        * Allocate and set up initial concentrations
@@ -446,6 +454,11 @@ void      SolverDiffusion()
           FinalizeVectorUpdate(handle);
           indx++;
         }
+      }
+
+      if ((!GlobalsChemistryFlag) && (ProblemNumContaminants(problem) > 0))
+      {
+        BCConcenCopyAdjacent(problem, grid, concentrations);
       }
 
       /*-------------------------------------------------------------------
@@ -808,6 +821,9 @@ void      SolverDiffusion()
         /***********************************************************************/
         /*                      Compute the velocities                         */
         /***********************************************************************/
+
+        handle = InitVectorUpdate(ProblemDataPorosity(problem_data), VectorUpdateAll);
+        FinalizeVectorUpdate(handle);
         for (phase = 0; phase < ProblemNumPhases(problem); phase++)
         {
           /* Compute the velocity for this phase */
@@ -822,11 +838,17 @@ void      SolverDiffusion()
                               phase,
                               t));
 
+          /* old_porsat_rt is 1.0 outside the domain, which keeps the
+           * max V dt / (dx por sat) estimate sane at boundary cells. */
+          Copy(saturations[phase], old_porsat_rt);
+          handle = InitVectorUpdate(old_porsat_rt, VectorUpdateAll);
+          FinalizeVectorUpdate(handle);
+
           phase_maximum = MaxPhaseFieldValue(phase_x_velocity[phase],
                                              phase_y_velocity[phase],
                                              phase_z_velocity[phase],
                                              ProblemDataPorosity(problem_data),
-                                             NULL);
+                                             old_porsat_rt);
 
           phase_dt[phase] = CFL / phase_maximum;
           if (phase == 0)
@@ -1187,26 +1209,41 @@ void      SolverDiffusion()
         indx = 0;
         for (phase = 0; phase < ProblemNumPhases(problem); phase++)
         {
+          PFVProd(ProblemDataPorosity(problem_data), saturations[phase],
+                  old_porsat_rt);
+          PFVInvProd(ProblemDataPorosity(problem_data), saturations[phase],
+                     new_porsat_rt_inv);
+
+          handle = InitVectorUpdate(new_porsat_rt_inv, VectorUpdateAll2);
+          FinalizeVectorUpdate(handle);
+
           for (concen = 0; concen < ProblemNumContaminants(problem); concen++)
           {
             PFModuleInvokeType(RetardationInvoke, retardation,
-                               (solidmassfactor,
+                               (retard_vector,
+                                phase_x_velocity[phase],
+                                phase_y_velocity[phase],
+                                phase_z_velocity[phase],
+                                &trans_x_velocity,
+                                &trans_y_velocity,
+                                &trans_z_velocity,
                                 concen,
                                 problem_data));
-            handle = InitVectorUpdate(solidmassfactor, VectorUpdateAll2);
+
+            handle = InitVectorUpdate(concentrations[indx], VectorUpdateGodunov);
             FinalizeVectorUpdate(handle);
 
-            InitVectorAll(ctemp, 0.0);
-            Copy(concentrations[indx], ctemp);
+            PFVCopy(concentrations[indx], ctemp);
 
             PFModuleInvokeType(AdvectionConcentrationInvoke, advect_concen,
                                (problem_data, phase, concen,
                                 ctemp, concentrations[indx],
-                                phase_x_velocity[phase],
-                                phase_y_velocity[phase],
-                                phase_z_velocity[phase],
-                                solidmassfactor,
-                                t, dt, advect_order));
+                                trans_x_velocity,
+                                trans_y_velocity,
+                                trans_z_velocity,
+                                old_porsat_rt,
+                                new_porsat_rt_inv,
+                                t, dt));
             indx++;
           }
         }
@@ -1349,17 +1386,17 @@ void      SolverDiffusion()
     }
     tfree(concentrations);
 
-    FreeVector(solidmassfactor);
+    FreeVector(retard_vector);
   }
 
-  if (is_multiphase)
+  for (phase = 0; phase < ProblemNumPhases(problem); phase++)
   {
-    for (phase = 0; phase < ProblemNumPhases(problem); phase++)
-    {
-      FreeVector(saturations[phase]);
-    }
+    FreeVector(saturations[phase]);
   }
   tfree(saturations);
+
+  FreeVector(old_porsat_rt);
+  FreeVector(new_porsat_rt_inv);
   tfree(phase_densities);
 
   FreeVector(total_mobility_x);
@@ -1559,7 +1596,8 @@ PFModule *SolverDiffusionInitInstanceXtra()
                               (problem, grid, NULL, NULL));
     (instance_xtra->retardation) =
       PFModuleNewInstanceType(RetardationInitInstanceXtraInvoke,
-                              ProblemRetardation(problem), (NULL));
+                              ProblemRetardation(problem),
+                              (grid, x_grid, y_grid, z_grid, NULL));
     (instance_xtra->phase_mobility) =
       PFModuleNewInstance(ProblemPhaseMobility(problem), ());
     (instance_xtra->ic_phase_concen) =
@@ -1610,7 +1648,8 @@ PFModule *SolverDiffusionInitInstanceXtra()
                               (instance_xtra->set_problem_data),
                               (problem, grid, NULL, NULL));
     PFModuleReNewInstanceType(RetardationInitInstanceXtraInvoke,
-                              (instance_xtra->retardation), (NULL));
+                              (instance_xtra->retardation),
+                              (grid, x_grid, y_grid, z_grid, NULL));
     PFModuleReNewInstance((instance_xtra->phase_mobility), ());
     PFModuleReNewInstance((instance_xtra->ic_phase_concen), ());
     PFModuleReNewInstance((instance_xtra->phase_density), ());
@@ -1723,7 +1762,7 @@ PFModule *SolverDiffusionInitInstanceXtra()
   temp_data_placeholder = temp_data;
   PFModuleReNewInstanceType(RetardationInitInstanceXtraInvoke,
                             (instance_xtra->retardation),
-                            (temp_data_placeholder));
+                            (NULL, NULL, NULL, NULL, temp_data_placeholder));
   PFModuleReNewInstanceType(AdvectionConcentrationInitInstanceXtraType,
                             (instance_xtra->advect_concen),
                             (NULL, NULL, temp_data_placeholder));

@@ -1,5 +1,4 @@
 set(SRC_FILES_CONST
-    advect.F
     advect_new.F90
     advection_godunov.c
     bc_lb.c

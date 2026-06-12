@@ -66,7 +66,6 @@ typedef struct {
 
   Problem *problem;
 
-  int advect_order;
   double CFL;
   double drop_tol;
   int max_iterations;
@@ -5311,7 +5310,7 @@ SolverRichardsInitInstanceXtra()
 
     (instance_xtra->retardation) =
       PFModuleNewInstanceType(RetardationInitInstanceXtraInvoke,
-                              ProblemRetardation(problem), (NULL));
+                              ProblemRetardation(problem), (grid, x_grid, y_grid, z_grid, NULL));
     (instance_xtra->phase_rel_perm) =
       PFModuleNewInstanceType(PhaseRelPermInitInstanceXtraInvoke,
                               ProblemPhaseRelPerm(problem), (grid, NULL));
@@ -5363,7 +5362,7 @@ SolverRichardsInitInstanceXtra()
                               (problem, grid, grid2d, NULL));
 
     PFModuleReNewInstanceType(RetardationInitInstanceXtraInvoke,
-                              (instance_xtra->retardation), (NULL));
+                              (instance_xtra->retardation), (grid, x_grid, y_grid, z_grid, NULL));
 
     PFModuleReNewInstanceType(PhaseRelPermInitInstanceXtraInvoke,
                               (instance_xtra->phase_rel_perm), (grid,
@@ -5464,7 +5463,7 @@ SolverRichardsInitInstanceXtra()
   temp_data_placeholder = temp_data;
   PFModuleReNewInstanceType(RetardationInitInstanceXtraInvoke,
                             (instance_xtra->retardation),
-                            (temp_data_placeholder));
+                            (NULL, NULL, NULL, NULL, temp_data_placeholder));
   PFModuleReNewInstanceType(AdvectionConcentrationInitInstanceXtraType,
                             (instance_xtra->advect_concen),
                             (NULL, NULL, temp_data_placeholder));
@@ -6336,9 +6335,6 @@ SolverRichardsNewPublicXtra(char *name)
     amps_Printf
       ("         wrong times times due to how Parflow discretizes time.\n");
   }
-
-  sprintf(key, "%s.AdvectOrder", name);
-  public_xtra->advect_order = GetIntDefault(key, 2);
 
   sprintf(key, "%s.CFL", name);
   public_xtra->CFL = GetDoubleDefault(key, 0.7);

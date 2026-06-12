@@ -2,11 +2,11 @@
 
 typedef PFModule * (*NewDefault)(void);
 
-typedef void (*AdvectionConcentrationInvoke) (ProblemData *problem_data, int phase, int concentration, Vector *old_concentration, Vector *new_concentration, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *solid_mass_factor, double time, double deltat, int order);
+typedef void (*AdvectionConcentrationInvoke) (ProblemData *problem_data, int phase, int concentration, Vector *old_concentration, Vector *new_concentration, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *old_porsat, Vector *new_porsat_inv, double time, double deltat);
 typedef PFModule *(*AdvectionConcentrationInitInstanceXtraType) (Problem *problem, Grid *grid, double *temp_data);
 
 /* advection_godunov.c */
-void Godunov(ProblemData *problem_data, int phase, int concentration, Vector *old_concentration, Vector *new_concentration, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *solid_mass_factor, double time, double deltat, int order);
+void Godunov(ProblemData *problem_data, int phase, int concentration, Vector *old_concentration, Vector *new_concentration, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *old_porsat, Vector *new_porsat_inv, double time, double deltat);
 PFModule *GodunovInitInstanceXtra(Problem *problem, Grid *grid, double *temp_data);
 void GodunovFreeInstanceXtra(void);
 PFModule *GodunovNewPublicXtra(void);
@@ -1015,14 +1015,15 @@ PFModule *PorosityNewPublicXtra(void);
 void PorosityFreePublicXtra(void);
 int PorositySizeOfTempData(void);
 
-typedef void (*RetardationInvoke) (Vector *solidmassfactor, int contaminant, ProblemData *problem_data);
-typedef PFModule *(*RetardationInitInstanceXtraInvoke) (double *temp_data);
+typedef void (*RetardationInvoke) (Vector *retard_vector, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector **trans_x_velocity, Vector **trans_y_velocity, Vector **trans_z_velocity, int contaminant, ProblemData *problem_data);
+typedef PFModule *(*RetardationInitInstanceXtraInvoke) (Grid *grid, Grid *x_grid, Grid *y_grid, Grid *z_grid, double *temp_data);
 typedef PFModule *(*RetardationNewPublicXtraInvoke) (int num_contaminants);
 
 /* problem_retardation.c */
-void Retardation(Vector *solidmassfactor, int contaminant, ProblemData *problem_data);
+void Retardation(Vector *retard_vector, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector **trans_x_velocity, Vector **trans_y_velocity, Vector **trans_z_velocity, int contaminant, ProblemData *problem_data);
 
-PFModule *RetardationInitInstanceXtra(double *temp_data);
+PFModule *RetardationInitInstanceXtra(Grid *grid, Grid *x_grid, Grid *y_grid, Grid *z_grid, double *temp_data);
+void TransportVelocity(Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector **x_vel_trans, Vector **y_vel_trans, Vector **z_vel_trans, Vector *retard);
 void RetardationFreeInstanceXtra(void);
 PFModule *RetardationNewPublicXtra(int num_contaminants);
 void RetardationFreePublicXtra(void);
