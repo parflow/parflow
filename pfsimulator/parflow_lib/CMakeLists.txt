@@ -1,5 +1,6 @@
 set(SRC_FILES_CONST
     advect.F
+    advect_new.F90
     advection_godunov.c
     bc_lb.c
     bc_pressure.c
@@ -7,6 +8,15 @@ set(SRC_FILES_CONST
     cghs.c
     char_vector.c
     chebyshev.c
+    chem_advance.c
+    chem_allocate.c
+    chem_bndryconds.c
+    chem_datatransfer.c
+    chem_destroy.c
+    chem_initconds.c
+    chem_initialize.c
+    chem_printdata.c
+    chem_utilities.c
     comm_pkg.c
     communication.c
     computation.c
@@ -65,6 +75,7 @@ set(SRC_FILES_CONST
     printmatrix.c
     printvector.c
     problem.c
+    problem_bc_concen.c
     problem_bc_internal.c
     problem_bc_phase_saturation.c
     problem_capillary_pressure.c
@@ -74,6 +85,7 @@ set(SRC_FILES_CONST
     problem_FBx.c
     problem_FBy.c
     problem_FBz.c
+    problem_geochem_cond.c
     problem_geometries.c
     problem_ic_phase_concen.c
     problem_ic_phase_satur.c
@@ -103,6 +115,7 @@ set(SRC_FILES_CONST
     sadvection_godunov.c
     scale.c
     select_time_step.c
+    set_chem_data.c
     set_problem_data.c
     sim_shear.c
     solver.c
