@@ -340,7 +340,15 @@ GeochemCondition:
       [Type: string] Space-separated list of geometry names whose cells are initialized from a
       geochemical condition. Where geometries overlap, later names take precedence.
     domains:
-      AnyString:
+      EnumDomain:
+        locations:
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
+    handlers:
+      GeochemCondGeomUpdater:
+        type: ChildrenHandler
+        class_name: GeochemCondGeomItem
+        location: ./Geom
 
   Geom:
     __class__: GeochemCondGeom
