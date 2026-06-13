@@ -137,18 +137,18 @@ set(SRC_FILES_CONST
 if((${PARFLOW_HAVE_ALQUIMIA}))
     list(
         APPEND SRC_FILES_CONST
-        chem_advance.c
-        chem_allocate.c
-        chem_bndryconds.c
-        chem_datatransfer.c
-        chem_destroy.c
-        chem_initconds.c
-        chem_initialize.c
-        chem_printdata.c
-        chem_utilities.c
-        problem_bc_concen.c
-        problem_geochem_cond.c
-        set_chem_data.c
+        chemistry/chem_advance.c
+        chemistry/chem_allocate.c
+        chemistry/chem_bndryconds.c
+        chemistry/chem_datatransfer.c
+        chemistry/chem_destroy.c
+        chemistry/chem_initconds.c
+        chemistry/chem_initialize.c
+        chemistry/chem_printdata.c
+        chemistry/chem_utilities.c
+        chemistry/problem_bc_concen.c
+        chemistry/problem_geochem_cond.c
+        chemistry/set_chem_data.c
     )
 endif((${PARFLOW_HAVE_ALQUIMIA}))
 
@@ -325,6 +325,13 @@ else()
 endif(${PARFLOW_HAVE_SUNDIALS})
 
 if((${PARFLOW_HAVE_ALQUIMIA}))
+    # chemistry/ holds the chemistry-only sources + their headers; the public
+    # umbrella header pf_alquimia.h (in parflow_lib) pulls them in only under
+    # HAVE_ALQUIMIA, so this include dir is needed only on the Alquimia path.
+    target_include_directories(
+        pfsimulator
+        PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/chemistry"
+    )
     target_include_directories(pfsimulator PUBLIC ${ALQUIMIA_INCLUDE_DIRS})
     target_link_libraries(pfsimulator ${ALQUIMIA_LIBRARIES})
 endif((${PARFLOW_HAVE_ALQUIMIA}))
