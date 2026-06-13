@@ -77,7 +77,7 @@ void ADVECT(double *s, double *sn,
             double *dxscr, double *dyscr, double *dzscr, double *dzfrm);
 
 /* sadvect.f */
-/*advect_new.f90 */
+/*advect_transport.f90 */
 #if defined(_CRAYMPP)
 #define ADVECT_UPWIND ADVECT_UPWIND
 #elif defined(__bg__)
