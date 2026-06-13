@@ -61,12 +61,14 @@ typedef struct {
   char  *filename;
 } Type1;                      /* .pfb file */
 
-/*--------------------------------------------------------------------------
- * BCConcentration
- *   This routine implements the concentration boundary conditions
- *   (Dirichlet only) by setting the concentration of 3 ghost layers
- *   outside of the boundary.
- *--------------------------------------------------------------------------*/
+/** @brief Apply the solute (geochemical) boundary conditions on the chemistry
+ * path: impose the named inflow condition by setting the three ghost layers
+ * outside each BCConcentration patch (Dirichlet only).
+ *
+ * @param problem the problem
+ * @param grid the computational grid
+ * @param concentrations per-contaminant mobile concentration vectors (modified)
+ */
 #ifdef HAVE_ALQUIMIA
 void BCConcentration(Problem *      problem,
                      Grid *         grid,

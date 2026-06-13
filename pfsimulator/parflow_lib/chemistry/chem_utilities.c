@@ -43,6 +43,12 @@
 #endif
 
 
+/** @brief Total number of cells across this rank's subgrids (the per-rank cell
+ * count used to size the per-cell Alquimia containers).
+ *
+ * @param grid the computational grid
+ * @return the number of cells owned by this rank
+ */
 int SubgridNumCells(Grid *grid)
 {
   SubgridArray  *subgrids = GridSubgrids(grid);
@@ -78,6 +84,19 @@ int SubgridNumCells(Grid *grid)
 
 
 
+/** @brief Recover from a failed cell reaction step by sub-cycling: repeatedly
+ * halve the time step for this one cell until the engine converges, then march
+ * back up to the original step. A per-cell fallback so one stiff cell does not
+ * abort the whole solve.
+ *
+ * @param chem the Alquimia interface
+ * @param chem_state the cell's chemical state (updated in place)
+ * @param chem_properties the cell's material properties
+ * @param chem_engine the engine state handle
+ * @param chem_aux_data the cell's auxiliary data
+ * @param chem_status [in,out] engine status (checked/reset across sub-steps)
+ * @param original_dt the full reaction step that failed
+ */
 #ifdef HAVE_ALQUIMIA
 void CutTimeStepandSolveSingleCell(AlquimiaInterface chem, AlquimiaState *chem_state, AlquimiaProperties *chem_properties, void *chem_engine, AlquimiaAuxiliaryData *chem_aux_data, AlquimiaEngineStatus *chem_status, double original_dt)
 {
@@ -104,6 +123,10 @@ void CutTimeStepandSolveSingleCell(AlquimiaInterface chem, AlquimiaState *chem_s
 }
 
 
+/** @brief Write a chemistry checkpoint: the full per-cell Alquimia state and
+ * auxiliary data, so a run can be restarted from the geochemical state
+ * (Chemistry.RestartFromFile / RestartFileName).
+ */
 void WriteChemChkpt(Grid *                 grid,
                     AlquimiaSizes *        chem_sizes,
                     AlquimiaState *        chem_state,
@@ -302,6 +325,9 @@ void WriteChemChkpt(Grid *                 grid,
 
 
 
+/** @brief Read a chemistry checkpoint written by WriteChemChkpt, restoring the
+ * per-cell Alquimia state and auxiliary data when restarting a run.
+ */
 void ReadChemChkpt(Grid *                 grid,
                    AlquimiaSizes *        chem_sizes,
                    AlquimiaState *        chem_state,

@@ -39,6 +39,14 @@
 #include "alquimia/alquimia_containers.h"
 
 
+/** @brief Copy post-advection mobile concentrations from ParFlow vectors into
+ * the per-cell Alquimia state, ahead of a reaction step.
+ *
+ * @param chem_state the Alquimia state to fill (per cell)
+ * @param chem_sizes the Alquimia problem sizes (primary species count, ...)
+ * @param concentrations per-contaminant mobile concentration vectors (source)
+ * @param problem_data the problem data
+ */
 void AdvectedPrimaryToChem(AlquimiaState* chem_state, AlquimiaSizes* chem_sizes, Vector **concentrations, ProblemData *problem_data)
 {
   Grid          *grid = VectorGrid(concentrations[0]);
@@ -91,6 +99,14 @@ void AdvectedPrimaryToChem(AlquimiaState* chem_state, AlquimiaSizes* chem_sizes,
 
 
 
+/** @brief Unpack the per-cell Alquimia state and auxiliary output into the
+ * ParFlow chemistry output vectors (pH, mineral, sorbed, free-ion, ... fields).
+ *
+ * @param alquimia_data the per-cell Alquimia state/properties/aux and the
+ *        destination PF output vectors
+ * @param grid the computational grid
+ * @param problem_data the problem data
+ */
 void ChemDataToPFVectors(AlquimiaDataPF *alquimia_data, Grid *grid, ProblemData *problem_data)
 {
   SubgridArray  *subgrids = GridSubgrids(grid);
@@ -278,6 +294,14 @@ void ChemDataToPFVectors(AlquimiaDataPF *alquimia_data, Grid *grid, ProblemData 
 
 
 
+/** @brief Copy the reacted mobile concentrations from the per-cell Alquimia
+ * state back into the ParFlow concentration vectors, after a reaction step.
+ *
+ * @param chem_state the reacted Alquimia state (per cell, source)
+ * @param chem_sizes the Alquimia problem sizes
+ * @param concentrations per-contaminant mobile concentration vectors (updated)
+ * @param problem_data the problem data
+ */
 void ReactedPrimaryToPF(AlquimiaState* chem_state, AlquimiaSizes* chem_sizes, Vector **concentrations, ProblemData *problem_data)
 {
   Grid          *grid = VectorGrid(concentrations[0]);

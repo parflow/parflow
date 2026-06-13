@@ -41,17 +41,29 @@
 
 
 
+/** @brief Fraction of a flow time step represented by one transport sub-step.
+ *
+ * @param total_cycle_length the full flow time-step length
+ * @param subcycle_dt the transport sub-step length
+ * @return the interpolation weight subcycle_dt / total_cycle_length
+ */
 double InterpolateTimeCycle(double total_cycle_length, double subcycle_dt)
 {
   return subcycle_dt / total_cycle_length;
 }
 
-/*--------------------------------------------------------------------------
- * TransportSaturation
- * Calculates saturation delta for transient simulations
- * Places old saturation values into vector with 2 ghost layers
- *--------------------------------------------------------------------------*/
-
+/** @brief Build the start-of-step saturation and the saturation increment for
+ * a transient transport sub-cycle.
+ *
+ * Copies the old saturation into a two-ghost-layer vector and computes the
+ * change over the flow step, so the sub-cycle can linearly interpolate
+ * saturation as it advances.
+ *
+ * @param sat_transport_start [out] old saturation in a two-ghost-layer vector
+ * @param delta_sat [out] new_sat minus old_sat over the flow step
+ * @param old_sat saturation at the start of the flow step
+ * @param new_sat saturation at the end of the flow step
+ */
 void TransportSaturation(Vector *sat_transport_start, Vector *delta_sat, Vector *old_sat, Vector *new_sat)
 {
   Grid       *grid = VectorGrid(sat_transport_start);
@@ -115,6 +127,17 @@ void TransportSaturation(Vector *sat_transport_start, Vector *delta_sat, Vector 
 }
 
 
+/** @brief Choose the reactive-transport sub-step from the CFL limit.
+ *
+ * If the flow step already satisfies the CFL limit it is used unchanged;
+ * otherwise it is split into the fewest equal sub-steps that satisfy it.
+ *
+ * @param max_velocity maximum cell velocity / (dx por sat) over the domain
+ * @param CFL the target Courant number
+ * @param PF_dt the flow (ParFlow) time step
+ * @param advect_react_dt [out] the chosen transport sub-step
+ * @param num_rt_iterations [out] the number of sub-steps per flow step
+ */
 void SelectReactTransTimeStep(double max_velocity, double CFL,
                               double PF_dt, double *advect_react_dt,
                               int *num_rt_iterations)
@@ -135,13 +158,14 @@ void SelectReactTransTimeStep(double max_velocity, double CFL,
   }
 }
 
-/*--------------------------------------------------------------------------
- * BCConcenCopyPatch
+/** @brief Copy each boundary cell's interior-neighbour concentration into its
+ * three ghost layers, for one patch and every contaminant.
  *
- *   Copies concentration values from interior cell on boundary
- *   into adjacent boundary cells
- *   3 layers deep
- *--------------------------------------------------------------------------*/
+ * @param problem the problem (supplies the contaminant count)
+ * @param grid the computational grid
+ * @param concentrations per-contaminant concentration vectors (modified)
+ * @param ipatch the domain patch index (0..5: left right front back bottom top)
+ */
 void BCConcenCopyPatch(Problem *problem, Grid *grid,
                        Vector **concentrations,
                        int ipatch)
@@ -204,13 +228,17 @@ void BCConcenCopyPatch(Problem *problem, Grid *grid,
   }
 }
 
-/*-----------------------------------------------------------------------
- * BCConcenPatchExtent
- * Determine extent of subgrid patch
- * - one cell thick in the direction normal to the face
- * - three boundary cell thick in the other two directions
- * - like other ParFlow methods, relies on "left right front back bottom top" ordering of patches in TCL script
- *-----------------------------------------------------------------------*/
+/** @brief Extent of a subgrid's boundary patch: one cell thick normal to the
+ * face, three cells thick in the two tangential directions.
+ *
+ * Like other ParFlow routines, relies on the "left right front back bottom top"
+ * patch ordering.
+ *
+ * @param subgrid the subgrid
+ * @param ix,iy,iz [out] lower corner of the patch region
+ * @param nx,ny,nz [out] size of the patch region
+ * @param ipatch the patch index (0..5)
+ */
 void BCConcenPatchExtent(Subgrid *subgrid, int *ix, int *iy, int *iz, int *nx, int *ny, int *nz, int ipatch)
 {
   *ix = (ipatch > 1) ? SubgridIX(subgrid) - 3 : (ipatch == 0) ? SubgridIX(subgrid) : SubgridIX(subgrid) + SubgridNX(subgrid) - 1;
@@ -222,12 +250,16 @@ void BCConcenPatchExtent(Subgrid *subgrid, int *ix, int *iy, int *iz, int *nx, i
   *nz = (ipatch > 3) ? 1 : SubgridNZ(subgrid) + 6;
 }
 
-/*--------------------------------------------------------------------------
- * BCConcenCopyAdjacent
- * copy concen of adjacent interior cell into 3 ghost boundary layers
+/** @brief Fill the three concentration ghost layers on every domain patch by
+ * copying the adjacent interior cell.
  *
- * Alternative access to BCConcen routines when not built with Alquimia
- *--------------------------------------------------------------------------*/
+ * The transport-side boundary fill, used on the chemistry-off path as well as
+ * by the chemistry path before a reaction step.
+ *
+ * @param problem the problem
+ * @param grid the computational grid
+ * @param concentrations per-contaminant concentration vectors (modified)
+ */
 void BCConcenCopyAdjacent(Problem *problem, Grid *grid,
                           Vector **concentrations)
 {
@@ -251,10 +283,12 @@ void BCConcenCopyAdjacent(Problem *problem, Grid *grid,
   }
 }
 
-/*--------------------------------------------------------------------------
- * BoundaryCell
- * return 1 if subgrid touches current patch, 0 otherwise
- *--------------------------------------------------------------------------*/
+/** @brief Whether cell (i,j,k) lies on the background boundary face for a patch.
+ *
+ * @param ipatch the patch index (0..5)
+ * @param i,j,k the cell indices
+ * @return 1 if the cell is on the patch's boundary face, 0 otherwise
+ */
 int BoundaryCell(int ipatch, int i, int j, int k)
 {
   if ((ipatch < 2 && (i == BackgroundX(GlobalsBackground) || i ==

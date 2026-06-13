@@ -40,6 +40,17 @@
 #include "alquimia/alquimia_memory.h"
 
 
+/** @brief Process the named geochemical initial conditions through the engine
+ * and assign them to each cell per the GeochemCondition geometry mapping,
+ * setting the initial per-cell Alquimia state.
+ *
+ * @param alquimia_data the chemistry data container (per-cell initial states)
+ * @param grid the computational grid
+ * @param problem_data the problem data (the geochemical-condition field)
+ * @param num_ic_conds the number of named initial geochemical conditions
+ * @param ic_cond_na the names of those conditions (from the engine input deck)
+ * @param saturation initial cell water saturation
+ */
 void ProcessGeochemICs(AlquimiaDataPF *alquimia_data, Grid *grid, ProblemData *problem_data, int num_ic_conds, NameArray ic_cond_na, Vector * saturation)
 {
   double water_density = 998.0; // density of water in kg/m**3

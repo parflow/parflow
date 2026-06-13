@@ -102,9 +102,22 @@ typedef struct {
   PFModule *bc_concentration;
 } InstanceXtra;
 
-/*--------------------------------------------------------------------------
- * InitializeChemistry
- *--------------------------------------------------------------------------*/
+/** @brief Establish the initial geochemical state of the domain.
+ *
+ * Processes the named geochemical conditions onto their geometries, populates
+ * each cell's Alquimia state and the initial mobile concentrations, and writes
+ * the initial chemistry output if requested. Called once before time stepping.
+ *
+ * @param problem_data the problem data (geometries, porosity, ...)
+ * @param alquimia_data the per-cell Alquimia state/properties/aux for this rank
+ * @param concentrations per-contaminant mobile concentration vectors (filled)
+ * @param saturation initial cell water saturation
+ * @param any_file_dumped [in,out] set when any output file is written
+ * @param dump_files whether initial output should be written
+ * @param t the initial simulation time
+ * @param file_number the dump index used in output file names
+ * @param file_prefix the run output file prefix
+ */
 #ifdef HAVE_ALQUIMIA
 void InitializeChemistry(ProblemData *problem_data, AlquimiaDataPF *alquimia_data, Vector **concentrations, Vector *saturation, int *any_file_dumped, int dump_files, double t, int file_number, char* file_prefix)
 {

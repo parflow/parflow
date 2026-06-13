@@ -54,10 +54,13 @@ typedef struct {
 } Type1;                      /* .pfb file */
 
 
-/*--------------------------------------------------------------------------
- * GeochemCond
- *--------------------------------------------------------------------------*/
-
+/** @brief Fill the geochemical-condition index field: map each named initial
+ * condition onto its geometries (later names overlay earlier ones), so every
+ * cell knows which engine condition initializes it.
+ *
+ * @param problem_data the problem data
+ * @param geochemcond [out] the per-cell geochemical-condition index field
+ */
 void  GeochemCond(ProblemData *problem_data, Vector *geochemcond)
 {
   PFModule      *this_module = ThisPFModule;

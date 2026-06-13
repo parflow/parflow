@@ -41,6 +41,13 @@
 #ifdef HAVE_ALQUIMIA
 #include "alquimia/alquimia_memory.h"
 
+/** @brief Allocate the ParFlow-side chemistry output vectors held in
+ * AlquimiaDataPF (pH, mineral, sorbed, free-ion, rate, ... fields), sized to
+ * the grid.
+ *
+ * @param alquimia_data the chemistry data container to populate
+ * @param grid the computational grid
+ */
 void AllocatePFChemData(AlquimiaDataPF *alquimia_data, Grid *grid)
 {
   int i;
@@ -156,6 +163,13 @@ void AllocatePFChemData(AlquimiaDataPF *alquimia_data, Grid *grid)
 
 
 
+/** @brief Allocate the per-cell Alquimia containers (state, properties,
+ * auxiliary data, aux output) for every active cell on this rank's subgrids.
+ *
+ * @param alquimia_data the chemistry data container to populate
+ * @param grid the computational grid
+ * @param problem_data the problem data (active-cell mask, ...)
+ */
 void AllocateChemCells(AlquimiaDataPF *alquimia_data, Grid *grid, ProblemData *problem_data)
 {
   SubgridArray  *subgrids = GridSubgrids(grid);

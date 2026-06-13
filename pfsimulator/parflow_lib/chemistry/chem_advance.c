@@ -62,9 +62,24 @@ typedef struct {
 } InstanceXtra;
 
 
-/*--------------------------------------------------------------------------
- * AdvanceChemistry
- *--------------------------------------------------------------------------*/
+/** @brief Advance geochemistry one operator-split step over every grid cell.
+ *
+ * Pushes the post-advection concentrations into the engine state, calls the
+ * Alquimia reaction step (ReactionStepOperatorSplit) per cell, copies the
+ * reacted state back into the concentration vectors, and optionally writes the
+ * requested chemistry output fields.
+ *
+ * @param problem_data the problem data (porosity, geometries, ...)
+ * @param alquimia_data the per-cell Alquimia state/properties/aux for this rank
+ * @param concentrations per-contaminant mobile concentration vectors (updated)
+ * @param saturation cell water saturation for this step
+ * @param dt the transport sub-step length
+ * @param t the current simulation time
+ * @param any_file_dumped [in,out] set when any output file is written
+ * @param dump_files whether output is due this step
+ * @param file_number the dump index used in output file names
+ * @param file_prefix the run output file prefix
+ */
 #ifdef HAVE_ALQUIMIA
 void AdvanceChemistry(ProblemData *problem_data, AlquimiaDataPF *alquimia_data, Vector **concentrations, Vector *saturation, double dt, double t, int *any_file_dumped, int dump_files, int file_number, char *file_prefix)
 {

@@ -55,9 +55,12 @@ typedef struct {
 } InstanceXtra;
 
 
-/*--------------------------------------------------------------------------
- * SetChemData
- *--------------------------------------------------------------------------*/
+/** @brief Populate the chemistry-related problem-data fields (e.g. the
+ * geochemical-condition index field) by invoking their sub-modules. The
+ * SetChemData PFModule analogue of SetProblemData for chemistry.
+ *
+ * @param problem_data the problem data to populate
+ */
 #ifdef HAVE_ALQUIMIA
 void          SetChemData(ProblemData *problem_data)
 {

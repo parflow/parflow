@@ -42,6 +42,14 @@
 
 
 
+/** @brief Process the named geochemical boundary conditions through the engine
+ * into Alquimia states, so inflow concentrations can be applied at the
+ * boundary patches (BCConcentration).
+ *
+ * @param alquimia_data the chemistry data container (boundary-condition states)
+ * @param num_bc_conds the number of named boundary geochemical conditions
+ * @param bc_cond_na the names of those conditions (from the engine input deck)
+ */
 void ProcessGeochemBCs(AlquimiaDataPF *alquimia_data, int num_bc_conds, NameArray bc_cond_na)
 {
   char* name;

@@ -40,6 +40,13 @@
 #include "alquimia/alquimia_memory.h"
 
 
+/** @brief Free everything allocated for the chemistry coupling: the per-cell
+ * Alquimia containers and the ParFlow-side output vectors in AlquimiaDataPF.
+ *
+ * @param alquimia_data the chemistry data container to tear down
+ * @param grid the computational grid
+ * @param problem_data the problem data (active-cell mask, ...)
+ */
 void FreeAlquimiaDataPF(AlquimiaDataPF *alquimia_data, Grid *grid, ProblemData *problem_data)
 {
   SubgridArray  *subgrids = GridSubgrids(grid);

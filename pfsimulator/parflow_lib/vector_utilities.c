@@ -2087,11 +2087,17 @@ void PFVLayerCopy(
 } // extern "C"
 #endif
 
-/* react_trans: z_i = min(x_i, y_i); minimum saturation over a subcycle.
- * The branch indexed y with i_x (intent doc bug list); fixed to i_y here --
- * equivalent for identically sized vectors, correct in general. */
+/** @brief Elementwise minimum: z_i = min(x_i, y_i).
+ *
+ * Used to track the minimum saturation over a transport sub-cycle. (Note: the
+ * original branch indexed y with i_x; fixed to i_y here -- equivalent for
+ * identically sized vectors, correct in general.)
+ *
+ * @param x first input vector
+ * @param y second input vector
+ * @param z [out] result vector
+ */
 void PFVMinVector(
-/* Diff : z_i = min(x_i, y_i)  */
                   Vector *x,
                   Vector *y,
                   Vector *z)
@@ -2161,9 +2167,16 @@ void PFVMinVector(
   }
 }
 
-/* react_trans: z_i = 1/(x_i*y_i); builds porsat_inv for transport/chemistry */
+/** @brief Elementwise reciprocal product: z_i = 1 / (x_i * y_i).
+ *
+ * Used by the transport/chemistry coupling to build the inverse
+ * porosity*saturation field (porsat_inv).
+ *
+ * @param x first input vector
+ * @param y second input vector
+ * @param z [out] result vector
+ */
 void PFVInvProd(
-/* Prod : z_i = 1 / (x_i * y_i)   */
                 Vector *x,
                 Vector *y,
                 Vector *z)

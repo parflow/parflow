@@ -38,6 +38,14 @@
 
 #ifdef HAVE_ALQUIMIA
 
+/** @brief Write the enabled chemistry output fields as PFB/Silo for this dump.
+ *
+ * The set of fields written (pH, mineral volume fractions / surface areas /
+ * rates / saturation indices, sorbed and free-ion species, surface-site
+ * densities, CEC, activity coefficients, aqueous rates) is selected by the
+ * Chemistry.Print and WriteSilo flags captured in print_flags. Sets
+ * any_file_dumped when anything is written.
+ */
 void PrintChemistryData(ChemPrintFlags *print_flags, AlquimiaSizes *chem_sizes, AlquimiaProblemMetaData *chem_metadata, double t, int file_number,
                         char* file_prefix, int *any_file_dumped, Vector **concentrations, Vector **total_immobilePF, Vector **mineral_specific_surfacePF, Vector **mineral_volume_fractionsPF,
                         Vector **surface_site_densityPF, Vector **cation_exchange_capacityPF, Vector *pH, Vector **aqueous_kinetic_ratePF, Vector **mineral_saturation_indexPF,
