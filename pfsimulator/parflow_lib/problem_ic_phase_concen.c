@@ -247,7 +247,7 @@ PFModule   *ICPhaseConcenNewPublicXtra(
 
   NameArray type_na;
 
-  if (GlobalsChemistryFlag)
+  if (ProblemChemistryFromInput())
   {
     if (num_contaminants > 0)
     {

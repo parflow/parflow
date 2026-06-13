@@ -456,7 +456,7 @@ void      SolverDiffusion()
         }
       }
 
-      if ((!GlobalsChemistryFlag) && (ProblemNumContaminants(problem) > 0))
+      if (!ProblemChemistry(problem) && (ProblemNumContaminants(problem) > 0))
       {
         BCConcenCopyAdjacent(problem, grid, concentrations);
       }

@@ -645,6 +645,7 @@ void PrintVector(char *filename, Vector *v);
 Problem *NewProblem(int solver);
 void FreeProblem(Problem *problem, int solver);
 ProblemData *NewProblemData(Grid *grid, Grid *grid2d);
+int ProblemChemistryFromInput(void);
 void FreeProblemData(ProblemData *problem_data);
 
 /* problem_bc.c */

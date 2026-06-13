@@ -424,7 +424,7 @@ PFModule  *RetardationNewPublicXtra(
 
 
 
-  if (GlobalsChemistryFlag)
+  if (ProblemChemistryFromInput())
   {
     if (num_contaminants > 0)
     {

@@ -1514,14 +1514,14 @@ SetupRichards(PFModule * this_module)
         FinalizeVectorUpdate(handle);
       }
 
-      if (!GlobalsChemistryFlag)
+      if (!ProblemChemistry(problem))
       {
         BCConcenCopyAdjacent(problem, grid, instance_xtra->concentrations);
       }
     }
 
 #ifdef HAVE_ALQUIMIA
-    if (GlobalsChemistryFlag)
+    if (ProblemChemistry(problem))
     {
       if (!amps_Rank(amps_CommWorld))
       {
@@ -3905,7 +3905,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         }
 
 #ifdef HAVE_ALQUIMIA
-        if (GlobalsChemistryFlag)
+        if (ProblemChemistry(problem))
         {
           PFModuleInvokeType(AdvanceChemistryInvoke,
                              instance_xtra->advance_chem_instance,
@@ -5165,7 +5165,7 @@ TeardownRichards(PFModule * this_module)
   FinalizeMetadata(this_module, GlobalsOutFileName);
 
 #ifdef HAVE_ALQUIMIA
-  if (GlobalsChemistryFlag)
+  if (ProblemChemistry(problem))
   {
     Grid *chem_grid = VectorGrid(instance_xtra->saturation);
     FreeAlquimiaDataPF(instance_xtra->alquimia_data, chem_grid, problem_data);
@@ -5579,7 +5579,7 @@ SolverRichardsInitInstanceXtra()
                                NULL));
 
 #ifdef HAVE_ALQUIMIA
-    if (GlobalsChemistryFlag)
+    if (ProblemChemistry(problem))
     {
       (instance_xtra->init_chem_instance) =
         PFModuleNewInstanceType(InitializeChemistryInitInstanceXtraType,
@@ -5748,7 +5748,8 @@ SolverRichardsFreeInstanceXtra()
     PFModuleFreeInstance((instance_xtra->nonlin_solver));
 
 #ifdef HAVE_ALQUIMIA
-    if (GlobalsChemistryFlag)
+    /* instance pointers are NULL (ctalloc) when chemistry is off */
+    if (instance_xtra->init_chem_instance)
     {
       PFModuleFreeInstance((instance_xtra->init_chem_instance));
       PFModuleFreeInstance((instance_xtra->advance_chem_instance));
@@ -6636,7 +6637,7 @@ SolverRichardsNewPublicXtra(char *name)
   public_xtra->print_satur = switch_value;
 
   sprintf(key, "%s.PrintConcentration", name);
-  switch_name = GetStringDefault(key, "True");
+  switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_concen = switch_value;
 
@@ -7325,7 +7326,7 @@ SolverRichardsNewPublicXtra(char *name)
   public_xtra->evap_trans_filename = GetStringDefault(key, "");
 
 #ifdef HAVE_ALQUIMIA
-  if (GlobalsChemistryFlag)
+  if (ProblemChemistry(public_xtra->problem))
   {
     (public_xtra->init_chem) = PFModuleNewModule(InitializeChemistry, ());
     (public_xtra->advance_chem) = PFModuleNewModule(AdvanceChemistry, ());
@@ -7370,6 +7371,14 @@ SolverRichardsFreePublicXtra()
 
   if (public_xtra)
   {
+#ifdef HAVE_ALQUIMIA
+    if (ProblemChemistry(public_xtra->problem))
+    {
+      PFModuleFreeModule(public_xtra->init_chem);
+      PFModuleFreeModule(public_xtra->advance_chem);
+    }
+#endif
+
     FreeProblem(public_xtra->problem, RichardsSolve);
 
     PFModuleFreeModule(public_xtra->set_problem_data);
@@ -7377,13 +7386,6 @@ SolverRichardsFreePublicXtra()
     PFModuleFreeModule(public_xtra->permeability_face);
     PFModuleFreeModule(public_xtra->nonlin_solver);
 
-#ifdef HAVE_ALQUIMIA
-    if (GlobalsChemistryFlag)
-    {
-      PFModuleFreeModule(public_xtra->init_chem);
-      PFModuleFreeModule(public_xtra->advance_chem);
-    }
-#endif
     tfree(public_xtra);
   }
 }

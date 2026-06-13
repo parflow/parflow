@@ -121,6 +121,13 @@ typedef struct {
   ProblemData       *problem_data;
 
   double            *temp_data;
+
+#ifdef HAVE_ALQUIMIA
+  /** Chemistry module instances and engine state (react_trans). */
+  PFModule *init_chem;
+  PFModule *advance_chem;
+  AlquimiaDataPF *alquimia_data;
+#endif
 } InstanceXtra;
 
 
@@ -204,6 +211,11 @@ void      SolverImpes()
   Vector       *trans_x_velocity = NULL, *trans_y_velocity = NULL, *trans_z_velocity = NULL;
   Vector       *old_porsat_rt = NULL;
   Vector       *new_porsat_rt_inv = NULL;
+
+#ifdef HAVE_ALQUIMIA
+  PFModule *init_chem = (instance_xtra->init_chem);
+  PFModule *advance_chem = (instance_xtra->advance_chem);
+#endif
 
   Matrix       *A;
   Vector       *f;
@@ -472,7 +484,7 @@ void      SolverImpes()
           }
         }
 
-        if (!GlobalsChemistryFlag)
+        if (!ProblemChemistry(problem))
         {
           BCConcenCopyAdjacent(problem, grid, concentrations);
         }
@@ -532,6 +544,27 @@ void      SolverImpes()
       /*****************************************************************/
 
       any_file_dumped = 0;
+
+      /*****************************************************************/
+      /*    Initialize the geochemical system (react_trans, I15)       */
+      /*****************************************************************/
+#ifdef HAVE_ALQUIMIA
+      if (ProblemChemistry(problem))
+      {
+        if (!amps_Rank(amps_CommWorld))
+        {
+          amps_Printf("Initializing geochemical system \n");
+        }
+
+        instance_xtra->alquimia_data = ctalloc(AlquimiaDataPF, 1);
+
+        PFModuleInvokeType(InitializeChemistryInvoke, init_chem,
+                           (problem_data, instance_xtra->alquimia_data,
+                            concentrations, saturations[0],
+                            &any_file_dumped, dump_files, t,
+                            file_number, file_prefix));
+      }
+#endif
 
       /*----------------------------------------------------------------
        * Print out the initial saturations?
@@ -1293,31 +1326,21 @@ void      SolverImpes()
               indx++;
             }
           }
-
-          /* put call to CRUNCHFLOW here @RMM */
-          /* int is; */
-          /* ForSubgridI(is, GridSubgrids(grid)) */
-          /* { */
-          /*   double dx, dy, dz; */
-          /*   int nx, ny, nz, nx_f, ny_f, nz_f, nz_rz, ip, ix, iy, iz; */
-          /*   int x, y, z; */
-
-          /*   // @RMM - dummy variables for calling CRUNCHFLOW */
-          /*   nx = SubgridNX(subgrid); */
-          /*   ny = SubgridNY(subgrid); */
-          /*   nz = SubgridNZ(subgrid); */
-
-          /*   ix = SubgridIX(subgrid); */
-          /*   iy = SubgridIY(subgrid); */
-          /*   iz = SubgridIZ(subgrid); */
-
-          /*   dx = SubgridDX(subgrid); */
-          /*   dy = SubgridDY(subgrid); */
-          /*   dz = SubgridDZ(subgrid); */
-
-          /*   CALL_CRUNCHFLOW(); */
-          /* } */
         }
+
+        /*****************************************************************/
+        /*     Advance the geochemical system (react_trans, I24)         */
+        /*****************************************************************/
+#ifdef HAVE_ALQUIMIA
+        if (ProblemChemistry(problem))
+        {
+          PFModuleInvokeType(AdvanceChemistryInvoke, advance_chem,
+                             (problem_data, instance_xtra->alquimia_data,
+                              concentrations, saturations[0], dt, t,
+                              &any_file_dumped, dump_files,
+                              file_number - 1, file_prefix));
+        }
+#endif
 
         /* Print the concentration values at this time-step? */
         if (dump_files)
@@ -1592,6 +1615,13 @@ void      SolverImpes()
   FreeVector(old_porsat_rt);
   FreeVector(new_porsat_rt_inv);
 
+#ifdef HAVE_ALQUIMIA
+  if (ProblemChemistry(problem))
+  {
+    FreeAlquimiaDataPF(instance_xtra->alquimia_data, grid, problem_data);
+  }
+#endif
+
 
   /*-------------------------------------------------------------------
    * Free temp vectors
@@ -1825,6 +1855,18 @@ PFModule *SolverImpesInitInstanceXtra()
     (instance_xtra->retardation) =
       PFModuleNewInstanceType(RetardationInitInstanceXtraInvoke,
                               ProblemRetardation(problem), (grid, x_grid, y_grid, z_grid, NULL));
+
+#ifdef HAVE_ALQUIMIA
+    if (ProblemChemistry(problem))
+    {
+      (instance_xtra->init_chem) =
+        PFModuleNewInstanceType(InitializeChemistryInitInstanceXtraType,
+                                (public_xtra->init_chem), (problem, grid));
+      (instance_xtra->advance_chem) =
+        PFModuleNewInstanceType(AdvanceChemistryInitInstanceXtraType,
+                                (public_xtra->advance_chem), (problem, grid));
+    }
+#endif
     (instance_xtra->phase_mobility) =
       PFModuleNewInstance(ProblemPhaseMobility(problem), ());
     (instance_xtra->ic_phase_concen) =
@@ -1881,6 +1923,16 @@ PFModule *SolverImpesInitInstanceXtra()
                               (problem, grid, NULL, NULL));
     PFModuleReNewInstanceType(RetardationInitInstanceXtraInvoke,
                               (instance_xtra->retardation), (grid, x_grid, y_grid, z_grid, NULL));
+
+#ifdef HAVE_ALQUIMIA
+    if (ProblemChemistry(problem))
+    {
+      PFModuleReNewInstanceType(InitializeChemistryInitInstanceXtraType,
+                                (instance_xtra->init_chem), (problem, grid));
+      PFModuleReNewInstanceType(AdvanceChemistryInitInstanceXtraType,
+                                (instance_xtra->advance_chem), (problem, grid));
+    }
+#endif
     PFModuleReNewInstance((instance_xtra->phase_mobility), ());
     PFModuleReNewInstance((instance_xtra->ic_phase_concen), ());
     PFModuleReNewInstance((instance_xtra->phase_density), ());
@@ -2048,6 +2100,14 @@ void  SolverImpesFreeInstanceXtra()
 
     PFModuleFreeInstance((instance_xtra->phase_density));
 
+#ifdef HAVE_ALQUIMIA
+    if (instance_xtra->init_chem)
+    {
+      PFModuleFreeInstance(instance_xtra->init_chem);
+      PFModuleFreeInstance(instance_xtra->advance_chem);
+    }
+#endif
+
     if (is_multiphase)
     {
       PFModuleFreeInstance((instance_xtra->constitutive));
@@ -2173,17 +2233,18 @@ PFModule   *SolverImpesNewPublicXtra(char *name)
 
   (public_xtra->advect_satur) = PFModuleNewModule(SatGodunov, ());
   (public_xtra->advect_concen) = PFModuleNewModule(Godunov, ());
+  (public_xtra->set_problem_data) = PFModuleNewModule(SetProblemData, ());
+
+  (public_xtra->problem) = NewProblem(ImpesSolve);
+
 #ifdef HAVE_ALQUIMIA
-  if (GlobalsChemistryFlag)
+  if (ProblemChemistry(public_xtra->problem))
   {
     (public_xtra->init_chem) = PFModuleNewModule(InitializeChemistry, ());
     (public_xtra->advance_chem) = PFModuleNewModule(AdvanceChemistry, ());
   }
 #endif
 
-  (public_xtra->set_problem_data) = PFModuleNewModule(SetProblemData, ());
-
-  (public_xtra->problem) = NewProblem(ImpesSolve);
 
   sprintf(key, "%s.SadvectOrder", name);
   public_xtra->sadvect_order = GetIntDefault(key, 2);
@@ -2226,7 +2287,7 @@ PFModule   *SolverImpesNewPublicXtra(char *name)
   public_xtra->print_satur = switch_value;
 
   sprintf(key, "%s.PrintConcentration", name);
-  switch_name = GetStringDefault(key, "True");
+  switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_concen = switch_value;
 
@@ -2350,6 +2411,14 @@ void   SolverImpesFreePublicXtra()
 
   if (public_xtra)
   {
+#ifdef HAVE_ALQUIMIA
+    if (ProblemChemistry(public_xtra->problem))
+    {
+      PFModuleFreeModule(public_xtra->init_chem);
+      PFModuleFreeModule(public_xtra->advance_chem);
+    }
+#endif
+
     FreeProblem(public_xtra->problem, ImpesSolve);
 
     PFModuleFreeModule(public_xtra->diag_scale);
@@ -2363,13 +2432,6 @@ void   SolverImpesFreePublicXtra()
     PFModuleFreeModule(public_xtra->permeability_face);
     PFModuleFreeModule(public_xtra->discretize_pressure);
 
-#ifdef HAVE_ALQUIMIA
-    if (GlobalsChemistryFlag)
-    {
-      PFModuleFreeModule(public_xtra->init_chem);
-      PFModuleFreeModule(public_xtra->advance_chem);
-    }
-#endif
 
     tfree(public_xtra);
   }

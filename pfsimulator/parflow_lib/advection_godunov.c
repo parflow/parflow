@@ -1081,7 +1081,7 @@ void     Godunov(
   /*-----------------------------------------------------------------------
    * Informational computation and printing.
    *-----------------------------------------------------------------------*/
-  if (!(GlobalsChemistryFlag))
+  if (!ProblemChemistry(instance_xtra->problem))
   {
     /**
      * Mass-accounting report (react_trans 4b-2): the total concentration
