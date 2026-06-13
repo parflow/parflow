@@ -653,10 +653,11 @@ than reference solutions from codes that solve advection together with
 diffusion.
 
 **Verification.** The coupling reproduces the published 1D benchmark profiles of
-Molins et al. (2025, *Geoscientific Model Development* 18:3241) and agrees with
-independent PFLOTRAN reference solutions from the Amanzi geochemistry
-benchmarking suite across the tracer, calcite-dissolution, tritium-decay,
-ion-exchange, surface-complexation, and Kd-isotherm test cases.
+:cite:t:`Molins2025` and agrees with independent PFLOTRAN reference solutions
+from the Amanzi geochemistry benchmarking suite across the tracer,
+calcite-dissolution, tritium-decay, ion-exchange, surface-complexation, and
+Kd-isotherm test cases. The ParFlow–CrunchFlow coupling underlying this
+capability is described in :cite:t:`Beisman2015`.
 
 .. _Notation and Units:
 

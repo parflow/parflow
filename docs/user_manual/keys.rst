@@ -3911,6 +3911,224 @@ contains the initial condition values if the type was set to
 
       PhaseConcen.water.tce.FileName "initial_concen_tce.pfb"
 
+.. _Reactive Transport Keys:
+
+Reactive Transport (Geochemistry)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These keys configure the reactive-transport coupling, in which ParFlow's solute
+transport is coupled to a geochemical engine (CrunchFlow or PFLOTRAN) through
+the Alquimia interface using explicit operator splitting; see
+:ref:`Reactive Transport` for the model description and
+:cite:t:`Molins2025`. They are only consulted by a ParFlow built with
+``PARFLOW_ENABLE_ALQUIMIA=ON``; when chemistry is off they are ignored. The
+solute *advection* scheme itself is controlled by the separate
+**Solver.AdvectOrder**, **Solver.AdvectTransverse**,
+**Solver.AdvectEnforceMinMax**, and **Solver.CFL** keys (see
+:ref:`Code Parameters`).
+
+*string* **Solver.Chemistry** None This key selects the reactive-transport
+geochemistry coupling. **None** (the default) runs ParFlow with no chemistry.
+**Alquimia** couples solute transport to a geochemical engine through the
+Alquimia interface using explicit operator splitting.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.Chemistry "Alquimia"          ## TCL syntax
+
+      <runname>.Solver.Chemistry = "Alquimia"    ## Python syntax
+
+*string* **Chemistry.Engine** CrunchFlow The geochemistry engine that Alquimia
+drives. **CrunchFlow** and **PFLOTRAN** are the supported open-source engines;
+the chosen engine must be compiled into the Alquimia library that ParFlow is
+linked against. The ParFlow–CrunchFlow coupling this is based on is described in
+:cite:t:`Beisman2015`.
+
+.. container:: list
+
+   ::
+
+      pfset Chemistry.Engine "CrunchFlow"          ## TCL syntax
+
+      <runname>.Chemistry.Engine = "CrunchFlow"    ## Python syntax
+
+*string* **Chemistry.InputFile** no default Path to the native engine input
+deck (a CrunchFlow ``.in`` or PFLOTRAN input file) describing the geochemical
+system: primary and secondary species, minerals, and the named geochemical
+*conditions* referenced by **GeochemCondition.Names** and
+**BCConcentration.GeochemCondition.Names**. ParFlow passes this file and its
+thermodynamic database to the engine unchanged.
+
+.. container:: list
+
+   ::
+
+      pfset Chemistry.InputFile "1d-calcite-crunch.in"          ## TCL syntax
+
+      <runname>.Chemistry.InputFile = "1d-calcite-crunch.in"    ## Python syntax
+
+*string* **Chemistry.ParFlowTimeUnits** seconds The time unit in which
+ParFlow's timestep is expressed, used to convert the transport sub-step to the
+seconds the geochemical engine expects. Many spellings of each unit are accepted
+(e.g. ``s``, ``sec``, ``seconds``; ``m``, ``min``, ``minutes``; ``h``, ``hr``,
+``hours``; ``d``, ``days``; ``y``, ``yr``, ``years``).
+
+.. container:: list
+
+   ::
+
+      pfset Chemistry.ParFlowTimeUnits "years"          ## TCL syntax
+
+      <runname>.Chemistry.ParFlowTimeUnits = "years"    ## Python syntax
+
+*string* **Chemistry.RestartFromFile** False When **True**, the geochemical
+state is initialized from a chemistry checkpoint file
+(**Chemistry.RestartFileName**) rather than from the geochemical conditions.
+
+*string* **Chemistry.RestartFileName** no default Name of the chemistry
+checkpoint file to restart from when **Chemistry.RestartFromFile** is **True**.
+Distribute it across the run topology with the ``pfdistchem`` tool first.
+
+*integer* **Chemistry.RestartFileWriteInterval** -1 Write a chemistry
+checkpoint file every this many dump intervals. A value of ``-1`` disables
+checkpoint writing.
+
+.. container:: list
+
+   ::
+
+      <runname>.Chemistry.RestartFromFile = True
+      <runname>.Chemistry.RestartFileName = "calcite.out.chemchkpt.00010"
+
+The remaining **Chemistry.** keys are boolean output switches. Each writes one
+chemistry field at every dump interval, either as a ParFlow binary file
+(``Chemistry.Print``\ *Field*) or as a Silo file
+(``Chemistry.WriteSilo``\ *Field*); all default to **False**.
+**Chemistry.PrintAll** and **Chemistry.WriteSiloAll** are master switches that
+enable every field of the corresponding kind. The available *Field* names are:
+
+.. container:: list
+
+   - **PrimaryMobile** — primary-species total mobile concentrations
+   - **PrimarySorbed** — primary-species total sorbed concentrations
+   - **MineralVolfx** — mineral volume fractions
+   - **MineralSurfArea** — mineral specific surface areas
+   - **MineralSI** — mineral saturation indices
+   - **MineralRate** — mineral reaction rates
+   - **SurfSiteDens** — surface site densities
+   - **CEC** — cation exchange capacities
+   - **pH** — pH
+   - **AqueousRate** — aqueous kinetic reaction rates
+   - **PrimaryFreeIon** / **SecondaryFreeIon** — primary/secondary free-ion concentrations
+   - **PrimaryActivity** / **SecondaryActivity** — primary/secondary activity coefficients
+
+.. container:: list
+
+   ::
+
+      <runname>.Chemistry.PrintPrimaryMobile = True
+      <runname>.Chemistry.PrintpH = True
+
+*string* **GeochemCondition.Type** Constant How geochemical conditions are
+assigned to geometries to set the initial chemical state. **Constant** assigns
+one named condition per geometry, constant in time.
+
+*string* **GeochemCondition.Names** no default Space-separated list of
+geochemical condition names used as initial conditions. Each must correspond to
+a Condition block in the engine input deck.
+
+*string* **GeochemCondition.GeomNames** no default Space-separated list of
+geometry names whose cells are initialized from a geochemical condition. Where
+geometries overlap, geometries listed later take precedence.
+
+*string* **GeochemCondition.Geom.\ *geom_name*.Value** no default The
+geochemical condition name (from **GeochemCondition.Names**) used to initialize
+the cells of the named geometry, *geom_name*.
+
+.. container:: list
+
+   ::
+
+      <runname>.GeochemCondition.Type = "Constant"
+      <runname>.GeochemCondition.Names = "initial"
+      <runname>.GeochemCondition.GeomNames = "domain"
+      <runname>.GeochemCondition.Geom.domain.Value = "initial"
+
+*string* **BCConcentration.PatchNames** no default Space-separated list of
+boundary patches on which a geochemical condition is imposed as the inflow
+concentration boundary.
+
+*string* **BCConcentration.GeochemCondition.Names** no default Space-separated
+list of geochemical condition names usable as concentration boundary
+conditions. Each must correspond to a Condition block in the engine input deck.
+
+*string* **Patch.\ *patch_name*.BCConcentration.Type** Constant How the solute
+(geochemical) boundary condition is applied on the named patch. **Constant**
+imposes a single named geochemical condition, constant in time.
+
+*string* **Patch.\ *patch_name*.BCConcentration.Value** no default The
+geochemical condition name (from **BCConcentration.GeochemCondition.Names**)
+imposed as the inflow concentration on the named patch.
+
+.. container:: list
+
+   ::
+
+      <runname>.BCConcentration.PatchNames = "left"
+      <runname>.BCConcentration.GeochemCondition.Names = "west"
+      <runname>.Patch.left.BCConcentration.Type = "Constant"
+      <runname>.Patch.left.BCConcentration.Value = "west"
+
+.. _Reactive Transport Example:
+
+Annotated example
+^^^^^^^^^^^^^^^^^^
+
+The block below is the chemistry portion of a 1D calcite-dissolution run (the
+flow, grid, and boundary-pressure setup is the same as an ordinary transport
+run and is omitted). A solution undersaturated with calcite, defined by the
+``west`` condition in the CrunchFlow deck, is injected at the left boundary into
+a domain initialized with the ``initial`` condition; calcite dissolves at the
+advancing front. The two named conditions (``initial``, ``west``) are defined as
+``Condition`` blocks in ``1d-calcite-crunch.in``.
+
+.. container:: list
+
+   ::
+
+      # --- enable reactive transport and name the engine + deck ---
+      calcite.Solver.Chemistry      = "Alquimia"        # None (default) = no chemistry
+      calcite.Chemistry.Engine      = "CrunchFlow"      # engine compiled into Alquimia
+      calcite.Chemistry.InputFile   = "1d-calcite-crunch.in"   # native CrunchFlow deck
+      calcite.Chemistry.ParFlowTimeUnits = "years"      # ParFlow dt is in years here
+
+      # --- initial chemical state: map deck conditions onto geometries ---
+      calcite.GeochemCondition.Type             = "Constant"
+      calcite.GeochemCondition.Names            = "initial"      # a Condition in the deck
+      calcite.GeochemCondition.GeomNames        = "concen_region"
+      calcite.GeochemCondition.Geom.concen_region.Value = "initial"
+
+      # --- inflow (Dirichlet) solute boundary on the left patch ---
+      calcite.BCConcentration.GeochemCondition.Names = "west"    # a Condition in the deck
+      calcite.BCConcentration.PatchNames             = "left"
+      calcite.Patch.left.BCConcentration.Type        = "Constant"
+      calcite.Patch.left.BCConcentration.Value       = "west"
+
+      # --- solute advection scheme (not chemistry-specific; see Code Parameters) ---
+      calcite.Solver.AdvectOrder         = 2      # second-order Godunov
+      calcite.Solver.AdvectEnforceMinMax = True   # non-oscillatory limiter
+      calcite.Solver.CFL                 = 0.6
+
+      # --- choose which chemistry fields to write each dump interval ---
+      calcite.Chemistry.PrintpH             = True
+      calcite.Chemistry.PrintPrimaryMobile  = True   # total mobile concentrations
+      calcite.Chemistry.PrintMineralVolfx   = True   # calcite volume fraction
+
+This run is one of the verification cases for the coupling: its calcite, pH, and
+Ca profiles reproduce the published benchmark of :cite:t:`Molins2025`.
+
 .. _ExactSolution:
 
 Known Exact Solution
@@ -4416,6 +4634,31 @@ Godunov method.
       pfset Solver.AdvectOrder 2          ## TCL syntax
 
       <runname>.Solver.AdvectOrder = 2    ## Python syntax
+
+*string* **Solver.AdvectTransverse** False This key enables the transverse
+(corner-coupling) correction in the second-order Godunov solute advection
+scheme. It has no effect when **Solver.AdvectOrder** is 1.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.AdvectTransverse True          ## TCL syntax
+
+      <runname>.Solver.AdvectTransverse = True    ## Python syntax
+
+*string* **Solver.AdvectEnforceMinMax** False This key enables a min/max
+limiter on the advected concentration field, clamping each cell to the range
+of its neighborhood to suppress over- and undershoots in the second-order
+Godunov solute advection scheme.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.AdvectEnforceMinMax True          ## TCL syntax
+
+      <runname>.Solver.AdvectEnforceMinMax = True    ## Python syntax
 
 *double* **Solver.CFL** 0.7 This key gives the value of the weight put
 on the computed CFL limit before computing a global timestep value.
