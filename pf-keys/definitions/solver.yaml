@@ -52,6 +52,23 @@ Solver:
         min_value: 1
         max_value: 2
 
+  AdvectTransverse:
+    help: >
+      [Type: boolean] This key enables the transverse (corner-coupling) correction in the second-order
+      Godunov solute advection scheme. It has no effect when Solver.AdvectOrder is 1.
+    default: False
+    domains:
+      BoolDomain:
+
+  AdvectEnforceMinMax:
+    help: >
+      [Type: boolean] This key enables a min/max limiter on the advected concentration field, clamping
+      each cell to the range of its neighbourhood to suppress over- and undershoots in the second-order
+      Godunov solute advection scheme.
+    default: False
+    domains:
+      BoolDomain:
+
   # missing from manual
   BetaFluid:
     help: >
@@ -96,6 +113,19 @@ Solver:
       DoubleValue:
 
   # CLM settings
+
+  Chemistry:
+    help: >
+      [Type: string] This key selects the reactive-transport geochemistry coupling. "None" (the default)
+      runs ParFlow with no chemistry. "Alquimia" couples solute transport to a geochemical engine
+      (CrunchFlow or PFLOTRAN) through the Alquimia interface using explicit operator splitting; this
+      requires a ParFlow built with PARFLOW_ENABLE_ALQUIMIA=ON.
+    default: None
+    domains:
+      EnumDomain:
+        enum_list:
+          - None
+          - Alquimia
   CLM:
     __doc__: >
       Setting CLM parameters
