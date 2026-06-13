@@ -599,6 +599,65 @@ into :eq:`eqn-transport` the following equation results
    & ~=~ \nonumber \\
    -~(\phi+ (1 - \phi) \rho_{s}K_{d;j}) \lambda_jc_{i,j} & ~+~ \sum_{k}^{n_{I}} \gamma^{I;i}_{k}\chi_{\Omega^{I}_{k}} \left ( c_{i,j}- {\bar c}^{k}_{ij}\right ) ~-~ \sum_{k}^{n_{E}} \gamma^{E;i}_{k}\chi_{\Omega^{E}_{k}} c_{i,j}\end{aligned}
 
+.. _Reactive Transport:
+
+Reactive Transport (Geochemistry)
+---------------------------------
+
+ParFlow can couple solute transport to a multicomponent geochemical engine to
+simulate reactive transport. The coupling is built on the Alquimia interface,
+which provides a uniform API to established geochemistry engines; ParFlow
+currently drives CrunchFlow (and, through the same interface, PFLOTRAN).
+Reactive transport is enabled with the key ``Solver.Chemistry`` (set to
+``Alquimia``; the default ``None`` runs ordinary, non-reactive transport) and
+requires a ParFlow built with ``PARFLOW_ENABLE_ALQUIMIA=ON``. The chemistry
+solve runs on the CPU.
+
+**Operator splitting.** Transport and chemistry are coupled by explicit
+operator splitting. Within each transport step ParFlow first advects the mobile
+solute concentrations using the advection term of the transport equation
+:eq:`eqn-transport` (advection only -- the reaction, adsorption, and degradation
+terms are not applied in this step). The resulting per-cell concentrations are
+then passed to the geochemistry engine, which advances the full geochemical
+system over the same time interval for each grid cell independently. The reacted
+concentrations are copied back, and the step is complete. Because the split is
+explicit, the transport sub-step is limited by the advective CFL condition
+(``Solver.CFL``); a flow step that exceeds this limit is automatically divided
+into the necessary number of equal reactive-transport sub-steps.
+
+**Specifying the geochemistry.** The geochemical system -- primary and secondary
+species, minerals, sorption sites, kinetic rate laws, and the named geochemical
+*conditions* -- is described in a native engine input file (a CrunchFlow or
+PFLOTRAN input deck) and its thermodynamic database. ParFlow does not re-specify
+the chemistry; it names these files with ``Chemistry.Engine`` and
+``Chemistry.InputFile`` and passes them to the engine. Named conditions from the
+deck are mapped onto the domain to set the initial geochemical state
+(``GeochemCondition.*``) and are applied as solute boundary conditions on inflow
+patches (``BCConcentration.*`` and ``Patch.{patch_name}.BCConcentration.*``).
+The chemistry fields written to output -- pH, mineral volume fractions, specific
+surface areas and reaction rates, primary and secondary species concentrations,
+sorbed concentrations, surface-site densities, cation-exchange capacities, and
+activity coefficients -- are selected with the ``Chemistry.Print*`` and
+``Chemistry.WriteSilo*`` keys, and the geochemical state can be checkpointed and
+restarted with ``Chemistry.RestartFromFile`` and the related restart keys. All
+of these keys are described in the key reference (the ``Chemistry.*``,
+``GeochemCondition.*``, and ``BCConcentration.*`` key families).
+
+**Scope and limitations.** Transport and the per-cell chemistry solve run on the
+CPU; the coupling is not available in the GPU (CUDA/Kokkos) build. ParFlow's
+solute advection is advection-only: it does not apply a molecular-diffusion or
+hydrodynamic-dispersion term, even when the engine input deck specifies one (the
+engine's transport block is unused, since ParFlow performs the transport). As a
+result ParFlow's solute fronts are sharper -- less numerically dispersive --
+than reference solutions from codes that solve advection together with
+diffusion.
+
+**Verification.** The coupling reproduces the published 1D benchmark profiles of
+Molins et al. (2025, *Geoscientific Model Development* 18:3241) and agrees with
+independent PFLOTRAN reference solutions from the Amanzi geochemistry
+benchmarking suite across the tracer, calcite-dissolution, tritium-decay,
+ion-exchange, surface-complexation, and Kd-isotherm test cases.
+
 .. _Notation and Units:
 
 Notation and Units
