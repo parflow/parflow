@@ -4116,9 +4116,9 @@ advancing front. The two named conditions (``initial``, ``west``) are defined as
       calcite.Patch.left.BCConcentration.Type        = "Constant"
       calcite.Patch.left.BCConcentration.Value       = "west"
 
-      # --- solute advection scheme (not chemistry-specific; see Code Parameters) ---
-      calcite.Solver.AdvectOrder         = 2      # second-order Godunov
-      calcite.Solver.AdvectEnforceMinMax = True   # non-oscillatory limiter
+      # --- solute advection scheme (FCT; not chemistry-specific, see Code Parameters) ---
+      calcite.Solver.AdvectOrder         = 2      # high-order anti-diffusive FCT correction
+      calcite.Solver.AdvectEnforceMinMax = True   # extra neighborhood min/max clamp
       calcite.Solver.CFL                 = 0.6
 
       # --- choose which chemistry fields to write each dump interval ---
@@ -4622,10 +4622,18 @@ Godunov method.
 
       <runname>.Solver.SadvectOrder = 1   ## Python syntax
 
-*integer* **Solver.AdvectOrder** 2 This key controls the order of the
-explicit method used in advancing the concentrations. This value can be
-either 1 for a standard upwind first order or 2 for a second order
-Godunov method.
+*integer* **Solver.AdvectOrder** 1 This key controls the order of the
+explicit, operator-split flux-corrected-transport (FCT) scheme used to advance
+the solute concentrations (see :ref:`Transport Equations`). A value of 1 uses
+the first-order, monotone upwind fluxes only; a value of 2 adds the high-order,
+anti-diffusive (Lax--Wendroff/monotonized-central) flux correction, limited by
+the multidimensional Zalesak FCT flux limiter for a total-variation-diminishing,
+non-oscillatory solution. For accuracy, second-order advection
+(**Solver.AdvectOrder** = 2), typically together with
+**Solver.AdvectEnforceMinMax**, is recommended for solute and
+reactive-transport runs, and is the setting used in the worked examples. The
+first-order default is the most robust (monotone) choice but is the most
+numerically dispersive.
 
 .. container:: list
 
@@ -4636,7 +4644,7 @@ Godunov method.
       <runname>.Solver.AdvectOrder = 2    ## Python syntax
 
 *string* **Solver.AdvectTransverse** False This key enables the transverse
-(corner-coupling) correction in the second-order Godunov solute advection
+(corner-coupling) flux correction in the high-order FCT solute advection
 scheme. It has no effect when **Solver.AdvectOrder** is 1.
 
 .. container:: list
@@ -4647,10 +4655,11 @@ scheme. It has no effect when **Solver.AdvectOrder** is 1.
 
       <runname>.Solver.AdvectTransverse = True    ## Python syntax
 
-*string* **Solver.AdvectEnforceMinMax** False This key enables a min/max
-limiter on the advected concentration field, clamping each cell to the range
-of its neighborhood to suppress over- and undershoots in the second-order
-Godunov solute advection scheme.
+*string* **Solver.AdvectEnforceMinMax** False This key enables an additional
+hard limiter that clamps each updated concentration to the minimum and maximum
+of the low-order solution over its six face-neighbors. It is an extra safeguard
+against over- and undershoots, applied on top of the scheme's built-in
+flux-corrected-transport limiter.
 
 .. container:: list
 

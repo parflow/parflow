@@ -575,8 +575,12 @@ incorporated along with the addition of injection and extraction wells.
 
 
 
-These equations will soon have to be generalized to include a diffusion
-term. At the present time, as an adsorption model, we take the mass
+Dispersion and diffusion are not currently represented
+:cite:t:`Beisman2015`; the equations state mass conservation in an advective
+flow with adsorption and degradation. A velocity-dependent
+hydrodynamic-dispersion term has been developed for the advection scheme and is
+planned for a future release. At the present time, as an adsorption model, we
+take the mass
 concentration term (:math:`F_{i,j}`) to be instantaneous in time and a
 linear function of contaminant concentration :
 
@@ -598,6 +602,24 @@ into :eq:`eqn-transport` the following equation results
    (\phi+ (1 - \phi) \rho_{s}K_{d;j}) \frac{\partial}{\partial t} c_{i,j} & ~+~ \nabla\cdot \left ( c_{i,j}{\vec V}_i\right ) \nonumber \\
    & ~=~ \nonumber \\
    -~(\phi+ (1 - \phi) \rho_{s}K_{d;j}) \lambda_jc_{i,j} & ~+~ \sum_{k}^{n_{I}} \gamma^{I;i}_{k}\chi_{\Omega^{I}_{k}} \left ( c_{i,j}- {\bar c}^{k}_{ij}\right ) ~-~ \sum_{k}^{n_{E}} \gamma^{E;i}_{k}\chi_{\Omega^{E}_{k}} c_{i,j}\end{aligned}
+
+**Numerical scheme.** ParFlow advances the advection term of
+:eq:`eqn-transport2` with an explicit, operator-split, finite-volume
+flux-corrected-transport (FCT) scheme on the staggered grid (concentrations at
+cell centers, Darcy velocities at faces). Each step first forms a first-order,
+monotone donor-cell upwind solution (positivity-preserving even under transient
+saturation); for second-order accuracy (``Solver.AdvectOrder = 2``) it adds a
+high-order, anti-diffusive Lax--Wendroff :cite:p:`LaxWendroff1960` flux
+correction controlled by a monotonized-central limiter :cite:p:`VanLeer1977`,
+limited in turn by a multidimensional flux-corrected-transport limiter after
+:cite:t:`Zalesak1979` so that no new extrema are introduced
+(total-variation-diminishing, non-oscillatory). An optional transverse
+corner-coupling term (``Solver.AdvectTransverse``) improves multidimensional
+accuracy, and an optional hard min/max clamp (``Solver.AdvectEnforceMinMax``)
+adds a further safeguard against over- and undershoots. The advective step
+obeys the Courant--Friedrichs--Lewy condition (``Solver.CFL``). This scheme is
+used for all solute transport, reactive or not, and is described -- and
+evaluated against WENO and upwind alternatives -- in :cite:t:`Beisman2015`.
 
 .. _Reactive Transport:
 
@@ -624,6 +646,28 @@ concentrations are copied back, and the step is complete. Because the split is
 explicit, the transport sub-step is limited by the advective CFL condition
 (``Solver.CFL``); a flow step that exceeds this limit is automatically divided
 into the necessary number of equal reactive-transport sub-steps.
+
+Formally, ParFlow advances the total concentration of each primary species,
+:math:`U_i = C_i + \sum_j \nu_{ij} X_j` (with :math:`C_i` the free
+primary-species concentration, :math:`X_j` the secondary-species
+concentrations, and :math:`\nu_{ij}` the equilibrium stoichiometry), in two
+sequential sub-steps per time step :cite:t:`Beisman2015` -- an advective
+transport step,
+
+.. math::
+   :label: eqn-rt-transport
+
+   \frac{U_i^{\text{trans}} - U_i^{n}}{\Delta t} = - \nabla\cdot(\vec{V} U_i),
+
+followed by a reaction step applied independently in each grid cell,
+
+.. math::
+   :label: eqn-rt-reaction
+
+   \frac{U_i^{\text{react}} - U_i^{\text{trans}}}{\Delta t} = R_i,
+
+where :math:`R_i` is the total reaction rate for primary species :math:`i`.
+This is the sequential non-iterative (SNIA) operator split.
 
 **Specifying the geochemistry.** The geochemical system -- primary and secondary
 species, minerals, sorption sites, kinetic rate laws, and the named geochemical

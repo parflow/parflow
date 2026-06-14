@@ -2287,7 +2287,7 @@ PFModule   *SolverImpesNewPublicXtra(char *name)
   public_xtra->print_satur = switch_value;
 
   sprintf(key, "%s.PrintConcentration", name);
-  switch_name = GetStringDefault(key, "False");
+  switch_name = GetStringDefault(key, "True");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_concen = switch_value;
 
