@@ -3,6 +3,8 @@
 
 This release contains several significant feature additions, bug fixes, and infrastructure improvements. Notable enhancements include expanded CLM snow physics options, improved overland flow output capabilities, KINSOL solver flexibility, and enhanced CI/CD infrastructure.
 
+The `Solver.OverlandOnly` validation coverage now includes mass-balance checks on a known sloping-plane solution, constant and PFB overland forcing, steady `EvapTransFile` forcing, and the `OverlandFlow`, `OverlandKinematic`, and `OverlandDiffusive` routing formulations.
+
 ParFlow development and bug-fixes would not be possible without contributions of the ParFlow community. Thank you for all the great contributions.
 
 ***
