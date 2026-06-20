@@ -1087,7 +1087,6 @@ SetupRichards(PFModule * this_module)
     if (public_xtra->evap_trans_file)
     {
       //sprintf(filename, "%s", public_xtra->evap_trans_filename);
-      //printf("%s %s \n",filename, public_xtra -> evap_trans_filename);
       ReadPFBinary(public_xtra->evap_trans_filename, instance_xtra->evap_trans_usr);
 
       handle = InitVectorUpdate(instance_xtra->evap_trans_usr, VectorUpdateAll);
@@ -1102,9 +1101,9 @@ SetupRichards(PFModule * this_module)
       /*Here looping similar to pfb is not implemented. All steps are assumed to be
        * present in the single NetCDF file*/
       //printf("DEBUG: read evap_trans file %s for step %i \n", filename, instance_xtra->file_number);
-      ReadPFNC(filename, instance_xtra->evap_trans, "evaptrans", instance_xtra->file_number, 3);
+      ReadPFNC(filename, instance_xtra->evap_trans_usr, "evaptrans", instance_xtra->file_number, 3);
       //printf("DEBUG: evap_trans max min: %e %e \n",PFVMax(instance_xtra->evap_trans),PFVMin(instance_xtra->evap_trans));
-      handle = InitVectorUpdate(instance_xtra->evap_trans, VectorUpdateAll);
+      handle = InitVectorUpdate(instance_xtra->evap_trans_usr, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
     }
 #endif
@@ -1945,11 +1944,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   }
 
   char filename[2048];          // IMF: 1D input file name *or* 2D/3D input file base name
-
-  if (use_internal_evap_trans)
-      {
-        PFVConstInit(0.0, evap_trans);
-      }
 #ifdef HAVE_OAS3
   Grid *grid = (instance_xtra->grid);
   Subgrid *subgrid;
@@ -2148,9 +2142,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         /*Here looping similar to pfb is not implemented. All steps are assumed to be
          * present in the single NetCDF file*/
         //printf("DEBUG: read evap_trans file %s for step %i \n", filename, instance_xtra->file_number);
-        ReadPFNC(filename, evap_trans, "evaptrans", instance_xtra->file_number, 3);
+        ReadPFNC(filename, evap_trans_usr, "evaptrans", instance_xtra->file_number, 3);
         //printf("DEBUG: evap_trans max min: %e %e \n",PFVMax(evap_trans),PFVMin(evap_trans));
-        handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
+        handle = InitVectorUpdate(evap_trans_usr, VectorUpdateAll);
         FinalizeVectorUpdate(handle);
       }
 #endif
