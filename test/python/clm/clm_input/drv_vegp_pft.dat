@@ -32,9 +32,9 @@
 !  2017: Jennifer Jefferson; ET and transpiration improvements
 !  2018-2019: Lindsay Bearup, Anna Ryken; Snow parameterizations
 !  2022: Reed Maxwell; CLM update
-!  Jan-Mar 2026: Reed Maxwell; Snow parameterizations, ET improvements,
-!                PFT photosynthesis, Medlyn stomata, canopy clumping,
-!                CLM4.5 optical/structural corrections, driver cleanup
+!  2026: Reed Maxwell; Snow parameterizations, ET improvements,
+!        PFT photosynthesis, Medlyn stomata, canopy clumping,
+!        CLM4.5 optical/structural corrections, driver cleanup
 !=========================================================================
 !IGBP Land Cover Types
 !  1 evergreen needleleaf forests

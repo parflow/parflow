@@ -234,12 +234,28 @@ land surface model. These plain-text files are read by CLM's Fortran
 reader at the start of each simulation. They must be present in the
 run directory.
 
+The three files are:
+
+- ``drv_clmin.dat`` — CLM initialization parameters: domain size, run timing,
+  classification scheme, and the names of the other input/output files.
+- ``drv_vegp.dat`` — vegetation *type* parameters: one set of values per IGBP
+  land-cover class (structural, optical, hydrologic, and photosynthesis).
+- ``drv_vegm.dat`` — vegetation *tile map*: per-grid-cell latitude/longitude,
+  soil texture, soil color, and fractional land-cover by class.
+
+Annotated example files are provided under ``test/tcl/clm/`` (and
+``test/python/clm/clm_input/``); the ``*_bestpractice.dat`` variants carry the
+recommended modern parameter sets.
+
 ParFlow-CLM is originally based on CLM 1.0 (Dai et al. 2003) and has been
 extended with coupled hydrology, improved evapotranspiration, snow physics,
 and PFT-dependent photosynthesis for integrated watershed modeling.
 
 **Key references:**
 
+- Li, K.Y., De Jong, R. and Boisvert, J.B. (2001). An exponential root-water-uptake
+  model with water stress compensation. *J. Hydrol.*, 252(1-4), 189-204,
+  doi:10.1016/S0022-1694(01)00456-5.
 - Maxwell, R.M. and Miller, N.L. (2005). Development of a coupled land surface
   and groundwater model. *J. Hydrometeorol.*, 6(3), 233-247,
   doi:10.1175/JHM422.1.
@@ -264,6 +280,9 @@ and PFT-dependent photosynthesis for integrated watershed modeling.
   and Maxwell, R.M. (2020). Simulating coupled surface-subsurface flows with
   ParFlow v3.5.0. *Geosci. Model Dev.*, 13, 1373-1397,
   doi:10.5194/gmd-13-1373-2020.
+
+The abbreviated author-year citations that appear in the headers of the
+``.dat`` files described below are given in full in this reference list.
 
 .. _drv_clmin.dat:
 
@@ -696,6 +715,10 @@ for snow/ice, water, bare soil classes where a parameter is meaningless).
      - Description
    * - ``vw``
      - Beta transpiration exponent: ``[(h2osoi_vol-watdry)/(watopt-watdry)]^vw``
+   * - ``omega_max``
+     - Maximum root-water-uptake compensation factor for compensatory RWU (used
+       when ``Solver.CLM.RZWaterStress = 2``; Li et al. 2001). ``1.0`` (default,
+       if the block is absent) applies no compensation.
    * - ``irrig``
      - Irrigation flag (0=none, 1=irrigate)
 
@@ -780,6 +803,9 @@ for snow/ice, water, bare soil classes where a parameter is meaningless).
 
 - The file must contain exactly ``NX × NY`` data lines (one per grid cell),
   ordered with x varying fastest.
+- Grid indices ``x``, ``y`` are 1-based and start at ``1 1`` (lower-left cell).
+  This numbering is a convention of the CLM reader's indexing, not a physical
+  constraint on the grid.
 - Sand and clay are fractional (0-1), not percent. The remainder (1 - sand - clay)
   is implicitly silt.
 - The ``color`` index selects a soil albedo pair from CLM's lookup table.
@@ -787,6 +813,10 @@ for snow/ice, water, bare soil classes where a parameter is meaningless).
 - For single-column (1×1) simulations, the file has 2 header lines + 1 data line.
 - Fractional coverages must sum to 1.0. For bare soil simulations,
   set class 18 to 1.0 and all others to 0.0.
+- Coverage may be split across several vegetation classes within a single cell
+  (e.g. ``0.6`` grassland + ``0.4`` cropland); the format fully supports
+  fractional, mixed-class tiles summing to 1.0, though many ParFlow-CLM setups
+  run a single dominant class at ``1.0``.
 
 .. warning::
 
