@@ -5196,6 +5196,23 @@ consistent with **OverlandFow**
 
    <runname>.Solver.TerrainFollowingGrid.SlopeUpwindFormulation = "Upwind"    ## Python syntax
 
+*double* **Solver.TerrainFollowingGrid.UpwindEpsilon** 0.0 This key sets the
+transition width for a smoothed (:math:`C^1`) upwind mobility selection on the
+terrain-following-grid lateral Darcy fluxes. The width is relative to gravity
+(the upwind-direction variable has units of gravity). The default value of
+``0.0`` recovers the original hard upstream weighting bit-for-bit. Small
+positive values (order ``1e-3``) replace the Heaviside branch selection with a
+cubic-smoothstep blend over the transition band and include the blend in the
+analytic Jacobian, removing the Jacobian discontinuity at the TFG upwind switch.
+This can reduce Newton iterations on intermediate-slope terrain, with a change
+to the converged solution that vanishes as the width shrinks.
+
+::
+
+   pfset Solver.TerrainFollowingGrid.UpwindEpsilon   1e-3        ## TCL syntax
+
+   <runname>.Solver.TerrainFollowingGrid.UpwindEpsilon = 1e-3    ## Python syntax
+
 
    
 

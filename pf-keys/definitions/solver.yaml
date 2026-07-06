@@ -2598,6 +2598,21 @@ Solver:
             - Upwind
             - UpwindSine
 
+    UpwindEpsilon:
+      help: >
+        [Type: double] This key sets the transition width for the smoothed (C1)
+        upwind mobility selection used by the terrain-following-grid lateral
+        Darcy fluxes. The width is relative to gravity (the upwind-direction
+        variable has units of gravity). The default 0.0 recovers the original
+        hard upstream selection bit-for-bit. Small positive values (order 1e-3)
+        remove the Jacobian discontinuity at the TFG upwind switch, which can
+        reduce Newton iterations on intermediate-slope terrain with a negligible
+        change to the converged solution.
+      default: 0.0
+      domains:
+        DoubleValue:
+          min_value: 0.0
+
   # missing from manual
   TwoNorm:
     help: >

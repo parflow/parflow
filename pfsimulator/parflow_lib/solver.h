@@ -46,6 +46,25 @@
 #define HarmonicMeanDZ(a, b, c, d) (((c * b) + (a * d)) ?  (((c + d) * a * b) / ((b * c) + (a * d))) : 0)
 #define UpstreamMean(a, b, c, d) (((a - b) >= 0) ? c : d)
 
+/* Smoothed upstream weight for TFG lateral fluxes (cubic smoothstep over a
+ * band of half-width eps).  w -> 1 selects the (diff >= 0) upwind branch,
+ * w -> 0 the other.  With eps <= 0 it reduces to UpstreamMean branch selection
+ * exactly, including the diff == 0 tie (returns 1.0).  Pure arithmetic/ternary,
+ * so it is device-callable by textual expansion like the other Mean macros. */
+#define UpwindWeightSmooth(diff, eps)                            \
+        (((diff) >= (eps)) ? 1.0 :                               \
+         ((diff) <= -(eps)) ? 0.0 :                              \
+         (0.5 * ((diff) / (eps) + 1.0)) *                        \
+         (0.5 * ((diff) / (eps) + 1.0)) *                        \
+         (3.0 - 2.0 * (0.5 * ((diff) / (eps) + 1.0))))
+
+/* d(UpwindWeightSmooth)/d(diff): zero outside the band and for eps <= 0, so the
+ * smoothing contributes nothing to the Jacobian when eps = 0. */
+#define UpwindWeightSmoothDer(diff, eps)                                 \
+        (((eps) <= 0.0 || (diff) >= (eps) || (diff) <= -(eps)) ? 0.0 :   \
+         3.0 * (0.5 * ((diff) / (eps) + 1.0)) *                          \
+         (1.0 - (0.5 * ((diff) / (eps) + 1.0))) / (eps))
+
 #define CellFaceConductivity  HarmonicMean
 
 

@@ -63,6 +63,7 @@ typedef struct {
   double SpinupDampP1; // NBE
   double SpinupDampP2; // NBE
   int tfgupwind;  // RMM
+  double tfg_upwind_eps;   // TFG smoothed-upwind transition width (relative to gravity); 0 = hard upwind
   int using_MGSemi;  // RMM
   SeepageLookup seepage;
 } PublicXtra;
@@ -591,6 +592,10 @@ void    RichardsJacobianEval(
     FBy_dat = SubvectorData(FBy_sub);
     FBz_dat = SubvectorData(FBz_sub);
 
+    /* TFG smoothed-upwind transition width, dimensionalized by gravity.
+     * eps_g = 0 recovers hard upstream weighting (bit-identical Jacobian). */
+    double eps_g = public_xtra->tfg_upwind_eps * fabs(gravity);
+
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
       int ip = SubvectorEltIndex(p_sub, i, j, k);
@@ -664,24 +669,31 @@ void    RichardsJacobianEval(
                        / viscosity;
 
 
-      double sym_west_temp = (-x_coeff
-                              * RPMean(updir, 0.0, prod, prod_rt)) * x_dir_g_c; //RMM TFG contributions, sym
+      /* Smoothed upwind mobility and its chain-rule term for this x face.
+       * lam_x replaces the hard RPMean selection; sw_x = d(lam_x)/d(updir) *
+       * d(updir)/dp is folded into the (structurally symmetric) sym temps.
+       * eps_g = 0 => wgt_x in {0,1} and dwgt_x = 0, so this is bit-identical. */
+      double wgt_x = UpwindWeightSmooth(updir, eps_g);
+      double dwgt_x = UpwindWeightSmoothDer(updir, eps_g);
+      double lam_x = wgt_x * prod + (1.0 - wgt_x) * prod_rt;
+      double sw_x = x_coeff * x_dir_g_c * updir * (prod - prod_rt) * dwgt_x;
+
+      double sym_west_temp = -x_coeff * lam_x * x_dir_g_c - sw_x; //RMM TFG contributions, sym
 
 
       double west_temp = (-x_coeff * diff
-                          * RPMean(updir, 0.0, prod_der, 0.0)) * x_dir_g_c
+                          * (wgt_x * prod_der)) * x_dir_g_c
                          + sym_west_temp;
 
-      west_temp += (x_coeff * dx * RPMean(updir, 0.0, prod_der, 0.0)) * x_dir_g; //RMM TFG contributions, non sym
+      west_temp += (x_coeff * dx * (wgt_x * prod_der)) * x_dir_g; //RMM TFG contributions, non sym
 
-      double sym_east_temp = (-x_coeff
-                              * RPMean(updir, 0.0, prod, prod_rt)) * x_dir_g_c; //RMM added sym TFG contributions
+      double sym_east_temp = -x_coeff * lam_x * x_dir_g_c - sw_x; //RMM added sym TFG contributions
 
       double east_temp = (x_coeff * diff
-                          * RPMean(updir, 0.0, 0.0, prod_rt_der)) * x_dir_g_c
+                          * ((1.0 - wgt_x) * prod_rt_der)) * x_dir_g_c
                          + sym_east_temp;
 
-      east_temp += -(x_coeff * dx * RPMean(updir, 0.0, 0.0, prod_rt_der)) * x_dir_g; //RMM  TFG contributions non sym
+      east_temp += -(x_coeff * dx * ((1.0 - wgt_x) * prod_rt_der)) * x_dir_g; //RMM  TFG contributions non sym
 
       /* diff >= 0 implies flow goes south to north */
       diff = pp[ip] - pp[ip + sy_v];
@@ -693,25 +705,28 @@ void    RichardsJacobianEval(
                        * PMean(pp[ip], pp[ip + sy_v], permyp[ip], permyp[ip + sy_v])
                        / viscosity;
 
-      double sym_south_temp = -y_coeff
-                              * RPMean(updir, 0.0, prod, prod_no) * y_dir_g_c; //RMM TFG contributions, SYMM
+      /* Smoothed upwind mobility and chain-rule term for this y face. */
+      double wgt_y = UpwindWeightSmooth(updir, eps_g);
+      double dwgt_y = UpwindWeightSmoothDer(updir, eps_g);
+      double lam_y = wgt_y * prod + (1.0 - wgt_y) * prod_no;
+      double sw_y = y_coeff * y_dir_g_c * updir * (prod - prod_no) * dwgt_y;
+
+      double sym_south_temp = -y_coeff * lam_y * y_dir_g_c - sw_y; //RMM TFG contributions, SYMM
 
       double south_temp = -y_coeff * diff
-                          * RPMean(updir, 0.0, prod_der, 0.0) * y_dir_g_c
+                          * (wgt_y * prod_der) * y_dir_g_c
                           + sym_south_temp;
 
-      south_temp += (y_coeff * dy * RPMean(updir, 0.0, prod_der, 0.0)) * y_dir_g; //RMM TFG contributions, non sym
+      south_temp += (y_coeff * dy * (wgt_y * prod_der)) * y_dir_g; //RMM TFG contributions, non sym
 
 
-      double sym_north_temp = y_coeff
-                              * -RPMean(updir, 0.0, prod, prod_no) * y_dir_g_c; //RMM  TFG contributions non SYMM
+      double sym_north_temp = -y_coeff * lam_y * y_dir_g_c - sw_y; //RMM  TFG contributions non SYMM
 
       double north_temp = y_coeff * diff
-                          * RPMean(updir, 0.0, 0.0,
-                                   prod_no_der) * y_dir_g_c
+                          * ((1.0 - wgt_y) * prod_no_der) * y_dir_g_c
                           + sym_north_temp;
 
-      north_temp += -(y_coeff * dy * RPMean(updir, 0.0, 0.0, prod_no_der)) * y_dir_g; //RMM  TFG contributions non sym
+      north_temp += -(y_coeff * dy * ((1.0 - wgt_y) * prod_no_der)) * y_dir_g; //RMM  TFG contributions non sym
 
       double sep = (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v]));
       /* diff >= 0 implies flow goes lower to upper */
@@ -2468,6 +2483,9 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
       InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
+
+  sprintf(key, "Solver.TerrainFollowingGrid.UpwindEpsilon");
+  public_xtra->tfg_upwind_eps = GetDoubleDefault(key, 0.0);
   NA_FreeNameArray(upwind_switch_na);
 
   switch_na = NA_NewNameArray("False True");

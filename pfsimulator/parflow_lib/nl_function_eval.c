@@ -42,6 +42,7 @@ typedef struct {
   double SpinupDampP1;      // NBE
   double SpinupDampP2;      // NBE
   int tfgupwind;           //@RMM added for TFG formulation switch
+  double tfg_upwind_eps;   // TFG smoothed-upwind transition width (relative to gravity); 0 = hard upwind
   SeepageLookup seepage;
 } PublicXtra;
 
@@ -693,6 +694,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     /* @RMM added to provide variable dz */
     z_mult_dat = SubvectorData(z_mult_sub);
 
+    /* TFG smoothed-upwind transition width, dimensionalized by gravity (updir
+     * has units of gravity).  eps_g = 0 recovers hard upstream weighting. */
+    double eps_g = public_xtra->tfg_upwind_eps * fabs(gravity);
+
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
       int ip = SubvectorEltIndex(p_sub, i, j, k);
@@ -764,12 +769,14 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       double diff_l = pp[ip] - pp[ip + 1];
       double updir = (diff_l / dx) * x_dir_g_c - x_dir_g;
 
+      /* Smoothed upwind mobility for this x face; eps_g = 0 -> hard upwind. */
+      double wgt_x = UpwindWeightSmooth(updir, eps_g);
+      double lam_x = wgt_x * (rpp[ip] * dp[ip]) + (1.0 - wgt_x) * (rpp[ip + 1] * dp[ip + 1]);
+
       double u_right = z_mult_dat[ip] * ffx * del_y_slope * PMean(pp[ip], pp[ip + 1],
                                                                   permxp[ip], permxp[ip + 1])
                        * (diff_l / (dx * del_x_slope)) * x_dir_g_c
-                       * RPMean(updir, 0.0,
-                                rpp[ip] * dp[ip],
-                                rpp[ip + 1] * dp[ip + 1])
+                       * lam_x
                        / viscosity;
 
       /* Calculate right face velocity gravity terms
@@ -780,8 +787,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       u_right += z_mult_dat[ip] * ffx * del_y_slope * PMean(pp[ip], pp[ip + 1],
                                                             permxp[ip], permxp[ip + 1])
                  * (-x_dir_g)
-                 * RPMean(updir, 0.0, rpp[ip] * dp[ip],
-                          rpp[ip + 1] * dp[ip + 1])
+                 * lam_x
                  / viscosity;
 
 
@@ -790,12 +796,14 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       diff_l = pp[ip] - pp[ip + sy_p];
       updir = (diff_l / dy) * y_dir_g_c - y_dir_g;
 
+      /* Smoothed upwind mobility for this y face. */
+      double wgt_y = UpwindWeightSmooth(updir, eps_g);
+      double lam_y = wgt_y * (rpp[ip] * dp[ip]) + (1.0 - wgt_y) * (rpp[ip + sy_p] * dp[ip + sy_p]);
+
       double u_front = z_mult_dat[ip] * ffy * del_x_slope
                        * PMean(pp[ip], pp[ip + sy_p], permyp[ip], permyp[ip + sy_p])
                        * (diff_l / (dy * del_y_slope)) * y_dir_g_c
-                       * RPMean(updir, 0.0,
-                                rpp[ip] * dp[ip],
-                                rpp[ip + sy_p] * dp[ip + sy_p])
+                       * lam_y
                        / viscosity;
 
       /* Calculate front face velocity gravity terms
@@ -807,8 +815,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       u_front += z_mult_dat[ip] * ffy * del_x_slope
                  * PMean(pp[ip], pp[ip + sy_p], permyp[ip], permyp[ip + sy_p])
                  * (-y_dir_g)
-                 * RPMean(updir, 0.0, rpp[ip] * dp[ip],
-                          rpp[ip + sy_p] * dp[ip + sy_p])
+                 * lam_y
                  / viscosity;
 
       /* Calculate upper face velocity.
@@ -2509,6 +2516,9 @@ PFModule   *NlFunctionEvalNewPublicXtra(char *name)
       InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
+
+  sprintf(key, "Solver.TerrainFollowingGrid.UpwindEpsilon");
+  public_xtra->tfg_upwind_eps = GetDoubleDefault(key, 0.0);
   NA_FreeNameArray(upwind_switch_na);
 
   (public_xtra->time_index) = RegisterTiming("NL_F_Eval");
