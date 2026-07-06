@@ -19,9 +19,10 @@ import numpy as np
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
 from parflow.tools.io import read_pfb
+from parflow.tools import hydrology
 
 
-def build_run(eps, use_jacobian, name):
+def build_run(eps, use_jacobian, name, closed=False):
     r = Run(name, __file__)
     r.FileVersion = 4
     r.Process.Topology.P = 1
@@ -111,10 +112,18 @@ def build_run(eps, use_jacobian, name):
         r.Patch[p].BCPressure.Type = "FluxConst"
         r.Patch[p].BCPressure.Cycle = "constant"
         r.Patch[p].BCPressure.alltime.Value = 0.0
-    r.Patch.z_upper.BCPressure.Type = "OverlandFlow"
-    r.Patch.z_upper.BCPressure.Cycle = "rainrec"
-    r.Patch.z_upper.BCPressure.rain.Value = -0.005
-    r.Patch.z_upper.BCPressure.rec.Value = 0.0
+    if closed:
+        # Fully closed domain: every boundary no-flux, no rain/overland.  Total
+        # subsurface storage must be exactly conserved as water redistributes
+        # laterally under TFG -- this is the conservation guard (Gate 5).
+        r.Patch.z_upper.BCPressure.Type = "FluxConst"
+        r.Patch.z_upper.BCPressure.Cycle = "constant"
+        r.Patch.z_upper.BCPressure.alltime.Value = 0.0
+    else:
+        r.Patch.z_upper.BCPressure.Type = "OverlandFlow"
+        r.Patch.z_upper.BCPressure.Cycle = "rainrec"
+        r.Patch.z_upper.BCPressure.rain.Value = -0.005
+        r.Patch.z_upper.BCPressure.rec.Value = 0.0
 
     # Intermediate slope -- where the TFG upwind switch is most active.
     r.TopoSlopesX.Type = "Constant"
@@ -161,18 +170,43 @@ def build_run(eps, use_jacobian, name):
     return r
 
 
-def final_pressure(eps, use_jacobian, tag):
+def run_case(eps, use_jacobian, tag, closed=False):
     name = f"tfg_smooth_{tag}"
     outdir = get_absolute_path(f"test_output/{name}")
     mkdir(outdir)
-    r = build_run(eps, use_jacobian, name)
+    r = build_run(eps, use_jacobian, name, closed=closed)
     r.run(working_directory=outdir)
+    return outdir, name
+
+
+def final_pressure(eps, use_jacobian, tag):
+    outdir, name = run_case(eps, use_jacobian, tag)
     # StopTime 2.0 / dt 0.1 -> 20 dumped steps.
     return read_pfb(f"{outdir}/{name}.out.press.00020.pfb")
 
 
 def max_abs_diff(a, b):
     return float(np.max(np.abs(a - b)))
+
+
+def conservation_drift(eps, tag):
+    """Max relative drift of total subsurface storage over a closed-domain run."""
+    outdir, name = run_case(eps, True, tag, closed=True)
+    nx, ny, nz = 20, 1, 30
+    dx, dy, dz = 5.0, 1.0, 0.05
+    porosity = np.full((nz, ny, nx), 0.1)
+    specific_storage = np.full((nz, ny, nx), 1.0e-5)
+    mask = np.ones((nz, ny, nx))
+    totals = []
+    for i in range(21):
+        p = read_pfb(f"{outdir}/{name}.out.press.{i:05d}.pfb")
+        s = read_pfb(f"{outdir}/{name}.out.satur.{i:05d}.pfb")
+        storage = hydrology.calculate_subsurface_storage(
+            porosity, p, s, specific_storage, dx, dy, np.array([dz] * nz), mask
+        )
+        totals.append(float(np.sum(storage)))
+    totals = np.array(totals)
+    return float(np.max(np.abs(totals - totals[0])) / totals[0])
 
 
 def main():
@@ -203,6 +237,14 @@ def main():
     print(f"Gate 3 (eps convergence): |p(1e-3)-p(0)| = {d_1em3:.3e}, "
           f"|p(1e-4)-p(0)| = {d_1em4:.3e}; monotone={monotone}, "
           f"below tol({gate3_tol:.0e})={small} -> {'PASS' if ok3 else 'FAIL'}")
+
+    # --- Gate 5: conservation on a closed domain at eps = 1e-3 ---
+    drift = conservation_drift(1e-3, "closed")
+    gate5_tol = 1e-6
+    ok5 = drift < gate5_tol
+    passed = passed and ok5
+    print(f"Gate 5 (conservation, closed domain): max relative storage drift "
+          f"= {drift:.3e} (tol {gate5_tol:.0e}) -> {'PASS' if ok5 else 'FAIL'}")
 
     if passed:
         print("tfg_smooth_upwind : PASSED")
