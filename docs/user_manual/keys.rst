@@ -4443,6 +4443,40 @@ a run-away simulation.
 
       <runname>.Solver.MaxIter = 100   ## Python syntax
 
+*string* **Solver.AdaptiveDt** False Master switch for the heuristic/predictive
+adaptive timestep controller. When **False** (default) the existing timestep
+controller is used unchanged. When **True**, the enabled adaptive layers bound the
+``SelectTimeStep`` proposal by a min rule before the boundary clipping; each layer
+can only shrink ``dt`` or bound its growth, never exceed the base controller or
+``TimeStep.MaxStep``, and the halve-and-retry failure backstop is unchanged.
+
+*string* **Solver.AdaptiveDt.NewtonControl** False Layer 1 of the adaptive
+controller. When **True**, after each accepted solve the next ``dt`` is bounded from
+the Newton iteration count toward a target (a classical iteration-count controller
+with PI memory), so failures become rare instead of being discovered by the retry
+backstop. Growth is suppressed after a convergence failure and whenever beta-condition
+failures or backtracks occurred.
+
+*integer* **Solver.AdaptiveDt.NewtonControl.Target** 6 Target number of Newton
+iterations per step.
+
+*double* **Solver.AdaptiveDt.NewtonControl.Exponent** 0.7 Controller exponent
+applied to the target/actual iteration ratio.
+
+*double* **Solver.AdaptiveDt.NewtonControl.Safety** 0.9 Safety factor applied to the
+computed dt growth factor.
+
+*double* **Solver.AdaptiveDt.NewtonControl.MaxGrowth** 2.0 Maximum ``dt`` growth
+factor per step.
+
+.. container:: list
+
+   ::
+
+      <runname>.Solver.AdaptiveDt = True                       ## Python syntax
+      <runname>.Solver.AdaptiveDt.NewtonControl = True
+      <runname>.Solver.AdaptiveDt.NewtonControl.Target = 6
+
 *double* **Solver.RelTol** 1.0 This value gives the relative tolerance
 for the linear solve algorithm.
 

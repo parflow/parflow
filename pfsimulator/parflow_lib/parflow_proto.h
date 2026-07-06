@@ -314,6 +314,7 @@ void PrintFinalStats(FILE *out_file, long int *integer_outputs_now, long int *in
 int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, Vector *saturation, Vector *old_saturation, double t, double dt, ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *q_overlnd_x, Vector *q_overlnd_y);
 PFModule *KinsolNonlinSolverInitInstanceXtra(Problem *problem, Grid *grid, Grid *grid2d, ProblemData *problem_data, double *temp_data);
 #endif
+void KinsolNonlinSolverGetLastStats(PFModule *this_module, int *newton, int *lin, int *beta_fails, int *backtracks);
 void KinsolNonlinSolverFreeInstanceXtra(void);
 PFModule *KinsolNonlinSolverNewPublicXtra(void);
 void KinsolNonlinSolverFreePublicXtra(void);

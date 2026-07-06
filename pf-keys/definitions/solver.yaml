@@ -2145,6 +2145,53 @@ Solver:
     domains:
       IntValue:
 
+  AdaptiveDt:
+    __value__:
+      help: >
+        [Type: boolean/string] Master switch for the heuristic/predictive adaptive
+        timestep controller. When False (default) the existing controller is used
+        unchanged. When True, enabled layers (currently NewtonControl) bound the
+        proposed dt by a min rule before the boundary clipping.
+      default: False
+      domains:
+        BoolDomain:
+    NewtonControl:
+      __value__:
+        help: >
+          [Type: boolean/string] Layer 1: after each accepted solve, bound the next dt
+          from the Newton iteration count toward a target so convergence failures become
+          rare. Never grows dt beyond the base controller.
+        default: False
+        domains:
+          BoolDomain:
+      Target:
+        help: >
+          [Type: int] Target number of Newton iterations per step.
+        default: 6
+        domains:
+          IntValue:
+      Exponent:
+        help: >
+          [Type: double] Controller exponent applied to the target/actual iteration ratio.
+        default: 0.7
+        domains:
+          DoubleValue:
+            min_value: 0.0
+      Safety:
+        help: >
+          [Type: double] Safety factor applied to the computed growth factor.
+        default: 0.9
+        domains:
+          DoubleValue:
+            min_value: 0.0
+      MaxGrowth:
+        help: >
+          [Type: double] Maximum dt growth factor per step.
+        default: 2.0
+        domains:
+          DoubleValue:
+            min_value: 1.0
+
   # missing from manual
   MaxLevels:
     help: >

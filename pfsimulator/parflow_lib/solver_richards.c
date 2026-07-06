@@ -292,6 +292,15 @@ typedef struct {
 
   int nc_evap_trans_file_transient;     /* read NetCDF evap_trans as a transient file before advance richards timestep */
   char *nc_evap_trans_filename; /* NetCDF File name for evap trans */
+
+  /* Adaptive timestep control (Layer 1: Newton-iteration target).
+   * adaptive_dt off (default) reproduces the current controller exactly. */
+  int adaptive_dt;                    /* master switch */
+  int adaptive_newton_control;        /* Layer 1 on/off */
+  int adaptive_newton_target;         /* target Newton iterations N* */
+  double adaptive_newton_exponent;    /* controller exponent */
+  double adaptive_newton_safety;      /* safety factor */
+  double adaptive_newton_max_growth;  /* max growth factor per step */
 } PublicXtra;
 
 typedef struct {
@@ -394,6 +403,12 @@ typedef struct {
   int iteration_number;
   double dump_index;
   double clm_dump_index;
+
+  /* Adaptive-dt Layer 1 state (valid only when adaptive_newton_control on). */
+  double adaptive_fac_prev;         /* previous step's growth factor (PI memory) */
+  int adaptive_suppress;            /* steps left to suppress growth after a failure */
+  double adaptive_dt_bound_newton;  /* Layer-1 dt bound carried to the next step */
+  int adaptive_have_stats;          /* set once the first accepted solve has run */
 } InstanceXtra;
 
 static const char* dswr_filenames[] = { "DSWR" };
@@ -544,6 +559,12 @@ SetupRichards(PFModule * this_module)
     instance_xtra->recomp_log = talloc(char, max_iterations + 1);
     instance_xtra->number_logged = 0;
   }
+
+  /* Adaptive-dt Layer 1 state. */
+  instance_xtra->adaptive_fac_prev = 1.0;
+  instance_xtra->adaptive_suppress = 0;
+  instance_xtra->adaptive_dt_bound_newton = FLT_MAX;
+  instance_xtra->adaptive_have_stats = 0;
 
   sprintf(file_prefix, "%s", GlobalsOutFileName);
 
@@ -2993,6 +3014,16 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                               problem_data));
         }
 
+        /* Adaptive-dt Layer 1: bound the proposal by the last accepted solve's
+         * Newton work.  Only ever shrinks dt, and only after the first solve. */
+        if (public_xtra->adaptive_dt && public_xtra->adaptive_newton_control &&
+            instance_xtra->adaptive_have_stats &&
+            instance_xtra->adaptive_dt_bound_newton < dt)
+        {
+          dt = instance_xtra->adaptive_dt_bound_newton;
+          dt_info = 'n';
+        }
+
         PFVCopy(instance_xtra->density, instance_xtra->old_density);
         PFVCopy(instance_xtra->saturation,
                 instance_xtra->old_saturation);
@@ -3386,10 +3417,40 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       {
         converged = 0;
         conv_failures++;
+        /* Adaptive-dt Layer 1: suppress growth for the next two accepted steps
+         * after a convergence failure (the halve-and-retry backstop is unchanged). */
+        if (public_xtra->adaptive_dt && public_xtra->adaptive_newton_control)
+          instance_xtra->adaptive_suppress = 2;
       }
       else
       {
         converged = 1;
+
+        /* Adaptive-dt Layer 1: compute the dt bound for the next step from this
+         * solve's Newton count (PI memory, growth cap, failure suppression). */
+        if (public_xtra->adaptive_dt && public_xtra->adaptive_newton_control)
+        {
+          int newton, lin, beta_fails, backtracks;
+          KinsolNonlinSolverGetLastStats(nonlin_solver, &newton, &lin,
+                                         &beta_fails, &backtracks);
+
+          double ratio = (double)public_xtra->adaptive_newton_target /
+                         (double)pfmax(newton, 1);
+          double fac = public_xtra->adaptive_newton_safety *
+                       pow(ratio, public_xtra->adaptive_newton_exponent);
+          fac = sqrt(fac * instance_xtra->adaptive_fac_prev);   /* PI memory */
+          fac = pfmin(fac, public_xtra->adaptive_newton_max_growth);
+          if (beta_fails > 0 || backtracks > 0)
+            fac = pfmin(fac, 1.0);
+          if (instance_xtra->adaptive_suppress > 0)
+          {
+            fac = pfmin(fac, 1.0);
+            instance_xtra->adaptive_suppress--;
+          }
+          instance_xtra->adaptive_dt_bound_newton = dt * fac;
+          instance_xtra->adaptive_fac_prev = fac;
+          instance_xtra->adaptive_have_stats = 1;
+        }
       }
 
       if (conv_failures >= max_failures)
@@ -6232,6 +6293,23 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "%s.MaxIter", name);
   public_xtra->max_iterations = GetIntDefault(key, 1000000);
+
+  /* Adaptive timestep control (Layer 1: Newton-iteration target).
+   * All defaults preserve the current controller exactly. */
+  sprintf(key, "%s.AdaptiveDt", name);
+  public_xtra->adaptive_dt =
+    NA_NameToIndexExitOnError(switch_na, GetStringDefault(key, "False"), key);
+  sprintf(key, "%s.AdaptiveDt.NewtonControl", name);
+  public_xtra->adaptive_newton_control =
+    NA_NameToIndexExitOnError(switch_na, GetStringDefault(key, "False"), key);
+  sprintf(key, "%s.AdaptiveDt.NewtonControl.Target", name);
+  public_xtra->adaptive_newton_target = GetIntDefault(key, 6);
+  sprintf(key, "%s.AdaptiveDt.NewtonControl.Exponent", name);
+  public_xtra->adaptive_newton_exponent = GetDoubleDefault(key, 0.7);
+  sprintf(key, "%s.AdaptiveDt.NewtonControl.Safety", name);
+  public_xtra->adaptive_newton_safety = GetDoubleDefault(key, 0.9);
+  sprintf(key, "%s.AdaptiveDt.NewtonControl.MaxGrowth", name);
+  public_xtra->adaptive_newton_max_growth = GetDoubleDefault(key, 2.0);
 
   sprintf(key, "%s.MaxConvergenceFailures", name);
   public_xtra->max_convergence_failures = GetIntDefault(key, 3);
