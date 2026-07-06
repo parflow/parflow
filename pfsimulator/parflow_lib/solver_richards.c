@@ -36,6 +36,7 @@
 
 #include "parflow.h"
 #include "parflow_netcdf.h"
+#include "problem_saturation.h"
 
 #include "metadata.h"
 
@@ -2561,6 +2562,16 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
 
 
+      /* Per-cell van Genuchten residual saturation for the CLM wilting-point
+       * guard (NULL for non-VanGenuchten saturation).  Halo-update so CLM can
+       * read ghost cells, exactly as it does for porosity. */
+      Vector *sres_vec = ProblemSaturationGetSres(instance_xtra->problem_saturation);
+      if (sres_vec != NULL)
+      {
+        VectorUpdateCommHandle *sres_handle = InitVectorUpdate(sres_vec, VectorUpdateAll);
+        FinalizeVectorUpdate(sres_handle);
+      }
+
       ForSubgridI(is, GridSubgrids(grid))
       {
         double dx, dy, dz;
@@ -2661,6 +2672,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         bot_dat = SubvectorData(bot_sub);
         po_dat = SubvectorData(po_sub);
         dz_dat = SubvectorData(dz_sub);
+        Subvector *sres_sub = (sres_vec != NULL) ? VectorSubvector(sres_vec, is) : NULL;
+        double *sres_dat = (sres_sub != NULL) ? SubvectorData(sres_sub) : po_dat;
 
         /* IMF: Subvector Data -- CLM surface fluxes, SWE, t_grnd */
         eflx_lh = SubvectorData(eflx_lh_tot_sub);
@@ -2788,7 +2801,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           {
             /*BH: added vegetation forcings and associated option (clm_forc_veg) */
             clm_file_dir_length = strlen(public_xtra->clm_file_dir);
-            CALL_CLM_LSM(pp, sp, et, top_dat, bot_dat, po_dat, dz_dat, istep,
+            CALL_CLM_LSM(pp, sp, et, top_dat, bot_dat, po_dat, sres_dat, dz_dat, istep,
                          cdt, t, start_time, dx, dy, dz, ix, iy, nx, ny, nz,
                          nx_f, ny_f, nz_f, nz_rz, ip, p, q, r, gnx,
                          gny, rank, sw_data, lw_data, prcp_data,

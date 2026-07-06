@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-subroutine clm_lsm(pressure,saturation,evap_trans,top,bottom,porosity,pf_dz_mult,istep_pf,dt,time,           &
+subroutine clm_lsm(pressure,saturation,evap_trans,top,bottom,porosity,sres,pf_dz_mult,istep_pf,dt,time,           &
 start_time,pdx,pdy,pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,nz_rz,ip,npp,npq,npr,gnx,gny,rank,sw_pf,lw_pf,    &
 prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf,lai_pf,sai_pf,z0m_pf,displa_pf,                               &
 slope_x_pf,slope_y_pf,                                                                                 &
@@ -80,6 +80,7 @@ interception_schemepf,interception_tanh_alphapf)
   real(r8) :: top((nx+2)*(ny+2)*(3))             ! top Z index from ParFlow, -1 for inactive, on grid w/ ghost nodes for current proc
   real(r8) :: bottom((nx+2)*(ny+2)*(3))          ! bottom Z index from ParFlow, -1 for inactive, on grid w/ ghost nodes for current proc
   real(r8) :: porosity((nx+2)*(ny+2)*(nz+2))     ! porosity from ParFlow, on grid w/ ghost nodes for current proc
+  real(r8) :: sres((nx+2)*(ny+2)*(nz+2))         ! per-cell VG residual saturation from ParFlow (CLM wilting-point guard)
   real(r8) :: pf_dz_mult((nx+2)*(ny+2)*(nz+2))   ! dz multiplier from ParFlow on PF grid w/ ghost nodes for current proc
   real(r8) :: dt                                 ! parflow dt in parflow time units not CLM time units
   real(r8) :: time                               ! parflow time in parflow units
