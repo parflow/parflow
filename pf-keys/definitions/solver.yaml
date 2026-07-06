@@ -451,6 +451,45 @@ Solver:
           min_value: 0.0
         RequiresModule: CLM
 
+    SoilMoistureStress:
+      __value__:
+        help: >
+          [Type: boolean/string] Master switch for the per-cell soil-moisture-stress
+          wilting-point treatment. When False (default) CLM behavior is exactly as before.
+          When True, the effective wilting point is limited on the dry side against each
+          cell's van Genuchten residual saturation so transpiration shuts off with mass to
+          spare, keeping the Richards solver off the residual-saturation cliff. Applies to
+          the Saturation (soil-moisture) VegWaterStress formulation.
+        default: False
+        domains:
+          BoolDomain:
+          RequiresModule: CLM
+      ResidualLimit:
+        __value__:
+          help: >
+            [Type: boolean/string] When SoilMoistureStress is True, raise the effective
+            wilting point to at least the cell residual saturation plus Margin (default
+            True). When False, only the minimum ramp width is enforced.
+          default: True
+          domains:
+            BoolDomain:
+        Margin:
+          help: >
+            [Type: double] Saturation-unit margin the effective wilting point is kept above
+            the van Genuchten residual saturation.
+          default: 0.02
+          domains:
+            DoubleValue:
+              min_value: 0.0
+      MinRampWidth:
+        help: >
+          [Type: double] Minimum span between effective field capacity and effective wilting
+          point, keeping the btran ramp denominator well conditioned.
+        default: 0.05
+        domains:
+          DoubleValue:
+            min_value: 0.0
+
     WriteLastRST:
       help: >
         [Type: boolean/string] Controls whether CLM restart files are sequentially written or whether a single file restart file name.00000.p

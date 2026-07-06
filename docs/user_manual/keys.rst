@@ -6146,6 +6146,33 @@ to be active.
       pfset Solver.CLM.WiltingPoint  0.15       ## TCL syntax
       <runname>.Solver.CLM.WiltingPoint = 0.15  ## Python syntax
 
+*string* **Solver.CLM.SoilMoistureStress** False Master switch for the per-cell
+soil-moisture-stress wilting-point treatment. When **False** (default) ``CLM``
+behavior is exactly as before. When **True**, the effective wilting point used by
+the **Saturation** :math:`\beta_t` ramp and its cutoff is limited on the dry side
+against each cell's van Genuchten residual saturation :math:`S_{res}`, so
+transpiration shuts off with mass to spare and never drives a cell to the
+residual-saturation cliff where the Richards Jacobian degenerates.
+
+*string* **Solver.CLM.SoilMoistureStress.ResidualLimit** True When the master switch
+is **True**, raise the effective wilting point to at least
+:math:`S_{res} + \mathrm{Margin}` per cell. When **False**, only the minimum ramp
+width is enforced (no residual limit).
+
+*double* **Solver.CLM.SoilMoistureStress.ResidualLimit.Margin** 0.02 Saturation-unit
+margin the effective wilting point is kept above the per-cell residual saturation.
+
+*double* **Solver.CLM.SoilMoistureStress.MinRampWidth** 0.05 Minimum span between the
+effective field capacity and effective wilting point, keeping the :math:`\beta_t`
+ramp denominator well conditioned when the wilting point is raised.
+
+.. container:: list
+
+   ::
+
+      <runname>.Solver.CLM.SoilMoistureStress = True                    ## Python syntax
+      <runname>.Solver.CLM.SoilMoistureStress.ResidualLimit.Margin = 0.02
+
 *double* **Solver.CLM.FieldCapacity** 1.0 This key specifies the field
 capacity for the :math:`\beta_t` function in ``CLM`` specified above. 
 Note that the units for this function are pressure :math:`[m]` for a **Pressure** 

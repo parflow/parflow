@@ -8,7 +8,7 @@ eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,eflx_grnd_pf,                               
 qflx_tot_pf,qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf,t_g_pf,               &
 t_soi_pf,clm_dump_interval,clm_1d_out,clm_forc_veg,clm_output_dir,clm_output_dir_length,clm_bin_output_dir,         &
 write_CLM_binary,slope_accounting_CLM,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,                 &
-res_satpf,irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thresholdpf,               &
+res_satpf,sm_stress_typepf,sm_residual_marginpf,sm_min_ramp_widthpf,irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thresholdpf,               &
 qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z,clm_next,clm_write_logs,                    &
 clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak,                            &
 snow_partition_typepf,tw_thresholdpf,thin_snow_dampingpf,thin_snow_thresholdpf,                       &
@@ -150,6 +150,9 @@ interception_schemepf,interception_tanh_alphapf)
   real(r8) :: wilting_pointpf                    ! wilting point in m if press-type, in saturation if soil moisture type
   real(r8) :: field_capacitypf                   ! field capacity for water stress same as units above
   real(r8) :: res_satpf                          ! residual saturation from ParFlow
+  integer  :: sm_stress_typepf                   ! dry-side residual limit mode (0=off, 1=residual-limited wp, 2=ramp-floor only)
+  real(r8) :: sm_residual_marginpf               ! saturation margin the effective wilting point must stay above S_res
+  real(r8) :: sm_min_ramp_widthpf                ! minimum fc_eff - wp_eff span
 
   ! irrigation keys
   integer  :: irr_typepf                         ! irrigation type flag (0=none,1=spray,2=drip,3=instant)
@@ -415,6 +418,8 @@ interception_schemepf,interception_tanh_alphapf)
            l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
            ! put ParFlow porosity in a temp variable passed to clm_ini
            pf_porosity(k)       = porosity(l)
+           ! per-cell van Genuchten residual saturation for the wilting-point residual limit
+           clm(t)%s_res_cell(k) = sres(l)
            !print*, 'k=',k,'l=',l,'porosity=',porosity(l),'pf_poro=',pf_porosity(k)
 
            !clm(t)%tksatu(k)       = clm(t)%tkmg(k)*0.57**clm(t)%watsat(k)
@@ -555,6 +560,9 @@ interception_schemepf,interception_tanh_alphapf)
            clm(t)%wilting_point      = wilting_pointpf
            clm(t)%field_capacity     = field_capacitypf
            clm(t)%res_sat            = res_satpf
+           clm(t)%sm_stress_type     = sm_stress_typepf
+           clm(t)%sm_residual_margin = sm_residual_marginpf
+           clm(t)%sm_min_ramp_width  = sm_min_ramp_widthpf
 
            ! for snow parameterization @RMM 2025
            clm(t)%snow_partition_type  = snow_partition_typepf

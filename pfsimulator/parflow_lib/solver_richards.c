@@ -189,6 +189,9 @@ typedef struct {
   int clm_veg_function;         /* CLM veg function for water stress 0=none, 1=press, 2=sat */
   double clm_veg_wilting;       /* CLM veg function wilting point in meters or soil moisture */
   double clm_veg_fieldc;        /* CLM veg function field capacity in meters or soil moisture */
+  int sm_stress_type;           /* dry-side residual limit: 0=off, 1=residual-limited wp, 2=ramp-floor only */
+  double sm_residual_margin;    /* saturation margin the effective wilting point must stay above S_res */
+  double sm_min_ramp_width;     /* minimum fc_eff - wp_eff span */
 
   int clm_irr_type;             /* CLM irrigation type flag -- 0=none, 1=Spray, 2=Drip, 3=Instant */
   int clm_irr_cycle;            /* CLM irrigation cycle flag -- 0=Constant, 1=Deficit */
@@ -2824,6 +2827,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          public_xtra->clm_veg_wilting,
                          public_xtra->clm_veg_fieldc,
                          public_xtra->clm_res_sat,
+                         public_xtra->sm_stress_type,
+                         public_xtra->sm_residual_margin,
+                         public_xtra->sm_min_ramp_width,
                          public_xtra->clm_irr_type,
                          public_xtra->clm_irr_cycle,
                          public_xtra->clm_irr_rate,
@@ -5713,6 +5719,28 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "%s.CLM.FieldCapacity", name);
   public_xtra->clm_veg_fieldc = GetDoubleDefault(key, 1.0);
+
+  /* Dry-side residual limit on the CLM wilting point (SoilMoistureStress).
+   * Master off -> sm_stress_type 0 (exactly current behavior). */
+  {
+    int sm_master, sm_residual_limit;
+    sprintf(key, "%s.CLM.SoilMoistureStress", name);
+    sm_master = NA_NameToIndexExitOnError(switch_na, GetStringDefault(key, "False"), key);
+
+    sprintf(key, "%s.CLM.SoilMoistureStress.ResidualLimit", name);
+    sm_residual_limit = NA_NameToIndexExitOnError(switch_na, GetStringDefault(key, "True"), key);
+
+    if (sm_master == 0)
+      public_xtra->sm_stress_type = 0;
+    else
+      public_xtra->sm_stress_type = (sm_residual_limit != 0) ? 1 : 2;
+
+    sprintf(key, "%s.CLM.SoilMoistureStress.ResidualLimit.Margin", name);
+    public_xtra->sm_residual_margin = GetDoubleDefault(key, 0.02);
+
+    sprintf(key, "%s.CLM.SoilMoistureStress.MinRampWidth", name);
+    public_xtra->sm_min_ramp_width = GetDoubleDefault(key, 0.05);
+  }
 
   /* @RMM 2025 Snow parameterization options */
   NameArray snow_switch_na;
