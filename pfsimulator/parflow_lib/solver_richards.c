@@ -301,6 +301,11 @@ typedef struct {
   double adaptive_newton_exponent;    /* controller exponent */
   double adaptive_newton_safety;      /* safety factor */
   double adaptive_newton_max_growth;  /* max growth factor per step */
+  /* Layer 2: truncation-error surrogate + extrapolated Newton guess. */
+  int adaptive_error_control;         /* Layer 2 on/off */
+  double adaptive_error_rtol;         /* error-surrogate relative tolerance */
+  double adaptive_error_atol;         /* error-surrogate absolute tolerance */
+  int adaptive_extrap_guess;          /* linear-extrapolation Newton initial guess */
 } PublicXtra;
 
 typedef struct {
@@ -409,6 +414,12 @@ typedef struct {
   int adaptive_suppress;            /* steps left to suppress growth after a failure */
   double adaptive_dt_bound_newton;  /* Layer-1 dt bound carried to the next step */
   int adaptive_have_stats;          /* set once the first accepted solve has run */
+  /* Layer 2 state (allocated only when error control or extrapolated guess on). */
+  Vector *pressure_nm1;             /* p_{n-1} pressure history */
+  Vector *adaptive_p_pred;          /* linear-predictor work vector */
+  double adaptive_dt_nm1;           /* previous accepted step's dt */
+  int adaptive_nsteps;              /* accepted steps taken (cold-start counter) */
+  double adaptive_dt_bound_error;   /* Layer-2 dt bound carried to the next step */
 } InstanceXtra;
 
 static const char* dswr_filenames[] = { "DSWR" };
@@ -565,6 +576,13 @@ SetupRichards(PFModule * this_module)
   instance_xtra->adaptive_suppress = 0;
   instance_xtra->adaptive_dt_bound_newton = FLT_MAX;
   instance_xtra->adaptive_have_stats = 0;
+
+  /* Adaptive-dt Layer 2 state (history vectors allocated with old_pressure below). */
+  instance_xtra->pressure_nm1 = NULL;
+  instance_xtra->adaptive_p_pred = NULL;
+  instance_xtra->adaptive_dt_nm1 = 0.0;
+  instance_xtra->adaptive_nsteps = 0;
+  instance_xtra->adaptive_dt_bound_error = FLT_MAX;
 
   sprintf(file_prefix, "%s", GlobalsOutFileName);
 
@@ -1020,6 +1038,19 @@ SetupRichards(PFModule * this_module)
     instance_xtra->old_pressure =
       NewVectorType(grid, 1, 1, vector_cell_centered);
     InitVectorAll(instance_xtra->old_pressure, 0.0);
+
+    /* Adaptive-dt Layer 2 history/work vectors, only when the error surrogate
+     * or the extrapolated guess is active. */
+    if (public_xtra->adaptive_dt &&
+        (public_xtra->adaptive_error_control || public_xtra->adaptive_extrap_guess))
+    {
+      instance_xtra->pressure_nm1 =
+        NewVectorType(grid, 1, 1, vector_cell_centered);
+      instance_xtra->adaptive_p_pred =
+        NewVectorType(grid, 1, 1, vector_cell_centered);
+      InitVectorAll(instance_xtra->pressure_nm1, 0.0);
+      InitVectorAll(instance_xtra->adaptive_p_pred, 0.0);
+    }
 
     instance_xtra->old_saturation =
       NewVectorType(grid, 1, 1, vector_cell_centered);
@@ -1917,6 +1948,94 @@ SetupRichards(PFModule * this_module)
       instance_xtra->file_number++;
     }
   }                             /* End if take_more_time_steps */
+}
+
+/*--------------------------------------------------------------------------
+ * Adaptive-dt Layer 2 helpers (CPU host controller; a GPU reduction would be
+ * needed to mirror AdaptiveErrorNorm on accelerated backends -- deferred).
+ *--------------------------------------------------------------------------*/
+
+/* Linear predictor p_pred = p_n + ratio*(p_n - p_nm1), clamped so the
+ * extrapolation never by itself crosses p = 0 (the ponding switch). */
+static void AdaptivePredictor(Vector *p_pred, Vector *p_n, Vector *p_nm1,
+                              double ratio, ProblemData *problem_data)
+{
+  Grid *grid = VectorGrid(p_pred);
+  GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
+  SubgridArray *subgrids = GridSubgrids(grid);
+  Subgrid *subgrid;
+  int sg, i, j, k, r;
+
+  ForSubgridI(sg, subgrids)
+  {
+    subgrid = SubgridArraySubgrid(subgrids, sg);
+    Subvector *pn_sub = VectorSubvector(p_n, sg);
+    Subvector *pm_sub = VectorSubvector(p_nm1, sg);
+    Subvector *pr_sub = VectorSubvector(p_pred, sg);
+    double *pn = SubvectorData(pn_sub);
+    double *pm = SubvectorData(pm_sub);
+    double *pr = SubvectorData(pr_sub);
+
+    int ix = SubgridIX(subgrid), iy = SubgridIY(subgrid), iz = SubgridIZ(subgrid);
+    int nx = SubgridNX(subgrid), ny = SubgridNY(subgrid), nz = SubgridNZ(subgrid);
+    r = SubgridRX(subgrid);
+
+    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+    {
+      int ip = SubvectorEltIndex(pn_sub, i, j, k);
+      double pv = pn[ip];
+      double pred = pv + ratio * (pv - pm[ip]);
+      if ((pred < 0.0) != (pv < 0.0))
+        pred = (pv >= 0.0) ? 1.0e-6 : -1.0e-6;
+      pr[ip] = pred;
+    });
+  }
+}
+
+/* IDA-style weighted RMS error e = || (p_new - p_pred) .* w ||_RMS over the
+ * active domain, w_i = 1/(rtol*|p_new_i| + atol). */
+static double AdaptiveErrorNorm(Vector *p_new, Vector *p_pred,
+                                double rtol, double atol,
+                                ProblemData *problem_data)
+{
+  Grid *grid = VectorGrid(p_new);
+  GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
+  SubgridArray *subgrids = GridSubgrids(grid);
+  Subgrid *subgrid;
+  int sg, i, j, k, r;
+  double sum = 0.0, count = 0.0;
+
+  ForSubgridI(sg, subgrids)
+  {
+    subgrid = SubgridArraySubgrid(subgrids, sg);
+    Subvector *pnew_sub = VectorSubvector(p_new, sg);
+    Subvector *ppred_sub = VectorSubvector(p_pred, sg);
+    double *pnew = SubvectorData(pnew_sub);
+    double *ppred = SubvectorData(ppred_sub);
+
+    int ix = SubgridIX(subgrid), iy = SubgridIY(subgrid), iz = SubgridIZ(subgrid);
+    int nx = SubgridNX(subgrid), ny = SubgridNY(subgrid), nz = SubgridNZ(subgrid);
+    r = SubgridRX(subgrid);
+
+    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+    {
+      int ip = SubvectorEltIndex(pnew_sub, i, j, k);
+      double w = 1.0 / (rtol * fabs(pnew[ip]) + atol);
+      double e = (pnew[ip] - ppred[ip]) * w;
+      sum += e * e;
+      count += 1.0;
+    });
+  }
+
+  {
+    amps_Invoice invoice = amps_NewInvoice("%d%d", &sum, &count);
+    amps_AllReduce(amps_CommWorld, invoice, amps_Add);
+    amps_FreeInvoice(invoice);
+  }
+
+  if (count <= 0.0)
+    return 0.0;
+  return sqrt(sum / count);
 }
 
 void
@@ -3024,6 +3143,15 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           dt_info = 'n';
         }
 
+        /* Adaptive-dt Layer 2: bound by the truncation-error surrogate. */
+        if (public_xtra->adaptive_dt && public_xtra->adaptive_error_control &&
+            instance_xtra->adaptive_nsteps >= 2 &&
+            instance_xtra->adaptive_dt_bound_error < dt)
+        {
+          dt = instance_xtra->adaptive_dt_bound_error;
+          dt_info = 'e';
+        }
+
         PFVCopy(instance_xtra->density, instance_xtra->old_density);
         PFVCopy(instance_xtra->saturation,
                 instance_xtra->old_saturation);
@@ -3392,6 +3520,19 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         }
       }
 
+      /* Adaptive-dt Layer 2: form the linear predictor p_pred from the pressure
+       * history (kept for the error surrogate), and optionally seed Newton with
+       * it.  Only after enough history exists; the p = 0 clamp is in the helper. */
+      if (public_xtra->adaptive_dt && instance_xtra->pressure_nm1 &&
+          instance_xtra->adaptive_nsteps >= 2 && instance_xtra->adaptive_dt_nm1 > 0.0)
+      {
+        AdaptivePredictor(instance_xtra->adaptive_p_pred,
+                          instance_xtra->pressure, instance_xtra->pressure_nm1,
+                          dt / instance_xtra->adaptive_dt_nm1, problem_data);
+        if (public_xtra->adaptive_extrap_guess)
+          PFVCopy(instance_xtra->adaptive_p_pred, instance_xtra->pressure);
+      }
+
       /*******************************************************************/
       /*          Solve the nonlinear system for this time step          */
       /*******************************************************************/
@@ -3451,6 +3592,23 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           instance_xtra->adaptive_fac_prev = fac;
           instance_xtra->adaptive_have_stats = 1;
         }
+
+        /* Adaptive-dt Layer 2: truncation-error surrogate.  Compare the accepted
+         * pressure to the linear predictor formed before the solve, then set the
+         * order-1 error-controlled bound for the next step. */
+        if (public_xtra->adaptive_dt && public_xtra->adaptive_error_control &&
+            instance_xtra->adaptive_nsteps >= 2 && instance_xtra->adaptive_dt_nm1 > 0.0)
+        {
+          double e = AdaptiveErrorNorm(instance_xtra->pressure,
+                                       instance_xtra->adaptive_p_pred,
+                                       public_xtra->adaptive_error_rtol,
+                                       public_xtra->adaptive_error_atol,
+                                       problem_data);
+          double fac = public_xtra->adaptive_newton_safety *
+                       pow(1.0 / pfmax(e, 1.0e-30), 0.5);
+          fac = pfmin(fac, public_xtra->adaptive_newton_max_growth);
+          instance_xtra->adaptive_dt_bound_error = dt * fac;
+        }
       }
 
       if (conv_failures >= max_failures)
@@ -3465,6 +3623,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       }
     }                           /* Ends do for convergence of time step loop */
     while ((!converged) && (conv_failures < max_failures));
+
+    /* Adaptive-dt Layer 2: roll pressure history for the next predictor. */
+    if (public_xtra->adaptive_dt && converged && instance_xtra->pressure_nm1)
+    {
+      PFVCopy(instance_xtra->old_pressure, instance_xtra->pressure_nm1);
+      instance_xtra->adaptive_dt_nm1 = dt;
+      instance_xtra->adaptive_nsteps++;
+    }
 
     instance_xtra->iteration_number++;
 
@@ -4949,6 +5115,10 @@ TeardownRichards(PFModule * this_module)
   FreeVector(instance_xtra->density);
   FreeVector(instance_xtra->old_saturation);
   FreeVector(instance_xtra->old_pressure);
+  if (instance_xtra->pressure_nm1)
+    FreeVector(instance_xtra->pressure_nm1);
+  if (instance_xtra->adaptive_p_pred)
+    FreeVector(instance_xtra->adaptive_p_pred);
   FreeVector(instance_xtra->old_density);
   FreeVector(instance_xtra->pressure);
   FreeVector(instance_xtra->ovrl_bc_flx);
@@ -6310,6 +6480,18 @@ SolverRichardsNewPublicXtra(char *name)
   public_xtra->adaptive_newton_safety = GetDoubleDefault(key, 0.9);
   sprintf(key, "%s.AdaptiveDt.NewtonControl.MaxGrowth", name);
   public_xtra->adaptive_newton_max_growth = GetDoubleDefault(key, 2.0);
+
+  /* Layer 2: truncation-error surrogate + extrapolated Newton guess. */
+  sprintf(key, "%s.AdaptiveDt.ErrorControl", name);
+  public_xtra->adaptive_error_control =
+    NA_NameToIndexExitOnError(switch_na, GetStringDefault(key, "False"), key);
+  sprintf(key, "%s.AdaptiveDt.ErrorControl.RelTol", name);
+  public_xtra->adaptive_error_rtol = GetDoubleDefault(key, 1.0e-3);
+  sprintf(key, "%s.AdaptiveDt.ErrorControl.AbsTol", name);
+  public_xtra->adaptive_error_atol = GetDoubleDefault(key, 1.0e-4);
+  sprintf(key, "%s.AdaptiveDt.ExtrapolatedGuess", name);
+  public_xtra->adaptive_extrap_guess =
+    NA_NameToIndexExitOnError(switch_na, GetStringDefault(key, "False"), key);
 
   sprintf(key, "%s.MaxConvergenceFailures", name);
   public_xtra->max_convergence_failures = GetIntDefault(key, 3);

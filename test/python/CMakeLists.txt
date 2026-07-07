@@ -33,6 +33,7 @@ if(${PARFLOW_HAVE_HYPRE})
         LW_var_dz_spinup
         terrain_following_grid_overland
         adaptive_dt_newton
+        adaptive_dt_error
         var_dz_1D
         var_dz_with_well
         tilted_v_with_reservoir_overland_flow

@@ -2191,6 +2191,38 @@ Solver:
         domains:
           DoubleValue:
             min_value: 1.0
+    ErrorControl:
+      __value__:
+        help: >
+          [Type: boolean/string] Layer 2: after each accepted solve, compare the
+          solution to a linear-extrapolation predictor and bound the next dt from
+          the resulting truncation-error surrogate (order-1 controller). Never
+          grows dt beyond the base controller.
+        default: False
+        domains:
+          BoolDomain:
+      RelTol:
+        help: >
+          [Type: double] Relative tolerance in the error-weight vector.
+        default: 1.0e-3
+        domains:
+          DoubleValue:
+            min_value: 0.0
+      AbsTol:
+        help: >
+          [Type: double] Absolute tolerance in the error-weight vector.
+        default: 1.0e-4
+        domains:
+          DoubleValue:
+            min_value: 0.0
+    ExtrapolatedGuess:
+      help: >
+        [Type: boolean/string] Layer 2: use the linear-extrapolation predictor
+        (clamped at zero pressure) as the Newton initial guess instead of the
+        previous solution.
+      default: False
+      domains:
+        BoolDomain:
 
   # missing from manual
   MaxLevels:

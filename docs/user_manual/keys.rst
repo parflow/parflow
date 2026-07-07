@@ -4469,6 +4469,25 @@ computed dt growth factor.
 *double* **Solver.AdaptiveDt.NewtonControl.MaxGrowth** 2.0 Maximum ``dt`` growth
 factor per step.
 
+*string* **Solver.AdaptiveDt.ErrorControl** False Layer 2 of the adaptive
+controller. When **True**, after each accepted solve the solution is compared to a
+linear-extrapolation predictor formed from the two previous accepted solutions, and
+the resulting truncation-error surrogate (an IDA-style weighted RMS norm) bounds the
+next ``dt`` through an order-1 error controller. Shares the ``NewtonControl.Safety``
+and ``NewtonControl.MaxGrowth`` factors and never grows ``dt`` beyond the base
+controller.
+
+*double* **Solver.AdaptiveDt.ErrorControl.RelTol** 1e-3 Relative tolerance in the
+error-weight vector.
+
+*double* **Solver.AdaptiveDt.ErrorControl.AbsTol** 1e-4 Absolute tolerance in the
+error-weight vector.
+
+*string* **Solver.AdaptiveDt.ExtrapolatedGuess** False When **True**, the
+linear-extrapolation predictor (clamped at zero pressure so the guess never
+spuriously ponds or saturates) is used as the Newton initial guess instead of the
+previous solution, reducing Newton iterations per step for smoothly evolving flows.
+
 .. container:: list
 
    ::
@@ -4476,6 +4495,9 @@ factor per step.
       <runname>.Solver.AdaptiveDt = True                       ## Python syntax
       <runname>.Solver.AdaptiveDt.NewtonControl = True
       <runname>.Solver.AdaptiveDt.NewtonControl.Target = 6
+      <runname>.Solver.AdaptiveDt.ErrorControl = True
+      <runname>.Solver.AdaptiveDt.ErrorControl.RelTol = 1e-3
+      <runname>.Solver.AdaptiveDt.ExtrapolatedGuess = True
 
 *double* **Solver.RelTol** 1.0 This value gives the relative tolerance
 for the linear solve algorithm.
