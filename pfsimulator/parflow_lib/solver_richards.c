@@ -3392,6 +3392,23 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
       t += dt;
 
+      /* Adaptive-dt Layer 2: form the linear predictor p_pred from the pressure
+       * history (kept for the error surrogate), and optionally seed Newton with
+       * it.  Only after enough history exists; the p = 0 clamp is in the helper.
+       * Must run BEFORE the surface predictor: the clamp keeps extrapolation
+       * alone from crossing the ponding switch, while the surface predictor
+       * flips cells on per-cell flux-balance evidence -- it gets the last word
+       * at those cells (previously it ran first and the guess copy erased it). */
+      if (public_xtra->adaptive_dt && instance_xtra->pressure_nm1 &&
+          instance_xtra->adaptive_nsteps >= 2 && instance_xtra->adaptive_dt_nm1 > 0.0)
+      {
+        AdaptivePredictor(instance_xtra->adaptive_p_pred,
+                          instance_xtra->pressure, instance_xtra->pressure_nm1,
+                          dt / instance_xtra->adaptive_dt_nm1, problem_data);
+        if (public_xtra->adaptive_extrap_guess)
+          PFVCopy(instance_xtra->adaptive_p_pred, instance_xtra->pressure);
+      }
+
       /*  experiment with a predictor to adjust land surface pressures to be >0 if rainfall*/
       if (public_xtra->surface_predictor == 1)
       {
@@ -3518,19 +3535,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           }
                        );
         }
-      }
-
-      /* Adaptive-dt Layer 2: form the linear predictor p_pred from the pressure
-       * history (kept for the error surrogate), and optionally seed Newton with
-       * it.  Only after enough history exists; the p = 0 clamp is in the helper. */
-      if (public_xtra->adaptive_dt && instance_xtra->pressure_nm1 &&
-          instance_xtra->adaptive_nsteps >= 2 && instance_xtra->adaptive_dt_nm1 > 0.0)
-      {
-        AdaptivePredictor(instance_xtra->adaptive_p_pred,
-                          instance_xtra->pressure, instance_xtra->pressure_nm1,
-                          dt / instance_xtra->adaptive_dt_nm1, problem_data);
-        if (public_xtra->adaptive_extrap_guess)
-          PFVCopy(instance_xtra->adaptive_p_pred, instance_xtra->pressure);
       }
 
       /*******************************************************************/
