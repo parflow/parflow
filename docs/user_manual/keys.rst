@@ -4510,6 +4510,13 @@ cell also counts as exceeded if the incoming flux would saturate its remaining
 storage within this time (a saturation-excess screen); typically the forcing
 interval length. 0 disables the storage screen.
 
+*string* **Solver.AdaptiveDt.PrintLog** False When **True**, one CSV line per
+accepted step is written from rank 0 to ``<runname>.out.adaptive_dt.csv``:
+step, time, ``dt``, dt_info, converged, retries, Newton and linear iterations,
+beta failures, backtracks, the Layer-2 error norm, and the Layer-4 onset load
+(-1 until the corresponding layer has produced a value). This log is the
+primary evaluation artifact for timestep-controller studies.
+
 .. container:: list
 
    ::

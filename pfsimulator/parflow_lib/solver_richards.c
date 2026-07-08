@@ -312,6 +312,7 @@ typedef struct {
   double adaptive_onset_load_threshold; /* exceedance-fraction jump that triggers */
   double adaptive_onset_fill_horizon; /* > 0: also flag top cells that would
                                        * saturate within this time (Dunne screen) */
+  int adaptive_print_log;             /* per-step CSV log from rank 0 */
 } PublicXtra;
 
 typedef struct {
@@ -432,6 +433,8 @@ typedef struct {
   int adaptive_onset_fired;         /* countdown suppressing the extrapolated
                                      * guess until the pressure history no
                                      * longer spans the onset (2 steps) */
+  double adaptive_last_error_norm;  /* last Layer-2 error norm (-1 = none) */
+  int adaptive_log_started;         /* CSV header written */
 } InstanceXtra;
 
 static const char* dswr_filenames[] = { "DSWR" };
@@ -600,6 +603,9 @@ SetupRichards(PFModule * this_module)
   instance_xtra->adaptive_onset_relperm = NULL;
   instance_xtra->adaptive_onset_f_prev = -1.0;
   instance_xtra->adaptive_onset_fired = 0;
+
+  instance_xtra->adaptive_last_error_norm = -1.0;
+  instance_xtra->adaptive_log_started = 0;
 
   sprintf(file_prefix, "%s", GlobalsOutFileName);
 
@@ -3756,6 +3762,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                        pow(1.0 / pfmax(e, 1.0e-30), 0.5);
           fac = pfmin(fac, public_xtra->adaptive_newton_max_growth);
           instance_xtra->adaptive_dt_bound_error = dt * fac;
+          instance_xtra->adaptive_last_error_norm = e;
         }
       }
 
@@ -3778,6 +3785,37 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       PFVCopy(instance_xtra->old_pressure, instance_xtra->pressure_nm1);
       instance_xtra->adaptive_dt_nm1 = dt;
       instance_xtra->adaptive_nsteps++;
+    }
+
+    /* Adaptive-dt per-step CSV log, one line per accepted step from rank 0.
+     * error_norm and onset_load are -1 until their layers have produced one. */
+    if (public_xtra->adaptive_dt && public_xtra->adaptive_print_log &&
+        !amps_Rank(amps_CommWorld))
+    {
+      char csv_name[2048];
+      FILE *csv_file;
+      int newton = -1, lin = -1, beta_fails = -1, backtracks = -1;
+
+      KinsolNonlinSolverGetLastStats(nonlin_solver, &newton, &lin,
+                                     &beta_fails, &backtracks);
+      sprintf(csv_name, "%s.adaptive_dt.csv", file_prefix);
+      if ((csv_file = fopen(csv_name,
+                            instance_xtra->adaptive_log_started ? "a" : "w")))
+      {
+        if (!instance_xtra->adaptive_log_started)
+        {
+          fprintf(csv_file,
+                  "step,time,dt,dt_info,converged,retries,newton_its,"
+                  "lin_its,beta_fails,backtracks,error_norm,onset_load\n");
+          instance_xtra->adaptive_log_started = 1;
+        }
+        fprintf(csv_file, "%d,%.10e,%.10e,%c,%d,%d,%d,%d,%d,%d,%.6e,%.6e\n",
+                instance_xtra->iteration_number, t, dt, dt_info, converged,
+                conv_failures, newton, lin, beta_fails, backtracks,
+                instance_xtra->adaptive_last_error_norm,
+                instance_xtra->adaptive_onset_f_prev);
+        fclose(csv_file);
+      }
     }
 
     instance_xtra->iteration_number++;
@@ -6653,6 +6691,10 @@ SolverRichardsNewPublicXtra(char *name)
   public_xtra->adaptive_onset_load_threshold = GetDoubleDefault(key, 0.02);
   sprintf(key, "%s.AdaptiveDt.OnsetControl.FillHorizon", name);
   public_xtra->adaptive_onset_fill_horizon = GetDoubleDefault(key, 0.0);
+
+  sprintf(key, "%s.AdaptiveDt.PrintLog", name);
+  public_xtra->adaptive_print_log =
+    NA_NameToIndexExitOnError(switch_na, GetStringDefault(key, "False"), key);
 
   sprintf(key, "%s.MaxConvergenceFailures", name);
   public_xtra->max_convergence_failures = GetIntDefault(key, 3);

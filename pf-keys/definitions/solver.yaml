@@ -2263,6 +2263,16 @@ Solver:
         domains:
           DoubleValue:
             min_value: 0.0
+    PrintLog:
+      help: >
+        [Type: boolean/string] Write one CSV line per accepted step from rank 0
+        to <runname>.out.adaptive_dt.csv: step, time, dt, dt_info, converged,
+        retries, Newton/linear iterations, beta failures, backtracks, Layer-2
+        error norm, and Layer-4 onset load (-1 until a layer has produced one).
+        The primary evaluation artifact for controller studies.
+      default: False
+      domains:
+        BoolDomain:
 
   # missing from manual
   MaxLevels:
