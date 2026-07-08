@@ -2223,6 +2223,46 @@ Solver:
       default: False
       domains:
         BoolDomain:
+    OnsetControl:
+      __value__:
+        help: >
+          [Type: boolean/string] Layer 4: before each solve, screen the incoming
+          evap_trans flux per surface cell against the current infiltration
+          capacity Kz*kr(p_top); a jump in the exceedance fraction larger than
+          LoadThreshold marks a forcing onset and caps that one step's dt by
+          Factor.  Also suppresses the extrapolated Newton guess for the onset
+          step and the one after (until the pressure history no longer spans
+          the forcing discontinuity).
+        default: False
+        domains:
+          BoolDomain:
+      Factor:
+        help: >
+          [Type: double] One-shot multiplicative dt cap applied at a detected
+          forcing onset.
+        default: 0.25
+        domains:
+          DoubleValue:
+            min_value: 0.0
+            max_value: 1.0
+      LoadThreshold:
+        help: >
+          [Type: double] Jump in the capacity-exceedance fraction of surface
+          cells (0-1) between consecutive steps that triggers the onset cap.
+        default: 0.02
+        domains:
+          DoubleValue:
+            min_value: 0.0
+      FillHorizon:
+        help: >
+          [Type: double] When positive, a top cell also counts as exceeded if
+          the incoming flux would saturate its remaining storage within this
+          time (saturation-excess/Dunne screen); typically set to the forcing
+          interval length.  0 (default) disables the storage screen.
+        default: 0.0
+        domains:
+          DoubleValue:
+            min_value: 0.0
 
   # missing from manual
   MaxLevels:

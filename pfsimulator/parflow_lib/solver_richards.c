@@ -306,6 +306,12 @@ typedef struct {
   double adaptive_error_rtol;         /* error-surrogate relative tolerance */
   double adaptive_error_atol;         /* error-surrogate absolute tolerance */
   int adaptive_extrap_guess;          /* linear-extrapolation Newton initial guess */
+  /* Layer 4: forcing-onset cap. */
+  int adaptive_onset_control;         /* Layer 4 on/off */
+  double adaptive_onset_factor;       /* one-shot dt cap factor at a forcing onset */
+  double adaptive_onset_load_threshold; /* exceedance-fraction jump that triggers */
+  double adaptive_onset_fill_horizon; /* > 0: also flag top cells that would
+                                       * saturate within this time (Dunne screen) */
 } PublicXtra;
 
 typedef struct {
@@ -420,6 +426,12 @@ typedef struct {
   double adaptive_dt_nm1;           /* previous accepted step's dt */
   int adaptive_nsteps;              /* accepted steps taken (cold-start counter) */
   double adaptive_dt_bound_error;   /* Layer-2 dt bound carried to the next step */
+  /* Layer 4 state (relperm scratch allocated only when onset control on). */
+  Vector *adaptive_onset_relperm;   /* kr(p) scratch for the capacity screen */
+  double adaptive_onset_f_prev;     /* previous step's exceedance fraction (< 0 = none) */
+  int adaptive_onset_fired;         /* countdown suppressing the extrapolated
+                                     * guess until the pressure history no
+                                     * longer spans the onset (2 steps) */
 } InstanceXtra;
 
 static const char* dswr_filenames[] = { "DSWR" };
@@ -583,6 +595,11 @@ SetupRichards(PFModule * this_module)
   instance_xtra->adaptive_dt_nm1 = 0.0;
   instance_xtra->adaptive_nsteps = 0;
   instance_xtra->adaptive_dt_bound_error = FLT_MAX;
+
+  /* Adaptive-dt Layer 4 state. */
+  instance_xtra->adaptive_onset_relperm = NULL;
+  instance_xtra->adaptive_onset_f_prev = -1.0;
+  instance_xtra->adaptive_onset_fired = 0;
 
   sprintf(file_prefix, "%s", GlobalsOutFileName);
 
@@ -1050,6 +1067,14 @@ SetupRichards(PFModule * this_module)
         NewVectorType(grid, 1, 1, vector_cell_centered);
       InitVectorAll(instance_xtra->pressure_nm1, 0.0);
       InitVectorAll(instance_xtra->adaptive_p_pred, 0.0);
+    }
+
+    /* Adaptive-dt Layer 4 relperm scratch for the onset capacity screen. */
+    if (public_xtra->adaptive_dt && public_xtra->adaptive_onset_control)
+    {
+      instance_xtra->adaptive_onset_relperm =
+        NewVectorType(grid, 1, 1, vector_cell_centered);
+      InitVectorAll(instance_xtra->adaptive_onset_relperm, 0.0);
     }
 
     instance_xtra->old_saturation =
@@ -2036,6 +2061,83 @@ static double AdaptiveErrorNorm(Vector *p_new, Vector *p_pred,
   if (count <= 0.0)
     return 0.0;
   return sqrt(sum / count);
+}
+
+/* Layer 4 capacity screen: fraction of top cells whose incoming evap_trans
+ * flux exceeds the current infiltration capacity K_eff = Kz * kr(p_top)
+ * (Hortonian), or -- when fill_horizon > 0 -- would saturate the remaining
+ * top-cell storage within fill_horizon at the incoming rate (Dunne).  A jump
+ * in this fraction between steps marks a forcing onset. */
+static double AdaptiveOnsetLoad(Vector *evap_trans, Vector *rel_perm,
+                                Vector *saturation, Vector *dz_mult,
+                                double fill_horizon,
+                                ProblemData *problem_data)
+{
+  Vector *perm_z = ProblemDataPermeabilityZ(problem_data);
+  Vector *porosity = ProblemDataPorosity(problem_data);
+  Vector *top = ProblemDataIndexOfDomainTop(problem_data);
+  GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
+  Grid *grid = VectorGrid(evap_trans);
+  SubgridArray *subgrids = GridSubgrids(grid);
+  Subgrid *subgrid;
+  int sg, i, j, k, r;
+  double exceed = 0.0, count = 0.0;
+
+  ForSubgridI(sg, subgrids)
+  {
+    subgrid = SubgridArraySubgrid(subgrids, sg);
+    Subvector *et_sub = VectorSubvector(evap_trans, sg);
+    Subvector *kr_sub = VectorSubvector(rel_perm, sg);
+    Subvector *s_sub = VectorSubvector(saturation, sg);
+    Subvector *kz_sub = VectorSubvector(perm_z, sg);
+    Subvector *po_sub = VectorSubvector(porosity, sg);
+    Subvector *dzm_sub = VectorSubvector(dz_mult, sg);
+    Subvector *top_sub = VectorSubvector(top, sg);
+    double *et = SubvectorData(et_sub);
+    double *kr = SubvectorData(kr_sub);
+    double *sp = SubvectorData(s_sub);
+    double *kz = SubvectorData(kz_sub);
+    double *po = SubvectorData(po_sub);
+    double *dzm = SubvectorData(dzm_sub);
+    double *top_dat = SubvectorData(top_sub);
+
+    int ix = SubgridIX(subgrid), iy = SubgridIY(subgrid), iz = SubgridIZ(subgrid);
+    int nx = SubgridNX(subgrid), ny = SubgridNY(subgrid), nz = SubgridNZ(subgrid);
+    double dz = SubgridDZ(subgrid);
+    r = SubgridRX(subgrid);
+
+    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+    {
+      int io = SubvectorEltIndex(top_sub, i, j, 0);
+      if (k == (int)top_dat[io])
+      {
+        int ip = SubvectorEltIndex(et_sub, i, j, k);
+        int ipk = SubvectorEltIndex(kz_sub, i, j, k);
+        double cell_dz = dz * dzm[ip];
+        double q_in = et[ip] * cell_dz;         /* [L/T] into the top cell */
+
+        count += 1.0;
+        if (q_in > 0.0)
+        {
+          if (q_in > kz[ipk] * kr[ip])
+            exceed += 1.0;
+          else if (fill_horizon > 0.0 &&
+                   q_in * fill_horizon > (1.0 - sp[ip]) * po[ipk] * cell_dz)
+            exceed += 1.0;
+        }
+      }
+    });
+  }
+
+  {
+    amps_Invoice invoice = amps_NewInvoice("%d%d", &exceed, &count);
+    amps_AllReduce(amps_CommWorld, invoice, amps_Add);
+    amps_FreeInvoice(invoice);
+  }
+
+  if (count <= 0.0)
+    return 0.0;
+  return exceed / count;
 }
 
 void
@@ -3152,6 +3254,44 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           dt_info = 'e';
         }
 
+        /* Adaptive-dt Layer 4: forcing-onset cap.  Screen the incoming
+         * evap_trans flux (updated above when a forcing interval began)
+         * against the current infiltration capacity; a jump in the exceedance
+         * fraction marks an onset and caps this one step's dt.  The fired
+         * flag also suppresses the extrapolated guess for the step, whose
+         * history points the wrong way across a forcing discontinuity. */
+        if (public_xtra->adaptive_dt && public_xtra->adaptive_onset_control)
+        {
+          double f_exceed;
+
+          PFModuleInvokeType(PhaseRelPermInvoke, instance_xtra->phase_rel_perm,
+                             (instance_xtra->adaptive_onset_relperm,
+                              instance_xtra->pressure, instance_xtra->density,
+                              gravity, problem_data, CALCFCN));
+          f_exceed = AdaptiveOnsetLoad(evap_trans,
+                                       instance_xtra->adaptive_onset_relperm,
+                                       instance_xtra->saturation,
+                                       instance_xtra->dz_mult,
+                                       public_xtra->adaptive_onset_fill_horizon,
+                                       problem_data);
+          if (instance_xtra->adaptive_onset_f_prev >= 0.0 &&
+              (f_exceed - instance_xtra->adaptive_onset_f_prev) >
+              public_xtra->adaptive_onset_load_threshold)
+          {
+            dt *= public_xtra->adaptive_onset_factor;
+            dt_info = 'o';
+            /* Suppress the extrapolated guess for this step and the next:
+             * until then the pressure history spans the forcing
+             * discontinuity and extrapolating across it is misleading. */
+            instance_xtra->adaptive_onset_fired = 2;
+          }
+          else if (instance_xtra->adaptive_onset_fired > 0)
+          {
+            instance_xtra->adaptive_onset_fired--;
+          }
+          instance_xtra->adaptive_onset_f_prev = f_exceed;
+        }
+
         PFVCopy(instance_xtra->density, instance_xtra->old_density);
         PFVCopy(instance_xtra->saturation,
                 instance_xtra->old_saturation);
@@ -3405,7 +3545,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         AdaptivePredictor(instance_xtra->adaptive_p_pred,
                           instance_xtra->pressure, instance_xtra->pressure_nm1,
                           dt / instance_xtra->adaptive_dt_nm1, problem_data);
-        if (public_xtra->adaptive_extrap_guess)
+        /* The extrapolated guess is an optimization only: skip it while an
+         * onset suppression is active, and on the halved retries after a
+         * convergence failure (fall back to the accepted solution). */
+        if (public_xtra->adaptive_extrap_guess &&
+            !instance_xtra->adaptive_onset_fired && conv_failures == 0)
           PFVCopy(instance_xtra->adaptive_p_pred, instance_xtra->pressure);
       }
 
@@ -5123,6 +5267,8 @@ TeardownRichards(PFModule * this_module)
     FreeVector(instance_xtra->pressure_nm1);
   if (instance_xtra->adaptive_p_pred)
     FreeVector(instance_xtra->adaptive_p_pred);
+  if (instance_xtra->adaptive_onset_relperm)
+    FreeVector(instance_xtra->adaptive_onset_relperm);
   FreeVector(instance_xtra->old_density);
   FreeVector(instance_xtra->pressure);
   FreeVector(instance_xtra->ovrl_bc_flx);
@@ -6496,6 +6642,17 @@ SolverRichardsNewPublicXtra(char *name)
   sprintf(key, "%s.AdaptiveDt.ExtrapolatedGuess", name);
   public_xtra->adaptive_extrap_guess =
     NA_NameToIndexExitOnError(switch_na, GetStringDefault(key, "False"), key);
+
+  /* Layer 4: forcing-onset cap. */
+  sprintf(key, "%s.AdaptiveDt.OnsetControl", name);
+  public_xtra->adaptive_onset_control =
+    NA_NameToIndexExitOnError(switch_na, GetStringDefault(key, "False"), key);
+  sprintf(key, "%s.AdaptiveDt.OnsetControl.Factor", name);
+  public_xtra->adaptive_onset_factor = GetDoubleDefault(key, 0.25);
+  sprintf(key, "%s.AdaptiveDt.OnsetControl.LoadThreshold", name);
+  public_xtra->adaptive_onset_load_threshold = GetDoubleDefault(key, 0.02);
+  sprintf(key, "%s.AdaptiveDt.OnsetControl.FillHorizon", name);
+  public_xtra->adaptive_onset_fill_horizon = GetDoubleDefault(key, 0.0);
 
   sprintf(key, "%s.MaxConvergenceFailures", name);
   public_xtra->max_convergence_failures = GetIntDefault(key, 3);

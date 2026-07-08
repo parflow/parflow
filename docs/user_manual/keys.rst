@@ -4488,6 +4488,28 @@ linear-extrapolation predictor (clamped at zero pressure so the guess never
 spuriously ponds or saturates) is used as the Newton initial guess instead of the
 previous solution, reducing Newton iterations per step for smoothly evolving flows.
 
+*string* **Solver.AdaptiveDt.OnsetControl** False Layer 4 of the adaptive
+controller. When **True**, before each solve the incoming ``evap_trans`` flux is
+screened per surface cell against the current infiltration capacity
+(Kz :math:`\cdot` kr(p_top)); a jump in the exceedance fraction larger than
+``LoadThreshold`` marks a forcing onset (e.g. a storm beginning at a forcing
+interval boundary while ``dt`` is large) and caps that one step's ``dt`` by
+``Factor``, then releases. The extrapolated Newton guess is suppressed for the
+onset step and the one after (until the pressure history no longer spans the
+forcing discontinuity); the surface predictor is unaffected.
+
+*double* **Solver.AdaptiveDt.OnsetControl.Factor** 0.25 One-shot multiplicative
+``dt`` cap applied at a detected forcing onset.
+
+*double* **Solver.AdaptiveDt.OnsetControl.LoadThreshold** 0.02 Jump in the
+capacity-exceedance fraction of surface cells between consecutive steps that
+triggers the onset cap.
+
+*double* **Solver.AdaptiveDt.OnsetControl.FillHorizon** 0.0 When positive, a top
+cell also counts as exceeded if the incoming flux would saturate its remaining
+storage within this time (a saturation-excess screen); typically the forcing
+interval length. 0 disables the storage screen.
+
 .. container:: list
 
    ::
