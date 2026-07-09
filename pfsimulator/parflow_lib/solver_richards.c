@@ -435,6 +435,7 @@ typedef struct {
                                      * longer spans the onset (2 steps) */
   double adaptive_last_error_norm;  /* last Layer-2 error norm (-1 = none) */
   int adaptive_log_started;         /* CSV header written */
+  amps_Clock_t adaptive_log_clock;  /* wall clock at the last CSV line */
 } InstanceXtra;
 
 static const char* dswr_filenames[] = { "DSWR" };
@@ -606,6 +607,7 @@ SetupRichards(PFModule * this_module)
 
   instance_xtra->adaptive_last_error_norm = -1.0;
   instance_xtra->adaptive_log_started = 0;
+  instance_xtra->adaptive_log_clock = amps_Clock();
 
   sprintf(file_prefix, "%s", GlobalsOutFileName);
 
@@ -3725,9 +3727,10 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
          * solve's Newton count (PI memory, growth cap, failure suppression). */
         if (public_xtra->adaptive_dt && public_xtra->adaptive_newton_control)
         {
-          int newton, lin, beta_fails, backtracks;
+          int newton, lin, beta_fails, backtracks, func_evals;
           KinsolNonlinSolverGetLastStats(nonlin_solver, &newton, &lin,
-                                         &beta_fails, &backtracks);
+                                         &beta_fails, &backtracks,
+                                         &func_evals);
 
           double ratio = (double)public_xtra->adaptive_newton_target /
                          (double)pfmax(newton, 1);
@@ -3795,9 +3798,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       char csv_name[2048];
       FILE *csv_file;
       int newton = -1, lin = -1, beta_fails = -1, backtracks = -1;
+      int func_evals = -1;
+      amps_Clock_t now = amps_Clock();
+      double wall_s = (double)(now - instance_xtra->adaptive_log_clock) /
+                      (double)AMPS_TICKS_PER_SEC;
 
+      instance_xtra->adaptive_log_clock = now;
       KinsolNonlinSolverGetLastStats(nonlin_solver, &newton, &lin,
-                                     &beta_fails, &backtracks);
+                                     &beta_fails, &backtracks, &func_evals);
       sprintf(csv_name, "%s.adaptive_dt.csv", file_prefix);
       if ((csv_file = fopen(csv_name,
                             instance_xtra->adaptive_log_started ? "a" : "w")))
@@ -3806,12 +3814,15 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         {
           fprintf(csv_file,
                   "step,time,dt,dt_info,converged,retries,newton_its,"
-                  "lin_its,beta_fails,backtracks,error_norm,onset_load\n");
+                  "lin_its,beta_fails,backtracks,func_evals,wall_s,"
+                  "error_norm,onset_load\n");
           instance_xtra->adaptive_log_started = 1;
         }
-        fprintf(csv_file, "%d,%.10e,%.10e,%c,%d,%d,%d,%d,%d,%d,%.6e,%.6e\n",
+        fprintf(csv_file,
+                "%d,%.10e,%.10e,%c,%d,%d,%d,%d,%d,%d,%d,%.4e,%.6e,%.6e\n",
                 instance_xtra->iteration_number, t, dt, dt_info, converged,
                 conv_failures, newton, lin, beta_fails, backtracks,
+                func_evals, wall_s,
                 instance_xtra->adaptive_last_error_norm,
                 instance_xtra->adaptive_onset_f_prev);
         fclose(csv_file);

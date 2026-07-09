@@ -451,8 +451,9 @@ int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, V
 /*--------------------------------------------------------------------------
  * KinsolNonlinSolverGetLastStats
  *   Return the most recent nonlinear solve's per-step work counts (Newton
- *   iterations, linear iterations, beta-condition failures, backtracks) for
- *   the adaptive-dt Newton controller.  Read-only.
+ *   iterations, linear iterations, beta-condition failures, backtracks,
+ *   function evaluations) for the adaptive-dt controller and its CSV log.
+ *   Read-only.
  *--------------------------------------------------------------------------*/
 
 void KinsolNonlinSolverGetLastStats(
@@ -460,7 +461,8 @@ void KinsolNonlinSolverGetLastStats(
                                     int *     newton,
                                     int *     lin,
                                     int *     beta_fails,
-                                    int *     backtracks)
+                                    int *     backtracks,
+                                    int *     func_evals)
 {
   InstanceXtra *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
@@ -469,12 +471,14 @@ void KinsolNonlinSolverGetLastStats(
   *lin = (int)instance_xtra->num_lin_iters;
   *beta_fails = (int)instance_xtra->num_beta_cond_fails;
   *backtracks = (int)instance_xtra->num_backtracks;
+  *func_evals = (int)instance_xtra->num_fevals;
 #else
   long int *iopt = instance_xtra->int_optional_input;
   *newton = (int)iopt[NNI];
   *lin = (int)iopt[SPGMR_NLI];
   *beta_fails = (int)iopt[NBCF];
   *backtracks = (int)iopt[NBKTRK];
+  *func_evals = (int)iopt[NFE];
 #endif
 }
 
