@@ -2263,13 +2263,35 @@ Solver:
         domains:
           DoubleValue:
             min_value: 0.0
+    RateControl:
+      __value__:
+        help: >
+          [Type: boolean/string] Layer 3a: bound the proposed dt so the
+          tolerance-weighted change predicted from the last accepted step's
+          state-change rate stays at MaxNormChange (dt <= MaxNormChange / R,
+          R = ||w*(p_new - p_old)||_RMS / dt with the ErrorControl
+          RelTol/AbsTol weights) -- the a-priori counterpart of ErrorControl,
+          reacting one step earlier.  Blind to incoming forcing by design;
+          pair with OnsetControl for storm-entry protection.
+        default: False
+        domains:
+          BoolDomain:
+      MaxNormChange:
+        help: >
+          [Type: double] Allowed tolerance-weighted change per step; 1.0
+          means roughly one RelTol-relative unit of change.
+        default: 1.0
+        domains:
+          DoubleValue:
+            min_value: 0.0
     PrintLog:
       help: >
         [Type: boolean/string] Write one CSV line per accepted step from rank 0
         to <runname>.out.adaptive_dt.csv: step, time, dt, dt_info, converged,
-        retries, Newton/linear iterations, beta failures, backtracks, Layer-2
-        error norm, and Layer-4 onset load (-1 until a layer has produced one).
-        The primary evaluation artifact for controller studies.
+        retries, Newton/linear iterations, beta failures, backtracks, function
+        evaluations, wall time, Layer-3a rate norm, Layer-2 error norm, and
+        Layer-4 onset load (-1 until a layer has produced one).  The primary
+        evaluation artifact for controller studies.
       default: False
       domains:
         BoolDomain:

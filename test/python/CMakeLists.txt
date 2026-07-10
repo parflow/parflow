@@ -35,6 +35,7 @@ if(${PARFLOW_HAVE_HYPRE})
         adaptive_dt_newton
         adaptive_dt_error
         adaptive_dt_onset
+        adaptive_dt_rate
         var_dz_1D
         var_dz_with_well
         tilted_v_with_reservoir_overland_flow

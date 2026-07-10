@@ -312,6 +312,9 @@ typedef struct {
   double adaptive_onset_load_threshold; /* exceedance-fraction jump that triggers */
   double adaptive_onset_fill_horizon; /* > 0: also flag top cells that would
                                        * saturate within this time (Dunne screen) */
+  /* Layer 3a: normalized change-rate limiter. */
+  int adaptive_rate_control;          /* Layer 3a on/off */
+  double adaptive_rate_max_change;    /* allowed weighted change per step, O(1) */
   int adaptive_print_log;             /* per-step CSV log from rank 0 */
 } PublicXtra;
 
@@ -434,6 +437,11 @@ typedef struct {
                                      * guess until the pressure history no
                                      * longer spans the onset (2 steps) */
   double adaptive_last_error_norm;  /* last Layer-2 error norm (-1 = none) */
+  /* Layer 3a state. */
+  double adaptive_rate_hist_norm;   /* weighted state-change rate of the last
+                                     * accepted step (0 until one exists) */
+  double adaptive_last_rate_norm;   /* combined rate norm at the last proposal
+                                     * (-1 = none), for the CSV log */
   int adaptive_log_started;         /* CSV header written */
   amps_Clock_t adaptive_log_clock;  /* wall clock at the last CSV line */
 } InstanceXtra;
@@ -606,6 +614,8 @@ SetupRichards(PFModule * this_module)
   instance_xtra->adaptive_onset_fired = 0;
 
   instance_xtra->adaptive_last_error_norm = -1.0;
+  instance_xtra->adaptive_rate_hist_norm = 0.0;
+  instance_xtra->adaptive_last_rate_norm = -1.0;
   instance_xtra->adaptive_log_started = 0;
   instance_xtra->adaptive_log_clock = amps_Clock();
 
@@ -3262,6 +3272,29 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           dt_info = 'e';
         }
 
+        /* Adaptive-dt Layer 3a: normalized change-rate limiter.  Bound the
+         * proposal so the tolerance-weighted change predicted from the last
+         * accepted step's state-change rate stays at MaxNormChange:
+         * dt <= M / R, R = ||w*(p_new - p_old)||_RMS / dt (recorded
+         * post-solve; the a-priori counterpart of the Layer-2 error
+         * controller, reacting one step earlier).  Deliberately blind to
+         * incoming forcing -- entry protection is OnsetControl's one-shot
+         * job; pair the two keys for storm-driven runs. */
+        if (public_xtra->adaptive_dt && public_xtra->adaptive_rate_control &&
+            instance_xtra->adaptive_rate_hist_norm > 0.0)
+        {
+          double bound = public_xtra->adaptive_rate_max_change /
+                         instance_xtra->adaptive_rate_hist_norm;
+
+          instance_xtra->adaptive_last_rate_norm =
+            instance_xtra->adaptive_rate_hist_norm;
+          if (bound < dt)
+          {
+            dt = bound;
+            dt_info = 'r';
+          }
+        }
+
         /* Adaptive-dt Layer 4: forcing-onset cap.  Screen the incoming
          * evap_trans flux (updated above when a forcing interval began)
          * against the current infiltration capacity; a jump in the exceedance
@@ -3767,6 +3800,20 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           instance_xtra->adaptive_dt_bound_error = dt * fac;
           instance_xtra->adaptive_last_error_norm = e;
         }
+
+        /* Adaptive-dt Layer 3a: record the accepted step's weighted
+         * state-change rate for the next proposal (reuses the Layer-2 norm:
+         * rate = ||w*(p_new - p_old)||_RMS / dt).  Needs only pressure and
+         * old_pressure, so it is valid from the first accepted step. */
+        if (public_xtra->adaptive_dt && public_xtra->adaptive_rate_control)
+        {
+          instance_xtra->adaptive_rate_hist_norm =
+            AdaptiveErrorNorm(instance_xtra->pressure,
+                              instance_xtra->old_pressure,
+                              public_xtra->adaptive_error_rtol,
+                              public_xtra->adaptive_error_atol,
+                              problem_data) / dt;
+        }
       }
 
       if (conv_failures >= max_failures)
@@ -3815,14 +3862,15 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           fprintf(csv_file,
                   "step,time,dt,dt_info,converged,retries,newton_its,"
                   "lin_its,beta_fails,backtracks,func_evals,wall_s,"
-                  "error_norm,onset_load\n");
+                  "rate_norm,error_norm,onset_load\n");
           instance_xtra->adaptive_log_started = 1;
         }
         fprintf(csv_file,
-                "%d,%.10e,%.10e,%c,%d,%d,%d,%d,%d,%d,%d,%.4e,%.6e,%.6e\n",
+                "%d,%.10e,%.10e,%c,%d,%d,%d,%d,%d,%d,%d,%.4e,%.6e,%.6e,%.6e\n",
                 instance_xtra->iteration_number, t, dt, dt_info, converged,
                 conv_failures, newton, lin, beta_fails, backtracks,
                 func_evals, wall_s,
+                instance_xtra->adaptive_last_rate_norm,
                 instance_xtra->adaptive_last_error_norm,
                 instance_xtra->adaptive_onset_f_prev);
         fclose(csv_file);
@@ -6702,6 +6750,14 @@ SolverRichardsNewPublicXtra(char *name)
   public_xtra->adaptive_onset_load_threshold = GetDoubleDefault(key, 0.02);
   sprintf(key, "%s.AdaptiveDt.OnsetControl.FillHorizon", name);
   public_xtra->adaptive_onset_fill_horizon = GetDoubleDefault(key, 0.0);
+
+  /* Layer 3a: normalized change-rate limiter (weights shared with
+   * ErrorControl.RelTol/AbsTol). */
+  sprintf(key, "%s.AdaptiveDt.RateControl", name);
+  public_xtra->adaptive_rate_control =
+    NA_NameToIndexExitOnError(switch_na, GetStringDefault(key, "False"), key);
+  sprintf(key, "%s.AdaptiveDt.RateControl.MaxNormChange", name);
+  public_xtra->adaptive_rate_max_change = GetDoubleDefault(key, 1.0);
 
   sprintf(key, "%s.AdaptiveDt.PrintLog", name);
   public_xtra->adaptive_print_log =
