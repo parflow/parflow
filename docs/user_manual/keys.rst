@@ -5635,6 +5635,46 @@ keys should be set to ``True`` at a time, not both.
 
       <runname>.Solver.EvapTransFileTransient = True     ## Python syntax
 
+*string* **Solver.EvapTransGuard** False Master switch for the
+moisture-limited guard on prescribed ``evap_trans`` sink cells. When
+**False** (default) behavior is exactly as before. When **True**, cells with
+negative ``evap_trans`` (ET demand) have the sink scaled by a :math:`C^1`
+smoothstep factor :math:`\beta(S)` that ramps from 1 to 0 as the cell
+saturation approaches its van Genuchten residual: the sink is fully shut off
+at :math:`S_{res} + \mathrm{Margin}` and untouched above
+:math:`S_{res} + \mathrm{Margin} + \mathrm{RampWidth}`. This prevents
+prescribed P−ET spin-up forcing from extracting water without moisture
+limitation and driving cells into unphysical suction. Positive (source)
+cells are never modified; the guard term enters both the nonlinear residual
+and the analytic Jacobian. Requires Type-1 (**VanGenuchten**) saturation.
+Ignored, with a warning, when *Solver.LSM* = **CLM** (CLM fluxes are already
+moisture-limited and pass through unchanged).
+
+*double* **Solver.EvapTransGuard.Margin** 0.02 Saturation-unit margin above
+the per-cell residual saturation at which the guarded sink is fully shut
+off: :math:`S_{stop} = S_{res} + \mathrm{Margin}`.
+
+*double* **Solver.EvapTransGuard.RampWidth** 0.05 Saturation-unit width of
+the smoothstep ramp above :math:`S_{stop}` over which the sink scales from 0
+back to its full prescribed value. Must be positive.
+
+*logical* **Solver.EvapTransGuard.PrintLog** False When the guard is active,
+write one CSV row per accepted timestep to ``<run_name>.out.etguard.csv``: cell
+counts (negative / limited / shut), prescribed vs applied sink volume,
+per-step and cumulative withheld volume (the mass-balance closure term:
+prescribed = applied + withheld), and the minimum :math:`\beta` and
+saturation over guarded cells.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.EvapTransGuard    True                ## TCL syntax
+      pfset Solver.EvapTransGuard.PrintLog  True         ## TCL syntax
+
+      <runname>.Solver.EvapTransGuard = True             ## Python syntax
+      <runname>.Solver.EvapTransGuard.PrintLog = True    ## Python syntax
+
 *string* **Solver.EvapTrans.FileName** no default This key specifies
 specifies filename for the distributed ParFlow 3D binary file that contains the 
 flux values for Richards’ equation. This file has :math:`[T^-1]` units 

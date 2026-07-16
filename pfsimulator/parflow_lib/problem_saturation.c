@@ -307,6 +307,8 @@ void     Saturation(
             }    /* End if clause */
             else /* fcn = CALCDER */
             {
+              Subvector *srs_sub = VectorSubvector(instance_xtra->s_res_cell, sg);
+              double    *srsdat = SubvectorData(srs_sub);
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
               {
                 int ips = SubvectorEltIndex(ps_sub, i, j, k);
@@ -317,6 +319,11 @@ void     Saturation(
                 double n = ns[ir];
                 double m = 1.0e0 - (1.0e0 / n);
                 double s_dif = s_difs[ir];
+
+                /* Cache per-cell residual saturation for ProblemSaturationGetSres
+                 * here too: module instances that only ever evaluate the
+                 * derivative (e.g. the Jacobian's) must also populate it. */
+                srsdat[SubvectorEltIndex(srs_sub, i, j, k)] = s_ress[ir];
 
                 if (ppdat[ipp] >= 0.0)
                   psdat[ips] = 0.0;

@@ -28,6 +28,8 @@
 
 #include "parflow.h"
 #include "seepage.h"
+#include "evap_trans_guard.h"
+#include "problem_saturation.h"
 #include "llnlmath.h"
 #include "llnltyps.h"
 //#include "math.h"
@@ -43,6 +45,7 @@ typedef struct {
   double SpinupDampP2;      // NBE
   int tfgupwind;           //@RMM added for TFG formulation switch
   SeepageLookup seepage;
+  EvapTransGuard etg;      /* Solver.EvapTransGuard prescribed-sink limiter */
 } PublicXtra;
 
 typedef struct {
@@ -472,6 +475,70 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     });
   }
 
+  /* Prescribed evap_trans sink guard (Solver.EvapTransGuard): apply the
+   * moisture-limited ET term HERE, while the saturation vector still holds
+   * S(p) -- the source-term section below overwrites it (source aliases
+   * saturation).  Cells with negative evap_trans are scaled by the
+   * smoothstep beta(S); positive cells pass through unchanged.  When the
+   * guard is active the source loop below skips the et term entirely. */
+  int etg_active = public_xtra->etg.active;
+
+  if (etg_active)
+  {
+    double etg_margin = public_xtra->etg.margin;
+    double etg_ramp = public_xtra->etg.ramp_width;
+    Vector *etg_sres = ProblemSaturationGetSres(saturation_module);
+
+    if (etg_sres == NULL)
+    {
+      PARFLOW_ERROR("Solver.EvapTransGuard requires Type-1 (VanGenuchten) saturation");
+    }
+
+    ForSubgridI(is, GridSubgrids(grid))
+    {
+      subgrid = GridSubgrid(grid, is);
+
+      s_sub = VectorSubvector(saturation, is);
+      f_sub = VectorSubvector(fval, is);
+      et_sub = VectorSubvector(evap_trans, is);
+      z_mult_sub = VectorSubvector(z_mult, is);
+      Subvector *etg_srs_sub = VectorSubvector(etg_sres, is);
+
+      r = SubgridRX(subgrid);
+
+      ix = SubgridIX(subgrid);
+      iy = SubgridIY(subgrid);
+      iz = SubgridIZ(subgrid);
+
+      nx = SubgridNX(subgrid);
+      ny = SubgridNY(subgrid);
+      nz = SubgridNZ(subgrid);
+
+      dx = SubgridDX(subgrid);
+      dy = SubgridDY(subgrid);
+      dz = SubgridDZ(subgrid);
+
+      vol = dx * dy * dz;
+
+      sp = SubvectorData(s_sub);
+      fp = SubvectorData(f_sub);
+      et = SubvectorData(et_sub);
+      z_mult_dat = SubvectorData(z_mult_sub);
+      double *etg_srs = SubvectorData(etg_srs_sub);
+
+      GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+      {
+        int ip = SubvectorEltIndex(f_sub, i, j, k);
+
+        double etg_beta = (et[ip] < 0.0)
+                          ? EvapTransGuardBeta(sp[ip], etg_srs[ip], etg_margin, etg_ramp)
+                          : 1.0;
+
+        fp[ip] -= vol * z_mult_dat[ip] * dt * et[ip] * etg_beta;
+      });
+    }
+  }
+
   /* Add in contributions from source terms - user specified sources and
    * flux wells.  Calculate phase source values overwriting current
    * saturation vector */
@@ -527,6 +594,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     FBy_dat = SubvectorData(FBy_sub);
     FBz_dat = SubvectorData(FBz_sub);
 
+    /* When the sink guard is active the moisture-limited et term was already
+     * added before the saturation vector was overwritten; zero it here. */
+    double etg_et_scale = etg_active ? 0.0 : 1.0;
+
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
       int ip = SubvectorEltIndex(f_sub, i, j, k);
@@ -536,7 +607,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       double del_x_slope = 1.0;
       double del_y_slope = 1.0;
 
-      fp[ip] -= vol * del_x_slope * del_y_slope * z_mult_dat[ip] * dt * (sp[ip] + et[ip]);
+      fp[ip] -= vol * del_x_slope * del_y_slope * z_mult_dat[ip] * dt * (sp[ip] + etg_et_scale * et[ip]);
     });
   }
 
@@ -2478,6 +2549,10 @@ PFModule   *NlFunctionEvalNewPublicXtra(char *name)
 
   /* Collect seepage patches from Patch.<name>.BCPressure.Seepage flags. */
   PopulateSeepagePatchesFromBCPressure(&(public_xtra->seepage));
+
+  /* Moisture-limited guard on prescribed evap_trans sinks (Solver.
+   * EvapTransGuard); the solver-level reader prints the activation line. */
+  EvapTransGuardReadKeys(&(public_xtra->etg), 0);
 
   ///* parameters for upwinding formulation for TFG */
   upwind_switch_na = NA_NewNameArray("Original UpwindSine Upwind");

@@ -2096,6 +2096,48 @@ Solver:
     domains:
       BoolDomain:
 
+  EvapTransGuard:
+    __value__:
+      help: >
+        [Type: boolean/string] Master switch for the moisture-limited guard on prescribed
+        evap_trans sink cells. When False (default) behavior is exactly as before. When True,
+        cells with negative evap_trans (ET demand) have the sink scaled by a C1 smoothstep
+        beta(S) that ramps from 1 to 0 as the cell saturation approaches its van Genuchten
+        residual (fully off at S_res + Margin, untouched above S_res + Margin + RampWidth),
+        preventing prescribed P-ET spin-up forcing from driving cells into unphysical
+        suction. Positive (source) cells are never modified. Requires Type-1 (VanGenuchten)
+        saturation. Ignored (with a warning) when Solver.LSM = CLM: CLM fluxes are already
+        moisture-limited and pass through unchanged. The guard term enters both the
+        nonlinear residual and the analytic Jacobian.
+      default: False
+      domains:
+        BoolDomain:
+    Margin:
+      help: >
+        [Type: double] Saturation-unit margin above the cell residual saturation at which
+        the guarded sink is fully shut off: S_stop = S_res + Margin.
+      default: 0.02
+      domains:
+        DoubleValue:
+          min_value: 0.0
+    RampWidth:
+      help: >
+        [Type: double] Saturation-unit width of the smoothstep ramp above S_stop over which
+        the sink scales from 0 back to its prescribed value. Must be positive.
+      default: 0.05
+      domains:
+        DoubleValue:
+          min_value: 0.0
+    PrintLog:
+      help: >
+        [Type: boolean/string] When the guard is active, write one CSV row per accepted
+        timestep to <run_name>.out.etguard.csv: cell counts (negative / limited / shut),
+        prescribed vs applied sink volume, per-step and cumulative withheld volume (the
+        mass-balance closure term), minimum beta and minimum saturation over guarded cells.
+      default: False
+      domains:
+        BoolDomain:
+
   EvapTransFileTransient:
     help: >
       [Type: boolean/string] This key specifies specifies that the Flux terms for Richards’ equation are read in from a series of flux .pfb file.
