@@ -36,6 +36,7 @@
 
 #include "parflow.h"
 #include "parflow_netcdf.h"
+#include "evap_trans_guard.h"
 #include "problem_saturation.h"
 
 #include "metadata.h"
@@ -151,6 +152,7 @@ typedef struct {
   int write_silopmpio_overland_bc_flux; /* write overland outflow boundary condition flux as PMPIO? */
   int write_silopmpio_dzmult;   /* write dz multiplier as PMPIO? */
   int spinup;                   /* spinup flag, remove ponded water */
+  EvapTransGuard etg;           /* Solver.EvapTransGuard prescribed-sink limiter */
   int reset_surface_pressure;   /* surface pressure flag set to True and pressures are reset per threshold keys */
   int threshold_pressure;       /* surface pressure threshold pressure */
   int reset_pressure;           /* surface pressure reset pressure */
@@ -3688,6 +3690,21 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                         instance_xtra->density, gravity, problem_data,
                         CALCFCN));
 
+    /* Prescribed evap_trans sink guard: per-accepted-step CSV row
+     * (Solver.EvapTransGuard.PrintLog).  Uses the accepted-state saturation
+     * computed just above; S_res comes from the same saturation instance. */
+    if (public_xtra->etg.active && public_xtra->etg.print_log)
+    {
+      Vector *etg_sres = ProblemSaturationGetSres(problem_saturation);
+      if (etg_sres != NULL)
+      {
+        EvapTransGuardLogStep(&(public_xtra->etg), evap_trans,
+                              instance_xtra->saturation, etg_sres,
+                              problem_data, t, dt,
+                              instance_xtra->iteration_number);
+      }
+    }
+
     /***************************************************************
      * Compute running sum of evap trans for water balance
      **************************************************************/
@@ -6983,6 +7000,11 @@ SolverRichardsNewPublicXtra(char *name)
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->spinup = switch_value;
+
+  /* Moisture-limited guard on prescribed evap_trans sinks (Solver.
+   * EvapTransGuard).  verbose = 1: this is the one reader that prints the
+   * rank-0 activation line; the eval modules read the same keys silently. */
+  EvapTransGuardReadKeys(&(public_xtra->etg), 1);
 
   //RMM surface pressure keys
   //Solver.ResetSurfacePressure “True”
