@@ -40,16 +40,26 @@ directories = [
     "qflx_top_soil",
 ]
 
+
 def setup_dir(suffix):
     d = get_absolute_path("test_output/" + run_name + "_" + suffix)
     mkdir(d)
     for directory in directories:
         mkdir(d + "/" + directory)
-    for f in ["drv_clmin.dat", "drv_vegm.dat", "drv_vegp.dat", "lai.dat",
-              "sai.dat", "z0m.dat", "displa.dat", "narr_1hr.sc3.txt.0"]:
+    for f in [
+        "drv_clmin.dat",
+        "drv_vegm.dat",
+        "drv_vegp.dat",
+        "lai.dat",
+        "sai.dat",
+        "z0m.dat",
+        "displa.dat",
+        "narr_1hr.sc3.txt.0",
+    ]:
         cp("$PF_SRC/test/tcl/clm/" + f, d)
     cp("$PF_SRC/test/tcl/clm/veg_map.cpfb", d + "/veg_map.pfb")
     return d
+
 
 # -----------------------------------------------------------------------------
 # File input version number
@@ -111,9 +121,7 @@ clm_sms.Geom.domain.Upper.X = 5000.0
 clm_sms.Geom.domain.Upper.Y = 5000.0
 clm_sms.Geom.domain.Upper.Z = 5.0
 
-clm_sms.Geom.domain.Patches = (
-    "x_lower x_upper y_lower y_upper z_lower z_upper"
-)
+clm_sms.Geom.domain.Patches = "x_lower x_upper y_lower y_upper z_lower z_upper"
 
 # -----------------------------------------------------------------------------
 # Perm
@@ -236,9 +244,7 @@ clm_sms.Cycle.constant.Repeat = -1
 # -----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 # -----------------------------------------------------------------------------
-clm_sms.BCPressure.PatchNames = (
-    "x_lower x_upper y_lower y_upper z_lower z_upper"
-)
+clm_sms.BCPressure.PatchNames = "x_lower x_upper y_lower y_upper z_lower z_upper"
 #
 clm_sms.Patch.x_lower.BCPressure.Type = "FluxConst"
 clm_sms.Patch.x_lower.BCPressure.Cycle = "constant"
@@ -398,7 +404,7 @@ import numpy as np
 from parflow.tools.io import read_pfb
 
 MARGIN = 0.02
-SAFE_WP = 0.03   # Saturation.SRes (0.01) + MARGIN
+SAFE_WP = 0.03  # Saturation.SRes (0.01) + MARGIN
 
 
 def final_press(d):
@@ -432,8 +438,12 @@ d_match = float(np.max(np.abs(pB - pC)))
 d_diff = float(np.max(np.abs(pB - pA)))
 ok_match = d_match < 1.0e-8
 ok_engage = d_diff > 1.0e-8
-print(f"guarded low-wp vs safe-wp (expect ~0): {d_match:.3e} -> {'PASS' if ok_match else 'FAIL'}")
-print(f"guard on vs off at low wp (expect >0):  {d_diff:.3e} -> {'PASS' if ok_engage else 'FAIL'}")
+print(
+    f"guarded low-wp vs safe-wp (expect ~0): {d_match:.3e} -> {'PASS' if ok_match else 'FAIL'}"
+)
+print(
+    f"guard on vs off at low wp (expect >0):  {d_diff:.3e} -> {'PASS' if ok_engage else 'FAIL'}"
+)
 
 if ok_match and ok_engage:
     print(f"{run_name} : PASSED")

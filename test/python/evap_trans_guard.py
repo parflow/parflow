@@ -205,12 +205,21 @@ def setup_dir(suffix):
     mkdir(d)
     flux = np.zeros((NZ, NY, NX))
     flux[NZ - 1, :, :] = ET_TOP
-    write_pfb(d + "/et_flux.pfb", flux, p=args.p, q=args.q, r=args.r,
-              dx=100.0, dy=100.0, dz=0.5, dist=True)
+    write_pfb(
+        d + "/et_flux.pfb",
+        flux,
+        p=args.p,
+        q=args.q,
+        r=args.r,
+        dx=100.0,
+        dy=100.0,
+        dz=0.5,
+        dist=True,
+    )
     return d
 
 
-FINAL_DUMP = 4   # DumpInterval 12 over 48 h: files 00000 (IC) .. 00004 (48 h)
+FINAL_DUMP = 4  # DumpInterval 12 over 48 h: files 00000 (IC) .. 00004 (48 h)
 
 
 def min_pressure(d, dump):
@@ -253,8 +262,9 @@ min_p_on = min_pressure(dir_b, FINAL_DUMP)
 s_final = read_pfb(dir_b + "/" + run_name + ".out.satur.%05d.pfb" % FINAL_DUMP)
 min_s_on = float(np.min(s_final))
 
-csv = np.genfromtxt(dir_b + "/" + run_name + ".out.etguard.csv",
-                    delimiter=",", names=True)
+csv = np.genfromtxt(
+    dir_b + "/" + run_name + ".out.etguard.csv", delimiter=",", names=True
+)
 applied_total = float(np.sum(csv["applied_sink"]))
 withheld_cum = float(csv["withheld_cum"][-1])
 prescribed_total = float(np.sum(csv["prescribed_sink"]))
@@ -275,27 +285,41 @@ def check(name, ok, detail):
 # The unguarded sink must have driven pressure to unphysical suction, and the
 # guard must hold it in the physical range (S_stop = 0.12 is ~22 m suction
 # for alpha = 2, n = 2).
-check("unguarded suction", min_p_off < -100.0, f"min press {min_p_off:.3e} m (expect < -100)")
+check(
+    "unguarded suction",
+    min_p_off < -100.0,
+    f"min press {min_p_off:.3e} m (expect < -100)",
+)
 check("guarded bound", min_p_on > -30.0, f"min press {min_p_on:.3e} m (expect > -30)")
-check("guarded saturation floor", min_s_on > SRES + 0.01,
-      f"min S {min_s_on:.4f} (expect > {SRES + 0.01})")
+check(
+    "guarded saturation floor",
+    min_s_on > SRES + 0.01,
+    f"min S {min_s_on:.4f} (expect > {SRES + 0.01})",
+)
 check("guard engaged", n_limited_max > 0, f"max n_limited {n_limited_max} (expect > 0)")
 check("withheld positive", withheld_cum > 0.0, f"withheld_cum {withheld_cum:.4e} m^3")
-check("csv identity", abs(prescribed_total - applied_total - withheld_cum)
-      < 1e-6 * prescribed_total,
-      f"prescribed - applied - withheld = "
-      f"{prescribed_total - applied_total - withheld_cum:.3e} m^3")
-check("storage closure", abs(storage_removed - applied_total)
-      < 0.02 * max(applied_total, 1.0),
-      f"storage removed {storage_removed:.4e} vs applied sink {applied_total:.4e} m^3")
+check(
+    "csv identity",
+    abs(prescribed_total - applied_total - withheld_cum) < 1e-6 * prescribed_total,
+    f"prescribed - applied - withheld = "
+    f"{prescribed_total - applied_total - withheld_cum:.3e} m^3",
+)
+check(
+    "storage closure",
+    abs(storage_removed - applied_total) < 0.02 * max(applied_total, 1.0),
+    f"storage removed {storage_removed:.4e} vs applied sink {applied_total:.4e} m^3",
+)
 
 # -----------------------------------------------------------------------------
 # Keys absent (C) must be byte-identical to guard False (A) -- default-off
 # -----------------------------------------------------------------------------
 p_off = read_pfb(dir_a + "/" + run_name + ".out.press.%05d.pfb" % FINAL_DUMP)
 p_absent = read_pfb(dir_c + "/" + run_name + ".out.press.%05d.pfb" % FINAL_DUMP)
-check("default-off bit-identity", bool(np.all(p_off == p_absent)),
-      f"max |diff| {float(np.max(np.abs(p_off - p_absent))):.3e}")
+check(
+    "default-off bit-identity",
+    bool(np.all(p_off == p_absent)),
+    f"max |diff| {float(np.max(np.abs(p_off - p_absent))):.3e}",
+)
 
 if all(checks):
     print(f"{run_name} : PASSED")
