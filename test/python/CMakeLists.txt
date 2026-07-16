@@ -3,6 +3,7 @@ include(ParflowTest)
 set(TESTS
     default_single
     default_single_read_porosity
+    evap_trans_guard
     default_richards_wells
     forsyth2
     harvey_flow
