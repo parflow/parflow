@@ -105,6 +105,32 @@ New options for improving evapotranspiration calculations:
 - **InterceptionScheme**: CLM3 exponential or CLM5 tanh-based canopy interception
 - Enhanced interception and wet canopy fraction parameters
 
+### Residual-Saturation Guards for ET Sinks
+
+Two related, individually opt-in guards keep evapotranspiration sinks from
+driving cells to the van Genuchten residual-saturation cliff, where the
+Richards Jacobian degenerates:
+
+- **`Solver.CLM.SoilMoistureStress`** (coupled runs): the effective wilting
+  point of CLM's Saturation-type water-stress ramp is limited on the dry side
+  against each cell's residual saturation (`.ResidualLimit.Margin`, default
+  0.02), and a minimum ramp width keeps the btran denominator conditioned, so
+  transpiration shuts off with mass to spare.
+- **`Solver.EvapTransGuard`** (prescribed-flux runs, e.g. P-ET spin-up):
+  cells with negative `evap_trans` are scaled by a C1 smoothstep beta(S) that
+  ramps the sink to zero at `S_res + Margin` (default 0.02, ramp width 0.05),
+  applied consistently in the nonlinear residual and the analytic Jacobian.
+  Positive (source) cells are never modified. An opt-in per-timestep CSV
+  (`.PrintLog`) reports guarded-cell counts and the prescribed / applied /
+  withheld sink volumes (the mass-balance closure term). Spin-ups can then
+  use the full signed P-ET field instead of zero-clipping ET-demand cells,
+  which otherwise drive thin surface cells to unphysical suction (observed
+  to -1e10 m) and destabilize subsequent coupled runs.
+
+Both default to off and are byte-identical to previous behavior when
+disabled. Foundation: per-cell residual saturation exposed via
+`ProblemSaturationGetSres` (van Genuchten saturation required).
+
 ### Overland Flow Output Enhancements
 
 New output capabilities for overland flow analysis:
