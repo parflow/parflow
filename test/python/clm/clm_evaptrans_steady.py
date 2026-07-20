@@ -1,6 +1,6 @@
 # -----------------------------------------------------------------------------
 # CLM steady evaptrans test
-# 
+#
 # This test verifies that a steady user-provided evaptrans file is added to the
 # evaptrans contribution computed by CLM instead of replacing it.
 # -----------------------------------------------------------------------------
@@ -351,7 +351,7 @@ clm.Geom.domain.ICPressure.RefPatch = "z_upper"
 # Steady evaptrans input
 # -----------------------------------------------------------------------------
 clm.Solver.EvapTransFile = True
-clm.Solver.EvapTrans.FileName = 'evaptrans_steady.pfb'
+clm.Solver.EvapTrans.FileName = "evaptrans_steady.pfb"
 
 # -----------------------------------------------------------------------------
 # distribute evaptrans files

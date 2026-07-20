@@ -1,6 +1,6 @@
 # -----------------------------------------------------------------------------
 # CLM transient evaptrans test
-# 
+#
 # This test verifies that transient user-provided evaptrans files are added to
 # the evaptrans contribution computed by CLM instead of replacing it.
 # -----------------------------------------------------------------------------
@@ -352,7 +352,7 @@ clm.Geom.domain.ICPressure.RefGeom = "domain"
 clm.Geom.domain.ICPressure.RefPatch = "z_upper"
 
 # -----------------------------------------------------------------------------
-# Transient evaptrans input 
+# Transient evaptrans input
 # -----------------------------------------------------------------------------
 clm.Solver.EvapTransFileTransient = True
 clm.Solver.EvapTrans.FileName = "evaptrans"
@@ -367,7 +367,9 @@ for i in range(5):
 # Run and Unload the ParFlow output files
 # -----------------------------------------------------------------------------
 
-correct_output_dir_name = get_absolute_path("../../correct_output/clm_evaptrans_transient")
+correct_output_dir_name = get_absolute_path(
+    "../../correct_output/clm_evaptrans_transient"
+)
 clm.run(working_directory=new_output_dir_name)
 
 passed = True
