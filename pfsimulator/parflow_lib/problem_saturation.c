@@ -212,6 +212,19 @@ SatTable *SatComputeTable(
                    / (Scs * pow(1.0 + pow(alpha * x[index], n), m + 1));
   }
 
+  /* |MinPressureHead| truncates the retention curve at S = a[N]; lookups
+   * beyond the table clamp there and never reach s_res.  Warn when the
+   * truncated tail is a significant fraction of the S range. */
+  if (!amps_Rank(amps_CommWorld) &&
+      (a[num_sample_points] - s_res) > 0.01 * s_dif)
+  {
+    amps_Printf("Warning: Saturation lookup table ends at S = %f "
+                "(s_res = %f): |MinPressureHead| = %f truncates the "
+                "retention curve mid-slope; saturations beyond the table "
+                "clamp to the table-end value\n",
+                a[num_sample_points], s_res, fabs(min_pressure_head));
+  }
+
   /* Fill in slope for linear interpolation */
   if (interpolation_method == 1)
   {
@@ -314,11 +327,14 @@ static inline double SatLookupSpline(
       return 0.0;
   }
 
-  /* Beyond dry end of table */
+  /* Beyond dry end of table: clamp to the table-end value.  Returning
+   * s_res here would jump discontinuously from a[num_sample_points]
+   * (= S at |MinPressureHead|, which is NOT s_res when the table
+   * truncates the curve mid-slope) and hand Newton a cliff. */
   if (pressure_head >= fabs(min_pressure_head))
   {
     if (fcn == CALCFCN)
-      return lookup_table->s_res;
+      return lookup_table->a[num_sample_points];
     else
       return 0.0;
   }
@@ -340,21 +356,25 @@ static inline double SatLookupSpline(
   if (fcn == CALCFCN)
   {
     t = (pressure_head - x) / (lookup_table->x[pt + 1] - x);
-    sat = (2.0 * pow(t, 3) - 3.0 * pow(t, 2) + 1.0) * a
-          + (pow(t, 3) - 2.0 * pow(t, 2) + t)
-          * (lookup_table->x[pt + 1] - x) * d + (-2.0 * pow(t, 3)
-                                                 + 3.0 * pow(t, 2)) * (lookup_table->a[pt + 1])
-          + (pow(t, 3) - pow(t, 2)) * (lookup_table->x[pt + 1] - x)
+    double t2 = t * t;
+    double t3 = t2 * t;
+    sat = (2.0 * t3 - 3.0 * t2 + 1.0) * a
+          + (t3 - 2.0 * t2 + t)
+          * (lookup_table->x[pt + 1] - x) * d + (-2.0 * t3
+                                                 + 3.0 * t2) * (lookup_table->a[pt + 1])
+          + (t3 - t2) * (lookup_table->x[pt + 1] - x)
           * (lookup_table->d[pt + 1]);
   }
   else
   {
     t = (pressure_head - x) / (lookup_table->x[pt + 1] - x);
-    sat = (2.0 * pow(t, 3) - 3.0 * pow(t, 2) + 1.0) * a_der
-          + (pow(t, 3) - 2.0 * pow(t, 2) + t)
-          * (lookup_table->x[pt + 1] - x) * d_der + (-2.0 * pow(t, 3)
-                                                     + 3.0 * pow(t, 2)) * (lookup_table->a_der[pt + 1])
-          + (pow(t, 3) - pow(t, 2)) * (lookup_table->x[pt + 1] - x)
+    double t2 = t * t;
+    double t3 = t2 * t;
+    sat = (2.0 * t3 - 3.0 * t2 + 1.0) * a_der
+          + (t3 - 2.0 * t2 + t)
+          * (lookup_table->x[pt + 1] - x) * d_der + (-2.0 * t3
+                                                     + 3.0 * t2) * (lookup_table->a_der[pt + 1])
+          + (t3 - t2) * (lookup_table->x[pt + 1] - x)
           * (lookup_table->d_der[pt + 1]);
   }
 
@@ -383,11 +403,12 @@ static inline double SatLookupLinear(
       return 0.0;
   }
 
-  /* Beyond dry end of table */
+  /* Beyond dry end of table: clamp to the table-end value (see the
+   * matching comment in SatLookupSpline). */
   if (pressure_head >= fabs(min_pressure_head))
   {
     if (fcn == CALCFCN)
-      return lookup_table->s_res;
+      return lookup_table->a[num_sample_points];
     else
       return 0.0;
   }

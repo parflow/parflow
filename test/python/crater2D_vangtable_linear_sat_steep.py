@@ -16,8 +16,8 @@
 #
 #  In addition to the usual output comparisons, the test fails if the total
 #  nonlinear iteration count exceeds NNI_MAX.  Measured on this problem the
-#  inconsistent derivative costs 100 total nonlinear iterations vs 75 for
-#  the consistent segment slope (a 1.33x penalty over 10 steps; on a real
+#  inconsistent derivative costs ~100 total nonlinear iterations vs ~75
+#  for the consistent segment slope (a 1.33x penalty over 10 steps; on a real
 #  watershed with variably-dz 3D columns the same defect stalled KINSOL to
 #  linear convergence, 166 vs ~10 iterations on a single step).
 # -----------------------------------------------------------------------------
@@ -54,7 +54,7 @@ VG_sres = 0.0001
 VG_interpolation_method = "Linear"
 
 # Total-nonlinear-iteration budget: the consistent segment-slope CALCDER
-# needs 75 here; the smooth inconsistent derivative needs 100.
+# needs ~75 here; the smooth inconsistent derivative needs ~100.
 NNI_MAX = 85
 
 # ---------------------------------------------------------

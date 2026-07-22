@@ -216,6 +216,17 @@ VanGTable *VanGComputeTable(
     a_der[index] /= ippisch_factor;
   }
 
+  /* |MinPressureHead| truncates the Kr curve at a[N]; lookups beyond the
+   * table clamp there and never reach 0.  Warn when the truncated tail is
+   * a significant fraction of the Kr range. */
+  if (!amps_Rank(amps_CommWorld) && a[num_sample_points] > 0.01)
+  {
+    amps_Printf("Warning: RelPerm lookup table ends at Kr = %f: "
+                "|MinPressureHead| = %f truncates the Kr curve mid-slope; "
+                "values beyond the table clamp to the table-end value\n",
+                a[num_sample_points], fabs(min_pressure_head));
+  }
+
   /* Fill in slope for linear interpolation */
   if (interpolation_method == 1)
   {
@@ -323,11 +334,16 @@ static inline double VanGLookupSpline(
       return 0.0;
   }
 
-  // SGS TODO add warning in output?
-  // Make sure values are in the table range, if beyond dry end set to 0.0
+  /* Beyond dry end of table: clamp CALCFCN to the table-end value.
+   * Returning 0.0 would jump discontinuously from a[num_sample_points]
+   * (= Kr at |MinPressureHead|, which is not 0 when the table truncates
+   * the curve mid-slope) and hand Newton a cliff. */
   if (pressure_head >= fabs(min_pressure_head))
   {
-    return 0.0;
+    if (fcn == CALCFCN)
+      return lookup_table->a[num_sample_points];
+    else
+      return 0.0;
   }
   else
   {
@@ -380,21 +396,25 @@ static inline double VanGLookupSpline(
   if (fcn == CALCFCN)
   {
     t = (pressure_head - x) / (lookup_table->x[pt + 1] - x);
-    rel_perm = (2.0 * pow(t, 3) - 3.0 * pow(t, 2) + 1.0) * a
-               + (pow(t, 3) - 2.0 * pow(t, 2) + t)
-               * (lookup_table->x[pt + 1] - x) * d + (-2.0 * pow(t, 3)
-                                                      + 3.0 * pow(t, 2)) * (lookup_table->a[pt + 1])
-               + (pow(t, 3) - pow(t, 2)) * (lookup_table->x[pt + 1] - x)
+    double t2 = t * t;
+    double t3 = t2 * t;
+    rel_perm = (2.0 * t3 - 3.0 * t2 + 1.0) * a
+               + (t3 - 2.0 * t2 + t)
+               * (lookup_table->x[pt + 1] - x) * d + (-2.0 * t3
+                                                      + 3.0 * t2) * (lookup_table->a[pt + 1])
+               + (t3 - t2) * (lookup_table->x[pt + 1] - x)
                * (lookup_table->d[pt + 1]);
   }
   else
   {
     t = (pressure_head - x) / (lookup_table->x[pt + 1] - x);
-    rel_perm = (2.0 * pow(t, 3) - 3.0 * pow(t, 2) + 1.0) * a_der
-               + (pow(t, 3) - 2.0 * pow(t, 2) + t)
-               * (lookup_table->x[pt + 1] - x) * d_der + (-2.0 * pow(t, 3)
-                                                          + 3.0 * pow(t, 2)) * (lookup_table->a_der[pt + 1])
-               + (pow(t, 3) - pow(t, 2)) * (lookup_table->x[pt + 1] - x)
+    double t2 = t * t;
+    double t3 = t2 * t;
+    rel_perm = (2.0 * t3 - 3.0 * t2 + 1.0) * a_der
+               + (t3 - 2.0 * t2 + t)
+               * (lookup_table->x[pt + 1] - x) * d_der + (-2.0 * t3
+                                                          + 3.0 * t2) * (lookup_table->a_der[pt + 1])
+               + (t3 - t2) * (lookup_table->x[pt + 1] - x)
                * (lookup_table->d_der[pt + 1]);
   }
 
@@ -440,6 +460,11 @@ static inline double VanGLookupLinear(
     {
       rel_perm = lookup_table->a_der[pt] + lookup_table->slope_der[pt] * (pressure_head - lookup_table->x[pt]);
     }
+  }
+  else if (fcn == CALCFCN)
+  {
+    /* Beyond dry end: clamp to the table-end value */
+    rel_perm = lookup_table->a[num_sample_points];
   }
 
   return rel_perm;
@@ -804,7 +829,8 @@ void         PhaseRelPerm(
                         }
                         else
                         {
-                          prdat[ipr] = 0.0;
+                          /* Beyond dry end: clamp to the table-end value */
+                          prdat[ipr] = lookup_table->a[num_sample_points];
                         }
                       }
                     });
@@ -1218,7 +1244,8 @@ void         PhaseRelPerm(
                         }
                         else
                         {
-                          prdat[ipr] = 0.0;
+                          /* Beyond dry end: clamp to the table-end value */
+                          prdat[ipr] = lookup_table->a[num_sample_points];
                         }
                       }
                     });
