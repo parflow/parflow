@@ -408,7 +408,18 @@ static inline double SatLookupLinear(
   }
   else
   {
-    return lookup_table->a_der[pt] + lookup_table->slope_der[pt] * (pressure_head - x);
+    /* CALCDER must be the exact derivative of the piecewise-linear CALCFCN
+     * above: the segment slope (negated to the positive-magnitude dS/dh
+     * convention).  The storage term dominates the small-dt Jacobian, and a
+     * smooth interpolated analytic dS/dh disagrees with the segment slope at
+     * first order in the sample interval, O(interval * S''); on steep
+     * retention curves (e.g. CONUS2.1 n ~ 4 soils) that is a tens-of-percent
+     * Jacobian error at the wet front and stalls Newton to linear
+     * convergence.  The relperm linear table intentionally keeps the smooth
+     * interpolated derivative: flux terms tolerate the inconsistency, and
+     * the discontinuous segment slope was measured to degrade Newton there
+     * (see PR #723 history). */
+    return -(lookup_table->slope[pt]);
   }
 }
 
