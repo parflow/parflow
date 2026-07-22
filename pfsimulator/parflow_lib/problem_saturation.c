@@ -41,6 +41,8 @@ typedef struct {
   int type;     /* input type */
   void  *data;  /* pointer to Type structure */
 
+  int time_index;
+
   NameArray regions;
 } PublicXtra;
 
@@ -500,6 +502,8 @@ void     Saturation(
   int i, j, k;
 
   int            *region_indices, num_regions, ir;
+
+  BeginTiming(public_xtra->time_index);
 
   /* Initialize saturations */
 
@@ -1042,6 +1046,8 @@ void     Saturation(
       break;
     }        /* End case 5 */
   }          /* End switch */
+
+  EndTiming(public_xtra->time_index);
 }
 
 /*--------------------------------------------------------------------------
@@ -1559,6 +1565,8 @@ PFModule   *SaturationNewPublicXtra()
   }      /* End switch */
 
   NA_FreeNameArray(type_na);
+
+  (public_xtra->time_index) = RegisterTiming("Saturation");
 
   PFModulePublicXtra(this_module) = public_xtra;
   return this_module;
