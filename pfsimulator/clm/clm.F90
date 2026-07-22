@@ -405,6 +405,8 @@ interception_schemepf,interception_tanh_alphapf)
            clm(t)%topo_mask(1) = 1+top(l)
            clm(t)%topo_mask(3) = 1+bottom(l)
            clm(t)%planar_mask = 1
+        else
+           cycle
         endif
         clm(t)%topo_mask(2) = clm(t)%topo_mask(1)-nlevsoi
 
