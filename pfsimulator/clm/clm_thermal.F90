@@ -468,6 +468,18 @@ subroutine clm_thermal (clm)
            if (temp > 1.) temp = 1.
            temp_rz = temp ** clm%vw
            clm%soil_resistance(i) = temp_rz    !! @RMM, we store each soil resistnace factor over the soil layers
+           ! Dry-side residual guard for pressure mode, applied in saturation
+           ! space where S_res is exact (no van Genuchten inversion).  Zeros this
+           ! layer's uptake as it approaches within sm_residual_margin of
+           ! residual.  Saturation mode carries this via wp_eff above, so only
+           ! pressure mode is handled here.  sm_stress_type == 0 leaves case-1
+           ! behavior bit-identical.  @RMM 2026
+           if (clm%sm_stress_type == 1 .and. clm%vegwaterstresstype == 1) then
+              if (clm%pf_vol_liq(i) <= &
+                   (clm%s_res_cell(i) + clm%sm_residual_margin) * clm%watsat(i)) then
+                 clm%soil_resistance(i) = 0.0d0
+              end if
+           end if
         else
            temp2 = 0.01d0
         endif

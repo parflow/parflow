@@ -157,13 +157,12 @@ Solver:
     FieldCapacity:
       help: >
         [Type: double] This key specifies the field capacity for the beta-t function in CLM. Note that the units for this function
-        are pressure [m] for a Pressure formulation and saturation [-] for a Saturation formulation. Note that CLM must
+        are pressure [m] for a Pressure formulation and saturation [-] for a Saturation formulation. For a Pressure
+        formulation this is a negative head in metres (e.g. -3.4), so no numeric bound is enforced. Note that CLM must
         be compiled and linked at runtime for this option to be active.
       default: 1.0
       domains:
         DoubleValue:
-          min_value: 0.0
-          max_value: 1.0
         RequiresModule: CLM
 
     ForceVegetation:
@@ -443,12 +442,12 @@ Solver:
     WiltingPoint:
       help: >
         [Type: double] This key specifies the wilting point for the bets-t function in CLM. Note that the units for this function
-        are pressure [m] for a Pressure formulation and saturation [-] for a Saturation formulation. Note that CLM must
+        are pressure [m] for a Pressure formulation and saturation [-] for a Saturation formulation. For a Pressure
+        formulation this is a negative head in metres (e.g. -150.0), so no numeric bound is enforced. Note that CLM must
         be compiled and linked at runtime for this option to be active.
       default: 0.1
       domains:
         DoubleValue:
-          min_value: 0.0
         RequiresModule: CLM
 
     SoilMoistureStress:
@@ -459,7 +458,9 @@ Solver:
           When True, the effective wilting point is limited on the dry side against each
           cell's van Genuchten residual saturation so transpiration shuts off with mass to
           spare, keeping the Richards solver off the residual-saturation cliff. Applies to
-          the Saturation (soil-moisture) VegWaterStress formulation.
+          both the Saturation (soil-moisture) and Pressure VegWaterStress formulations; in
+          Pressure mode the dry-side limit is applied per soil layer in saturation units,
+          since residual saturation has no finite head.
         default: False
         domains:
           BoolDomain:
@@ -489,6 +490,20 @@ Solver:
         domains:
           DoubleValue:
             min_value: 0.0
+
+    PerPFTWaterStress:
+      help: >
+        [Type: boolean/string] When True, CLM reads per-PFT wilting point and field capacity
+        from drv_vegp.dat (rows wp_press/fc_press for the Pressure formulation, wp_sat/fc_sat
+        for the Saturation formulation) instead of the single WiltingPoint / FieldCapacity
+        scalars. Any row absent from drv_vegp.dat falls back to the corresponding scalar key.
+        When False (default) the scalar values are used for every PFT, exactly as before, even
+        if the rows are present in the file. Note that CLM must be compiled and linked at
+        runtime for this option to be active.
+      default: False
+      domains:
+        BoolDomain:
+        RequiresModule: CLM
 
     WriteLastRST:
       help: >

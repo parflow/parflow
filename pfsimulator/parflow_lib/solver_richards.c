@@ -194,6 +194,7 @@ typedef struct {
   int sm_stress_type;           /* dry-side residual limit: 0=off, 1=residual-limited wp, 2=ramp-floor only */
   double sm_residual_margin;    /* saturation margin the effective wilting point must stay above S_res */
   double sm_min_ramp_width;     /* minimum fc_eff - wp_eff span */
+  int per_pft_water_stress;     /* 1 = read per-PFT wilting point / field capacity from drv_vegp.dat (Solver.CLM.PerPFTWaterStress) */
 
   int clm_irr_type;             /* CLM irrigation type flag -- 0=none, 1=Spray, 2=Drip, 3=Instant */
   int clm_irr_cycle;            /* CLM irrigation cycle flag -- 0=Constant, 1=Deficit */
@@ -2832,6 +2833,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          public_xtra->sm_stress_type,
                          public_xtra->sm_residual_margin,
                          public_xtra->sm_min_ramp_width,
+                         public_xtra->per_pft_water_stress,
                          public_xtra->clm_irr_type,
                          public_xtra->clm_irr_cycle,
                          public_xtra->clm_irr_rate,
@@ -5758,6 +5760,13 @@ SolverRichardsNewPublicXtra(char *name)
     sprintf(key, "%s.CLM.SoilMoistureStress.MinRampWidth", name);
     public_xtra->sm_min_ramp_width = GetDoubleDefault(key, 0.05);
   }
+
+  /* Per-PFT wilting point / field capacity from drv_vegp.dat.  Off (default)
+   * keeps the single Solver.CLM.WiltingPoint / FieldCapacity scalar for every
+   * PFT, bit-identical to prior behavior even if the rows are present. */
+  sprintf(key, "%s.CLM.PerPFTWaterStress", name);
+  public_xtra->per_pft_water_stress =
+    NA_NameToIndexExitOnError(switch_na, GetStringDefault(key, "False"), key);
 
   /* @RMM 2025 Snow parameterization options */
   NameArray snow_switch_na;

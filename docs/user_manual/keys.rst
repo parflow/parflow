@@ -6159,11 +6159,34 @@ The valid types for this key are **None**, **Saturation**, **Pressure**.
    :math:`\beta_t=\frac{P - P_{wp}}{P_{fc}-P_{wp}}`
 
 Note that the wilting point, :math:`S_{wp}` or :math:`p_{wp}`, is
-specified by the key ``Solver.CLM.WiltingPoint`` below, that the 
-field capacity, :math:`S_{fc}` or :math:`p_{fc}`, is specified by the 
-key ``Solver.CLM.FieldCapacity`` below, that :math:`\beta_t` is limited 
-between zero and one and also that ``CLM`` must be compiled and 
-linked at runtime for this option to be active.
+specified by the key ``Solver.CLM.WiltingPoint`` below, that the
+field capacity, :math:`S_{fc}` or :math:`p_{fc}`, is specified by the
+key ``Solver.CLM.FieldCapacity`` below, that :math:`\beta_t` is limited
+between zero and one and also that ``CLM`` must be compiled and
+linked at runtime for this option to be active. The root-zone
+transpiration factor passed to the stomatal-resistance calculation is the
+root-fraction-weighted sum over soil layers,
+:math:`\beta_t = \sum_i r_i\, \beta_{t,i}`, where :math:`r_i` is the root
+fraction in layer :math:`i`.
+
+When ``Solver.CLM.PerPFTWaterStress`` is **True**, the wilting point and field
+capacity in these expressions are taken per vegetation class from
+``drv_vegp.dat`` rather than from the single scalar keys (see
+``Solver.CLM.PerPFTWaterStress`` below). When ``Solver.CLM.SoilMoistureStress``
+is **True**, the wilting point is limited on the dry side against each cell's van
+Genuchten residual saturation :math:`S_{res}`, so the effective values used by
+the **Saturation** ramp are
+
+.. math::
+
+   S_{wp}^{\mathrm{eff}} = \max\!\left(S_{wp},\; S_{res} + \mathrm{Margin}\right),
+   \qquad
+   S_{fc}^{\mathrm{eff}} = \max\!\left(S_{fc},\; S_{wp}^{\mathrm{eff}} + \mathrm{MinRampWidth}\right)
+
+For the **Pressure** formulation the same residual limit is applied per soil
+layer in saturation units, since :math:`S_{res}` has no finite head: layer
+:math:`i` contributes :math:`\beta_{t,i} = 0` once its saturation falls to
+:math:`S_{res} + \mathrm{Margin}`.
 
 .. container:: list
 
@@ -6192,7 +6215,10 @@ behavior is exactly as before. When **True**, the effective wilting point used b
 the **Saturation** :math:`\beta_t` ramp and its cutoff is limited on the dry side
 against each cell's van Genuchten residual saturation :math:`S_{res}`, so
 transpiration shuts off with mass to spare and never drives a cell to the
-residual-saturation cliff where the Richards Jacobian degenerates.
+residual-saturation cliff where the Richards Jacobian degenerates. For the
+**Pressure** formulation the same dry-side limit is applied per soil layer in
+saturation units (residual saturation has no finite head), zeroing a layer's
+uptake once it falls within **Margin** of :math:`S_{res}`.
 
 *string* **Solver.CLM.SoilMoistureStress.ResidualLimit** True When the master switch
 is **True**, raise the effective wilting point to at least
@@ -6226,6 +6252,26 @@ to be active.
 
       pfset Solver.CLM.FieldCapacity  0.95         ## TCL syntax
       <runname>.Solver.CLM.FieldCapacity = 0.95    ## Python syntax
+
+*string* **Solver.CLM.PerPFTWaterStress** False When **True**, ``CLM`` reads
+per-PFT wilting point and field capacity from ``drv_vegp.dat`` instead of the
+single ``Solver.CLM.WiltingPoint`` / ``Solver.CLM.FieldCapacity`` scalars. Four
+rows supply the values, one per IGBP/PFT class: ``wp_press`` and ``fc_press`` for
+the **Pressure** formulation, ``wp_sat`` and ``fc_sat`` for the **Saturation**
+formulation. Only the pair matching the active ``Solver.CLM.VegWaterStress``
+formulation is used. Any row absent from ``drv_vegp.dat`` falls back to the
+corresponding scalar key for every PFT. When **False** (default) the scalar
+values are used for every PFT, exactly as before, even if the rows are present in
+the file. ``CLM`` aborts at startup if any vegetated class has field capacity that
+is not wetter than its wilting point. Note that ``CLM`` must be compiled and
+linked at runtime for this option to be active.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.PerPFTWaterStress  True         ## TCL syntax
+      <runname>.Solver.CLM.PerPFTWaterStress = True    ## Python syntax
 
 *string* **Solver.CLM.IrrigationType** none This key specifies the form
 of the irrigation in ``CLM``. The valid types for this key are **none**, 

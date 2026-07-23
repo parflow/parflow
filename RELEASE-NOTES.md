@@ -131,6 +131,22 @@ Both default to off and are byte-identical to previous behavior when
 disabled. Foundation: per-cell residual saturation exposed via
 `ProblemSaturationGetSres` (van Genuchten saturation required).
 
+### Per-PFT Wilting Point and Field Capacity
+
+- **`Solver.CLM.PerPFTWaterStress`** (default off): CLM can read wilting point
+  and field capacity per IGBP/PFT class from `drv_vegp.dat` instead of the single
+  `Solver.CLM.WiltingPoint` / `Solver.CLM.FieldCapacity` scalars. Four new rows
+  supply the values (`wp_press`/`fc_press` for the Pressure formulation,
+  `wp_sat`/`fc_sat` for the Saturation formulation); only the pair matching the
+  active `Solver.CLM.VegWaterStress` mode is used, and any absent row falls back
+  to the scalar. When off, the scalars are used for every PFT exactly as before,
+  even if the rows are present, so the option is byte-identical when disabled.
+  CLM aborts at startup if any vegetated class has field capacity that is not
+  wetter than its wilting point. Composes with `Solver.CLM.SoilMoistureStress`:
+  the effective wilting point is the larger of the per-PFT value and the
+  residual-saturation limit. `SoilMoistureStress` now also guards the Pressure
+  formulation, per soil layer in saturation units.
+
 ### Overland Flow Output Enhancements
 
 New output capabilities for overland flow analysis:

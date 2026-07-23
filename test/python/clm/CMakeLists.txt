@@ -10,6 +10,7 @@ if(${PARFLOW_HAVE_CLM})
             clm-reuse
             clm_rz_water_stress
             clm_soil_moisture_stress
+            clm_pft_water_stress
             clm_snow_defaults
             clm_snow_partition
             clm_snow_albedo
