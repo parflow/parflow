@@ -2572,6 +2572,13 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
        * guard (NULL for non-VanGenuchten saturation).  Halo-update so CLM can
        * read ghost cells, exactly as it does for porosity. */
       Vector *sres_vec = ProblemSaturationGetSres(instance_xtra->problem_saturation);
+      if (sres_vec == NULL && public_xtra->sm_stress_type == 1)
+      {
+        PARFLOW_ERROR("Solver.CLM.SoilMoistureStress.ResidualLimit requires "
+                      "Type-1 (VanGenuchten) saturation to provide per-cell "
+                      "residual saturation; set ResidualLimit to False or use "
+                      "VanGenuchten saturation.");
+      }
       if (sres_vec != NULL)
       {
         VectorUpdateCommHandle *sres_handle = InitVectorUpdate(sres_vec, VectorUpdateAll);
@@ -2679,6 +2686,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         po_dat = SubvectorData(po_sub);
         dz_dat = SubvectorData(dz_sub);
         Subvector *sres_sub = (sres_vec != NULL) ? VectorSubvector(sres_vec, is) : NULL;
+        /* po_dat here is only a shape-compatible placeholder for the Fortran
+         * interface: sres_vec can be NULL only when the residual limit is off
+         * (checked above), and CLM never reads s_res_cell in that case. */
         double *sres_dat = (sres_sub != NULL) ? SubvectorData(sres_sub) : po_dat;
 
         /* IMF: Subvector Data -- CLM surface fluxes, SWE, t_grnd */

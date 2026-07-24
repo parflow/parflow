@@ -2181,7 +2181,7 @@ Solver:
       default: 0.05
       domains:
         DoubleValue:
-          min_value: 0.0
+          min_value: 1.0e-10
     PrintLog:
       help: >
         [Type: boolean/string] When the guard is active, write one CSV row per accepted
