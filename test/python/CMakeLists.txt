@@ -149,6 +149,18 @@ foreach(inputfile ${TESTS})
     pf_add_py_test(${inputfile})
 endforeach()
 
+# The CUDA/Kokkos/OMP backends use atomic adds, so reductions are
+# order-nondeterministic and two runs of the same config differ at machine
+# epsilon.  Tell the guard gate test to check its default-off identity with a
+# tight relative tolerance instead of exact byte equality.
+if((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}))
+    set_property(
+        TEST py_evap_trans_guard
+        APPEND
+        PROPERTY ENVIRONMENT "PF_TEST_ATOMIC_BACKEND=1"
+    )
+endif()
+
 ###################################################################
 
 foreach(inputfile ${PARALLEL_2DTOPO_TESTS})

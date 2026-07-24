@@ -14,6 +14,7 @@
 #
 # @R Maxwell + Claude, 16-Jul-2026
 
+import os
 import sys
 import argparse
 import numpy as np
@@ -311,15 +312,28 @@ check(
 )
 
 # -----------------------------------------------------------------------------
-# Keys absent (C) must be byte-identical to guard False (A) -- default-off
+# Keys absent (C) must be byte-identical to guard False (A) -- default-off.
+# On atomic backends (CUDA/Kokkos/OMP, flagged via PF_TEST_ATOMIC_BACKEND by
+# CMake) reductions are order-nondeterministic, so two runs of the same config
+# differ at machine epsilon; check against a tight relative tolerance instead.
+# Any real default-on regression shifts pressures by orders of magnitude more.
 # -----------------------------------------------------------------------------
 p_off = read_pfb(dir_a + "/" + run_name + ".out.press.%05d.pfb" % FINAL_DUMP)
 p_absent = read_pfb(dir_c + "/" + run_name + ".out.press.%05d.pfb" % FINAL_DUMP)
-check(
-    "default-off bit-identity",
-    bool(np.all(p_off == p_absent)),
-    f"max |diff| {float(np.max(np.abs(p_off - p_absent))):.3e}",
-)
+max_diff = float(np.max(np.abs(p_off - p_absent)))
+if os.environ.get("PF_TEST_ATOMIC_BACKEND") == "1":
+    tol = 1e-10 * max(1.0, float(np.max(np.abs(p_absent))))
+    check(
+        "default-off identity (atomic-backend tolerance)",
+        max_diff <= tol,
+        f"max |diff| {max_diff:.3e} (expect <= {tol:.3e})",
+    )
+else:
+    check(
+        "default-off bit-identity",
+        bool(np.all(p_off == p_absent)),
+        f"max |diff| {max_diff:.3e}",
+    )
 
 if all(checks):
     print(f"{run_name} : PASSED")
