@@ -8,7 +8,8 @@ eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,eflx_grnd_pf,                               
 qflx_tot_pf,qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf,t_g_pf,               &
 t_soi_pf,clm_dump_interval,clm_1d_out,clm_forc_veg,clm_output_dir,clm_output_dir_length,clm_bin_output_dir,         &
 write_CLM_binary,slope_accounting_CLM,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,                 &
-res_satpf,sm_stress_typepf,sm_residual_marginpf,sm_min_ramp_widthpf,per_pft_water_stresspf,irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thresholdpf,               &
+res_satpf,sm_stress_typepf,sm_residual_marginpf,sm_min_ramp_widthpf,per_pft_water_stresspf,            &
+irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thresholdpf,                         &
 qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z,clm_next,clm_write_logs,                    &
 clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak,                            &
 snow_partition_typepf,tw_thresholdpf,thin_snow_dampingpf,thin_snow_thresholdpf,                       &
