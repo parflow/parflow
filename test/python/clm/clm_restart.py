@@ -142,9 +142,7 @@ def check_restart_structure(path):
         ok = False
 
     # The three appended fields must hold finite, non-negative values
-    for name, rec in zip(
-        ("coszen_avg", "snowage_vis", "snowage_nir"), records[-3:]
-    ):
+    for name, rec in zip(("coszen_avg", "snowage_vis", "snowage_nir"), records[-3:]):
         values = np.frombuffer(rec, dtype=np.float64)
         if not np.all(np.isfinite(values)) or np.any(values < 0.0):
             print(f"FAILED: restart field {name} has bad values: {values}")
