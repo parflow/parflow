@@ -86,6 +86,7 @@
 #define SeepageFace      9
 #define OverlandKinematic 10
 #define OverlandDiffusive 11
+#define OverlandKinematic_wc 12
 /** @} */
 
 
@@ -139,6 +140,9 @@
     double *values;                    \
   })                                   \
         BC_TYPE(OverlandDiffusive, {   \
+    double *values;                    \
+  })                                   \
+        BC_TYPE(OverlandKinematic_wc, {\
     double *values;                    \
   })
 
@@ -237,7 +241,10 @@
   })                                   \
         BC_TYPE(OverlandDiffusive, {   \
     double value;                      \
-  })
+  })                                   \
+        BC_TYPE(OverlandKinematic_wc, {\
+    double value;                      \
+  })  
 
 
 /* @MCB: Interval structs are used in multiple C files, generate the definitions in the header */
@@ -372,6 +379,9 @@ typedef struct {
 /*--------------------------------------------------------------------------*/
     #define OverlandDiffusiveValue(patch) \
             ((patch)->value)
+/*--------------------------------------------------------------------------*/
+  #define OverlandKinematic_wcValue(patch) \
+          ((patch)->value)
 /*--------------------------------------------------------------------------
  * Accessor macros: BCPressureData
  *--------------------------------------------------------------------------*/
