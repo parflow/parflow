@@ -392,6 +392,146 @@ def _overland_flow_kinematic(
 
 # -----------------------------------------------------------------------------
 
+def _overland_flow_kinematic_wc(
+    mask, pressure_top, slopex, slopey, mannings, dx, dy, Wc_x, Wc_y, epsilon
+):
+    ##### --- ######
+    #     qx       #
+    ##### --- ######
+
+    # We will be tweaking the slope values for this algorithm, so we make a copy
+    slopex = np.copy(slopex)
+    slopey = np.copy(slopey)
+    mannings = np.copy(mannings)
+
+    # We're only interested in the surface mask, as an ny-by-nx array
+    mask = mask[-1, ...]
+
+    # Find all patterns of the form
+    #  -------
+    # | 0 | 1 |
+    #  -------
+    # and copy the slopex, slopey and mannings values from the '1' cells to the corresponding '0' cells
+    _x, _y = np.where(np.diff(mask, axis=1, append=0) == 1)
+    slopex[(_x, _y)] = slopex[(_x, _y + 1)]
+    slopey[(_x, _y)] = slopey[(_x, _y + 1)]
+    mannings[(_x, _y)] = mannings[(_x, _y + 1)]
+
+    slope = np.maximum(epsilon, np.hypot(slopex, slopey))
+
+    # Upwind pressure - this is for the north and east face of all cells
+    # The slopes are calculated across these boundaries so the upper x boundaries are included in these
+    # calculations. The lower x boundaries are added further down as q_x0
+    pressure_top_padded = np.pad(
+        pressure_top[:, 1:],
+        (
+            (
+                0,
+                0,
+            ),
+            (0, 1),
+        ),
+    )  # pad right
+    pupwindx = np.maximum(0, np.sign(slopex) * pressure_top_padded) + np.maximum(
+        0, -np.sign(slopex) * pressure_top
+    )
+
+    Wc_x_pad = np.pad(
+        Wc_x[:, 1:],
+        (
+            (
+                0,
+                0,
+            ),
+            (0, 1),
+        ),constant_values = 1000
+    )  # pad right
+    Wc_x_up = (2*Wc_x*Wc_x_pad)/(Wc_x+Wc_x_pad)
+    
+    Wc_x_up[Wc_x_up==0] = 1000
+
+    flux_factor = np.sqrt(slope) * mannings
+
+    # Flux across the x directions
+    q_x = -slopex / flux_factor * pupwindx ** (5 / 3) * dy * ((dy*Wc_x_up)/(2*pupwindx*dy+Wc_x_up**2))**(2/3)
+
+    # Fix the lower x boundary
+    # Use the slopes of the first column
+    q_x0 = (
+        -slopex[:, 0]
+        / flux_factor[:, 0]
+        * np.maximum(0, np.sign(slopex[:, 0]) * pressure_top[:, 0]) ** (5 / 3)
+        * dy * ((dy*Wc_x_up[:, 0])/(2*pressure_top[:, 0]*dy+Wc_x_up[:, 0]**2))**(2/3)
+    )
+    qeast = np.hstack([q_x0[:, np.newaxis], q_x])
+
+    ##### --- ######
+    #   qy   #
+    ##### --- ######
+
+    # Find all patterns of the form
+    #  ---
+    # | 0 |
+    # | 1 |
+    #  ---
+    _x, _y = np.where(np.diff(mask, axis=0, append=0) == 1)
+    slopey[(_x, _y)] = slopey[(_x + 1, _y)]
+    slopex[(_x, _y)] = slopex[(_x + 1, _y)]
+    mannings[(_x, _y)] = mannings[(_x + 1, _y)]
+
+    slope = np.maximum(epsilon, np.hypot(slopex, slopey))
+
+    # Upwind pressure - this is for the north and east face of all cells
+    # The slopes are calculated across these boundaries so the upper y boundaries are included in these
+    # calculations. The lower y boundaries are added further down as q_y0
+    pressure_top_padded = np.pad(
+        pressure_top[1:, :],
+        (
+            (
+                0,
+                1,
+            ),
+            (0, 0),
+        ),
+    )  # pad bottom
+    pupwindy = np.maximum(0, np.sign(slopey) * pressure_top_padded) + np.maximum(
+        0, -np.sign(slopey) * pressure_top
+    )
+
+    Wc_y_pad = np.pad(
+        Wc_y[1:, :],
+        (
+            (
+                0,
+                1,
+            ),
+            (0, 0),
+        ),constant_values = 1000
+    )  # pad right
+    Wc_y_up = (2*Wc_y*Wc_y_pad)/(Wc_y+Wc_y_pad)
+    
+    Wc_y_up[Wc_y_up==0] = 1000
+    
+    flux_factor = np.sqrt(slope) * mannings
+
+    # Flux across the y direction
+    q_y = -slopey / flux_factor * pupwindy ** (5 / 3) * dx * ((dx*Wc_y_up)/(2*pupwindy*dx+Wc_y_up**2))**(2/3)
+
+    # Fix the lower y boundary
+    # Use the slopes of the first row
+    q_y0 = (
+        -slopey[0, :]
+        / flux_factor[0, :]
+        * np.maximum(0, np.sign(slopey[0, :]) * pressure_top[0, :]) ** (5 / 3)
+        * dx * ((dx*Wc_y_up[0, :])/(2*pressure_top[0, :]*dx+Wc_y_up[0, :]**2))**(2/3)
+    )
+    qnorth = np.vstack([q_y0, q_y])
+
+    return qeast, qnorth
+
+
+# -----------------------------------------------------------------------------
+
 
 def calculate_overland_fluxes(
     pressure,
@@ -400,6 +540,8 @@ def calculate_overland_fluxes(
     mannings,
     dx,
     dy,
+    Wc_x=None,
+    Wc_y=None,
     flow_method="OverlandKinematic",
     epsilon=1e-5,
     mask=None,
@@ -413,7 +555,9 @@ def calculate_overland_fluxes(
     :param mannings: a scalar value, or a ny-by-nx ndarray
     :param dx: Length of a grid element in the x direction
     :param dy: Length of a grid element in the y direction
-    :param flow_method: Either 'OverlandFlow' or 'OverlandKinematic'
+    :param Wc_x: nx-by-ny
+    :param Wc_y: nx-by-ny
+    :param flow_method:'OverlandFlow', 'OverlandKinematic' or 'OverlandKinematic_wc'
         'OverlandKinematic' by default.
     :param epsilon: Minimum slope magnitude for solver. Only applicable if flow_method='OverlandKinematic'.
         This is set using the Solver.OverlandKinematic.Epsilon key in Parflow.
@@ -467,13 +611,20 @@ def calculate_overland_fluxes(
     pressure_top = np.nan_to_num(pressure_top)
     pressure_top[pressure_top < 0] = 0
 
-    assert flow_method in ("OverlandFlow", "OverlandKinematic"), "Unknown flow method"
+    assert flow_method in ("OverlandFlow", "OverlandKinematic", "OverlandKinematic_wc"), "Unknown flow method"
     if flow_method == "OverlandKinematic":
         if mask is None:
             mask = np.ones_like(pressure)
         mask = np.where(mask > 0, 1, 0)
         qeast, qnorth = _overland_flow_kinematic(
             mask, pressure_top, slopex, slopey, mannings, dx, dy, epsilon
+        )
+    elif flow_method == "OverlandKinematic_wc":
+        if mask is None:
+            mask = np.ones_like(pressure)
+        mask = np.where(mask > 0, 1, 0)
+        qeast, qnorth = _overland_flow_kinematic_wc(
+            mask, pressure_top, slopex, slopey, mannings, dx, dy, Wc_x, Wc_y, epsilon
         )
     else:
         qeast, qnorth = _overland_flow(pressure_top, slopex, slopey, mannings, dx, dy)
@@ -491,6 +642,8 @@ def calculate_overland_flow_grid(
     mannings,
     dx,
     dy,
+    Wc_x = None,
+    Wc_y = None,
     flow_method="OverlandKinematic",
     epsilon=1e-5,
     mask=None,
@@ -504,7 +657,9 @@ def calculate_overland_flow_grid(
     :param mannings: a scalar value, or a ny-by-nx ndarray
     :param dx: Length of a grid element in the x direction
     :param dy: Length of a grid element in the y direction
-    :param flow_method: Either 'OverlandFlow' or 'OverlandKinematic'
+    :param Wc_x: nx-by-ny
+    :param Wc_y: nx-by-ny
+    :param flow_method: 'OverlandFlow' , 'OverlandKinematic' or 'OverlandKinematic_wc'
         'OverlandKinematic' by default.
     :param epsilon: Minimum slope magnitude for solver. Only applicable if kinematic=True.
         This is set using the Solver.OverlandKinematic.Epsilon key in Parflow.
@@ -520,6 +675,8 @@ def calculate_overland_flow_grid(
         mannings,
         dx,
         dy,
+        Wc_x,
+        Wc_y,
         flow_method=flow_method,
         epsilon=epsilon,
         mask=mask,
@@ -549,6 +706,8 @@ def calculate_overland_flow(
     mannings,
     dx,
     dy,
+    Wc_x = None,
+    Wc_y = None,
     flow_method="OverlandKinematic",
     epsilon=1e-5,
     mask=None,
@@ -562,7 +721,9 @@ def calculate_overland_flow(
     :param mannings: a scalar value, or a ny-by-nx ndarray
     :param dx: Length of a grid element in the x direction
     :param dy: Length of a grid element in the y direction
-    :param flow_method: Either 'OverlandFlow' or 'OverlandKinematic'
+    :param Wc_x: nx-by-ny
+    :param Wc_y: nx-by-ny
+    :param flow_method: 'OverlandFlow' , 'OverlandKinematic' or 'OverlandKinematic_wc'
         'OverlandKinematic' by default.
     :param epsilon: Minimum slope magnitude for solver. Only applicable if flow_method='OverlandKinematic'.
         This is set using the Solver.OverlandKinematic.Epsilon key in Parflow.
@@ -577,6 +738,8 @@ def calculate_overland_flow(
         mannings,
         dx,
         dy,
+        Wc_x,
+        Wc_y,
         flow_method=flow_method,
         epsilon=epsilon,
         mask=mask,
