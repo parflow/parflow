@@ -19,5 +19,5 @@
 
 /* extern "C" is required for the C source files when compiled with CPP compiler */
 extern "C"{
-  #include "overlandflow_eval_Kin.c"
+  #include "overlandflow_eval_Kin_wc.c"
 }

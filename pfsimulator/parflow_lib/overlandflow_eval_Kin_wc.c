@@ -55,10 +55,10 @@ typedef void InstanceXtra;
 #define PMean(a, b)    HarmonicMean(a, b)
 
 /*-------------------------------------------------------------------------
- * OverlandFlowEval
+ * OverlandFlowEvalKin_wc
  *-------------------------------------------------------------------------*/
 
-void    OverlandFlowEvalKin(
+void    OverlandFlowEvalKin_wc(
                             Grid *       grid,  /* data struct for computational grid */
                             int          sg,  /* current subgrid */
                             BCStruct *   bc_struct,  /* data struct of boundary patch values */
@@ -543,10 +543,10 @@ void    OverlandFlowEvalKin(
 
 //*/
 /*--------------------------------------------------------------------------
- * OverlandFlowEvalKinInitInstanceXtra
+ * OverlandFlowEvalKin_wcInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *OverlandFlowEvalKinInitInstanceXtra()
+PFModule  *OverlandFlowEvalKin_wcInitInstanceXtra()
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;
@@ -559,10 +559,10 @@ PFModule  *OverlandFlowEvalKinInitInstanceXtra()
 
 
 /*--------------------------------------------------------------------------
- * OverlandFlowEvalKinFreeInstanceXtra
+ * OverlandFlowEvalKin_wcFreeInstanceXtra
  *--------------------------------------------------------------------------*/
 
-void  OverlandFlowEvalKinFreeInstanceXtra()
+void  OverlandFlowEvalKin_wcFreeInstanceXtra()
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
@@ -574,10 +574,10 @@ void  OverlandFlowEvalKinFreeInstanceXtra()
 }
 
 /*--------------------------------------------------------------------------
- * OverlandFlowEvalKinNewPublicXtra
+ * OverlandFlowEvalKin_wcNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *OverlandFlowEvalKinNewPublicXtra()
+PFModule  *OverlandFlowEvalKin_wcNewPublicXtra()
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra;
@@ -589,10 +589,10 @@ PFModule  *OverlandFlowEvalKinNewPublicXtra()
 }
 
 /*-------------------------------------------------------------------------
- * OverlandFlowEvalKinFreePublicXtra
+ * OverlandFlowEvalKin_wcFreePublicXtra
  *-------------------------------------------------------------------------*/
 
-void  OverlandFlowEvalKinFreePublicXtra()
+void  OverlandFlowEvalKin_wcFreePublicXtra()
 {
   PFModule    *this_module = ThisPFModule;
   PublicXtra  *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -604,10 +604,10 @@ void  OverlandFlowEvalKinFreePublicXtra()
 }
 
 /*--------------------------------------------------------------------------
- * OverlandFlowEvalKinSizeOfTempData
+ * OverlandFlowEvalKin_wcSizeOfTempData
  *--------------------------------------------------------------------------*/
 
-int  OverlandFlowEvalKinSizeOfTempData()
+int  OverlandFlowEvalKin_wcSizeOfTempData()
 {
   return 0;
 }
