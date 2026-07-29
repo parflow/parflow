@@ -150,7 +150,7 @@ with SourceFileGenerator() as sfg:
 
     # Returns x dot y (PFVDotProd)
     create_kernel_func_and_reduction_wrapper(
-        sfg, ps.AddReductionAssignment(r, x.center() * y.center()), "VDotProd", optimize=True
+        sfg, ps.AddReductionAssignment(r, x.center() * y.center()), "VDotProd"
     )
 
     # Returns ||x||_{max} (PFVMaxNorm)

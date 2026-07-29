@@ -74,7 +74,7 @@ def get_kernel_cfg(
 
 
 def create_kernel_func(
-    sfg: SourceFileGenerator, assign, func_name: str, optimize: bool = False, allow_vect: bool = True
+    sfg: SourceFileGenerator, assign, func_name: str, optimize: bool = True, allow_vect: bool = True
 ):
     target = sfg.context.project_info["target"]
     func_name = f"PyCodegen_{func_name}"
