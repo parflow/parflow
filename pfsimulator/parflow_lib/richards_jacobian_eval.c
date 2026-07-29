@@ -1642,6 +1642,105 @@ void    RichardsJacobianEval(
                              CellFinalize(DoNothing),
                              AfterAllCells(DoNothing)
                              ); /* End OverlandKinematicBC */
+        /* Copied from OverlandKinematicBC //ARP */
+        ForPatchCellsPerFace(OverlandKinematic_wcBC,
+                             BeforeAllCells(DoNothing),
+                             LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                             Locals(int io, io1, itop, ip, im, iitmp, k1; ),
+                             CellSetup(DoNothing),
+                             FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                             FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                             FACE(BackFace, DoNothing),
+                             FACE(FrontFace,
+        {
+          /* Loop over boundary patches to build JC matrix. */
+          io = SubmatrixEltIndex(J_sub, i, j, iz);
+          io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+          itop = SubvectorEltIndex(top_sub, i, j, 0);
+
+          /* Update JC */
+          ip = SubvectorEltIndex(p_sub, i, j, k);
+          im = SubmatrixEltIndex(J_sub, i, j, k);
+
+          /* First put contributions from subsurface diagonal onto diagonal of JC */
+          cp_c[io] = cp[im];
+          cp[im] = 0.0;                              // update JB
+          /* Now check off-diagonal nodes to see if any surface-surface connections exist */
+          /* West */
+          k1 = (int)top_dat[itop - 1];
+
+          if (k1 >= 0)
+          {
+            if (k1 == k)                              /*west node is also surface node */
+            {
+              wp_c[io] += wp[im];
+              wp[im] = 0.0;                                // update JB
+            }
+          }
+          /* East */
+          k1 = (int)top_dat[itop + 1];
+          if (k1 >= 0)
+          {
+            if (k1 == k)                              /*east node is also surface node */
+            {
+              ep_c[io] += ep[im];
+              ep[im] = 0.0;                                //update JB
+            }
+          }
+          /* South */
+          k1 = (int)top_dat[itop - sy_v];
+          if (k1 >= 0)
+          {
+            if (k1 == k)                              /*south node is also surface node */
+            {
+              sop_c[io] += sop[im];
+              sop[im] = 0.0;                                //update JB
+            }
+          }
+          /* North */
+          k1 = (int)top_dat[itop + sy_v];
+          if (k1 >= 0)
+          {
+            if (k1 == k)                              /*north node is also surface node */
+            {
+              np_c[io] += np[im];
+              np[im] = 0.0;                                // Update JB
+            }
+          }
+
+          iitmp = (int)patch_dat[io1];
+
+          /* Now add overland contributions to JC */
+          if ((pp[ip]) > 0.0)
+          {
+            /* RMM, switch if seepage face on */
+            if (IsSeepagePatch(&(public_xtra->seepage), iitmp))
+            {
+              cp_c[io] += (vol / dz) * (1.0 + 0.0);
+            }
+            else
+            {
+              /*regular overland diagonal term */
+              cp_c[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                          + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+            }
+          }
+
+          /*west term */
+          wp_c[io] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
+
+          /*East term */
+          ep_c[io] += (vol / ffy) * dt * (kw_der[io1 + 1]);
+
+          /*south term */
+          sop_c[io] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
+
+          /*north term */
+          np_c[io] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
+        }),
+                             CellFinalize(DoNothing),
+                             AfterAllCells(DoNothing)
+                             ); /* End OverlandKinematic_wcBC */
 
         ForPatchCellsPerFace(OverlandDiffusiveBC,
                              BeforeAllCells(DoNothing),
