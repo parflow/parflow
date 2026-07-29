@@ -406,6 +406,8 @@ def _overland_flow_kinematic_wc(
 
     # We're only interested in the surface mask, as an ny-by-nx array
     mask = mask[-1, ...]
+    Wc_x = Wc_x[-1, ...]
+    Wc_y = Wc_y[-1, ...]
 
     # Find all patterns of the form
     #  -------
