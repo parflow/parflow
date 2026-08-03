@@ -12,7 +12,7 @@ def create_reduction_kernel_wrapper(
     kernel: Kernel,
     optimize: bool,
     allow_vect: bool,
-    has_init_val: bool = False,
+    has_init_val: bool
 ):
     kernel_params = [
         pw
@@ -91,7 +91,7 @@ def create_kernel_func_and_reduction_wrapper(
     sfg: SourceFileGenerator,
     assign,
     func_name: str,
-    optimize: bool = False,
+    optimize: bool = True,
     allow_vect: bool = True,
     has_init_val: bool = False,
 ):
