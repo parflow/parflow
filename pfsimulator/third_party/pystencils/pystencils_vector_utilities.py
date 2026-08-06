@@ -62,8 +62,17 @@ def create_reduction_kernel_wrapper(
     if use_cuda:
         sfg.include("pf_cudamalloc.h")
 
+    alloc = f"double* {rptr_name} = "
+    dealloc = ""
+    if use_cuda:
+        alloc += "(double*)_talloc_device(sizeof(double))"
+        dealloc = f"_tfree_device({rptr_name})"
+    else:
+        alloc += "talloc(double, 1)"
+        dealloc = f"tfree({rptr_name})"
+
     code = f"""
-    double* {rptr_name} = {("talloc_cuda" if use_cuda else "talloc")}(double, 1);
+    {alloc};
     
     {f"MemPrefetchDeviceToHost_cuda({rptr_name}, sizeof(double), 0);" if use_cuda else ""}
     {init_reduction_ptr}
@@ -78,7 +87,7 @@ def create_reduction_kernel_wrapper(
     {f"MemPrefetchDeviceToHost_cuda({rptr_name}, sizeof(double), 0);" if use_cuda else ""}
 
     double result = *{rptr_name};
-    {"tfree_cuda" if use_cuda else "tfree"}({rptr_name});
+    {dealloc};
     return result;
 """
 
