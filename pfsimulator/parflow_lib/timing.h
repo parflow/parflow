@@ -69,10 +69,10 @@
 #define RbgsZeroOptiTimingIndex 15
 #define RbgsSevenPointTimingIndex 16
 #define VDotProductTimingIndex 17
+#define VectorUtilityRoutineIndex 18
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  18
+#define VectorUpdateTimingIndex  19
 #endif
-#define VectorUtilityRoutineIndex 19
 
 
 
