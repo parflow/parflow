@@ -361,7 +361,7 @@ typedef struct amps_HandleObject {
 #define amps_TAlloc(type, count)                                            \
         {                                                                   \
           (type*)ptr;                                                       \
-          if ((ptr = (type*)malloc((unsigned int)(sizeof(type) * (count)))) \
+          if ((ptr = (type*)malloc((size_t)(sizeof(type) * (count))))       \
               == NULL)                                                      \
           amps_Printf("Error: out of memory in <%s> at line %d\n",          \
                       __FILE__, __LINE__);                                  \
@@ -371,7 +371,7 @@ typedef struct amps_HandleObject {
 #define amps_CTAlloc(type, count)                                                               \
         {                                                                                       \
           (type*)ptr;                                                                           \
-          if ((ptr = (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type))) == NULL) \
+          if ((ptr = (type*)calloc((size_t)(count), (size_t)sizeof(type))) == NULL)             \
           amps_Printf("Error: out of memory in <%s> at line %d\n",                              \
                       __FILE__, __LINE__);                                                      \
           ptr;                                                                                  \
@@ -387,10 +387,10 @@ typedef struct amps_HandleObject {
 #else
 
 #define amps_TAlloc(type, count) \
-        ((count) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
+        ((count) ? (type*)malloc((size_t)(sizeof(type) * (count))) : NULL)
 
 #define amps_CTAlloc(type, count) \
-        ((count) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
+        ((count) ? (type*)calloc((size_t)(count), (size_t)sizeof(type)) : NULL)
 
 /* note: the `else' is required to guarantee termination of the `if' */
 #define amps_TFree(ptr) if (ptr) free(ptr); else
@@ -578,12 +578,12 @@ static inline void _amps_tfree_device(void *ptr)
 /**
  * Same as \ref amps_TAlloc but allocates managed memory
  */
-#define amps_TAlloc_managed(type, count) ((count > 0) ? (type*)_amps_talloc_device((unsigned int)(sizeof(type) * (count))) : NULL)
+#define amps_TAlloc_managed(type, count) ((count > 0) ? (type*)_amps_talloc_device((size_t)(sizeof(type) * (count))) : NULL)
 
 /**
  * Same as \ref amps_CTAlloc but allocates managed memory
  */
-#define amps_CTAlloc_managed(type, count) ((count) ? (type*)_amps_ctalloc_device((unsigned int)(sizeof(type) * (count))) : NULL)
+#define amps_CTAlloc_managed(type, count) ((count) ? (type*)_amps_ctalloc_device((size_t)(sizeof(type) * (count))) : NULL)
 
 /**
  * Same as \ref amps_TFree but deallocates managed memory
