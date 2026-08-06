@@ -94,7 +94,6 @@ void PFVLinearSum(
                   Vector *z)
 
 {
-  BeginTiming(VectorUtilityRoutineIndex);
   double c;
   Vector *v1, *v2;
   int test;
@@ -192,6 +191,8 @@ void PFVLinearSum(
    * (1) a == other, b == 0.0 - user should have called N_VScale
    * (2) a == 0.0, b == other - user should have called N_VScale
    * (3) a,b == other, a !=b, a != -b */
+
+  BeginTiming(VectorUtilityRoutineIndex);
 
   ForSubgridI(sg, GridSubgrids(grid))
   {
