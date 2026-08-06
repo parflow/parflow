@@ -94,6 +94,7 @@ void PFVLinearSum(
                   Vector *z)
 
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   double c;
   Vector *v1, *v2;
   int test;
@@ -245,6 +246,7 @@ void PFVLinearSum(
 #endif
   }
   IncFLOPCount(3 * VectorSize(z));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVConstInit(
@@ -252,6 +254,7 @@ void PFVConstInit(
                   double  c,
                   Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(z);
   Subgrid    *subgrid;
 
@@ -299,6 +302,7 @@ void PFVConstInit(
     });
 #endif
   }
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVProd(
@@ -307,6 +311,7 @@ void PFVProd(
              Vector *y,
              Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -379,6 +384,7 @@ void PFVProd(
 #endif
   }
   IncFLOPCount(VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVDiv(
@@ -387,6 +393,7 @@ void PFVDiv(
             Vector *y,
             Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -458,6 +465,7 @@ void PFVDiv(
 #endif
   }
   IncFLOPCount(VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVScale(
@@ -466,6 +474,7 @@ void PFVScale(
               Vector *x,
               Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -485,6 +494,7 @@ void PFVScale(
   if (z == x)
   {       /* BLAS usage: scale x <- cx */
     PFVScaleBy(c, x);
+    EndTiming(VectorUtilityRoutineIndex);
     return;
   }
 
@@ -543,6 +553,7 @@ void PFVScale(
     }
   }
   IncFLOPCount(VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVAbs(
@@ -550,6 +561,7 @@ void PFVAbs(
             Vector *x,
             Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -608,6 +620,7 @@ void PFVAbs(
     });
 #endif
   }
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVInv(
@@ -615,6 +628,7 @@ void PFVInv(
             Vector *x,
             Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -674,6 +688,7 @@ void PFVInv(
 #endif
   }
   IncFLOPCount(VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVAddConst(
@@ -682,6 +697,7 @@ void PFVAddConst(
                  double  b,
                  Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -742,6 +758,7 @@ void PFVAddConst(
 #endif
   }
   IncFLOPCount(VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 double PFVDotProd(
@@ -749,6 +766,7 @@ double PFVDotProd(
                   Vector *x,
                   Vector *y)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -820,6 +838,7 @@ double PFVDotProd(
 
   IncFLOPCount(2 * VectorSize(x));
 
+  EndTiming(VectorUtilityRoutineIndex);
   return(sum);
 }
 
@@ -827,6 +846,7 @@ double PFVMaxNorm(
 /* MaxNorm = || x ||_{max}   */
                   Vector *x)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -883,6 +903,7 @@ double PFVMaxNorm(
   amps_AllReduce(amps_CommWorld, result_invoice, amps_Max);
   amps_FreeInvoice(result_invoice);
 
+  EndTiming(VectorUtilityRoutineIndex);
   return(max_val);
 }
 
@@ -891,6 +912,7 @@ double PFVWrmsNorm(
                    Vector *x,
                    Vector *w)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -962,6 +984,7 @@ double PFVWrmsNorm(
 
   IncFLOPCount(3 * VectorSize(x));
 
+  EndTiming(VectorUtilityRoutineIndex);
   return(sqrt(sum / (x->size)));
 }
 
@@ -970,6 +993,7 @@ double PFVWL2Norm(
                   Vector *x,
                   Vector *w)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1041,6 +1065,7 @@ double PFVWL2Norm(
 
   IncFLOPCount(3 * VectorSize(x));
 
+  EndTiming(VectorUtilityRoutineIndex);
   return(sqrt(sum));
 }
 
@@ -1048,6 +1073,7 @@ double PFVL1Norm(
 /* L1Norm = sum_i |x_i|  */
                  Vector *x)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1103,6 +1129,7 @@ double PFVL1Norm(
   amps_AllReduce(amps_CommWorld, result_invoice, amps_Add);
   amps_FreeInvoice(result_invoice);
 
+  EndTiming(VectorUtilityRoutineIndex);
   return(sum);
 }
 
@@ -1110,6 +1137,7 @@ double PFVMin(
 /* Min = min_i(x_i)   */
               Vector *x)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1187,6 +1215,7 @@ double PFVMin(
   amps_AllReduce(amps_CommWorld, result_invoice, amps_Min);
   amps_FreeInvoice(result_invoice);
 
+  EndTiming(VectorUtilityRoutineIndex);
   return(min_val);
 }
 
@@ -1194,6 +1223,7 @@ double PFVMax(
 /* Max = max_i(x_i)   */
               Vector *x)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1269,6 +1299,7 @@ double PFVMax(
   amps_AllReduce(amps_CommWorld, result_invoice, amps_Max);
   amps_FreeInvoice(result_invoice);
 
+  EndTiming(VectorUtilityRoutineIndex);
   return(max_val);
 }
 
@@ -1361,6 +1392,7 @@ void PFVCompare(
                 Vector *x,
                 Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1420,6 +1452,7 @@ void PFVCompare(
     });
 #endif
   }
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 
@@ -1538,6 +1571,7 @@ void PFVSum(
             Vector *y,
             Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1609,6 +1643,7 @@ void PFVSum(
 #endif
   }
   IncFLOPCount(VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVDiff(
@@ -1617,6 +1652,7 @@ void PFVDiff(
              Vector *y,
              Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1689,6 +1725,7 @@ void PFVDiff(
 #endif
   }
   IncFLOPCount(VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVNeg(
@@ -1696,6 +1733,7 @@ void PFVNeg(
             Vector *x,
             Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1755,6 +1793,7 @@ void PFVNeg(
     });
 #endif
   }
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVScaleSum(
@@ -1764,6 +1803,7 @@ void PFVScaleSum(
                  Vector *y,
                  Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1837,6 +1877,7 @@ void PFVScaleSum(
 #endif
   }
   IncFLOPCount(2 * VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVScaleDiff(
@@ -1846,6 +1887,7 @@ void PFVScaleDiff(
                   Vector *y,
                   Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1919,6 +1961,7 @@ void PFVScaleDiff(
 #endif
   }
   IncFLOPCount(2 * VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVLin1(
@@ -1928,6 +1971,7 @@ void PFVLin1(
              Vector *y,
              Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -2001,6 +2045,7 @@ void PFVLin1(
 #endif
   }
   IncFLOPCount(2 * VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVLin2(
@@ -2010,6 +2055,7 @@ void PFVLin2(
              Vector *y,
              Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -2083,6 +2129,7 @@ void PFVLin2(
 #endif
   }
   IncFLOPCount(2 * VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVAxpy(
@@ -2091,6 +2138,7 @@ void PFVAxpy(
              Vector *x,
              Vector *y)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -2152,6 +2200,7 @@ void PFVAxpy(
 #endif
   }
   IncFLOPCount(2 * VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVScaleBy(
@@ -2159,6 +2208,7 @@ void PFVScaleBy(
                 double  a,
                 Vector *x)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -2208,6 +2258,7 @@ void PFVScaleBy(
 #endif
   }
   IncFLOPCount(VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVLayerCopy(

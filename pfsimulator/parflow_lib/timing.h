@@ -72,6 +72,7 @@
 #ifdef VECTOR_UPDATE_TIMING
 #define VectorUpdateTimingIndex  18
 #endif
+#define VectorUtilityRoutineIndex 19
 
 
 

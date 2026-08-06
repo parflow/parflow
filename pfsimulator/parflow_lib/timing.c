@@ -71,6 +71,7 @@ void  NewTiming()
 #ifdef VECTOR_UPDATE_TIMING
   RegisterTiming("VectorUpdate");
 #endif
+  RegisterTiming("VectorUtilityRoutines");
 }
 
 
