@@ -65,6 +65,7 @@ void  NewTiming()
   RegisterTiming("Flux Base");
   RegisterTiming("Flux Compressible Storage");
   RegisterTiming("Flux Source Terms");
+  RegisterTiming("RBGS");
   RegisterTiming("RBGS Zero Optimization");
   RegisterTiming("RBGS 7pt");
   RegisterTiming("VDotProduct");

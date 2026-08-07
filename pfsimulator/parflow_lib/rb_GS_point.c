@@ -115,6 +115,8 @@ void     RedBlackGSPoint(
    * Begin timing
    *-----------------------------------------------------------------------*/
 
+  BeginTiming(RbgsTimingIndex);
+
   /*-----------------------------------------------------------------------
    * Start red/black Gauss-Seidel
    *-----------------------------------------------------------------------*/
@@ -210,7 +212,7 @@ void     RedBlackGSPoint(
           bp = SubvectorElt(b_sub, ix, iy, iz);
 
           BeginTiming(RbgsZeroOptiTimingIndex);
-#if PARFLOW_HAVE_PYSTENCILS
+#ifdef PARFLOW_HAVE_PYSTENCILS
           PyCodegen_RBGS_ZeroOptimizationKernel(a0, bp, x0,
                                                 nx, ny, nz,
                                                 sx, sy * nx_m, sz * nx_m * ny_m,
@@ -351,7 +353,7 @@ void     RedBlackGSPoint(
           bp = SubvectorElt(b_sub, ix, iy, iz);
 
           BeginTiming(RbgsSevenPointTimingIndex);
-#if PARFLOW_HAVE_PYSTENCILS
+#ifdef PARFLOW_HAVE_PYSTENCILS
           PyCodegen_RBGS_7PtKernel(a0, a1, a2, a3, a4, a5, a6,
                                    bp,
                                    x0, x1, x2, x3, x4, x5, x6,
@@ -393,6 +395,8 @@ void     RedBlackGSPoint(
     IncFLOPCount(13 * (iter * VectorSize(x)));
 
   PARALLEL_SYNC;
+
+  EndTiming(RbgsTimingIndex);
 
   POP_NVTX
 }

@@ -66,12 +66,13 @@
 #define FluxBaseTimingIndex 12
 #define FluxCompressibleStorageTimingIndex 13
 #define FluxSourceTermsTimingIndex 14
-#define RbgsZeroOptiTimingIndex 15
-#define RbgsSevenPointTimingIndex 16
-#define VDotProductTimingIndex 17
-#define VectorUtilityRoutineIndex 18
+#define RbgsTimingIndex 15
+#define RbgsZeroOptiTimingIndex 16
+#define RbgsSevenPointTimingIndex 17
+#define VDotProductTimingIndex 18
+#define VectorUtilityRoutineIndex 19
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  19
+#define VectorUpdateTimingIndex 20
 #endif
 
 
