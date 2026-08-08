@@ -2216,13 +2216,29 @@ Solver:
           DoubleValue:
             min_value: 0.0
     ExtrapolatedGuess:
-      help: >
-        [Type: boolean/string] Layer 2: use the linear-extrapolation predictor
-        (clamped at zero pressure) as the Newton initial guess instead of the
-        previous solution.
-      default: False
-      domains:
-        BoolDomain:
+      __value__:
+        help: >
+          [Type: boolean/string] Layer 2: use an extrapolation predictor
+          (clamped at zero pressure) as the Newton initial guess instead of the
+          previous solution.  The predictor form is set by Type.
+        default: False
+        domains:
+          BoolDomain:
+      Type:
+        help: >
+          [Type: string] Predictor form for the Newton guess: Linear (default,
+          two-level extrapolation), Geometric (per-cell exponential-relaxation
+          decay ratio from three history levels; cells not in same-sign decay
+          fall back to linear), or GeometricGlobal (one domain L1-rate decay
+          ratio applied everywhere).  The Layer-2 error surrogate stays linear
+          regardless.
+        default: Linear
+        domains:
+          EnumDomain:
+            enum_list:
+              - Linear
+              - Geometric
+              - GeometricGlobal
     OnsetControl:
       __value__:
         help: >

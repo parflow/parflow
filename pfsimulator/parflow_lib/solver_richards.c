@@ -306,6 +306,10 @@ typedef struct {
   double adaptive_error_rtol;         /* error-surrogate relative tolerance */
   double adaptive_error_atol;         /* error-surrogate absolute tolerance */
   int adaptive_extrap_guess;          /* linear-extrapolation Newton initial guess */
+  int adaptive_extrap_type;           /* guess predictor: 0 Linear, 1 Geometric
+                                       * (per-cell decay ratio), 2 GeometricGlobal
+                                       * (domain L1-rate ratio).  The Layer-2
+                                       * p_pred error surrogate stays linear. */
   /* Layer 4: forcing-onset cap. */
   int adaptive_onset_control;         /* Layer 4 on/off */
   double adaptive_onset_factor;       /* one-shot dt cap factor at a forcing onset */
@@ -423,8 +427,10 @@ typedef struct {
   int adaptive_have_stats;          /* set once the first accepted solve has run */
   /* Layer 2 state (allocated only when error control or extrapolated guess on). */
   Vector *pressure_nm1;             /* p_{n-1} pressure history */
+  Vector *pressure_nm2;             /* p_{n-2} pressure history (geometric guess only) */
   Vector *adaptive_p_pred;          /* linear-predictor work vector */
   double adaptive_dt_nm1;           /* previous accepted step's dt */
+  double adaptive_dt_nm2;           /* accepted dt one step earlier (geometric guess) */
   int adaptive_nsteps;              /* accepted steps taken (cold-start counter) */
   double adaptive_dt_bound_error;   /* Layer-2 dt bound carried to the next step */
   /* Layer 4 state (relperm scratch allocated only when onset control on). */
@@ -595,8 +601,10 @@ SetupRichards(PFModule * this_module)
 
   /* Adaptive-dt Layer 2 state (history vectors allocated with old_pressure below). */
   instance_xtra->pressure_nm1 = NULL;
+  instance_xtra->pressure_nm2 = NULL;
   instance_xtra->adaptive_p_pred = NULL;
   instance_xtra->adaptive_dt_nm1 = 0.0;
+  instance_xtra->adaptive_dt_nm2 = 0.0;
   instance_xtra->adaptive_nsteps = 0;
   instance_xtra->adaptive_dt_bound_error = FLT_MAX;
 
@@ -1075,6 +1083,15 @@ SetupRichards(PFModule * this_module)
         NewVectorType(grid, 1, 1, vector_cell_centered);
       InitVectorAll(instance_xtra->pressure_nm1, 0.0);
       InitVectorAll(instance_xtra->adaptive_p_pred, 0.0);
+
+      /* Third history level, only for the geometric guess variants. */
+      if (public_xtra->adaptive_extrap_guess &&
+          public_xtra->adaptive_extrap_type != 0)
+      {
+        instance_xtra->pressure_nm2 =
+          NewVectorType(grid, 1, 1, vector_cell_centered);
+        InitVectorAll(instance_xtra->pressure_nm2, 0.0);
+      }
     }
 
     /* Adaptive-dt Layer 4 relperm scratch for the onset capacity screen. */
@@ -2021,6 +2038,111 @@ static void AdaptivePredictor(Vector *p_pred, Vector *p_n, Vector *p_nm1,
       if ((pred < 0.0) != (pv < 0.0))
         pred = (pv >= 0.0) ? 1.0e-6 : -1.0e-6;
       pr[ip] = pred;
+    });
+  }
+}
+
+/* Geometric (exponential-relaxation) Newton guess, written IN PLACE into
+ * p_guess (== the working pressure; old_pressure carries time level n).
+ * Spin-up trajectories are exponential relaxations, so per cell we fit the
+ * decay of the pressure RATE between the last two accepted increments and
+ * project it over the coming step:
+ *   r_n = (p_n - p_nm1)/dt_n,  r_m = (p_nm1 - p_nm2)/dt_nm1
+ *   rho = r_n/r_m   (per cell; or one domain L1-rate ratio when global)
+ *   guess = p_n + r_n * rho^(h/s) * dt_next,
+ * with s = (dt_n + dt_nm1)/2 the rate-sample separation and
+ * h = (dt_next + dt_n)/2 the forecast horizon.  rho outside (0,1) means the
+ * cell is not in same-sign decay (fronts, sign flips) -> linear fallback for
+ * that cell.  The p = 0 clamp matches AdaptivePredictor: the guess never
+ * crosses the ponding switch on its own; the SurfacePredictor runs after
+ * this and keeps the last word at top cells. */
+static void AdaptiveGeoPredictor(Vector *p_guess, Vector *p_nm1, Vector *p_nm2,
+                                 double dt_next, double dt_n, double dt_nm1,
+                                 int global_ratio, ProblemData *problem_data)
+{
+  Grid *grid = VectorGrid(p_guess);
+  GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
+  SubgridArray *subgrids = GridSubgrids(grid);
+  Subgrid *subgrid;
+  int sg, i, j, k, r;
+  double s = 0.5 * (dt_n + dt_nm1);
+  double h = 0.5 * (dt_next + dt_n);
+  double expo = h / s;
+  double rho_g = -1.0;
+
+  if (global_ratio)
+  {
+    /* One domain decay ratio from the L1 pressure-change rates. */
+    double sum_n = 0.0, sum_m = 0.0;
+    ForSubgridI(sg, subgrids)
+    {
+      subgrid = SubgridArraySubgrid(subgrids, sg);
+      Subvector *pn_sub = VectorSubvector(p_guess, sg);
+      Subvector *pm_sub = VectorSubvector(p_nm1, sg);
+      Subvector *pmm_sub = VectorSubvector(p_nm2, sg);
+      double *pn = SubvectorData(pn_sub);
+      double *pm = SubvectorData(pm_sub);
+      double *pmm = SubvectorData(pmm_sub);
+
+      int ix = SubgridIX(subgrid), iy = SubgridIY(subgrid), iz = SubgridIZ(subgrid);
+      int nx = SubgridNX(subgrid), ny = SubgridNY(subgrid), nz = SubgridNZ(subgrid);
+      r = SubgridRX(subgrid);
+
+      GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+      {
+        int ip = SubvectorEltIndex(pn_sub, i, j, k);
+        sum_n += fabs(pn[ip] - pm[ip]) / dt_n;
+        sum_m += fabs(pm[ip] - pmm[ip]) / dt_nm1;
+      });
+    }
+    {
+      amps_Invoice invoice = amps_NewInvoice("%d%d", &sum_n, &sum_m);
+      amps_AllReduce(amps_CommWorld, invoice, amps_Add);
+      amps_FreeInvoice(invoice);
+    }
+    if (sum_m > 0.0)
+      rho_g = sum_n / sum_m;
+    /* Invalid or non-decaying global ratio -> fall back to the linear guess
+     * for the whole field (rho_g = 1 reproduces it exactly below). */
+    if (!(rho_g > 0.0 && rho_g < 1.0))
+      rho_g = 1.0;
+  }
+
+  ForSubgridI(sg, subgrids)
+  {
+    subgrid = SubgridArraySubgrid(subgrids, sg);
+    Subvector *pn_sub = VectorSubvector(p_guess, sg);
+    Subvector *pm_sub = VectorSubvector(p_nm1, sg);
+    Subvector *pmm_sub = VectorSubvector(p_nm2, sg);
+    double *pn = SubvectorData(pn_sub);
+    double *pm = SubvectorData(pm_sub);
+    double *pmm = SubvectorData(pmm_sub);
+
+    int ix = SubgridIX(subgrid), iy = SubgridIY(subgrid), iz = SubgridIZ(subgrid);
+    int nx = SubgridNX(subgrid), ny = SubgridNY(subgrid), nz = SubgridNZ(subgrid);
+    r = SubgridRX(subgrid);
+
+    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+    {
+      int ip = SubvectorEltIndex(pn_sub, i, j, k);
+      double pv = pn[ip];
+      double rn = (pv - pm[ip]) / dt_n;
+      double damp;
+      if (global_ratio)
+      {
+        damp = pow(rho_g, expo);
+      }
+      else
+      {
+        double rm = (pm[ip] - pmm[ip]) / dt_nm1;
+        double rho = (rm != 0.0) ? rn / rm : -1.0;
+        /* Same-sign decaying cell -> geometric damping; else linear. */
+        damp = (rho > 0.0 && rho < 1.0) ? pow(rho, expo) : 1.0;
+      }
+      double pred = pv + rn * damp * dt_next;
+      if ((pred < 0.0) != (pv < 0.0))
+        pred = (pv >= 0.0) ? 1.0e-6 : -1.0e-6;
+      pn[ip] = pred;
     });
   }
 }
@@ -3558,7 +3680,27 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
          * convergence failure (fall back to the accepted solution). */
         if (public_xtra->adaptive_extrap_guess &&
             !instance_xtra->adaptive_onset_fired && conv_failures == 0)
-          PFVCopy(instance_xtra->adaptive_p_pred, instance_xtra->pressure);
+        {
+          if (public_xtra->adaptive_extrap_type != 0 &&
+              instance_xtra->pressure_nm2 &&
+              instance_xtra->adaptive_nsteps >= 3 &&
+              instance_xtra->adaptive_dt_nm2 > 0.0)
+          {
+            /* Geometric guess (per-cell or global decay ratio), in place;
+             * p_pred above stays LINEAR for the error surrogate. */
+            AdaptiveGeoPredictor(instance_xtra->pressure,
+                                 instance_xtra->pressure_nm1,
+                                 instance_xtra->pressure_nm2,
+                                 dt, instance_xtra->adaptive_dt_nm1,
+                                 instance_xtra->adaptive_dt_nm2,
+                                 (public_xtra->adaptive_extrap_type == 2),
+                                 problem_data);
+          }
+          else
+          {
+            PFVCopy(instance_xtra->adaptive_p_pred, instance_xtra->pressure);
+          }
+        }
       }
 
       /*  experiment with a predictor to adjust land surface pressures to be >0 if rainfall*/
@@ -3785,6 +3927,12 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     /* Adaptive-dt Layer 2: roll pressure history for the next predictor. */
     if (public_xtra->adaptive_dt && converged && instance_xtra->pressure_nm1)
     {
+      /* Shift the older level first (geometric guess only). */
+      if (instance_xtra->pressure_nm2)
+      {
+        PFVCopy(instance_xtra->pressure_nm1, instance_xtra->pressure_nm2);
+        instance_xtra->adaptive_dt_nm2 = instance_xtra->adaptive_dt_nm1;
+      }
       PFVCopy(instance_xtra->old_pressure, instance_xtra->pressure_nm1);
       instance_xtra->adaptive_dt_nm1 = dt;
       instance_xtra->adaptive_nsteps++;
@@ -5314,6 +5462,8 @@ TeardownRichards(PFModule * this_module)
   FreeVector(instance_xtra->old_pressure);
   if (instance_xtra->pressure_nm1)
     FreeVector(instance_xtra->pressure_nm1);
+  if (instance_xtra->pressure_nm2)
+    FreeVector(instance_xtra->pressure_nm2);
   if (instance_xtra->adaptive_p_pred)
     FreeVector(instance_xtra->adaptive_p_pred);
   if (instance_xtra->adaptive_onset_relperm)
@@ -6691,6 +6841,14 @@ SolverRichardsNewPublicXtra(char *name)
   sprintf(key, "%s.AdaptiveDt.ExtrapolatedGuess", name);
   public_xtra->adaptive_extrap_guess =
     NA_NameToIndexExitOnError(switch_na, GetStringDefault(key, "False"), key);
+  {
+    /* Guess predictor form; the Layer-2 error surrogate stays linear. */
+    NameArray extrap_type_na = NA_NewNameArray("Linear Geometric GeometricGlobal");
+    sprintf(key, "%s.AdaptiveDt.ExtrapolatedGuess.Type", name);
+    public_xtra->adaptive_extrap_type =
+      NA_NameToIndexExitOnError(extrap_type_na, GetStringDefault(key, "Linear"), key);
+    NA_FreeNameArray(extrap_type_na);
+  }
 
   /* Layer 4: forcing-onset cap. */
   sprintf(key, "%s.AdaptiveDt.OnsetControl", name);
