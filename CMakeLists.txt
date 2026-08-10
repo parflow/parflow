@@ -811,6 +811,16 @@ if(PARFLOW_ENABLE_TIMING)
     set(PF_TIMING ${PARFLOW_ENABLE_TIMING})
 endif(PARFLOW_ENABLE_TIMING)
 
+option(
+        PARFLOW_TIMING_WITH_SYNC
+        "Barrier all ranks/devices at timer boundaries for cleaner per-region timings"
+        "False"
+)
+if(PARFLOW_TIMING_WITH_SYNC AND NOT PARFLOW_ENABLE_TIMING)
+    message(WARNING "PARFLOW_TIMING_WITH_SYNC has no effect without PARFLOW_ENABLE_TIMING")
+endif()
+set(TIMING_WITH_SYNC ${PARFLOW_TIMING_WITH_SYNC})
+
 # Profiling
 option(
     PARFLOW_ENABLE_PROFILING

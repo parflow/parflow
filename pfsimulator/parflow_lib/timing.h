@@ -47,6 +47,12 @@
 #define LIKWID_MARKER_GET(regionTag, nevents, events, time, count)
 #endif
 
+#ifdef PARFLOW_HAVE_CUDA
+#   define DEVICE_SYNC CUDA_ERR(cudaStreamSynchronize(0))
+#else
+#   define DEVICE_SYNC
+#endif
+
 /*--------------------------------------------------------------------------
  * With timing on
  * These values need to be in sync with the register statements in timing.c
@@ -139,6 +145,7 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
           TimingTime(i) -= TimingTimeCount;   \
           TimingCPUTime(i) -= TimingCPUCount; \
           TimingFLOPS(i) -= TimingFLOPCount;  \
+          DEVICE_SYNC;                        \
           amps_Sync(amps_CommWorld);          \
           StartTiming();                      \
           LIKWID_MARKER_START(TimingName(i)); \
@@ -157,6 +164,7 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
 
 #define EndTiming(i)                          \
         {                                     \
+          DEVICE_SYNC;                        \
           StopTiming();                       \
           TimingTime(i) += TimingTimeCount;   \
           TimingCPUTime(i) += TimingCPUCount; \

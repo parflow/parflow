@@ -42,6 +42,9 @@
 #cmakedefine PARFLOW_ENABLE_TIMING
 #cmakedefine PF_TIMING
 
+#cmakedefine PARFLOW_TIMING_WITH_SYNC
+#cmakedefine TIMING_WITH_SYNC
+
 #cmakedefine PARFLOW_HAVE_SILO
 #cmakedefine HAVE_SILO
 
