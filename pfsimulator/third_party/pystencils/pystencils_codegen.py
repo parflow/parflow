@@ -14,7 +14,7 @@ def get_kernel_cfg(
     sfg: SourceFileGenerator,
     optimize: bool,
     allow_vect: bool,
-    reduction: bool = False,
+    reduction: bool,
 ):
     if target := sfg.context.project_info["target"]:
         # gpus often lack hardware support for int64
@@ -79,12 +79,17 @@ def get_kernel_cfg(
 
 
 def create_kernel_func(
-    sfg: SourceFileGenerator, assign, func_name: str, optimize: bool = True, allow_vect: bool = True
+        sfg: SourceFileGenerator,
+        assign,
+        func_name: str,
+        optimize: bool = True,
+        allow_vect: bool = True,
+        reduction: bool = False
 ):
     target = sfg.context.project_info["target"]
     func_name = f"PyCodegen_{func_name}"
     kernel_name = f"{func_name}_gen"
-    kernel = sfg.kernels.create(assign, kernel_name, get_kernel_cfg(sfg, optimize, allow_vect))
+    kernel = sfg.kernels.create(assign, kernel_name, get_kernel_cfg(sfg, optimize, allow_vect, reduction))
 
     if target.is_cpu():
         if optimize and target.is_vector_cpu() and allow_vect:
