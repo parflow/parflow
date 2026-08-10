@@ -14,6 +14,7 @@ def get_kernel_cfg(
     sfg: SourceFileGenerator,
     optimize: bool,
     allow_vect: bool,
+    reduction: bool = False,
 ):
     if target := sfg.context.project_info["target"]:
         # gpus often lack hardware support for int64
@@ -37,36 +38,40 @@ def get_kernel_cfg(
                 if sfg.context.project_info.get("use_openmp"):
                     kernel_cfg.cpu.openmp.enable = True
 
-            # gpu optimization: warp level reductions
+            # gpu optimizations
             if sfg.context.project_info.get("use_cuda"):
-                # sets default block size for kernel invocation
-                if default_bs := sfg.context.project_info.get("default_block_size"):
-                    kernel_cfg.gpu.default_block_size = default_bs
+                if not reduction:
+                    # use same default as in pf_cudaloops.h
+                    kernel_cfg.gpu.default_block_size = (64, 4, 4)
+                else:
+                    # sets default block size for kernel invocation
+                    if default_bs := sfg.context.project_info.get("default_block_size"):
+                        kernel_cfg.gpu.default_block_size = default_bs
 
-                # get corresponding reduction configuration. defaults to atomics if all configurations are disabled
-                use_warp_reductions = sfg.context.project_info.get("use_warp_reductions")
-                use_shared_mem_reductions = sfg.context.project_info.get("use_shared_mem_reductions")
-                use_cub_reductions = sfg.context.project_info.get("use_cub_reductions")
+                    # get corresponding reduction configuration. defaults to atomics if all configurations are disabled
+                    use_warp_reductions = sfg.context.project_info.get("use_warp_reductions")
+                    use_shared_mem_reductions = sfg.context.project_info.get("use_shared_mem_reductions")
+                    use_cub_reductions = sfg.context.project_info.get("use_cub_reductions")
 
-                # ensures that block sizes are divisible by warp size for faster reductions
-                if use_warp_reductions or use_shared_mem_reductions or use_cub_reductions:
-                    kernel_cfg.gpu.assume_warp_aligned_block_size = True
-                    kernel_cfg.gpu.warp_size = 32
+                    # ensures that block sizes are divisible by warp size for faster reductions
+                    if use_warp_reductions or use_shared_mem_reductions or use_cub_reductions:
+                        kernel_cfg.gpu.assume_warp_aligned_block_size = True
+                        kernel_cfg.gpu.warp_size = 32
 
-                # extend warp-level reductions with an additional shared memory reduction for further speedup
-                if use_shared_mem_reductions:
-                    kernel_cfg.gpu.use_shared_mem_reductions = True
+                    # extend warp-level reductions with an additional shared memory reduction for further speedup
+                    if use_shared_mem_reductions:
+                        kernel_cfg.gpu.use_shared_mem_reductions = True
 
-                # use CUB back-end for fast reductions
-                if use_cub_reductions:
-                    kernel_cfg.gpu.use_cub_reductions = True
+                    # use CUB back-end for fast reductions
+                    if use_cub_reductions:
+                        kernel_cfg.gpu.use_cub_reductions = True
 
-                # sets GPU indexing scheme
-                if indexing_scheme := sfg.context.project_info.get("gpu_indexing_scheme"):
-                    if indexing_scheme in ("linear1d", "linear3d", "blockwise4d", "gridstrided_linear1d", "gridstrided_linear3d"):
-                        kernel_cfg.gpu.indexing_scheme = indexing_scheme
-                    else:
-                        raise ValueError(f"Unsupported indexing scheme: {indexing_scheme}")
+                    # sets GPU indexing scheme
+                    if indexing_scheme := sfg.context.project_info.get("gpu_indexing_scheme"):
+                        if indexing_scheme in ("linear1d", "linear3d", "blockwise4d", "gridstrided_linear1d", "gridstrided_linear3d"):
+                            kernel_cfg.gpu.indexing_scheme = indexing_scheme
+                        else:
+                            raise ValueError(f"Unsupported indexing scheme: {indexing_scheme}")
 
         return kernel_cfg
     else:

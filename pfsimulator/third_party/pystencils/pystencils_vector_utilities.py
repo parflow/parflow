@@ -105,7 +105,7 @@ def create_kernel_func_and_reduction_wrapper(
     has_init_val: bool = False,
 ):
     # create kernel func
-    kernel = create_kernel_func(sfg, assign, func_name, optimize, allow_vect)
+    kernel = create_kernel_func(sfg, assign, func_name, optimize, allow_vect, reduction=True)
 
     # create reduction wrapper func
     create_reduction_kernel_wrapper(sfg, kernel, optimize, allow_vect, has_init_val)
