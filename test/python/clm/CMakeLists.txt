@@ -22,6 +22,9 @@ if(${PARFLOW_HAVE_CLM})
             clm_et_medlyn
             clm_et_canopy_clumping
             clm_rz_compensatory
+            clm_clean_defaults
+            clm_best_practices
+            clm_best_practices_forest
             clm_restart
         )
 
