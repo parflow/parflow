@@ -1,7 +1,3 @@
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* _rand48.c */
 void _dorand48(unsigned short xseed[3 ]);
 
@@ -142,6 +138,3 @@ double d_sign(doublereal *a, doublereal *b);
 FILE* amps_SetConsole(FILE* stream);
 void amps_Printf(const char *fmt, ...);
 
-#ifdef __cplusplus
-}
-#endif

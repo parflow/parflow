@@ -1,7 +1,3 @@
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* amps_allreduce.c */
 int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation);
 
@@ -143,7 +139,3 @@ void _amps_Abort(
                  char *message,
                  char *filename,
                  int   line);
-
-#ifdef __cplusplus
-}
-#endif

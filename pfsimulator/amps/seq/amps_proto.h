@@ -1,7 +1,3 @@
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* amps_clear.c */
 void amps_ClearInvoice(amps_Invoice inv);
 
@@ -51,7 +47,3 @@ void _amps_Abort(
 /* amps_print.c */
 FILE* amps_SetConsole(FILE* stream);
 void amps_Printf(const char *fmt, ...);
-
-#ifdef __cplusplus
-}
-#endif
