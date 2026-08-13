@@ -25,6 +25,7 @@ if(${PARFLOW_HAVE_CLM})
             clm_clean_defaults
             clm_best_practices
             clm_best_practices_forest
+            clm_restart
         )
 
         list(APPEND CLM_2D_TESTS clm_slope)
