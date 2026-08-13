@@ -81,7 +81,13 @@
 #define VectorUpdateTimingIndex 20
 #endif
 
-
+/*--------------------------------------------------------------------------
+ * Sentinel value for optional timing indices
+ * Call sites that do not want a particular call to be timed pass
+ * NoTimingIndex, which BeginTiming()/EndTiming() recognize and turn into
+ * a no-op.
+ *--------------------------------------------------------------------------*/
+#define NoTimingIndex -1
 
 #if defined(PF_TIMING)
 /*--------------------------------------------------------------------------
@@ -139,39 +145,48 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
         TimingCPUCount += amps_CPUClock()
 
 #ifdef TIMING_WITH_SYNC
-#define BeginTiming(i)                        \
-        {                                     \
-          StopTiming();                       \
-          TimingTime(i) -= TimingTimeCount;   \
-          TimingCPUTime(i) -= TimingCPUCount; \
-          TimingFLOPS(i) -= TimingFLOPCount;  \
-          DEVICE_SYNC;                        \
-          amps_Sync(amps_CommWorld);          \
-          StartTiming();                      \
-          LIKWID_MARKER_START(TimingName(i)); \
+#define BeginTiming(i)                          \
+        {                                       \
+          if ((i) != NoTimingIndex)              \
+          {                                      \
+            StopTiming();                        \
+            TimingTime(i) -= TimingTimeCount;    \
+            TimingCPUTime(i) -= TimingCPUCount;  \
+            TimingFLOPS(i) -= TimingFLOPCount;   \
+            DEVICE_SYNC;                         \
+            amps_Sync(amps_CommWorld);           \
+            StartTiming();                       \
+            LIKWID_MARKER_START(TimingName(i));  \
+          }                                      \
         }
 #else
-#define BeginTiming(i)                        \
-        {                                     \
-          StopTiming();                       \
-          TimingTime(i) -= TimingTimeCount;   \
-          TimingCPUTime(i) -= TimingCPUCount; \
-          TimingFLOPS(i) -= TimingFLOPCount;  \
-          StartTiming();                      \
-          LIKWID_MARKER_START(TimingName(i)); \
+#define BeginTiming(i)                          \
+        {                                       \
+          if ((i) != NoTimingIndex)              \
+          {                                      \
+            StopTiming();                        \
+            TimingTime(i) -= TimingTimeCount;    \
+            TimingCPUTime(i) -= TimingCPUCount;  \
+            TimingFLOPS(i) -= TimingFLOPCount;   \
+            StartTiming();                       \
+            LIKWID_MARKER_START(TimingName(i));  \
+          }                                      \
         }
 #endif
 
-#define EndTiming(i)                          \
-        {                                     \
-          DEVICE_SYNC;                        \
-          StopTiming();                       \
-          TimingTime(i) += TimingTimeCount;   \
-          TimingCPUTime(i) += TimingCPUCount; \
-          TimingFLOPS(i) += TimingFLOPCount;  \
-          TimingCompleted(i) += 1;            \
-          StartTiming();                      \
-          LIKWID_MARKER_STOP(TimingName(i));  \
+#define EndTiming(i)                            \
+        {                                       \
+          if ((i) != NoTimingIndex)              \
+          {                                      \
+            DEVICE_SYNC;                         \
+            StopTiming();                        \
+            TimingTime(i) += TimingTimeCount;    \
+            TimingCPUTime(i) += TimingCPUCount;  \
+            TimingFLOPS(i) += TimingFLOPCount;   \
+            TimingCompleted(i) += 1;             \
+            StartTiming();                       \
+            LIKWID_MARKER_STOP(TimingName(i));   \
+          }                                      \
         }
 
 #ifdef VECTOR_UPDATE_TIMING

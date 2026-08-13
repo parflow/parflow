@@ -12,7 +12,8 @@ def create_reduction_kernel_wrapper(
     kernel: Kernel,
     optimize: bool,
     allow_vect: bool,
-    has_init_val: bool
+    has_init_val: bool,
+    timing_index: bool = False
 ):
     kernel_params = [
         pw
@@ -71,17 +72,26 @@ def create_reduction_kernel_wrapper(
         alloc += "talloc(double, 1)"
         dealloc = f"tfree({rptr_name})"
 
+    timing_begin = ""
+    timing_end = ""
+    if timing_index:
+        params += [sfg.var("timing_index", SInt(32))]
+        timing_begin = "BeginTiming(timing_index);"
+        timing_end = "EndTiming(timing_index);"
+
     code = f"""
     {alloc};
-    
+
     {f"MemPrefetchDeviceToHost_cuda({rptr_name}, sizeof(double), 0);" if use_cuda else ""}
     {init_reduction_ptr}
     {f"MemPrefetchHostToDevice_cuda({rptr_name}, sizeof(double), 0);" if use_cuda else ""}
 
+    {timing_begin}
     {kernel.name[:-4]}(
         {", ".join(args)}, {rptr_name}
     );
-    
+    {timing_end}
+
     {"cudaStreamSynchronize(0);" if use_cuda else ""}
 
     {f"MemPrefetchDeviceToHost_cuda({rptr_name}, sizeof(double), 0);" if use_cuda else ""}
@@ -103,12 +113,13 @@ def create_kernel_func_and_reduction_wrapper(
     optimize: bool = True,
     allow_vect: bool = True,
     has_init_val: bool = False,
+    timing_index: bool = False,
 ):
     # create kernel func
     kernel = create_kernel_func(sfg, assign, func_name, optimize, allow_vect, reduction=True)
 
     # create reduction wrapper func
-    create_reduction_kernel_wrapper(sfg, kernel, optimize, allow_vect, has_init_val)
+    create_reduction_kernel_wrapper(sfg, kernel, optimize, allow_vect, has_init_val, timing_index)
 
 
 with SourceFileGenerator() as sfg:
@@ -159,7 +170,8 @@ with SourceFileGenerator() as sfg:
 
     # Returns x dot y (PFVDotProd)
     create_kernel_func_and_reduction_wrapper(
-        sfg, ps.AddReductionAssignment(r, x.center() * y.center()), "VDotProd"
+        sfg, ps.AddReductionAssignment(r, x.center() * y.center()), "VDotProd",
+        timing_index=True,
     )
 
     # Returns ||x||_{max} (PFVMaxNorm)

@@ -11,7 +11,7 @@ from field_factory import FieldFactory
 from pystencils_codegen import *
 
 
-def create_kernel_wrapper(kernel: Kernel):
+def create_kernel_wrapper(kernel: Kernel, timing_index: bool = False):
     params = []
 
     params += [sfg.var("gr_domain", PsPointerType(PsCustomType("GrGeomSolid")))]
@@ -59,6 +59,13 @@ def create_kernel_wrapper(kernel: Kernel):
 
     sfg.include("parflow.h")
 
+    timing_begin = ""
+    timing_end = ""
+    if timing_index:
+        params += [sfg.var("timing_index", SInt(32))]
+        timing_begin = "BeginTiming(timing_index);"
+        timing_end = "EndTiming(timing_index);"
+
     code = sfg.branch("r == 0 && GrGeomSolidInteriorBoxes(gr_domain)")(
         f"""
 int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;
@@ -80,12 +87,14 @@ for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {{
     {"    ".join(fetch_sizes)}
 
     if (PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu) {{
+        {timing_begin}
         {kernel.name[:-4]}(
             {", ".join(fieldnames)},
             PV_ixu - PV_ixl + 1, PV_iyu - PV_iyl + 1, PV_izu - PV_izl + 1,
             {", ".join(fieldstrides)},
             {", ".join(kernel_symbols)}
         );
+        {timing_end}
     }}
 }}
     """
@@ -101,13 +110,14 @@ for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {{
 
 
 def create_kernel_func_and_wrapper(
-    sfg: SourceFileGenerator, assign, func_name: str, optimize: bool = True, allow_vect: bool = True
+    sfg: SourceFileGenerator, assign, func_name: str, optimize: bool = True, allow_vect: bool = True,
+    timing_index: bool = False
 ):
     # create kernel func
     kernel = create_kernel_func(sfg, assign, func_name, optimize, allow_vect)
 
     # create wrapper func
-    create_kernel_wrapper(kernel)
+    create_kernel_wrapper(kernel, timing_index)
 
 
 with SourceFileGenerator() as sfg:
@@ -166,6 +176,7 @@ with SourceFileGenerator() as sfg:
             * z_mult_dat.center(),
         ),
         "Flux_Base",
+        timing_index=True,
     )
 
     # flux: add compressible storage
@@ -189,6 +200,7 @@ with SourceFileGenerator() as sfg:
             ),
         ),
         "Flux_AddCompressibleStorage",
+        timing_index=True,
     )
 
     # flux: add source terms
@@ -209,4 +221,5 @@ with SourceFileGenerator() as sfg:
             ),
         ),
         "Flux_AddSourceTerms",
+        timing_index=True,
     )

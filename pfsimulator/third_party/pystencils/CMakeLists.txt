@@ -18,6 +18,8 @@ pystencilssfg_generate_target_sources ( PystencilsGeneratedKernels
         OUTPUT_DIRECTORY generated_kernels
 )
 
+target_link_libraries ( PystencilsGeneratedKernels PRIVATE pfsimulator amps )
+
 if ( PystencilsSfg_OPTIMIZE_FOR_LOCALHOST )
         target_compile_options ( PystencilsGeneratedKernels PRIVATE "-march=native" )
 endif ()

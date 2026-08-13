@@ -45,6 +45,7 @@ with SourceFileGenerator() as sfg:
         ps.Assignment(x[0].center(), b.center() / A[0].center()),
         "RBGS_ZeroOptimizationKernel",
         allow_vect=False,
+        timing_index=True,
     )
 
     ## regular 7pt kernel
@@ -54,4 +55,5 @@ with SourceFileGenerator() as sfg:
         ps.Assignment(x[0].center(), (b.center() - stencil_convolution) / A[0].center()),
         "RBGS_7PtKernel",
         allow_vect=False,
+        timing_index=True,
     )

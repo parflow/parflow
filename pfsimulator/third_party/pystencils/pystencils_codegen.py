@@ -84,12 +84,23 @@ def create_kernel_func(
         func_name: str,
         optimize: bool = True,
         allow_vect: bool = True,
-        reduction: bool = False
+        reduction: bool = False,
+        timing_index: bool = False
 ):
     target = sfg.context.project_info["target"]
     func_name = f"PyCodegen_{func_name}"
     kernel_name = f"{func_name}_gen"
     kernel = sfg.kernels.create(assign, kernel_name, get_kernel_cfg(sfg, optimize, allow_vect, reduction))
+
+    timing_var = None
+    if timing_index:
+        sfg.include("parflow.h")
+        timing_var = sfg.var("timing_index", SInt(32))
+
+    def bracket_timing(*body):
+        if timing_var is None:
+            return list(body)
+        return ["BeginTiming(timing_index);", *body, "EndTiming(timing_index);"]
 
     if target.is_cpu():
         if optimize and target.is_vector_cpu() and allow_vect:
@@ -106,28 +117,48 @@ def create_kernel_func(
                     missing_strides += [stride]
                 params += [param]
 
+            if timing_var is not None:
+                params += [timing_var]
+
             sfg.function(func_name).params(*params)(
                 # TODO: mark _stride_XYZ_0 params as unused via void cast
-                sfg.call(kernel)
+                *bracket_timing(sfg.call(kernel))
             )
         else:
             # no extra handling needed -> just call the kernel
-            sfg.function(func_name)(sfg.call(kernel))
+            if timing_var is not None:
+                sfg.function(func_name).params(*kernel.parameters, timing_var)(
+                    *bracket_timing(sfg.call(kernel))
+                )
+            else:
+                sfg.function(func_name)(sfg.call(kernel))
     elif target.is_gpu() and sfg.context.project_info.get("use_cuda"):
         # invocation for GPUs with (potentially manual) specification of CUDA grid/block size
         kernel_call = [sfg.gpu_invoke(kernel)]
 
         # automatically extend kernel call with error handling
         sfg.include("<stdio.h>")
-        sfg.function(func_name)(
-            *(kernel_call + [
-                "cudaError_t err = cudaPeekAtLastError();",
-                sfg.branch("err != cudaSuccess")(
-                    'printf("\\n\\n%s in %s at line %d\\n", cudaGetErrorString(err), __FILE__, __LINE__);\n'
-                    "exit(1);"
-                ),
-            ])
-        )
+
+        if timing_var is not None:
+            sfg.function(func_name).params(*kernel.parameters, timing_var)(
+                *(bracket_timing(*kernel_call) + [
+                    "cudaError_t err = cudaPeekAtLastError();",
+                    sfg.branch("err != cudaSuccess")(
+                        'printf("\\n\\n%s in %s at line %d\\n", cudaGetErrorString(err), __FILE__, __LINE__);\n'
+                        "exit(1);"
+                    ),
+                ])
+            )
+        else:
+            sfg.function(func_name)(
+                *(kernel_call + [
+                    "cudaError_t err = cudaPeekAtLastError();",
+                    sfg.branch("err != cudaSuccess")(
+                        'printf("\\n\\n%s in %s at line %d\\n", cudaGetErrorString(err), __FILE__, __LINE__);\n'
+                        "exit(1);"
+                    ),
+                ])
+            )
     else:
         ValueError(f"Invalid target {target}. Only (vector) CPU and CUDA targets are "
                    f"available for pystencils code generation.")

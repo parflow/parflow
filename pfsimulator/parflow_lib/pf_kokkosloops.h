@@ -194,10 +194,24 @@ static const int FDIR_TABLE[6][3] = {
         }
 
 /** Loop definition for Kokkos. */
-#define BoxLoopI1_kokkos(i, j, k,                                                                           \
+
+#define BOXLOOP_KOKKOS_LAUNCH(timing_index, lambda_body, mdpolicy_3d)                         \
+        BeginTiming(timing_index);                                                            \
+        Kokkos::parallel_for(mdpolicy_3d, lambda_body);                                        \
+        {                                                                                      \
+          typedef function_traits < decltype(lambda_body) > traits;                            \
+          if (!std::is_same < traits::result_type, struct SkipParallelSync > ::value)          \
+          Kokkos::fence();                                                                     \
+        }                                                                                       \
+        EndTiming(timing_index)
+
+#define BoxLoopI1_kokkos(i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, ...) \
+        BOXLOOP_APPLY(BoxLoopI1_kokkos_IMPL, i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, BOXLOOP_TIMING(__VA_ARGS__))
+
+#define BoxLoopI1_kokkos_IMPL(i, j, k,                                                                      \
                          ix, iy, iz, nx, ny, nz,                                                            \
                          i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                  \
-                         loop_body)                                                                         \
+                         timing_index, loop_body)                                                           \
         {                                                                                                   \
           if (nx > 0 && ny > 0 && nz > 0)                                                                   \
           {                                                                                                 \
@@ -220,21 +234,20 @@ static const int FDIR_TABLE[6][3] = {
                                                                                                             \
             using MDPolicyType_3D = typename Kokkos::MDRangePolicy < Kokkos::Rank < 3 > >;                  \
             MDPolicyType_3D mdpolicy_3d({ { 0, 0, 0 } }, { { nx, ny, nz } });                               \
-            Kokkos::parallel_for(mdpolicy_3d, lambda_body);                                                 \
-                                                                                                            \
-            typedef function_traits < decltype(lambda_body) > traits;                                       \
-            if (!std::is_same < traits::result_type, struct SkipParallelSync > ::value)                     \
-            Kokkos::fence();                                                                                \
+            BOXLOOP_KOKKOS_LAUNCH(timing_index, lambda_body, mdpolicy_3d);                                  \
           }                                                                                                 \
           (void)i; (void)j; (void)k;                                                                        \
         }
 
 /** Loop definition for Kokkos. */
-#define BoxLoopI2_kokkos(i, j, k,                                                                           \
+#define BoxLoopI2_kokkos(i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, i2, nx2, ny2, nz2, sx2, sy2, sz2, ...) \
+        BOXLOOP_APPLY(BoxLoopI2_kokkos_IMPL, i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, i2, nx2, ny2, nz2, sx2, sy2, sz2, BOXLOOP_TIMING(__VA_ARGS__))
+
+#define BoxLoopI2_kokkos_IMPL(i, j, k,                                                                      \
                          ix, iy, iz, nx, ny, nz,                                                            \
                          i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                  \
                          i2, nx2, ny2, nz2, sx2, sy2, sz2,                                                  \
-                         loop_body)                                                                         \
+                         timing_index, loop_body)                                                           \
         {                                                                                                   \
           if (nx > 0 && ny > 0 && nz > 0)                                                                   \
           {                                                                                                 \
@@ -261,22 +274,21 @@ static const int FDIR_TABLE[6][3] = {
                                                                                                             \
             using MDPolicyType_3D = typename Kokkos::MDRangePolicy < Kokkos::Rank < 3 > >;                  \
             MDPolicyType_3D mdpolicy_3d({ { 0, 0, 0 } }, { { nx, ny, nz } });                               \
-            Kokkos::parallel_for(mdpolicy_3d, lambda_body);                                                 \
-                                                                                                            \
-            typedef function_traits < decltype(lambda_body) > traits;                                       \
-            if (!std::is_same < traits::result_type, struct SkipParallelSync > ::value)                     \
-            Kokkos::fence();                                                                                \
+            BOXLOOP_KOKKOS_LAUNCH(timing_index, lambda_body, mdpolicy_3d);                                  \
           }                                                                                                 \
           (void)i; (void)j; (void)k;                                                                        \
         }
 
 /** Loop definition for Kokkos. */
-#define BoxLoopI3_kokkos(i, j, k,                                                                           \
+#define BoxLoopI3_kokkos(i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, i2, nx2, ny2, nz2, sx2, sy2, sz2, i3, nx3, ny3, nz3, sx3, sy3, sz3, ...) \
+        BOXLOOP_APPLY(BoxLoopI3_kokkos_IMPL, i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, i2, nx2, ny2, nz2, sx2, sy2, sz2, i3, nx3, ny3, nz3, sx3, sy3, sz3, BOXLOOP_TIMING(__VA_ARGS__))
+
+#define BoxLoopI3_kokkos_IMPL(i, j, k,                                                                      \
                          ix, iy, iz, nx, ny, nz,                                                            \
                          i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                  \
                          i2, nx2, ny2, nz2, sx2, sy2, sz2,                                                  \
                          i3, nx3, ny3, nz3, sx3, sy3, sz3,                                                  \
-                         loop_body)                                                                         \
+                         timing_index, loop_body)                                                           \
         {                                                                                                   \
           if (nx > 0 && ny > 0 && nz > 0)                                                                   \
           {                                                                                                 \
@@ -307,20 +319,42 @@ static const int FDIR_TABLE[6][3] = {
                                                                                                             \
             using MDPolicyType_3D = typename Kokkos::MDRangePolicy < Kokkos::Rank < 3 > >;                  \
             MDPolicyType_3D mdpolicy_3d({ { 0, 0, 0 } }, { { nx, ny, nz } });                               \
-            Kokkos::parallel_for(mdpolicy_3d, lambda_body);                                                 \
-                                                                                                            \
-            typedef function_traits < decltype(lambda_body) > traits;                                       \
-            if (!std::is_same < traits::result_type, struct SkipParallelSync > ::value)                     \
-            Kokkos::fence();                                                                                \
+            BOXLOOP_KOKKOS_LAUNCH(timing_index, lambda_body, mdpolicy_3d);                                  \
           }                                                                                                 \
           (void)i; (void)j; (void)k;                                                                        \
         }
 
 /** Loop definition for Kokkos. */
-#define BoxLoopReduceI1_kokkos(rslt, i, j, k,                                                                     \
+
+#define BOXLOOP_KOKKOS_REDUCE_LAUNCH(timing_index, mdpolicy_3d, lambda_outer, rslt, traits)          \
+        BeginTiming(timing_index);                                                                    \
+        if (std::is_same < traits::result_type, struct ReduceSumType < double > > ::value)            \
+        {                                                                                             \
+          Kokkos::parallel_reduce(mdpolicy_3d, lambda_outer, rslt);                                   \
+        }                                                                                              \
+        else if (std::is_same < traits::result_type, struct ReduceMaxType < double > > ::value)       \
+        {                                                                                              \
+          Kokkos::parallel_reduce(mdpolicy_3d, lambda_outer, Kokkos::Max < double > (rslt));          \
+        }                                                                                              \
+        else if (std::is_same < traits::result_type, struct ReduceMinType < double > > ::value)       \
+        {                                                                                              \
+          Kokkos::parallel_reduce(mdpolicy_3d, lambda_outer, Kokkos::Min < double > (rslt));          \
+        }                                                                                              \
+        else                                                                                          \
+        {                                                                                              \
+          printf("ERROR at %s:%d: Invalid reduction identifier,                         \
+      likely a problem with a BoxLoopReduce body.", __FILE__, __LINE__);                              \
+        }                                                                                              \
+        Kokkos::fence();                                                                              \
+        EndTiming(timing_index)
+
+#define BoxLoopReduceI1_kokkos(rslt, i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, ...) \
+        BOXLOOP_APPLY(BoxLoopReduceI1_kokkos_IMPL, rslt, i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, BOXLOOP_TIMING(__VA_ARGS__))
+
+#define BoxLoopReduceI1_kokkos_IMPL(rslt, i, j, k,                                                                \
                                ix, iy, iz, nx, ny, nz,                                                            \
                                i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                  \
-                               loop_body)                                                                         \
+                               timing_index, loop_body)                                                           \
         {                                                                                                         \
           if (nx > 0 && ny > 0 && nz > 0)                                                                         \
           {                                                                                                       \
@@ -351,34 +385,20 @@ static const int FDIR_TABLE[6][3] = {
             using MDPolicyType_3D = typename Kokkos::MDRangePolicy < Kokkos::Rank < 3 > >;                        \
             MDPolicyType_3D mdpolicy_3d({ { 0, 0, 0 } }, { { nx, ny, nz } });                                     \
             typedef function_traits < decltype(lambda_body) > traits;                                             \
-            if (std::is_same < traits::result_type, struct ReduceSumType < double > > ::value)                    \
-            {                                                                                                     \
-              Kokkos::parallel_reduce(mdpolicy_3d, lambda_outer, rslt);                                           \
-            }                                                                                                     \
-            else if (std::is_same < traits::result_type, struct ReduceMaxType < double > > ::value)               \
-            {                                                                                                     \
-              Kokkos::parallel_reduce(mdpolicy_3d, lambda_outer, Kokkos::Max < double > (rslt));                  \
-            }                                                                                                     \
-            else if (std::is_same < traits::result_type, struct ReduceMinType < double > > ::value)               \
-            {                                                                                                     \
-              Kokkos::parallel_reduce(mdpolicy_3d, lambda_outer, Kokkos::Min < double > (rslt));                  \
-            }                                                                                                     \
-            else                                                                                                  \
-            {                                                                                                     \
-              printf("ERROR at %s:%d: Invalid reduction identifier,                         \
-      likely a problem with a BoxLoopReduce body.", __FILE__, __LINE__);                                          \
-            }                                                                                                     \
-            Kokkos::fence();                                                                                      \
+            BOXLOOP_KOKKOS_REDUCE_LAUNCH(timing_index, mdpolicy_3d, lambda_outer, rslt, traits);                  \
           }                                                                                                       \
           (void)i; (void)j; (void)k;                                                                              \
         }
 
 /** Loop definition for Kokkos. */
-#define BoxLoopReduceI2_kokkos(rslt, i, j, k,                                                                     \
+#define BoxLoopReduceI2_kokkos(rslt, i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, i2, nx2, ny2, nz2, sx2, sy2, sz2, ...) \
+        BOXLOOP_APPLY(BoxLoopReduceI2_kokkos_IMPL, rslt, i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, i2, nx2, ny2, nz2, sx2, sy2, sz2, BOXLOOP_TIMING(__VA_ARGS__))
+
+#define BoxLoopReduceI2_kokkos_IMPL(rslt, i, j, k,                                                                \
                                ix, iy, iz, nx, ny, nz,                                                            \
                                i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                  \
                                i2, nx2, ny2, nz2, sx2, sy2, sz2,                                                  \
-                               loop_body)                                                                         \
+                               timing_index, loop_body)                                                           \
         {                                                                                                         \
           if (nx > 0 && ny > 0 && nz > 0)                                                                         \
           {                                                                                                       \
@@ -413,31 +433,18 @@ static const int FDIR_TABLE[6][3] = {
             using MDPolicyType_3D = typename Kokkos::MDRangePolicy < Kokkos::Rank < 3 > >;                        \
             MDPolicyType_3D mdpolicy_3d({ { 0, 0, 0 } }, { { nx, ny, nz } });                                     \
             typedef function_traits < decltype(lambda_body) > traits;                                             \
-            if (std::is_same < traits::result_type, struct ReduceSumType < double > > ::value)                    \
-            {                                                                                                     \
-              Kokkos::parallel_reduce(mdpolicy_3d, lambda_outer, rslt);                                           \
-            }                                                                                                     \
-            else if (std::is_same < traits::result_type, struct ReduceMaxType < double > > ::value)               \
-            {                                                                                                     \
-              Kokkos::parallel_reduce(mdpolicy_3d, lambda_outer, Kokkos::Max < double > (rslt));                  \
-            }                                                                                                     \
-            else if (std::is_same < traits::result_type, struct ReduceMinType < double > > ::value)               \
-            {                                                                                                     \
-              Kokkos::parallel_reduce(mdpolicy_3d, lambda_outer, Kokkos::Min < double > (rslt));                  \
-            }                                                                                                     \
-            else                                                                                                  \
-            {                                                                                                     \
-              printf("ERROR at %s:%d: Invalid reduction identifier,                         \
-      likely a problem with a BoxLoopReduce body.", __FILE__, __LINE__);                                          \
-            }                                                                                                     \
-            Kokkos::fence();                                                                                      \
+            BOXLOOP_KOKKOS_REDUCE_LAUNCH(timing_index, mdpolicy_3d, lambda_outer, rslt, traits);                  \
           }                                                                                                       \
           (void)i; (void)j; (void)k;                                                                              \
         }
 
 /** Loop definition for Kokkos. */
-#define GrGeomInLoopBoxes_kokkos(i, j, k,                                                                           \
-                                 grgeom, ix, iy, iz, nx, ny, nz, loop_body)                                         \
+
+#define GrGeomInLoopBoxes_kokkos(i, j, k, grgeom, ix, iy, iz, nx, ny, nz, ...) \
+        BOXLOOP_APPLY(GrGeomInLoopBoxes_kokkos_IMPL, i, j, k, grgeom, ix, iy, iz, nx, ny, nz, BOXLOOP_TIMING(__VA_ARGS__))
+
+#define GrGeomInLoopBoxes_kokkos_IMPL(i, j, k,                                                                     \
+                                 grgeom, ix, iy, iz, nx, ny, nz, timing_index, loop_body)                          \
         {                                                                                                           \
           BoxArray* boxes = GrGeomSolidInteriorBoxes(grgeom);                                                       \
           int ix_bxs = BoxArrayMinCell(boxes, 0);                                                                   \
@@ -491,8 +498,10 @@ static const int FDIR_TABLE[6][3] = {
                                                                                                                     \
                 using MDPolicyType_3D = typename Kokkos::MDRangePolicy < Kokkos::Rank < 3 > >;                      \
                 MDPolicyType_3D mdpolicy_3d({ { 0, 0, 0 } }, { { PV_nx, PV_ny, PV_nz } });                          \
+                BeginTiming(timing_index);                                                                          \
                 Kokkos::parallel_for(mdpolicy_3d, lambda_body);                                                     \
                 Kokkos::fence();                                                                                    \
+                EndTiming(timing_index);                                                                            \
               }                                                                                                     \
             }                                                                                                       \
             GrGeomSolidCellFlagInitialized(grgeom) |= 1;                                                            \
@@ -525,8 +534,10 @@ static const int FDIR_TABLE[6][3] = {
                                                                                                                     \
               using MDPolicyType_3D = typename Kokkos::MDRangePolicy < Kokkos::Rank < 3 > >;                        \
               MDPolicyType_3D mdpolicy_3d({ { 0, 0, 0 } }, { { nx_gpu, ny_gpu, nz_gpu } });                         \
+              BeginTiming(timing_index);                                                                            \
               Kokkos::parallel_for(mdpolicy_3d, lambda_body);                                                       \
               Kokkos::fence();                                                                                      \
+              EndTiming(timing_index);                                                                              \
             }                                                                                                       \
           }                                                                                                         \
           (void)i; (void)j; (void)k;                                                                                \
