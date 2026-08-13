@@ -20,6 +20,9 @@ pystencilssfg_generate_target_sources ( PystencilsGeneratedKernels
 
 target_link_libraries ( PystencilsGeneratedKernels PRIVATE pfsimulator amps )
 
+target_compile_options( PystencilsGeneratedKernels PRIVATE
+        $<$<COMPILE_LANGUAGE:CUDA,CXX>:-include;${CMAKE_CURRENT_SOURCE_DIR}/pf_amps_shim.h> )
+
 if ( PystencilsSfg_OPTIMIZE_FOR_LOCALHOST )
         target_compile_options ( PystencilsGeneratedKernels PRIVATE "-march=native" )
 endif ()
