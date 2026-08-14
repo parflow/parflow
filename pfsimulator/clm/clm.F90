@@ -405,23 +405,22 @@ interception_schemepf,interception_tanh_alphapf)
            clm(t)%topo_mask(1) = 1+top(l)
            clm(t)%topo_mask(3) = 1+bottom(l)
            clm(t)%planar_mask = 1
-        else
-           cycle
+
+           clm(t)%topo_mask(2) = clm(t)%topo_mask(1)-nlevsoi
+
+           ! set clm watsat, tksatu from PF porosity
+           do k = 1, nlevsoi ! loop over clm soil layers (1->nlevsoi)
+              ! convert clm space to parflow space, note that PF space has ghost nodes
+              l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
+              ! put ParFlow porosity in a temp variable passed to clm_ini
+              pf_porosity(k)       = porosity(l)
+              !print*, 'k=',k,'l=',l,'porosity=',porosity(l),'pf_poro=',pf_porosity(k)
+
+              !clm(t)%tksatu(k)       = clm(t)%tkmg(k)*0.57**clm(t)%watsat(k)
+           end do !k
+
+           call drv_clmini (drv, grid, pf_porosity,tile(t), clm(t), istep_pf, clm_forc_veg) !Initialize CLM Variables
         endif
-        clm(t)%topo_mask(2) = clm(t)%topo_mask(1)-nlevsoi
-
-        ! set clm watsat, tksatu from PF porosity
-        do k = 1, nlevsoi ! loop over clm soil layers (1->nlevsoi)
-           ! convert clm space to parflow space, note that PF space has ghost nodes
-           l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
-           ! put ParFlow porosity in a temp variable passed to clm_ini
-           pf_porosity(k)       = porosity(l)
-           !print*, 'k=',k,'l=',l,'porosity=',porosity(l),'pf_poro=',pf_porosity(k)
-
-           !clm(t)%tksatu(k)       = clm(t)%tkmg(k)*0.57**clm(t)%watsat(k)
-        end do !k
-
-        call drv_clmini (drv, grid, pf_porosity,tile(t), clm(t), istep_pf, clm_forc_veg) !Initialize CLM Variables
      enddo ! t
 
      !=== IMF:
