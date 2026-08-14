@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-subroutine clm_lsm(pressure,saturation,evap_trans,top,bottom,porosity,pf_dz_mult,istep_pf,dt,time,           &
+subroutine clm_lsm(pressure,saturation,evap_trans,top,bottom,porosity,sres,pf_dz_mult,istep_pf,dt,time,           &
 start_time,pdx,pdy,pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,nz_rz,ip,npp,npq,npr,gnx,gny,rank,sw_pf,lw_pf,    &
 prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf,lai_pf,sai_pf,z0m_pf,displa_pf,                               &
 slope_x_pf,slope_y_pf,                                                                                 &
@@ -8,7 +8,8 @@ eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,eflx_grnd_pf,                               
 qflx_tot_pf,qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf,t_g_pf,               &
 t_soi_pf,clm_dump_interval,clm_1d_out,clm_forc_veg,clm_output_dir,clm_output_dir_length,clm_bin_output_dir,         &
 write_CLM_binary,slope_accounting_CLM,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,                 &
-res_satpf,irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thresholdpf,               &
+res_satpf,sm_stress_typepf,sm_residual_marginpf,sm_min_ramp_widthpf,per_pft_water_stresspf,            &
+irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thresholdpf,                         &
 qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z,clm_next,clm_write_logs,                    &
 clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak,                            &
 snow_partition_typepf,tw_thresholdpf,thin_snow_dampingpf,thin_snow_thresholdpf,                       &
@@ -80,6 +81,7 @@ interception_schemepf,interception_tanh_alphapf)
   real(r8) :: top((nx+2)*(ny+2)*(3))             ! top Z index from ParFlow, -1 for inactive, on grid w/ ghost nodes for current proc
   real(r8) :: bottom((nx+2)*(ny+2)*(3))          ! bottom Z index from ParFlow, -1 for inactive, on grid w/ ghost nodes for current proc
   real(r8) :: porosity((nx+2)*(ny+2)*(nz+2))     ! porosity from ParFlow, on grid w/ ghost nodes for current proc
+  real(r8) :: sres((nx+2)*(ny+2)*(nz+2))         ! per-cell VG residual saturation from ParFlow (CLM wilting-point guard)
   real(r8) :: pf_dz_mult((nx+2)*(ny+2)*(nz+2))   ! dz multiplier from ParFlow on PF grid w/ ghost nodes for current proc
   real(r8) :: dt                                 ! parflow dt in parflow time units not CLM time units
   real(r8) :: time                               ! parflow time in parflow units
@@ -149,6 +151,10 @@ interception_schemepf,interception_tanh_alphapf)
   real(r8) :: wilting_pointpf                    ! wilting point in m if press-type, in saturation if soil moisture type
   real(r8) :: field_capacitypf                   ! field capacity for water stress same as units above
   real(r8) :: res_satpf                          ! residual saturation from ParFlow
+  integer  :: sm_stress_typepf                   ! dry-side residual limit mode (0=off, 1=residual-limited wp, 2=ramp-floor only)
+  real(r8) :: sm_residual_marginpf               ! saturation margin the effective wilting point must stay above S_res
+  real(r8) :: sm_min_ramp_widthpf                ! minimum fc_eff - wp_eff span
+  integer  :: per_pft_water_stresspf             ! 1 = per-PFT wilting point / field capacity from drv_vegp.dat (Solver.CLM.PerPFTWaterStress)
 
   ! irrigation keys
   integer  :: irr_typepf                         ! irrigation type flag (0=none,1=spray,2=drip,3=instant)
@@ -379,7 +385,8 @@ interception_schemepf,interception_tanh_alphapf)
 
      !=== Read vegetation parameter data file for IGBP classification
      if (clm_write_logs==1) write(999,*) "Read vegetation parameter data file for IGBP classification"
-     call drv_readvegpf (drv, grid, tile, clm)  
+     call drv_readvegpf (drv, grid, tile, clm, veg_water_stress_typepf, per_pft_water_stresspf, &
+                         wilting_pointpf, field_capacitypf)
 
 
      !=== Initialize CLM and DIAG variables
@@ -414,6 +421,8 @@ interception_schemepf,interception_tanh_alphapf)
            l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
            ! put ParFlow porosity in a temp variable passed to clm_ini
            pf_porosity(k)       = porosity(l)
+           ! per-cell van Genuchten residual saturation for the wilting-point residual limit
+           clm(t)%s_res_cell(k) = sres(l)
            !print*, 'k=',k,'l=',l,'porosity=',porosity(l),'pf_poro=',pf_porosity(k)
 
            !clm(t)%tksatu(k)       = clm(t)%tkmg(k)*0.57**clm(t)%watsat(k)
@@ -551,9 +560,32 @@ interception_schemepf,interception_tanh_alphapf)
            clm(t)%beta_type          = beta_typepf
            clm(t)%vegwaterstresstype = veg_water_stress_typepf  ! none, pressure, sat
            clm(t)%rzwaterstress      = rz_water_stress_typepf   ! limit T by layer (1) or not (0, default)
-           clm(t)%wilting_point      = wilting_pointpf
-           clm(t)%field_capacity     = field_capacitypf
+           ! wilting_point / field_capacity are set in drv_readvegpf: the scalar
+           ! Solver.CLM.WiltingPoint / FieldCapacity by default, overridden per
+           ! PFT from drv_vegp.dat when Solver.CLM.PerPFTWaterStress is on.
            clm(t)%res_sat            = res_satpf
+           clm(t)%sm_stress_type     = sm_stress_typepf
+           clm(t)%sm_residual_margin = sm_residual_marginpf
+           clm(t)%sm_min_ramp_width  = sm_min_ramp_widthpf
+
+           ! Sanity check for per-PFT stress params: field capacity must be
+           ! strictly wetter than wilting point, or the btran ramp denominator
+           ! inverts.  Same signed test in both modes (pressure heads negative,
+           ! saturations positive).  Only when the switch is on and a stress
+           ! formulation is active, and only for vegetated non-lake tiles where
+           ! the ramp actually runs (bare soil and water carry degenerate
+           ! values that never reach the denominator).  Off stays bit-identical.
+           if ( (per_pft_water_stresspf == 1) .and. &
+                (veg_water_stress_typepf == 1 .or. veg_water_stress_typepf == 2) .and. &
+                (.not. clm(t)%baresoil) .and. (.not. clm(t)%lakpoi) ) then
+              if (clm(t)%field_capacity <= clm(t)%wilting_point) then
+                 write(*,*) 'clm.F90: PerPFTWaterStress error: field capacity must be ', &
+                            'wetter than wilting point for veg type ', tile(t)%vegt
+                 write(*,*) '  field_capacity =', clm(t)%field_capacity, &
+                            '  wilting_point  =', clm(t)%wilting_point
+                 stop
+              end if
+           end if
 
            ! for snow parameterization @RMM 2025
            clm(t)%snow_partition_type  = snow_partition_typepf

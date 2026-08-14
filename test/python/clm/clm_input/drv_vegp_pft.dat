@@ -144,3 +144,15 @@ clump          Vegetation clumping index (0-1, 1=no clumping)
 omega_max      Max compensation factor for compensatory RWU (Li et al 2001)
 3.0 3.0 2.5 2.5 3.0 2.0 2.0 1.5 1.5 1.0 1.0 1.5 1.5 1.0 1.0 1.0 1.0 1.0
 !
+wp_press       Wilting point, pressure formulation [m, negative head] (Solver.CLM.PerPFTWaterStress)
+-150. -150. -150. -150. -150. -160. -160. -150. -150. -180. -140. -150. -150. -150. -150. -160. -150. -150.
+!
+fc_press       Field capacity, pressure formulation [m, negative head] (Solver.CLM.PerPFTWaterStress)
+-3.4 -3.4 -3.4 -3.4 -3.4 -3.4 -3.4 -3.4 -3.4 -3.4 -3.4 -3.4 -3.4 -3.4 -3.4 -3.4 -3.4 -3.4
+!
+wp_sat         Wilting point, saturation formulation [-] (Solver.CLM.PerPFTWaterStress)
+0.12 0.12 0.10 0.10 0.11 0.09 0.09 0.10 0.09 0.08 0.11 0.10 0.10 0.10 0.05 0.08 0.05 0.08
+!
+fc_sat         Field capacity, saturation formulation [-] (Solver.CLM.PerPFTWaterStress)
+0.55 0.55 0.50 0.50 0.52 0.45 0.45 0.50 0.45 0.42 0.52 0.50 0.50 0.50 0.30 0.42 0.30 0.42
+!

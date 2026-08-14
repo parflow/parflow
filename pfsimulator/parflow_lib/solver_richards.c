@@ -36,6 +36,8 @@
 
 #include "parflow.h"
 #include "parflow_netcdf.h"
+#include "evap_trans_guard.h"
+#include "problem_saturation.h"
 
 #include "metadata.h"
 
@@ -150,6 +152,7 @@ typedef struct {
   int write_silopmpio_overland_bc_flux; /* write overland outflow boundary condition flux as PMPIO? */
   int write_silopmpio_dzmult;   /* write dz multiplier as PMPIO? */
   int spinup;                   /* spinup flag, remove ponded water */
+  EvapTransGuard etg;           /* Solver.EvapTransGuard prescribed-sink limiter */
   int reset_surface_pressure;   /* surface pressure flag set to True and pressures are reset per threshold keys */
   int threshold_pressure;       /* surface pressure threshold pressure */
   int reset_pressure;           /* surface pressure reset pressure */
@@ -188,6 +191,10 @@ typedef struct {
   int clm_veg_function;         /* CLM veg function for water stress 0=none, 1=press, 2=sat */
   double clm_veg_wilting;       /* CLM veg function wilting point in meters or soil moisture */
   double clm_veg_fieldc;        /* CLM veg function field capacity in meters or soil moisture */
+  int sm_stress_type;           /* dry-side residual limit: 0=off, 1=residual-limited wp, 2=ramp-floor only */
+  double sm_residual_margin;    /* saturation margin the effective wilting point must stay above S_res */
+  double sm_min_ramp_width;     /* minimum fc_eff - wp_eff span */
+  int per_pft_water_stress;     /* 1 = read per-PFT wilting point / field capacity from drv_vegp.dat (Solver.CLM.PerPFTWaterStress) */
 
   int clm_irr_type;             /* CLM irrigation type flag -- 0=none, 1=Spray, 2=Drip, 3=Instant */
   int clm_irr_cycle;            /* CLM irrigation cycle flag -- 0=Constant, 1=Deficit */
@@ -2561,6 +2568,23 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
 
 
+      /* Per-cell van Genuchten residual saturation for the CLM wilting-point
+       * guard (NULL for non-VanGenuchten saturation).  Halo-update so CLM can
+       * read ghost cells, exactly as it does for porosity. */
+      Vector *sres_vec = ProblemSaturationGetSres(instance_xtra->problem_saturation);
+      if (sres_vec == NULL && public_xtra->sm_stress_type == 1)
+      {
+        PARFLOW_ERROR("Solver.CLM.SoilMoistureStress.ResidualLimit requires "
+                      "Type-1 (VanGenuchten) saturation to provide per-cell "
+                      "residual saturation; set ResidualLimit to False or use "
+                      "VanGenuchten saturation.");
+      }
+      if (sres_vec != NULL)
+      {
+        VectorUpdateCommHandle *sres_handle = InitVectorUpdate(sres_vec, VectorUpdateAll);
+        FinalizeVectorUpdate(sres_handle);
+      }
+
       ForSubgridI(is, GridSubgrids(grid))
       {
         double dx, dy, dz;
@@ -2661,6 +2685,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         bot_dat = SubvectorData(bot_sub);
         po_dat = SubvectorData(po_sub);
         dz_dat = SubvectorData(dz_sub);
+        Subvector *sres_sub = (sres_vec != NULL) ? VectorSubvector(sres_vec, is) : NULL;
+        /* po_dat here is only a shape-compatible placeholder for the Fortran
+         * interface: sres_vec can be NULL only when the residual limit is off
+         * (checked above), and CLM never reads s_res_cell in that case. */
+        double *sres_dat = (sres_sub != NULL) ? SubvectorData(sres_sub) : po_dat;
 
         /* IMF: Subvector Data -- CLM surface fluxes, SWE, t_grnd */
         eflx_lh = SubvectorData(eflx_lh_tot_sub);
@@ -2788,7 +2817,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           {
             /*BH: added vegetation forcings and associated option (clm_forc_veg) */
             clm_file_dir_length = strlen(public_xtra->clm_file_dir);
-            CALL_CLM_LSM(pp, sp, et, top_dat, bot_dat, po_dat, dz_dat, istep,
+            CALL_CLM_LSM(pp, sp, et, top_dat, bot_dat, po_dat, sres_dat, dz_dat, istep,
                          cdt, t, start_time, dx, dy, dz, ix, iy, nx, ny, nz,
                          nx_f, ny_f, nz_f, nz_rz, ip, p, q, r, gnx,
                          gny, rank, sw_data, lw_data, prcp_data,
@@ -2811,6 +2840,10 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          public_xtra->clm_veg_wilting,
                          public_xtra->clm_veg_fieldc,
                          public_xtra->clm_res_sat,
+                         public_xtra->sm_stress_type,
+                         public_xtra->sm_residual_margin,
+                         public_xtra->sm_min_ramp_width,
+                         public_xtra->per_pft_water_stress,
                          public_xtra->clm_irr_type,
                          public_xtra->clm_irr_cycle,
                          public_xtra->clm_irr_rate,
@@ -3668,6 +3701,21 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                        (instance_xtra->saturation, instance_xtra->pressure,
                         instance_xtra->density, gravity, problem_data,
                         CALCFCN));
+
+    /* Prescribed evap_trans sink guard: per-accepted-step CSV row
+     * (Solver.EvapTransGuard.PrintLog).  Uses the accepted-state saturation
+     * computed just above; S_res comes from the same saturation instance. */
+    if (public_xtra->etg.active && public_xtra->etg.print_log)
+    {
+      Vector *etg_sres = ProblemSaturationGetSres(problem_saturation);
+      if (etg_sres != NULL)
+      {
+        EvapTransGuardLogStep(&(public_xtra->etg), evap_trans,
+                              instance_xtra->saturation, etg_sres,
+                              problem_data, t, dt,
+                              instance_xtra->iteration_number);
+      }
+    }
 
     /***************************************************************
      * Compute running sum of evap trans for water balance
@@ -5701,6 +5749,35 @@ SolverRichardsNewPublicXtra(char *name)
   sprintf(key, "%s.CLM.FieldCapacity", name);
   public_xtra->clm_veg_fieldc = GetDoubleDefault(key, 1.0);
 
+  /* Dry-side residual limit on the CLM wilting point (SoilMoistureStress).
+   * Master off -> sm_stress_type 0 (exactly current behavior). */
+  {
+    int sm_master, sm_residual_limit;
+    sprintf(key, "%s.CLM.SoilMoistureStress", name);
+    sm_master = NA_NameToIndexExitOnError(switch_na, GetStringDefault(key, "False"), key);
+
+    sprintf(key, "%s.CLM.SoilMoistureStress.ResidualLimit", name);
+    sm_residual_limit = NA_NameToIndexExitOnError(switch_na, GetStringDefault(key, "True"), key);
+
+    if (sm_master == 0)
+      public_xtra->sm_stress_type = 0;
+    else
+      public_xtra->sm_stress_type = (sm_residual_limit != 0) ? 1 : 2;
+
+    sprintf(key, "%s.CLM.SoilMoistureStress.ResidualLimit.Margin", name);
+    public_xtra->sm_residual_margin = GetDoubleDefault(key, 0.02);
+
+    sprintf(key, "%s.CLM.SoilMoistureStress.MinRampWidth", name);
+    public_xtra->sm_min_ramp_width = GetDoubleDefault(key, 0.05);
+  }
+
+  /* Per-PFT wilting point / field capacity from drv_vegp.dat.  Off (default)
+   * keeps the single Solver.CLM.WiltingPoint / FieldCapacity scalar for every
+   * PFT, bit-identical to prior behavior even if the rows are present. */
+  sprintf(key, "%s.CLM.PerPFTWaterStress", name);
+  public_xtra->per_pft_water_stress =
+    NA_NameToIndexExitOnError(switch_na, GetStringDefault(key, "False"), key);
+
   /* @RMM 2025 Snow parameterization options */
   NameArray snow_switch_na;
   snow_switch_na = NA_NewNameArray("CLM WetbulbThreshold WetbulbLinear Dai Jennings");
@@ -6942,6 +7019,11 @@ SolverRichardsNewPublicXtra(char *name)
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->spinup = switch_value;
+
+  /* Moisture-limited guard on prescribed evap_trans sinks (Solver.
+   * EvapTransGuard).  verbose = 1: this is the one reader that prints the
+   * rank-0 activation line; the eval modules read the same keys silently. */
+  EvapTransGuardReadKeys(&(public_xtra->etg), 1);
 
   //RMM surface pressure keys
   //Solver.ResetSurfacePressure “True”

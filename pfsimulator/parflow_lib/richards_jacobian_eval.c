@@ -41,6 +41,8 @@
 
 #include "parflow.h"
 #include "seepage.h"
+#include "evap_trans_guard.h"
+#include "problem_saturation.h"
 #include "llnlmath.h"
 #include "llnltyps.h"
 #include "assert.h"
@@ -65,6 +67,7 @@ typedef struct {
   int tfgupwind;  // RMM
   int using_MGSemi;  // RMM
   SeepageLookup seepage;
+  EvapTransGuard etg;  /* Solver.EvapTransGuard prescribed-sink limiter */
 } PublicXtra;
 
 typedef struct {
@@ -176,6 +179,7 @@ int       KINSolMatVec(
   Vector      *old_pressure = StateOldPressure(((State*)current_state));
   Vector      *saturation = StateSaturation(((State*)current_state));
   Vector      *density = StateDensity(((State*)current_state));
+  Vector      *evap_trans = StateEvapTrans(((State*)current_state));
   ProblemData *problem_data = StateProblemData(((State*)current_state));
   double dt = StateDt(((State*)current_state));
   double time = StateTime(((State*)current_state));
@@ -194,8 +198,8 @@ int       KINSolMatVec(
   if (*recompute)
   {
     PFModuleInvokeType(RichardsJacobianEvalInvoke, richards_jacobian_eval,
-                       (pressure, old_pressure, &J, &JC, saturation, density, problem_data,
-                        dt, time, 0));
+                       (pressure, old_pressure, &J, &JC, saturation, density, evap_trans,
+                        problem_data, dt, time, 0));
 
     *recompute = 0;
     StateJac(((State*)current_state)) = J;
@@ -223,6 +227,8 @@ void    RichardsJacobianEval(
                                                       * to instance_xtra pointer at end */
                              Vector *     saturation, /* Saturation / work vector */
                              Vector *     density, /* Density vector */
+                             Vector *     evap_trans, /* Sink term, for the sink guard's
+                                                       * diagonal contribution (may be NULL) */
                              ProblemData *problem_data, /* Geometry data for problem */
                              double       dt, /* Time step size */
                              double       time, /* New time value */
@@ -452,6 +458,74 @@ void    RichardsJacobianEval(
                 * pop[ipo] * vol2 + ss[iv] * vol2 * (sdp[iv] * dp[iv] * pp[iv] + sp[iv] * ddp[iv] * pp[iv] + sp[iv] * dp[iv]); //sk start
     });
   }    /* End subgrid loop */
+
+  /* Prescribed evap_trans sink guard (Solver.EvapTransGuard): the guarded
+   * sink term -vol*dt*et*beta(S(p)) in the residual is pressure-dependent,
+   * so add its exact diagonal contribution dF/dp = -vol*dt*et*beta'(S)*dS/dp
+   * here, while saturation_der still holds dS/dp (it is aliased to
+   * rel_perm_der and overwritten below).  The term is >= 0 for sink cells
+   * (et < 0, beta' >= 0, dS/dp >= 0), strengthening the diagonal, and being
+   * diagonal-only it is valid for both the symmetric and full assemblies. */
+  if (public_xtra->etg.active && evap_trans != NULL)
+  {
+    double etg_margin = public_xtra->etg.margin;
+    double etg_ramp = public_xtra->etg.ramp_width;
+    Vector *etg_sres = ProblemSaturationGetSres(saturation_module);
+
+    if (etg_sres == NULL)
+    {
+      PARFLOW_ERROR("Solver.EvapTransGuard requires Type-1 (VanGenuchten) saturation");
+    }
+
+    ForSubgridI(is, GridSubgrids(grid))
+    {
+      subgrid = GridSubgrid(grid, is);
+
+      J_sub = MatrixSubmatrix(J, is);
+      cp = SubmatrixStencilData(J_sub, 0);
+
+      s_sub = VectorSubvector(saturation, is);
+      sd_sub = VectorSubvector(saturation_der, is);
+      z_mult_sub = VectorSubvector(z_mult, is);
+      Subvector *etg_et_sub = VectorSubvector(evap_trans, is);
+      Subvector *etg_srs_sub = VectorSubvector(etg_sres, is);
+
+      r = SubgridRX(subgrid);
+
+      ix = SubgridIX(subgrid);
+      iy = SubgridIY(subgrid);
+      iz = SubgridIZ(subgrid);
+
+      nx = SubgridNX(subgrid);
+      ny = SubgridNY(subgrid);
+      nz = SubgridNZ(subgrid);
+
+      dx = SubgridDX(subgrid);
+      dy = SubgridDY(subgrid);
+      dz = SubgridDZ(subgrid);
+
+      double vol = dx * dy * dz;
+
+      sp = SubvectorData(s_sub);
+      sdp = SubvectorData(sd_sub);
+      z_mult_dat = SubvectorData(z_mult_sub);
+      double *etg_et = SubvectorData(etg_et_sub);
+      double *etg_srs = SubvectorData(etg_srs_sub);
+
+      GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+      {
+        int im = SubmatrixEltIndex(J_sub, i, j, k);
+        int iv = SubvectorEltIndex(s_sub, i, j, k);
+
+        if (etg_et[iv] < 0.0)
+        {
+          cp[im] -= vol * z_mult_dat[iv] * dt * etg_et[iv]
+                    * EvapTransGuardBetaDer(sp[iv], etg_srs[iv], etg_margin, etg_ramp)
+                    * sdp[iv];
+        }
+      });
+    }
+  }
 
   bc_struct = PFModuleInvokeType(BCPressureInvoke, bc_pressure,
                                  (problem_data, grid, gr_domain, time));
@@ -2421,6 +2495,10 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
 
   /* Collect seepage patches from Patch.<name>.BCPressure.Seepage flags. */
   PopulateSeepagePatchesFromBCPressure(&(public_xtra->seepage));
+
+  /* Moisture-limited guard on prescribed evap_trans sinks (Solver.
+   * EvapTransGuard); the solver-level reader prints the activation line. */
+  EvapTransGuardReadKeys(&(public_xtra->etg), 0);
 
 /* get preconditioner to check for MGSemi to use custom overland flow formulation*/
   precond_switch_na = NA_NewNameArray("NoPC MGSemi SMG PFMG PFMGOctree");
