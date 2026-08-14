@@ -20,6 +20,8 @@ pystencilssfg_generate_target_sources ( PystencilsGeneratedKernels
 
 target_link_libraries ( PystencilsGeneratedKernels PRIVATE pfsimulator amps )
 
+target_compile_definitions ( PystencilsGeneratedKernels PRIVATE PF_COMP_UNIT_TYPE=1 )
+
 target_compile_options( PystencilsGeneratedKernels PRIVATE
         $<$<COMPILE_LANGUAGE:CUDA,CXX>:-include;${CMAKE_CURRENT_SOURCE_DIR}/pf_amps_shim.h> )
 

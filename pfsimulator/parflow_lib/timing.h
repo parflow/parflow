@@ -156,8 +156,8 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
           }                                      \
         }
 #else
-#define BeginTiming(i)                          \
-        {                                       \
+#define BeginTiming(i)                           \
+        {                                        \
           if ((i) != NoTimingIndex)              \
           {                                      \
             StopTiming();                        \
