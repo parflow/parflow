@@ -1,408 +1,395 @@
-# Import the ParFlow package
-import os
+# -----------------------------------------------------------------------------
+# Tilted V with channel widths (adapted from overland_tiltedV_KWE.py)
+# -----------------------------------------------------------------------------
+
 import sys
-from parflow import Run, write_pfb
-import shutil
-from parflow.tools.fs import mkdir, cp, chdir, get_absolute_path, rm, exists
+from parflow import Run
+from parflow.tools.fs import mkdir, get_absolute_path
+from parflow.tools.compare import pf_test_file
 from parflow.tools.io import read_pfb
+import os
 import numpy as np
 
-# Set our Run Name
-run_name = "channel_width_example"
-wc_test = Run(run_name, __file__)
+overland = Run("overland_tiltedV_KWE_wc", __file__)
 
 # -----------------------------------------------------------------------------
-# File input version number
-# -----------------------------------------------------------------------------
-wc_test.FileVersion = 4
 
-# -----------------------------------------------------------------------------
-# Process Topology
-# -----------------------------------------------------------------------------
-wc_test.Process.Topology.P = 1
-wc_test.Process.Topology.Q = 1
-wc_test.Process.Topology.R = 1
+overland.FileVersion = 4
 
-# -----------------------------------------------------------------------------
+overland.Process.Topology.P = 1
+overland.Process.Topology.Q = 1
+overland.Process.Topology.R = 1
+
+# ---------------------------------------------------------
 # Computational Grid
-# -----------------------------------------------------------------------------
-wc_test.ComputationalGrid.Lower.X = 0.0
-wc_test.ComputationalGrid.Lower.Y = 0.0
-wc_test.ComputationalGrid.Lower.Z = 0.0
+# ---------------------------------------------------------
 
-wc_test.ComputationalGrid.DX = 100.0
-wc_test.ComputationalGrid.DY = 2.0
-wc_test.ComputationalGrid.DZ = 1.0
+overland.ComputationalGrid.Lower.X = 0.0
+overland.ComputationalGrid.Lower.Y = 0.0
+overland.ComputationalGrid.Lower.Z = 0.0
 
-wc_test.ComputationalGrid.NX = 20
-wc_test.ComputationalGrid.NY = 1
-wc_test.ComputationalGrid.NZ = 10
+overland.ComputationalGrid.NX = 5
+overland.ComputationalGrid.NY = 5
+overland.ComputationalGrid.NZ = 1
 
-# -----------------------------------------------------------------------------
+overland.ComputationalGrid.DX = 10.0
+overland.ComputationalGrid.DY = 10.0
+overland.ComputationalGrid.DZ = 0.05
+
+# ---------------------------------------------------------
 # The Names of the GeomInputs
-# -----------------------------------------------------------------------------
-wc_test.GeomInput.Names = "domain_input"
+# ---------------------------------------------------------
 
-# -----------------------------------------------------------------------------
-# Domain Geometry Input
-# -----------------------------------------------------------------------------
-wc_test.GeomInput.domain_input.InputType = "Box"
-wc_test.GeomInput.domain_input.GeomName = "domain"
+overland.GeomInput.Names = "domaininput leftinput rightinput channelinput"
 
-# -----------------------------------------------------------------------------
+overland.GeomInput.domaininput.GeomName = "domain"
+overland.GeomInput.leftinput.GeomName = "left"
+overland.GeomInput.rightinput.GeomName = "right"
+overland.GeomInput.channelinput.GeomName = "channel"
+
+overland.GeomInput.domaininput.InputType = "Box"
+overland.GeomInput.leftinput.InputType = "Box"
+overland.GeomInput.rightinput.InputType = "Box"
+overland.GeomInput.channelinput.InputType = "Box"
+
+# ---------------------------------------------------------
 # Domain Geometry
-# -----------------------------------------------------------------------------
-wc_test.Geom.domain.Lower.X = 0.0
-wc_test.Geom.domain.Lower.Y = 0.0
-wc_test.Geom.domain.Lower.Z = 0.0
+# ---------------------------------------------------------
 
-wc_test.Geom.domain.Upper.X = 2000.0
-wc_test.Geom.domain.Upper.Y = 2.0
-wc_test.Geom.domain.Upper.Z = 10.0
+overland.Geom.domain.Lower.X = 0.0
+overland.Geom.domain.Lower.Y = 0.0
+overland.Geom.domain.Lower.Z = 0.0
 
-wc_test.Geom.domain.Patches = "x_lower x_upper y_lower y_upper z_lower z_upper"
+overland.Geom.domain.Upper.X = 50.0
+overland.Geom.domain.Upper.Y = 50.0
+overland.Geom.domain.Upper.Z = 0.05
+overland.Geom.domain.Patches = "x_lower x_upper y_lower y_upper z_lower z_upper"
 
+# ---------------------------------------------------------
+# Left Slope Geometry
+# ---------------------------------------------------------
 
-# --------------------------------------------
-# Variable dz Assignments
-# ------------------------------------------
-wc_test.Solver.Nonlinear.VariableDz = False
-wc_test.dzScale.GeomNames = "domain"
-wc_test.dzScale.Type = "nzList"
-wc_test.dzScale.nzListNumber = 10
+overland.Geom.left.Lower.X = 0.0
+overland.Geom.left.Lower.Y = 0.0
+overland.Geom.left.Lower.Z = 0.0
 
-# cells start at the bottom (0) and moves up to the top
-# domain is 49 m thick, root zone is down to 4 cells
-# so the root zone is 2 m thick
-wc_test.Cell._0.dzScale.Value = 10.0  # 10* 1.0 = 10  m  layer
-wc_test.Cell._1.dzScale.Value = 10.0
-wc_test.Cell._2.dzScale.Value = 10.0
-wc_test.Cell._3.dzScale.Value = 10.0
-wc_test.Cell._4.dzScale.Value = 5.0
-wc_test.Cell._5.dzScale.Value = 1.0
-wc_test.Cell._6.dzScale.Value = 1.0
-wc_test.Cell._7.dzScale.Value = 0.6  # 0.6* 1.0 = 0.6  60 cm 3rd layer
-wc_test.Cell._8.dzScale.Value = 0.3  # 0.3* 1.0 = 0.3  30 cm 2nd layer
-wc_test.Cell._9.dzScale.Value = 0.1  # 0.1* 1.0 = 0.1  10 cm top layer
+overland.Geom.left.Upper.X = 20.0
+overland.Geom.left.Upper.Y = 50.0
+overland.Geom.left.Upper.Z = 0.05
+
+# ---------------------------------------------------------
+# Right Slope Geometry
+# ---------------------------------------------------------
+
+overland.Geom.right.Lower.X = 30.0
+overland.Geom.right.Lower.Y = 0.0
+overland.Geom.right.Lower.Z = 0.0
+
+overland.Geom.right.Upper.X = 50.0
+overland.Geom.right.Upper.Y = 50.0
+overland.Geom.right.Upper.Z = 0.05
+
+# ---------------------------------------------------------
+# Channel Geometry
+# ---------------------------------------------------------
+
+overland.Geom.channel.Lower.X = 20.0
+overland.Geom.channel.Lower.Y = 0.0
+overland.Geom.channel.Lower.Z = 0.0
+
+overland.Geom.channel.Upper.X = 30.0
+overland.Geom.channel.Upper.Y = 50.0
+overland.Geom.channel.Upper.Z = 0.05
 
 # -----------------------------------------------------------------------------
 # Perm
 # -----------------------------------------------------------------------------
-wc_test.Geom.Perm.Names = "domain"
-wc_test.Geom.domain.Perm.Type = "Constant"
-wc_test.Geom.domain.Perm.Value = 0.01465  # m/h
 
-wc_test.Perm.TensorType = "TensorByGeom"
-wc_test.Geom.Perm.TensorByGeom.Names = "domain"
-wc_test.Geom.domain.Perm.TensorValX = 1.0
-wc_test.Geom.domain.Perm.TensorValY = 1.0
-wc_test.Geom.domain.Perm.TensorValZ = 1.0
+overland.Geom.Perm.Names = "domain"
+overland.Geom.domain.Perm.Type = "Constant"
+overland.Geom.domain.Perm.Value = 0.0000001
+
+overland.Perm.TensorType = "TensorByGeom"
+
+overland.Geom.Perm.TensorByGeom.Names = "domain"
+
+overland.Geom.domain.Perm.TensorValX = 1.0
+overland.Geom.domain.Perm.TensorValY = 1.0
+overland.Geom.domain.Perm.TensorValZ = 1.0
 
 # -----------------------------------------------------------------------------
 # Specific Storage
 # -----------------------------------------------------------------------------
-wc_test.SpecificStorage.Type = "Constant"
-wc_test.SpecificStorage.GeomNames = "domain"
-wc_test.Geom.domain.SpecificStorage.Value = 1.0e-4
+
+overland.SpecificStorage.Type = "Constant"
+overland.SpecificStorage.GeomNames = "domain"
+overland.Geom.domain.SpecificStorage.Value = 1.0e-4
 
 # -----------------------------------------------------------------------------
 # Phases
 # -----------------------------------------------------------------------------
-wc_test.Phase.Names = "water"
 
-wc_test.Phase.water.Density.Type = "Constant"
-wc_test.Phase.water.Density.Value = 1.0
+overland.Phase.Names = "water"
 
-wc_test.Phase.water.Viscosity.Type = "Constant"
-wc_test.Phase.water.Viscosity.Value = 1.0
+overland.Phase.water.Density.Type = "Constant"
+overland.Phase.water.Density.Value = 1.0
+
+overland.Phase.water.Viscosity.Type = "Constant"
+overland.Phase.water.Viscosity.Value = 1.0
 
 # -----------------------------------------------------------------------------
 # Contaminants
 # -----------------------------------------------------------------------------
-wc_test.Contaminants.Names = ""
 
+overland.Contaminants.Names = ""
+
+# -----------------------------------------------------------------------------
+# Retardation
+# -----------------------------------------------------------------------------
+
+overland.Geom.Retardation.GeomNames = ""
 
 # -----------------------------------------------------------------------------
 # Gravity
 # -----------------------------------------------------------------------------
-wc_test.Gravity = 1.0
+
+overland.Gravity = 1.0
 
 # -----------------------------------------------------------------------------
-# Setup Timing
+# Setup timing info
 # -----------------------------------------------------------------------------
-wc_test.TimingInfo.BaseUnit = 1.0
-wc_test.TimingInfo.StartCount = 0
-wc_test.TimingInfo.StartTime = 0.0
-wc_test.TimingInfo.StopTime = 5.0
-wc_test.TimingInfo.DumpInterval = 1.0
-wc_test.TimeStep.Type = "Constant"
-wc_test.TimeStep.Value = 1.0
-
+overland.TimingInfo.BaseUnit = 0.05
+overland.TimingInfo.StartCount = 0
+overland.TimingInfo.StartTime = 0.0
+overland.TimingInfo.StopTime = 2.0
+overland.TimingInfo.DumpInterval = -2
+overland.TimeStep.Type = "Constant"
+overland.TimeStep.Value = 0.05
 
 # -----------------------------------------------------------------------------
 # Porosity
 # -----------------------------------------------------------------------------
-wc_test.Geom.Porosity.GeomNames = "domain"
 
-wc_test.Geom.domain.Porosity.Type = "Constant"
-wc_test.Geom.domain.Porosity.Value = 0.25
+overland.Geom.Porosity.GeomNames = "domain"
+overland.Geom.domain.Porosity.Type = "Constant"
+overland.Geom.domain.Porosity.Value = 0.01
 
 # -----------------------------------------------------------------------------
 # Domain
 # -----------------------------------------------------------------------------
-wc_test.Domain.GeomName = "domain"
 
-# -----------------------------------------------------------------------------
-# Mobility
-# -----------------------------------------------------------------------------
-wc_test.Phase.water.Mobility.Type = "Constant"
-wc_test.Phase.water.Mobility.Value = 1.0
+overland.Domain.GeomName = "domain"
 
 # -----------------------------------------------------------------------------
 # Relative Permeability
 # -----------------------------------------------------------------------------
-wc_test.Phase.RelPerm.Type = "VanGenuchten"
-wc_test.Phase.RelPerm.GeomNames = "domain"
 
-wc_test.Geom.domain.RelPerm.Alpha = 1.0
-wc_test.Geom.domain.RelPerm.N = 2.0
+overland.Phase.RelPerm.Type = "VanGenuchten"
+overland.Phase.RelPerm.GeomNames = "domain"
+
+overland.Geom.domain.RelPerm.Alpha = 6.0
+overland.Geom.domain.RelPerm.N = 2.0
 
 # ---------------------------------------------------------
 # Saturation
 # ---------------------------------------------------------
-wc_test.Phase.Saturation.Type = "VanGenuchten"
-wc_test.Phase.Saturation.GeomNames = "domain"
 
-wc_test.Geom.domain.Saturation.Alpha = 1.0
-wc_test.Geom.domain.Saturation.N = 2.0
-wc_test.Geom.domain.Saturation.SRes = 0.2
-wc_test.Geom.domain.Saturation.SSat = 1.0
+overland.Phase.Saturation.Type = "VanGenuchten"
+overland.Phase.Saturation.GeomNames = "domain"
+
+overland.Geom.domain.Saturation.Alpha = 6.0
+overland.Geom.domain.Saturation.N = 2.0
+overland.Geom.domain.Saturation.SRes = 0.2
+overland.Geom.domain.Saturation.SSat = 1.0
 
 # -----------------------------------------------------------------------------
 # Wells
 # -----------------------------------------------------------------------------
-wc_test.Wells.Names = ""
 
+overland.Wells.Names = ""
 
 # -----------------------------------------------------------------------------
 # Time Cycles
 # -----------------------------------------------------------------------------
-wc_test.Cycle.Names = "constant"
-wc_test.Cycle.constant.Names = "alltime"
-wc_test.Cycle.constant.alltime.Length = 1
-wc_test.Cycle.constant.Repeat = -1
+
+overland.Cycle.Names = "constant rainrec"
+overland.Cycle.constant.Names = "alltime"
+overland.Cycle.constant.alltime.Length = 1
+overland.Cycle.constant.Repeat = -1
+
+# rainfall and recession time periods are defined here
+# rain for 1 hour, recession for 2 hours
+
+overland.Cycle.rainrec.Names = "rain rec"
+overland.Cycle.rainrec.rain.Length = 2
+overland.Cycle.rainrec.rec.Length = 300
+overland.Cycle.rainrec.Repeat = -1
 
 # -----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 # -----------------------------------------------------------------------------
-wc_test.BCPressure.PatchNames = "x_lower x_upper y_lower y_upper z_lower z_upper"
 
-wc_test.Patch.y_lower.BCPressure.Type = "FluxConst"
-wc_test.Patch.y_lower.BCPressure.Cycle = "constant"
-wc_test.Patch.y_lower.BCPressure.alltime.Value = 0.0
+overland.BCPressure.PatchNames = overland.Geom.domain.Patches
 
-wc_test.Patch.z_lower.BCPressure.Type = "FluxConst"
-wc_test.Patch.z_lower.BCPressure.Cycle = "constant"
-wc_test.Patch.z_lower.BCPressure.alltime.Value = 0.0
+overland.Patch.x_lower.BCPressure.Type = "FluxConst"
+overland.Patch.x_lower.BCPressure.Cycle = "constant"
+overland.Patch.x_lower.BCPressure.alltime.Value = 0.0
 
-wc_test.Patch.x_lower.BCPressure.Type = "FluxConst"
-wc_test.Patch.x_lower.BCPressure.Cycle = "constant"
-wc_test.Patch.x_lower.BCPressure.alltime.Value = 0.0
+overland.Patch.y_lower.BCPressure.Type = "FluxConst"
+overland.Patch.y_lower.BCPressure.Cycle = "constant"
+overland.Patch.y_lower.BCPressure.alltime.Value = 0.0
 
-wc_test.Patch.x_upper.BCPressure.Type = "DirEquilRefPatch"
-wc_test.Patch.x_upper.BCPressure.RefGeom = "domain"
-wc_test.Patch.x_upper.BCPressure.RefPatch = "z_upper"
-wc_test.Patch.x_upper.BCPressure.Cycle = "constant"
-wc_test.Patch.x_upper.BCPressure.alltime.Value = (
-    -1.0
-)  # ocean boundary is 1m below land surface
+overland.Patch.z_lower.BCPressure.Type = "FluxConst"
+overland.Patch.z_lower.BCPressure.Cycle = "constant"
+overland.Patch.z_lower.BCPressure.alltime.Value = 0.0
 
-wc_test.Patch.y_upper.BCPressure.Type = "FluxConst"
-wc_test.Patch.y_upper.BCPressure.Cycle = "constant"
-wc_test.Patch.y_upper.BCPressure.alltime.Value = 0.0
+overland.Patch.x_upper.BCPressure.Type = "FluxConst"
+overland.Patch.x_upper.BCPressure.Cycle = "constant"
+overland.Patch.x_upper.BCPressure.alltime.Value = 0.0
 
-wc_test.Patch.z_upper.BCPressure.Type = "OverlandFlow"
-wc_test.Patch.z_upper.BCPressure.Cycle = "constant"
-wc_test.Patch.z_upper.BCPressure.alltime.Value = -0.01
+overland.Patch.y_upper.BCPressure.Type = "FluxConst"
+overland.Patch.y_upper.BCPressure.Cycle = "constant"
+overland.Patch.y_upper.BCPressure.alltime.Value = 0.0
 
-# ---------------------------------------------------------
-# Topo slopes in x-direction
-# ---------------------------------------------------------
-wc_test.TopoSlopesX.Type = "Constant"
-wc_test.TopoSlopesX.GeomNames = "domain"
-wc_test.TopoSlopesX.Geom.domain.Value = (
-    -0.1
-)  # slope in X-direction to allow ponded water to run off
-
-# ---------------------------------------------------------
-# Topo slopes in y-direction
-# ---------------------------------------------------------
-wc_test.TopoSlopesY.Type = "Constant"
-wc_test.TopoSlopesY.GeomNames = "domain"
-wc_test.TopoSlopesY.Geom.domain.Value = 0.0
+## overland flow boundary condition with very heavy rainfall
+overland.Patch.z_upper.BCPressure.Type = "OverlandKinematic_wc"
+overland.Patch.z_upper.BCPressure.Cycle = "rainrec"
+overland.Patch.z_upper.BCPressure.rain.Value = -0.01
+overland.Patch.z_upper.BCPressure.rec.Value = 0.0000
 
 # ---------------------------------------------------------
 # Mannings coefficient
 # ---------------------------------------------------------
-wc_test.Mannings.Type = "Constant"
-wc_test.Mannings.GeomNames = "domain"
-wc_test.Mannings.Geom.domain.Value = 2.0e-6
+
+overland.Mannings.Type = "Constant"
+overland.Mannings.GeomNames = "domain"
+overland.Mannings.Geom.domain.Value = 3.0e-6
 
 # -----------------------------------------------------------------------------
 # Phase sources:
 # -----------------------------------------------------------------------------
-wc_test.PhaseSources.water.Type = "Constant"
-wc_test.PhaseSources.water.GeomNames = "domain"
-wc_test.PhaseSources.water.Geom.domain.Value = 0.0
+
+overland.PhaseSources.water.Type = "Constant"
+overland.PhaseSources.water.GeomNames = "domain"
+overland.PhaseSources.water.Geom.domain.Value = 0.0
 
 # -----------------------------------------------------------------------------
 # Exact solution specification for error calculations
 # -----------------------------------------------------------------------------
-wc_test.KnownSolution = "NoKnownSolution"
+
+overland.KnownSolution = "NoKnownSolution"
 
 # -----------------------------------------------------------------------------
 # Set solver parameters
 # -----------------------------------------------------------------------------
-wc_test.Solver = "Richards"
-wc_test.Solver.MaxIter = 9000
 
-wc_test.Solver.Nonlinear.MaxIter = 100
-wc_test.Solver.Nonlinear.ResidualTol = 1e-5
-wc_test.Solver.Nonlinear.EtaChoice = "Walker1"
-wc_test.Solver.Nonlinear.UseJacobian = True
-wc_test.Solver.Nonlinear.DerivativeEpsilon = 1e-12
-wc_test.Solver.Nonlinear.StepTol = 1e-30
-wc_test.Solver.Nonlinear.Globalization = "LineSearch"
-wc_test.Solver.Linear.KrylovDimension = 100
-wc_test.Solver.Linear.MaxRestarts = 5
-wc_test.Solver.Linear.Preconditioner = "PFMG"
-wc_test.Solver.PrintSubsurf = True
-wc_test.Solver.Drop = 1e-20
-wc_test.Solver.AbsTol = 1e-9
+overland.Solver = "Richards"
+overland.Solver.MaxIter = 2500
 
-# Writing output options for ParFlow
-should_write = True  # only PFB output for water balance example
-#  PFB  no SILO
-wc_test.Solver.PrintSubsurfData = should_write
-wc_test.Solver.PrintPressure = should_write
-wc_test.Solver.PrintSaturation = should_write
-wc_test.Solver.PrintCLM = should_write
-wc_test.Solver.PrintMask = should_write
-wc_test.Solver.PrintSpecificStorage = should_write
-wc_test.Solver.PrintEvapTrans = should_write
-wc_test.Solver.PrintVelocities = True
-wc_test.Solver.PrintChannelWidth = True
+overland.Solver.Nonlinear.MaxIter = 100
+overland.Solver.Nonlinear.ResidualTol = 1e-9
+overland.Solver.Nonlinear.EtaChoice = "EtaConstant"
+overland.Solver.Nonlinear.EtaValue = 0.01
+overland.Solver.Nonlinear.UseJacobian = False
+overland.Solver.Nonlinear.DerivativeEpsilon = 1e-15
+overland.Solver.Nonlinear.StepTol = 1e-20
+overland.Solver.Nonlinear.Globalization = "LineSearch"
+overland.Solver.Linear.KrylovDimension = 50
+overland.Solver.Linear.MaxRestart = 2
+overland.Solver.OverlandKinematic.Epsilon = 1e-5
 
+overland.Solver.Linear.Preconditioner = "PFMG"
+overland.Solver.PrintSubsurf = False
+overland.Solver.Drop = 1e-20
+overland.Solver.AbsTol = 1e-10
 
-# ---------------------------------------------------
-# LSM / CLM options
-# ---------------------------------------------------
+overland.Solver.WriteSiloSubsurfData = False
+overland.Solver.WriteSiloPressure = False
+overland.Solver.WriteSiloSlopes = False
 
-# Writing output options for CLM
-# no native CLM logs
-wc_test.Solver.PrintLSMSink = False
-wc_test.Solver.CLM.CLMDumpInterval = 1
-wc_test.Solver.CLM.CLMFileDir = "output/"
-wc_test.Solver.CLM.BinaryOutDir = False
-wc_test.Solver.CLM.IstepStart = 1
-wc_test.Solver.WriteCLMBinary = False
-wc_test.Solver.CLM.WriteLogs = False
-wc_test.Solver.CLM.WriteLastRST = True
-wc_test.Solver.CLM.DailyRST = False
-wc_test.Solver.CLM.SingleFile = True
+overland.Solver.WriteSiloSaturation = False
+overland.Solver.WriteSiloConcentration = False
 
-
-# ---------------------------------------------------
+# ---------------------------------------------------------
 # Initial conditions: water pressure
-# ---------------------------------------------------
-wc_test.ICPressure.Type = "HydroStaticPatch"
-wc_test.ICPressure.GeomNames = "domain"
-wc_test.Geom.domain.ICPressure.Value = -10.00
-wc_test.Geom.domain.ICPressure.RefGeom = "domain"
-wc_test.Geom.domain.ICPressure.RefPatch = "z_upper"
-
-# ---------------------------------------------------------
-# Test channel width with constant input
 # ---------------------------------------------------------
 
-# ---------------------------------------------------------
-# Channel width in x-direction
-# ---------------------------------------------------------
-wc_test.Solver.Nonlinear.ChannelWidthExistX = True
-wc_test.ChannelWidthX.Type = "Constant"
-wc_test.ChannelWidthX.GeomNames = "domain"
-wc_test.ChannelWidthX.Geom.domain.Value = 1.0
+# set water table to be at the bottom of the domain, the top layer is initially dry
+overland.ICPressure.Type = "HydroStaticPatch"
+overland.ICPressure.GeomNames = "domain"
+overland.Geom.domain.ICPressure.Value = -3.0
 
-# ---------------------------------------------------------
-# Channel width in y-direction
-# ---------------------------------------------------------
-wc_test.Solver.Nonlinear.ChannelWidthExistY = True
-wc_test.ChannelWidthY.Type = "Constant"
-wc_test.ChannelWidthY.GeomNames = "domain"
-wc_test.ChannelWidthY.Geom.domain.Value = 1.0
+overland.Geom.domain.ICPressure.RefGeom = "domain"
+overland.Geom.domain.ICPressure.RefPatch = "z_upper"
 
-# -----------------------------------------------------------------------------
-# Run ParFlow
-# -----------------------------------------------------------------------------
-base = os.path.join(os.getcwd(), "output/constant")
-mkdir(base)
-print(f"base: {base}")
-wc_test.run(working_directory=base)
+overland.TopoSlopesX.Type = "Constant"
+overland.TopoSlopesX.GeomNames = "left right channel"
+overland.TopoSlopesX.Geom.left.Value = -0.01
+overland.TopoSlopesX.Geom.right.Value = 0.01
+overland.TopoSlopesX.Geom.channel.Value = 0.01
 
-# -----------------------------------------------------------------------------
-# Check if values are as expected
-# -----------------------------------------------------------------------------
+overland.TopoSlopesY.Type = "Constant"
+overland.TopoSlopesY.GeomNames = "domain"
+overland.TopoSlopesY.Geom.domain.Value = 0.01
 
-data_wcx = read_pfb(os.path.join(base, "channel_width_example.out.wc_x.pfb"))
-data_wcy = read_pfb(os.path.join(base, "channel_width_example.out.wc_y.pfb"))
+# #-----------------------------------------------------------------------------
+# # Channel width in x- and y- directions
+# #-----------------------------------------------------------------------------
+overland.Solver.Nonlinear.ChannelWidthExistX = True
+overland.ChannelWidthX.Type = 'Constant'
+overland.ChannelWidthX.GeomNames = 'domain'
+overland.ChannelWidthX.Geom.domain.Value = 9.5 #Channel width close to cell size (10) in non-channel direction
 
-ones_array = np.ones((1, 1, 20))
+overland.Solver.Nonlinear.ChannelWidthExistY = True
+overland.ChannelWidthY.Type = 'Constant'
+overland.ChannelWidthY.GeomNames = 'domain'
+overland.ChannelWidthY.Geom.domain.Value = 1 #Channel width 1/10 cell size in channel direction
 
-if not np.array_equal(data_wcx, ones_array) or not np.array_equal(data_wcy, ones_array):
-    print(f"{run_name} : FAILED")
-    sys.exit(1)
+overland.Solver.PrintChannelWidth = True
 
-# ---------------------------------------------------------
-# Test channel width with PFB input
-# ---------------------------------------------------------
 
-base = os.path.join(os.getcwd(), "output/pfb")
-mkdir(base)
-print(f"base: {base}")
-write_pfb(get_absolute_path(base + "/Channel_Width_X.pfb"), ones_array)
-write_pfb(get_absolute_path(base + "/Channel_Width_Y.pfb"), ones_array)
+run_name = "TiltedV_KWE_wc"
+# set runcheck to 1 if you want to run the pass fail tests
+runcheck = 1
+correct_output_dir_name = get_absolute_path(f"../correct_output/{run_name}")
 
-# ---------------------------------------------------------
-# Channel width in x-direction
-# ---------------------------------------------------------
-wc_test.Solver.Nonlinear.ChannelWidthExistX = True
-wc_test.ChannelWidthX.Type = "PFBFile"
-wc_test.ChannelWidthX.GeomNames = "domain"
-wc_test.ChannelWidthX.FileName = "Channel_Width_X.pfb"
+overland.set_name(run_name)
+print("##########")
+print(f"Running {run_name}")
+new_output_dir_name = get_absolute_path("test_output/" + f"{run_name}")
+mkdir(new_output_dir_name)
+overland.run(working_directory=new_output_dir_name)
 
-# ---------------------------------------------------------
-# Channel width in y-direction
-# ---------------------------------------------------------
-wc_test.Solver.Nonlinear.ChannelWidthExistY = True
-wc_test.ChannelWidthY.Type = "PFBFile"
-wc_test.ChannelWidthY.GeomNames = "domain"
-wc_test.ChannelWidthY.FileName = "Channel_Width_Y.pfb"
+if runcheck == 1:
+    passed = True
+    
+    data_wcx = read_pfb(os.path.join(new_output_dir_name, f"{run_name}.out.wc_x.pfb"))
+    data_wcy = read_pfb(os.path.join(new_output_dir_name, f"{run_name}.out.wc_y.pfb"))
+    y_array = np.ones((1, 5, 5))
+    x_array = np.ones((1, 5, 5))*9.5
+    if not np.array_equal(data_wcx, x_array) or not np.array_equal(data_wcy, y_array):
+        print(f"{run_name} : FAILED")
+        sys.exit(1)
+        
+    for i in range(11):
+        timestep = str(i).rjust(5, "0")
+        filename = f"/{run_name}.out.press.{timestep}.pfb"
+        if not pf_test_file(
+            new_output_dir_name + filename,
+            correct_output_dir_name + filename,
+            f"Max difference in Pressure for timestep {timestep}",
+        ):
+            passed = False
+        filename = f"/{run_name}.out.satur.{timestep}.pfb"
+        if not pf_test_file(
+            new_output_dir_name + filename,
+            correct_output_dir_name + filename,
+            f"Max difference in Saturation for timestep {timestep}",
+        ):
+            passed = False
 
-# -----------------------------------------------------------------------------
-# Run ParFlow
-# -----------------------------------------------------------------------------
-
-wc_test.run(working_directory=base)
-
-# -----------------------------------------------------------------------------
-# Check if values are as expected
-# -----------------------------------------------------------------------------
-
-data_wcx = read_pfb(os.path.join(base, "channel_width_example.out.wc_x.pfb"))
-data_wcy = read_pfb(os.path.join(base, "channel_width_example.out.wc_y.pfb"))
-
-if not np.array_equal(data_wcx, ones_array) or not np.array_equal(data_wcy, ones_array):
-    print(f"{run_name} : FAILED")
-    sys.exit(1)
-
-# Do same checks as in constant case (read wc_y & y and check they are right)
+    if passed:
+        print(f"{run_name} : PASSED")
+    else:
+        print(f"{run_name} : FAILED")
+        sys.exit(1)
