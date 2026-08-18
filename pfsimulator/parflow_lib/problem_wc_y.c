@@ -103,7 +103,7 @@ void YChannelWidth(ProblemData *problem_data, Vector *wc_y, Vector *dummy)
 
   (void)dummy;
 
-  InitVectorAll(wc_y, 1000.0);
+  InitVectorAll(wc_y, 1.0);
 
   if (public_xtra->wcy_exists == 1)
   {
