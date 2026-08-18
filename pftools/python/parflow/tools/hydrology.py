@@ -576,8 +576,8 @@ def calculate_overland_fluxes(
     :param mannings: a scalar value, or a ny-by-nx ndarray
     :param dx: Length of a grid element in the x direction
     :param dy: Length of a grid element in the y direction
-    :param Wc_x: nx-by-ny
-    :param Wc_y: nx-by-ny
+    :param Wc_x: nx-by-ny. Only applicable if flow_method='OverlandKinematic_wc'
+    :param Wc_y: nx-by-ny. Only applicable if flow_method='OverlandKinematic_wc'
     :param flow_method:'OverlandFlow', 'OverlandKinematic' or 'OverlandKinematic_wc'
         'OverlandKinematic' by default.
     :param epsilon: Minimum slope magnitude for solver. Only applicable if flow_method='OverlandKinematic'.
@@ -682,8 +682,8 @@ def calculate_overland_flow_grid(
     :param mannings: a scalar value, or a ny-by-nx ndarray
     :param dx: Length of a grid element in the x direction
     :param dy: Length of a grid element in the y direction
-    :param Wc_x: nx-by-ny
-    :param Wc_y: nx-by-ny
+    :param Wc_x: nx-by-ny. Only applicable if flow_method='OverlandKinematic_wc'
+    :param Wc_y: nx-by-ny. Only applicable if flow_method='OverlandKinematic_wc'
     :param flow_method: 'OverlandFlow' , 'OverlandKinematic' or 'OverlandKinematic_wc'
         'OverlandKinematic' by default.
     :param epsilon: Minimum slope magnitude for solver. Only applicable if kinematic=True.
@@ -746,8 +746,8 @@ def calculate_overland_flow(
     :param mannings: a scalar value, or a ny-by-nx ndarray
     :param dx: Length of a grid element in the x direction
     :param dy: Length of a grid element in the y direction
-    :param Wc_x: nx-by-ny
-    :param Wc_y: nx-by-ny
+    :param Wc_x: nx-by-ny. Only applicable if flow_method='OverlandKinematic_wc'
+    :param Wc_y: nx-by-ny. Only applicable if flow_method='OverlandKinematic_wc'
     :param flow_method: 'OverlandFlow' , 'OverlandKinematic' or 'OverlandKinematic_wc'
         'OverlandKinematic' by default.
     :param epsilon: Minimum slope magnitude for solver. Only applicable if flow_method='OverlandKinematic'.
