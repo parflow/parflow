@@ -78,6 +78,7 @@ typedef struct {
   PFModule     *overlandflow_module;  //DOK
   PFModule     *overlandflow_module_diff;  //@LEC
   PFModule     *overlandflow_module_kin;
+  PFModule     *overlandflow_module_kin_wc;
 
   /* The analytic Jacobian matrix is decomposed as follows:
    *
@@ -246,6 +247,7 @@ void    RichardsJacobianEval(
   PFModule    *overlandflow_module = (instance_xtra->overlandflow_module);
   PFModule    *overlandflow_module_diff = (instance_xtra->overlandflow_module_diff);
   PFModule    *overlandflow_module_kin = (instance_xtra->overlandflow_module_kin);
+  PFModule    *overlandflow_module_kin_wc = (instance_xtra->overlandflow_module_kin_wc);
 
   Matrix      *J = (instance_xtra->J);
   Matrix      *JC = (instance_xtra->JC);
@@ -1415,6 +1417,42 @@ void    RichardsJacobianEval(
                             kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
       })
                            ); /* End OverlandDiffusiveBC */
+
+      ForPatchCellsPerFace(OverlandKinematic_wcBC,
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int im, ip;
+                                  double *op; ),
+                           CellSetup({ im = SubmatrixEltIndex(J_sub, i, j, k); }),
+                           FACE(LeftFace, { op = wp; }),
+                           FACE(RightFace, { op = ep; }),
+                           FACE(DownFace, { op = sop; }),
+                           FACE(UpFace, { op = np; }),
+                           FACE(BackFace, { op = lp; }),
+                           FACE(FrontFace, {
+        op = up;
+        /* check if overland flow kicks in */
+        if (!ovlnd_flag[0])
+        {
+          ip = SubvectorEltIndex(p_sub, i, j, k);
+          if ((pp[ip]) > 0.0)
+          {
+            ovlnd_flag[0] = 1;
+          }
+        }
+      }),
+                           CellFinalize({
+        cp[im] += op[im];
+        op[im] = 0.0;                              //zero out entry in row of Jacobian
+      }),
+                           AfterAllCells(
+      {
+        PFModuleInvokeType(OverlandFlowEvalKin_wcInvoke, overlandflow_module_kin_wc,
+                           (grid, is, bc_struct, ipatch, problem_data, pressure,
+                            ke_der, kw_der, kn_der, ks_der,
+                            NULL, NULL, NULL, NULL, NULL, NULL, CALCDER));
+      })
+                           ); /* End OverlandKinematic_wcBC */
     } /* End ipatch loop */
   }            /* End subgrid loop */
 
@@ -1642,7 +1680,7 @@ void    RichardsJacobianEval(
                              CellFinalize(DoNothing),
                              AfterAllCells(DoNothing)
                              ); /* End OverlandKinematicBC */
-        /* Copied from OverlandKinematicBC //ARP */
+        /* Copied from OverlandKinematicBC */
         ForPatchCellsPerFace(OverlandKinematic_wcBC,
                              BeforeAllCells(DoNothing),
                              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
@@ -2123,6 +2161,57 @@ void    RichardsJacobianEval(
                              CellFinalize(DoNothing),
                              AfterAllCells(DoNothing)
                              ); /* End OverlandDiffusiveBC */
+          
+          ForPatchCellsPerFace(OverlandKinematic_wcBC,
+                             BeforeAllCells(DoNothing),
+                             LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                             Locals(int io1, ip, itop, im, iitmp; ),
+                             CellSetup(DoNothing),
+                             FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                             FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                             FACE(BackFace, DoNothing),
+                             FACE(FrontFace,
+        {
+          /* Loop over boundary patches to build J matrix. */
+          io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+          itop = SubvectorEltIndex(top_sub, i, j, 0);
+
+          /* Update J */
+          ip = SubvectorEltIndex(p_sub, i, j, k);
+          im = SubmatrixEltIndex(J_sub, i, j, k);
+
+          iitmp = (int)patch_dat[itop];
+          /* Now add overland contributions to J similar to JC above */
+          if ((pp[ip]) > 0.0)
+          {
+            /* RMM, switch seepage face on optionally for specified surface patches */
+            if (IsSeepagePatch(&(public_xtra->seepage), iitmp))
+            {
+              cp[im] += dt * (vol / dz) * (1.0 + 0.0);
+            }
+            else
+            {
+              /*diagonal term */
+              cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                        + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+            }
+          }
+
+          /*west term */
+          wp[im] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
+
+          /*East term */
+          ep[im] += (vol / ffy) * dt * (kw_der[io1 + 1]);
+
+          /*south term */
+          sop[im] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
+
+          /*north term */
+          np[im] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
+        }),
+                             CellFinalize(DoNothing),
+                             AfterAllCells(DoNothing)
+                             ); /* End OverlandKinematic_wcBC */
 
         ForPatchCellsPerFace(OverlandBC,
                              BeforeAllCells(DoNothing),
@@ -2386,6 +2475,8 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
       PFModuleNewInstance(ProblemOverlandFlowEvalDiff(problem), ());   //RMM-LEC
     (instance_xtra->overlandflow_module_kin)
       = PFModuleNewInstance(ProblemOverlandFlowEvalKin(problem), ());
+    (instance_xtra->overlandflow_module_kin_wc)
+      = PFModuleNewInstance(ProblemOverlandFlowEvalKin_wc(problem), ());
 
     // Allocate vectors for the derivatives
     (instance_xtra->density_der) = NewVectorType(grid, 1, 1, vector_cell_centered);
@@ -2440,6 +2531,7 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
     PFModuleReNewInstance((instance_xtra->overlandflow_module), ());     //DOK
     PFModuleReNewInstance((instance_xtra->overlandflow_module_diff), ());      //RMM-LEC
     PFModuleReNewInstance((instance_xtra->overlandflow_module_kin), ());
+      PFModuleReNewInstance((instance_xtra->overlandflow_module_kin_wc), ());
   }
 
 
@@ -2475,6 +2567,7 @@ void  RichardsJacobianEvalFreeInstanceXtra()
     FreeVector(instance_xtra->density_der);
 
     PFModuleFreeInstance(instance_xtra->overlandflow_module_kin);
+      PFModuleFreeInstance(instance_xtra->overlandflow_module_kin_wc);
     PFModuleFreeInstance(instance_xtra->overlandflow_module_diff);       //RMM-LEC
     PFModuleFreeInstance(instance_xtra->overlandflow_module);     //DOK
     PFModuleFreeInstance(instance_xtra->bc_internal);
