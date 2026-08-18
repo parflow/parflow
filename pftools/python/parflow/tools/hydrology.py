@@ -392,6 +392,7 @@ def _overland_flow_kinematic(
 
 # -----------------------------------------------------------------------------
 
+
 def _overland_flow_kinematic_wc(
     mask, pressure_top, slopex, slopey, mannings, dx, dy, Wc_x, Wc_y, epsilon
 ):
@@ -446,16 +447,23 @@ def _overland_flow_kinematic_wc(
                 0,
             ),
             (0, 1),
-        ),constant_values = 1000
+        ),
+        constant_values=1000,
     )  # pad right
-    Wc_x_up = (2*Wc_x*Wc_x_pad)/(Wc_x+Wc_x_pad)
-    
-    Wc_x_up[Wc_x_up==0] = 1000
+    Wc_x_up = (2 * Wc_x * Wc_x_pad) / (Wc_x + Wc_x_pad)
+
+    Wc_x_up[Wc_x_up == 0] = 1000
 
     flux_factor = np.sqrt(slope) * mannings
 
     # Flux across the x directions
-    q_x = -slopex / flux_factor * pupwindx ** (5 / 3) * dy * ((dy*Wc_x_up)/(2*pupwindx*dy+Wc_x_up**2))**(2/3)
+    q_x = (
+        -slopex
+        / flux_factor
+        * pupwindx ** (5 / 3)
+        * dy
+        * ((dy * Wc_x_up) / (2 * pupwindx * dy + Wc_x_up**2)) ** (2 / 3)
+    )
 
     # Fix the lower x boundary
     # Use the slopes of the first column
@@ -463,7 +471,9 @@ def _overland_flow_kinematic_wc(
         -slopex[:, 0]
         / flux_factor[:, 0]
         * np.maximum(0, np.sign(slopex[:, 0]) * pressure_top[:, 0]) ** (5 / 3)
-        * dy * ((dy*Wc_x_up[:, 0])/(2*pressure_top[:, 0]*dy+Wc_x_up[:, 0]**2))**(2/3)
+        * dy
+        * ((dy * Wc_x_up[:, 0]) / (2 * pressure_top[:, 0] * dy + Wc_x_up[:, 0] ** 2))
+        ** (2 / 3)
     )
     qeast = np.hstack([q_x0[:, np.newaxis], q_x])
 
@@ -508,16 +518,23 @@ def _overland_flow_kinematic_wc(
                 1,
             ),
             (0, 0),
-        ),constant_values = 1000
+        ),
+        constant_values=1000,
     )  # pad right
-    Wc_y_up = (2*Wc_y*Wc_y_pad)/(Wc_y+Wc_y_pad)
-    
-    Wc_y_up[Wc_y_up==0] = 1000
-    
+    Wc_y_up = (2 * Wc_y * Wc_y_pad) / (Wc_y + Wc_y_pad)
+
+    Wc_y_up[Wc_y_up == 0] = 1000
+
     flux_factor = np.sqrt(slope) * mannings
 
     # Flux across the y direction
-    q_y = -slopey / flux_factor * pupwindy ** (5 / 3) * dx * ((dx*Wc_y_up)/(2*pupwindy*dx+Wc_y_up**2))**(2/3)
+    q_y = (
+        -slopey
+        / flux_factor
+        * pupwindy ** (5 / 3)
+        * dx
+        * ((dx * Wc_y_up) / (2 * pupwindy * dx + Wc_y_up**2)) ** (2 / 3)
+    )
 
     # Fix the lower y boundary
     # Use the slopes of the first row
@@ -525,7 +542,9 @@ def _overland_flow_kinematic_wc(
         -slopey[0, :]
         / flux_factor[0, :]
         * np.maximum(0, np.sign(slopey[0, :]) * pressure_top[0, :]) ** (5 / 3)
-        * dx * ((dx*Wc_y_up[0, :])/(2*pressure_top[0, :]*dx+Wc_y_up[0, :]**2))**(2/3)
+        * dx
+        * ((dx * Wc_y_up[0, :]) / (2 * pressure_top[0, :] * dx + Wc_y_up[0, :] ** 2))
+        ** (2 / 3)
     )
     qnorth = np.vstack([q_y0, q_y])
 
@@ -613,7 +632,11 @@ def calculate_overland_fluxes(
     pressure_top = np.nan_to_num(pressure_top)
     pressure_top[pressure_top < 0] = 0
 
-    assert flow_method in ("OverlandFlow", "OverlandKinematic", "OverlandKinematic_wc"), "Unknown flow method"
+    assert flow_method in (
+        "OverlandFlow",
+        "OverlandKinematic",
+        "OverlandKinematic_wc",
+    ), "Unknown flow method"
     if flow_method == "OverlandKinematic":
         if mask is None:
             mask = np.ones_like(pressure)
@@ -644,8 +667,8 @@ def calculate_overland_flow_grid(
     mannings,
     dx,
     dy,
-    Wc_x = None,
-    Wc_y = None,
+    Wc_x=None,
+    Wc_y=None,
     flow_method="OverlandKinematic",
     epsilon=1e-5,
     mask=None,
@@ -708,8 +731,8 @@ def calculate_overland_flow(
     mannings,
     dx,
     dy,
-    Wc_x = None,
-    Wc_y = None,
+    Wc_x=None,
+    Wc_y=None,
     flow_method="OverlandKinematic",
     epsilon=1e-5,
     mask=None,

@@ -2030,7 +2030,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       ForPatchCellsPerFace(OverlandKinematic_wcBC,
                            BeforeAllCells(
       {
-/*  Copied OverlandKinamtic case for OverlandKinematic_wc //ARP */ 
+/*  Copied OverlandKinamtic case for OverlandKinematic_wc //ARP */
         PFModuleInvokeType(OverlandFlowEvalKin_wcInvoke, overlandflow_module_kin_wc,
                            (grid, is, bc_struct, ipatch, problem_data, pressure,
                             ke_, kw_, kn_, ks_,
