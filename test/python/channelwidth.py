@@ -336,14 +336,18 @@ overland.TopoSlopesY.Geom.domain.Value = 0.01
 # # Channel width in x- and y- directions
 # #-----------------------------------------------------------------------------
 overland.Solver.Nonlinear.ChannelWidthExistX = True
-overland.ChannelWidthX.Type = 'Constant'
-overland.ChannelWidthX.GeomNames = 'domain'
-overland.ChannelWidthX.Geom.domain.Value = 9.5 #Channel width close to cell size (10) in non-channel direction
+overland.ChannelWidthX.Type = "Constant"
+overland.ChannelWidthX.GeomNames = "domain"
+overland.ChannelWidthX.Geom.domain.Value = (
+    9.5  # Channel width close to cell size (10) in non-channel direction
+)
 
 overland.Solver.Nonlinear.ChannelWidthExistY = True
-overland.ChannelWidthY.Type = 'Constant'
-overland.ChannelWidthY.GeomNames = 'domain'
-overland.ChannelWidthY.Geom.domain.Value = 1 #Channel width 1/10 cell size in channel direction
+overland.ChannelWidthY.Type = "Constant"
+overland.ChannelWidthY.GeomNames = "domain"
+overland.ChannelWidthY.Geom.domain.Value = (
+    1  # Channel width 1/10 cell size in channel direction
+)
 
 overland.Solver.PrintChannelWidth = True
 
@@ -362,15 +366,15 @@ overland.run(working_directory=new_output_dir_name)
 
 if runcheck == 1:
     passed = True
-    
+
     data_wcx = read_pfb(os.path.join(new_output_dir_name, f"{run_name}.out.wc_x.pfb"))
     data_wcy = read_pfb(os.path.join(new_output_dir_name, f"{run_name}.out.wc_y.pfb"))
     y_array = np.ones((1, 5, 5))
-    x_array = np.ones((1, 5, 5))*9.5
+    x_array = np.ones((1, 5, 5)) * 9.5
     if not np.array_equal(data_wcx, x_array) or not np.array_equal(data_wcy, y_array):
         print(f"{run_name} : FAILED")
         sys.exit(1)
-        
+
     for i in range(11):
         timestep = str(i).rjust(5, "0")
         filename = f"/{run_name}.out.press.{timestep}.pfb"

@@ -2161,8 +2161,8 @@ void    RichardsJacobianEval(
                              CellFinalize(DoNothing),
                              AfterAllCells(DoNothing)
                              ); /* End OverlandDiffusiveBC */
-          
-          ForPatchCellsPerFace(OverlandKinematic_wcBC,
+
+        ForPatchCellsPerFace(OverlandKinematic_wcBC,
                              BeforeAllCells(DoNothing),
                              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                              Locals(int io1, ip, itop, im, iitmp; ),
@@ -2531,7 +2531,7 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
     PFModuleReNewInstance((instance_xtra->overlandflow_module), ());     //DOK
     PFModuleReNewInstance((instance_xtra->overlandflow_module_diff), ());      //RMM-LEC
     PFModuleReNewInstance((instance_xtra->overlandflow_module_kin), ());
-      PFModuleReNewInstance((instance_xtra->overlandflow_module_kin_wc), ());
+    PFModuleReNewInstance((instance_xtra->overlandflow_module_kin_wc), ());
   }
 
 
@@ -2567,7 +2567,7 @@ void  RichardsJacobianEvalFreeInstanceXtra()
     FreeVector(instance_xtra->density_der);
 
     PFModuleFreeInstance(instance_xtra->overlandflow_module_kin);
-      PFModuleFreeInstance(instance_xtra->overlandflow_module_kin_wc);
+    PFModuleFreeInstance(instance_xtra->overlandflow_module_kin_wc);
     PFModuleFreeInstance(instance_xtra->overlandflow_module_diff);       //RMM-LEC
     PFModuleFreeInstance(instance_xtra->overlandflow_module);     //DOK
     PFModuleFreeInstance(instance_xtra->bc_internal);
