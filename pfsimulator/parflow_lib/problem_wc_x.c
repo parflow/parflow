@@ -101,7 +101,7 @@ void XChannelWidth(ProblemData *problem_data, Vector *wc_x, Vector *dummy)
 
   (void)dummy;
 
-  InitVectorAll(wc_x, 0.0);
+  InitVectorAll(wc_x, 1.0);
 
   if (public_xtra->wcx_exists == 1)
   {

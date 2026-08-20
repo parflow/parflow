@@ -315,6 +315,7 @@ Patch:
                 - OverlandKinematic
                 - OverlandDiffusive
                 - ExactSolution
+                - OverlandKinematic_wc
 
       Cycle:
         help: >

@@ -86,6 +86,7 @@
 #define SeepageFace      9
 #define OverlandKinematic 10
 #define OverlandDiffusive 11
+#define OverlandKinematic_wc 12
 /** @} */
 
 
@@ -94,52 +95,55 @@
  * These contain information for all interval steps to be read later
  * These structs will be local to the BCPressurePackage source file only
  *----------------------------------------------------------------*/
-#define BC_TYPE_TABLE                  \
-        BC_TYPE(DirEquilRefPatch, {    \
-    int reference_solid;               \
-    int reference_patch;               \
-    double *values;                    \
-    double **value_at_interface;       \
-  })                                   \
-        BC_TYPE(DirEquilPLinear, {     \
-    double *xlower;                    \
-    double *ylower;                    \
-    double *xupper;                    \
-    double *yupper;                    \
-    int    *num_points;                \
-    double **points;                   \
-    double **values;                   \
-    double **value_at_interface;       \
-  })                                   \
-        BC_TYPE(FluxConst, {           \
-    double *values;                    \
-  })                                   \
-        BC_TYPE(FluxVolumetric, {      \
-    double *values;                    \
-  })                                   \
-        BC_TYPE(PressureFile, {        \
-    char **filenames;                  \
-  })                                   \
-        BC_TYPE(FluxFile, {            \
-    char **filenames;                  \
-  })                                   \
-        BC_TYPE(ExactSolution, {       \
-    int function_type;                 \
-  })                                   \
-        BC_TYPE(OverlandFlow, {        \
-    double *values;                    \
-  })                                   \
-        BC_TYPE(OverlandFlowPFB, {     \
-    char **filenames;                  \
-  })                                   \
-        BC_TYPE(SeepageFace, {         \
-    double *values;                    \
-  })                                   \
-        BC_TYPE(OverlandKinematic, {   \
-    double *values;                    \
-  })                                   \
-        BC_TYPE(OverlandDiffusive, {   \
-    double *values;                    \
+#define BC_TYPE_TABLE                   \
+        BC_TYPE(DirEquilRefPatch, {     \
+    int reference_solid;                \
+    int reference_patch;                \
+    double *values;                     \
+    double **value_at_interface;        \
+  })                                    \
+        BC_TYPE(DirEquilPLinear, {      \
+    double *xlower;                     \
+    double *ylower;                     \
+    double *xupper;                     \
+    double *yupper;                     \
+    int    *num_points;                 \
+    double **points;                    \
+    double **values;                    \
+    double **value_at_interface;        \
+  })                                    \
+        BC_TYPE(FluxConst, {            \
+    double *values;                     \
+  })                                    \
+        BC_TYPE(FluxVolumetric, {       \
+    double *values;                     \
+  })                                    \
+        BC_TYPE(PressureFile, {         \
+    char **filenames;                   \
+  })                                    \
+        BC_TYPE(FluxFile, {             \
+    char **filenames;                   \
+  })                                    \
+        BC_TYPE(ExactSolution, {        \
+    int function_type;                  \
+  })                                    \
+        BC_TYPE(OverlandFlow, {         \
+    double *values;                     \
+  })                                    \
+        BC_TYPE(OverlandFlowPFB, {      \
+    char **filenames;                   \
+  })                                    \
+        BC_TYPE(SeepageFace, {          \
+    double *values;                     \
+  })                                    \
+        BC_TYPE(OverlandKinematic, {    \
+    double *values;                     \
+  })                                    \
+        BC_TYPE(OverlandDiffusive, {    \
+    double *values;                     \
+  })                                    \
+        BC_TYPE(OverlandKinematic_wc, { \
+    double *values;                     \
   })
 
 
@@ -191,52 +195,55 @@
  *       the type struct definitions, with one less reference level.
  *       Could use C++ std::remove_pointer to only need one table def.
  *----------------------------------------------------------------*/
-#define BC_INTERVAL_TYPE_TABLE         \
-        BC_TYPE(DirEquilRefPatch, {    \
-    int reference_solid;               \
-    int reference_patch;               \
-    double value;                      \
-    double *value_at_interfaces;       \
-  })                                   \
-        BC_TYPE(DirEquilPLinear, {     \
-    double xlower;                     \
-    double ylower;                     \
-    double xupper;                     \
-    double yupper;                     \
-    int num_points;                    \
-    double *points;                    \
-    double *values;                    \
-    double *value_at_interfaces;       \
-  })                                   \
-        BC_TYPE(FluxConst, {           \
-    double value;                      \
-  })                                   \
-        BC_TYPE(FluxVolumetric, {      \
-    double value;                      \
-  })                                   \
-        BC_TYPE(PressureFile, {        \
-    char *filename;                    \
-  })                                   \
-        BC_TYPE(FluxFile, {            \
-    char *filename;                    \
-  })                                   \
-        BC_TYPE(ExactSolution, {       \
-    int function_type;                 \
-  })                                   \
-        BC_TYPE(OverlandFlow, {        \
-    double value;                      \
-  })                                   \
-        BC_TYPE(OverlandFlowPFB, {     \
-    char *filename;                    \
-  })                                   \
-        BC_TYPE(SeepageFace, {         \
-    double value;                      \
-  })                                   \
-        BC_TYPE(OverlandKinematic, {   \
-    double value;                      \
-  })                                   \
-        BC_TYPE(OverlandDiffusive, {   \
-    double value;                      \
+#define BC_INTERVAL_TYPE_TABLE          \
+        BC_TYPE(DirEquilRefPatch, {     \
+    int reference_solid;                \
+    int reference_patch;                \
+    double value;                       \
+    double *value_at_interfaces;        \
+  })                                    \
+        BC_TYPE(DirEquilPLinear, {      \
+    double xlower;                      \
+    double ylower;                      \
+    double xupper;                      \
+    double yupper;                      \
+    int num_points;                     \
+    double *points;                     \
+    double *values;                     \
+    double *value_at_interfaces;        \
+  })                                    \
+        BC_TYPE(FluxConst, {            \
+    double value;                       \
+  })                                    \
+        BC_TYPE(FluxVolumetric, {       \
+    double value;                       \
+  })                                    \
+        BC_TYPE(PressureFile, {         \
+    char *filename;                     \
+  })                                    \
+        BC_TYPE(FluxFile, {             \
+    char *filename;                     \
+  })                                    \
+        BC_TYPE(ExactSolution, {        \
+    int function_type;                  \
+  })                                    \
+        BC_TYPE(OverlandFlow, {         \
+    double value;                       \
+  })                                    \
+        BC_TYPE(OverlandFlowPFB, {      \
+    char *filename;                     \
+  })                                    \
+        BC_TYPE(SeepageFace, {          \
+    double value;                       \
+  })                                    \
+        BC_TYPE(OverlandKinematic, {    \
+    double value;                       \
+  })                                    \
+        BC_TYPE(OverlandDiffusive, {    \
+    double value;                       \
+  })                                    \
+        BC_TYPE(OverlandKinematic_wc, { \
+    double value;                       \
   })
 
 
@@ -372,6 +379,9 @@ typedef struct {
 /*--------------------------------------------------------------------------*/
     #define OverlandDiffusiveValue(patch) \
             ((patch)->value)
+/*--------------------------------------------------------------------------*/
+  #define OverlandKinematic_wcValue(patch) \
+          ((patch)->value)
 /*--------------------------------------------------------------------------
  * Accessor macros: BCPressureData
  *--------------------------------------------------------------------------*/
