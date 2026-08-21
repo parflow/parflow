@@ -56,6 +56,39 @@ set_property(
     PROPERTY STRINGS none cuda kokkos omp
 )
 
+# v1 reactive-transport chemistry is CPU-only (CLAUDE.md hard constraint).
+# Pure flag check, placed before backend initialization and before
+# find_package(Alquimia), so the flag combination alone produces this
+# message -- even on a machine without CUDA/Kokkos installed.
+if(
+    PARFLOW_ENABLE_ALQUIMIA
+    AND (
+        (PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
+        OR (PARFLOW_ACCELERATOR_BACKEND STREQUAL "kokkos")
+    )
+)
+    message(
+        FATAL_ERROR
+        "PARFLOW_ENABLE_ALQUIMIA=ON is not supported with the "
+        "'${PARFLOW_ACCELERATOR_BACKEND}' accelerator backend: v1 "
+        "reactive-transport chemistry is CPU-only. Configure with "
+        "PARFLOW_ACCELERATOR_BACKEND=none (or omp), or disable Alquimia."
+    )
+endif()
+
+# v1 chemistry is C-compiled; the 2021 chem sources are not assumed
+# C++-clean (CLAUDE.md hard constraint). Same fatal-error style,
+# regardless of backend.
+if(PARFLOW_ENABLE_ALQUIMIA AND PARFLOW_BUILD_WITH_CPP)
+    message(
+        FATAL_ERROR
+        "PARFLOW_ENABLE_ALQUIMIA=ON is not supported with "
+        "PARFLOW_BUILD_WITH_CPP: v1 reactive-transport chemistry is "
+        "C-compiled. Build without PARFLOW_BUILD_WITH_CPP, or disable "
+        "Alquimia."
+    )
+endif()
+
 if(PARFLOW_ACCELERATOR_BACKEND STREQUAL "none")
 elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
     message(STATUS "ACCELERATOR: CUDA backend selected")
@@ -397,6 +430,27 @@ if(${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
         set(HAVE_SILO ${PARFLOW_HAVE_SILO})
     endif(${SILO_FOUND})
 endif(${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
+
+#-----------------------------------------------------------------------------
+# Alquimia (reactive-transport geochemistry; react_trans port)
+#-----------------------------------------------------------------------------
+option(
+    PARFLOW_ENABLE_ALQUIMIA
+    "Build with Alquimia reactive-transport chemistry (CPU only)"
+    "OFF"
+)
+if(${PARFLOW_ENABLE_ALQUIMIA})
+    find_package(Alquimia)
+    if(${ALQUIMIA_FOUND})
+        set(PARFLOW_HAVE_ALQUIMIA "yes")
+        set(HAVE_ALQUIMIA ${PARFLOW_HAVE_ALQUIMIA})
+    else(${ALQUIMIA_FOUND})
+        message(
+            FATAL_ERROR
+            "Alquimia not found, set PARFLOW_ALQUIMIA_ROOT to the install prefix of an Alquimia built with your geochemistry engine (CrunchFlow and/or PFLOTRAN)"
+        )
+    endif(${ALQUIMIA_FOUND})
+endif(${PARFLOW_ENABLE_ALQUIMIA})
 
 #-----------------------------------------------------------------------------
 # NetCDF

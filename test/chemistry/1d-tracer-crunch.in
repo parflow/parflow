@@ -1,0 +1,87 @@
+TITLE
+Tracer simulation Amanzi tracer_1d benchmark - S. Molins March 23, 2015
+END
+
+RUNTIME
+time_units      years
+timestep_max    1.0
+timestep_init   1.E-10
+time_tolerance  0.01
+correction_max  1.0
+debye-huckel    true
+database        tracer.dbs
+master          tracer
+speciate_only   false
+database_sweep  false
+screen_output   10
+graphics        tecplot
+gimrt           false
+hindmarsh       false
+duan            false
+END
+
+OUTPUT
+time_units               years
+spatial_profile          10 20 30 40 50
+END
+
+PRIMARY_SPECIES
+tracer
+END
+
+SECONDARY_SPECIES 
+END
+
+GASES
+END
+
+Condition initial
+units     mol/kg
+temperature      25.0
+tracer                1.0d-10
+END
+
+Condition west
+units     mol/kg
+temperature      25.0
+tracer                0.001
+END
+ 
+POROSITY
+fix_porosity     0.25
+porosity_update  false
+END
+ 
+TEMPERATURE
+set_temperature  25.0
+RunIsothermal   true
+END
+
+DISCRETIZATION
+distance_units  meters
+xzones 100      1.0
+END
+
+INITIAL_CONDITIONS
+initial     1-100
+END
+
+BOUNDARY_CONDITIONS
+X_begin   west     Flux
+X_end     initial  Flux
+END
+
+FLOW
+time_units      seconds
+distance_units  meters 
+constant_flow   7.9274479960d-9  ! m/s
+END
+
+TRANSPORT
+distance_units meters
+time_units     second
+fix_diffusion  1.E-09 ! m2/s
+formation_factor  1.0  
+cementation_exponent  1.0
+dispersivity  0.0 0.0
+END
