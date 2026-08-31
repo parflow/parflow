@@ -86,6 +86,7 @@
 #define SeepageFace      9
 #define OverlandKinematic 10
 #define OverlandDiffusive 11
+#define DeepAquifer      12
 /** @} */
 
 
@@ -140,6 +141,9 @@
   })                                   \
         BC_TYPE(OverlandDiffusive, {   \
     double *values;                    \
+  })                                   \
+        BC_TYPE(DeepAquifer, {         \
+    int is_initialized;                \
   })
 
 
@@ -237,6 +241,8 @@
   })                                   \
         BC_TYPE(OverlandDiffusive, {   \
     double value;                      \
+  })                                   \
+        BC_TYPE(DeepAquifer, {         \
   })
 
 
