@@ -193,21 +193,31 @@ void    OverlandFlowEvalKin_wc(
                          pfmax((PP_ippsy), 0.0));
 
         Wc_x = PMean(
-                     pfmax((wcx_dat[io]), 0.0),
-                     pfmax((wcx_dat[iop1]), 0.0));
+                     pfmin((wcx_dat[io]), dy),
+                     pfmin((wcx_dat[iop1]), dy));
 
-        if (wcx_dat[iop1] > dx)
+        if (wcx_dat[iop1] > dy)
         {
           Wc_x = wcx_dat[io];
         }
 
-        Wc_y = PMean(
-                     pfmax((wcy_dat[io]), 0.0),
-                     pfmax((wcy_dat[iopsy]), 0.0));
+        if (Wc_x == 0.0)
+        {
+          Wc_x = dy;
+        }
 
-        if (wcy_dat[iopsy] > dy)
+        Wc_y = PMean(
+                     pfmin((wcy_dat[io]), dy),
+                     pfmin((wcy_dat[iopsy]), dy));
+
+        if (wcy_dat[iopsy] > dx)
         {
            Wc_y = wcy_dat[io];
+        }
+
+        if (Wc_y == 0.0)
+        {
+           Wc_y = dx;
         }
 
         qx_v[io] = -(Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]))
@@ -394,19 +404,31 @@ void    OverlandFlowEvalKin_wc(
                          pfmax((pp[ippsy]), 0.0));
 
         Wc_x = PMean(
-                     pfmax((wcx_dat[io]), 0.0),
-                     pfmax((wcx_dat[iop1]), 0.0));
-        if (wcx_dat[iop1] > dx)
+                     pfmin((wcx_dat[io]), dy),
+                     pfmin((wcx_dat[iop1]), dy));
+
+        if (wcx_dat[iop1] > dy)
         {
           Wc_x = wcx_dat[io];
         }
-        Wc_y = PMean(
-                     pfmax((wcy_dat[io]), 0.0),
-                     pfmax((wcy_dat[iopsy]), 0.0));
 
-        if (wcy_dat[iopsy] > dy)
+        if (Wc_x == 0.0)
         {
-          Wc_y = wcy_dat[io];
+          Wc_x = dy;
+        }
+
+        Wc_y = PMean(
+                     pfmin((wcy_dat[io]), dy),
+                     pfmin((wcy_dat[iopsy]), dy));
+
+        if (wcy_dat[iopsy] > dx)
+        {
+           Wc_y = wcy_dat[io];
+        }
+
+        if (Wc_y == 0.0)
+        {
+           Wc_y = dx;
         }
 
         qx_temp = -(Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]))
