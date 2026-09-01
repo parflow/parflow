@@ -205,6 +205,11 @@ void    OverlandFlowEvalKin_wc(
                      pfmax((wcy_dat[io]), 0.0),
                      pfmax((wcy_dat[iopsy]), 0.0));
 
+        if (wcy_dat[iopsy] > dy)
+        {
+           Wc_y = wcy_dat[io];
+        }
+
         qx_v[io] = -(Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]))
                    * RPowerR(Press_x, (5.0 / 3.0))
                    * RPowerR(dy * Wc_x / (2 * Press_x * dy + RPowerR(Wc_x, 2.0)), (2.0 / 3.0));
@@ -398,6 +403,11 @@ void    OverlandFlowEvalKin_wc(
         Wc_y = PMean(
                      pfmax((wcy_dat[io]), 0.0),
                      pfmax((wcy_dat[iopsy]), 0.0));
+
+        if (wcy_dat[iopsy] > dy)
+        {
+          Wc_y = wcy_dat[io];
+        }
 
         qx_temp = -(Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]))
                   * RPowerR(Wc_x, (2.0 / 3.0)) * RPowerR(dy, (2.0 / 3.0)) *
