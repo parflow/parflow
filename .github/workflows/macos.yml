@@ -100,7 +100,7 @@ jobs:
       if: matrix.config.netcdf == 'true'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          URL=https://github.com/Unidata/netcdf-c/archive/v4.9.2.tar.gz
+          URL=https://github.com/Unidata/netcdf-c/archive/v4.10.0.tar.gz
           mkdir netcdf-c
           cd netcdf-c
           curl -L $URL | tar --strip-components=1 -xz
@@ -109,7 +109,7 @@ jobs:
           make install
           cd ..
 
-          URL=https://github.com/Unidata/netcdf-fortran/archive/v4.5.4.tar.gz
+          URL=https://github.com/Unidata/netcdf-fortran/archive/v4.6.1.tar.gz
           mkdir netcdf-fortran
           cd netcdf-fortran
           curl -L $URL | tar --strip-components=1 -xz
