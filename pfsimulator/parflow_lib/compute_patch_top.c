@@ -116,7 +116,7 @@ void ComputePatchTop(Problem *    problem,      /* General problem information *
                              FACE(BackFace, DoNothing),
                              FACE(FrontFace,
         {
-          if (index_top_data[index2d] => 0)
+          if (index_top_data[index2d] >= 0)
           {
             current_patch_index = ipatch;
           }
