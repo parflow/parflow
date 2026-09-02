@@ -6,7 +6,7 @@ import os
 import parflow
 from parflow import Run
 from parflow.tools.fs import mkdir, cp, get_absolute_path
-from parflow.tools.compare import pf_test_file_with_abs
+from parflow.tools.compare import pf_test_file_with_abs, pf_test_file
 import sys
 import numpy as np
 
@@ -247,6 +247,7 @@ overland.Solver.WriteSiloSlopes = False
 overland.Solver.WriteSiloSaturation = False
 overland.Solver.WriteSiloConcentration = False
 
+overland.Solver.PrintTop = True
 
 # ---------------------------------------------------------
 # Initial conditions: water pressure
@@ -356,6 +357,17 @@ for test_file in test_files:
         sig_digits,
     ):
         passed = False
+
+test_files = ["top_patch", "top_zindex"]
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.pfb"
+    if not pf_test_file(
+        run_dir + filename,
+        correct_output_dir + filename,
+        f"Max difference in {test_file}",
+    ):
+        passed = False
+        
 
 
 if passed:
