@@ -100,7 +100,7 @@ jobs:
       if: matrix.config.netcdf == 'true'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          URL=https://github.com/Unidata/netcdf-c/archive/v4.9.0.tar.gz
+          URL=https://github.com/Unidata/netcdf-c/archive/v4.9.2.tar.gz
           mkdir netcdf-c
           cd netcdf-c
           curl -L $URL | tar --strip-components=1 -xz
