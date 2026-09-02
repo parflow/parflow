@@ -367,8 +367,6 @@ for test_file in test_files:
         f"Max difference in {test_file}",
     ):
         passed = False
-        
-
 
 if passed:
     print(f"{run_name} : PASSED")
