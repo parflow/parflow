@@ -818,3 +818,46 @@
    ...
    fun:hwloc_discover_by_phase.isra.0
 }
+
+########################################################################
+#
+# HYPRE 
+#
+##############################################################################
+
+# Hypre logging references uninitialized values
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:hypre_printf
+   fun:hypre_PFMGPrintLogging
+   fun:hypre_PFMGSolve
+   fun:PFMGOctree
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   fun:hypre_printf
+   fun:hypre_PFMGPrintLogging
+   fun:hypre_PFMGSolve
+   fun:PFMGOctree
+   ...
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   write(buf)
+   ...
+   fun:hypre_printf
+   fun:hypre_PFMGPrintLogging
+   fun:hypre_PFMGSolve
+   fun:PFMGOctree
+   fun:KinsolPC
+   ...
+}

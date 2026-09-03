@@ -31,7 +31,7 @@ extern double epslon_(double *x);
   integer i, j, k;
   doublereal p, q, r, s, delta;
   integer k1, ii, jj;
-  doublereal ep, qp;
+  doublereal ep, qp = 0;
   doublereal err, tot;
 
 
