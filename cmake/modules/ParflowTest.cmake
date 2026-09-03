@@ -193,13 +193,12 @@ function(pf_add_py_test test_name)
     add_test(
         NAME "py_${test_name}"
         COMMAND
-            ${CMAKE_COMMAND}
-            -DPARFLOW_PYTHON=${PARFLOW_PYTHON}
+            ${CMAKE_COMMAND} -DPARFLOW_PYTHON=${PARFLOW_PYTHON}
             -DPYTHON_TEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.py
             -DPYTHONPATH=${PROJECT_BINARY_DIR}/pftools/python:$ENV{PYTHONPATH}
             -DPF_SRC=${PROJECT_SOURCE_DIR}
-            -DPARFLOW_HAVE_SILO=${PARFLOW_HAVE_SILO}
-            -P ${CMAKE_SOURCE_DIR}/cmake/modules/RunPythonTest.cmake
+            -DPARFLOW_HAVE_SILO=${PARFLOW_HAVE_SILO} -P
+            ${CMAKE_SOURCE_DIR}/cmake/modules/RunPythonTest.cmake
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
     set_tests_properties("py_${test_name}" PROPERTIES TIMEOUT 3600)
@@ -217,8 +216,8 @@ function(pf_add_py_test test_name)
                 -DPYTHON_TEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.py
                 -DPYTHONPATH=${PROJECT_BINARY_DIR}/pftools/python:$ENV{PYTHONPATH}
                 -DPF_SRC=${PROJECT_SOURCE_DIR}
-                -DPARFLOW_HAVE_SILO=${PARFLOW_HAVE_SILO}
-                -P ${CMAKE_SOURCE_DIR}/cmake/modules/RunPythonTest.cmake
+                -DPARFLOW_HAVE_SILO=${PARFLOW_HAVE_SILO} -P
+                ${CMAKE_SOURCE_DIR}/cmake/modules/RunPythonTest.cmake
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         )
         set_tests_properties("py_${test_name}_memcheck" PROPERTIES TIMEOUT 7200)
@@ -233,14 +232,13 @@ function(pf_add_py_parallel_test test_name topology_P topology_Q topology_R)
     add_test(
         NAME "py_${test_name}_${topology_P}_${topology_Q}_${topology_R}"
         COMMAND
-            ${CMAKE_COMMAND}
-            -DPARFLOW_PYTHON=${PARFLOW_PYTHON}
+            ${CMAKE_COMMAND} -DPARFLOW_PYTHON=${PARFLOW_PYTHON}
             -DPYTHON_TEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.py
             "-DPYTHON_TEST_ARGS=${py_args}"
             -DPYTHONPATH=${PROJECT_BINARY_DIR}/pftools/python:$ENV{PYTHONPATH}
             -DPF_SRC=${PROJECT_SOURCE_DIR}
-            -DPARFLOW_HAVE_SILO=${PARFLOW_HAVE_SILO}
-            -P ${CMAKE_SOURCE_DIR}/cmake/modules/RunPythonTest.cmake
+            -DPARFLOW_HAVE_SILO=${PARFLOW_HAVE_SILO} -P
+            ${CMAKE_SOURCE_DIR}/cmake/modules/RunPythonTest.cmake
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
     set_tests_properties(
@@ -251,7 +249,8 @@ function(pf_add_py_parallel_test test_name topology_P topology_Q topology_R)
     # Memcheck variant (only if valgrind is enabled)
     if(${PARFLOW_HAVE_MEMORYCHECK})
         add_test(
-            NAME "py_${test_name}_${topology_P}_${topology_Q}_${topology_R}_memcheck"
+            NAME
+                "py_${test_name}_${topology_P}_${topology_Q}_${topology_R}_memcheck"
             COMMAND
                 ${CMAKE_COMMAND}
                 -DPARFLOW_HAVE_MEMORYCHECK=${PARFLOW_HAVE_MEMORYCHECK}
@@ -262,8 +261,8 @@ function(pf_add_py_parallel_test test_name topology_P topology_Q topology_R)
                 "-DPYTHON_TEST_ARGS=${py_args}"
                 -DPYTHONPATH=${PROJECT_BINARY_DIR}/pftools/python:$ENV{PYTHONPATH}
                 -DPF_SRC=${PROJECT_SOURCE_DIR}
-                -DPARFLOW_HAVE_SILO=${PARFLOW_HAVE_SILO}
-                -P ${CMAKE_SOURCE_DIR}/cmake/modules/RunPythonTest.cmake
+                -DPARFLOW_HAVE_SILO=${PARFLOW_HAVE_SILO} -P
+                ${CMAKE_SOURCE_DIR}/cmake/modules/RunPythonTest.cmake
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         )
         set_tests_properties(
