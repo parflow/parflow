@@ -1373,6 +1373,7 @@ double PFVMaxNorm(Vector *x);
 double PFVWrmsNorm(Vector *x, Vector *w);
 double PFVWL2Norm(Vector *x, Vector *w);
 double PFVL1Norm(Vector *x);
+void PFVKINAtimesDQFusedReduce(Vector *uu, Vector *v, Vector *uscale, double *sutsv, double *vtv, double *sq1norm);
 double PFVMin(Vector *x);
 double PFVMax(Vector *x);
 int PFVConstrProdPos(Vector *c, Vector *x);

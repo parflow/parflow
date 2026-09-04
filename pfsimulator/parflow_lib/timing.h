@@ -31,9 +31,23 @@
 *
 *****************************************************************************/
 
+#include "backend_mapping.h"
+
 #ifndef _TIMING_HEADER
 #define _TIMING_HEADER
 
+#if defined(PARFLOW_HAVE_LIKWID)
+#include <likwid-marker.h>
+#else
+#define LIKWID_MARKER_INIT
+#define LIKWID_MARKER_THREADINIT
+#define LIKWID_MARKER_SWITCH
+#define LIKWID_MARKER_REGISTER(regionTag)
+#define LIKWID_MARKER_START(regionTag)
+#define LIKWID_MARKER_STOP(regionTag)
+#define LIKWID_MARKER_CLOSE
+#define LIKWID_MARKER_GET(regionTag, nevents, events, time, count)
+#endif
 
 /*--------------------------------------------------------------------------
  * With timing on
@@ -51,11 +65,27 @@
 #define ClusteringTimingIndex 9
 #define NetcdfTimingIndex 10
 #define PDITimingIndex  11
+#define FluxBaseTimingIndex 12
+#define FluxCompressibleStorageTimingIndex 13
+#define FluxSourceTermsTimingIndex 14
+#define RbgsTimingIndex 15
+#define RbgsZeroOptiTimingIndex 16
+#define RbgsSevenPointTimingIndex 17
+#define VDotProductTimingIndex 18
+#define VectorUtilityRoutineIndex 19
+#define KINAtimesDQFusedReduceTimingIndex 20
+#define FluxFusedBaseAndCompressibleStorageTimingIndex 21
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  12
+#define VectorUpdateTimingIndex 22
 #endif
 
-
+/*--------------------------------------------------------------------------
+ * Sentinel value for optional timing indices
+ * Call sites that do not want a particular call to be timed pass
+ * NoTimingIndex, which BeginTiming()/EndTiming() recognize and turn into
+ * a no-op.
+ *--------------------------------------------------------------------------*/
+#define NoTimingIndex -1
 
 #if defined(PF_TIMING)
 /*--------------------------------------------------------------------------
@@ -68,6 +98,7 @@ typedef struct {
   amps_Clock_t     *time;
   amps_CPUClock_t  *cpu_time;
   FLOPType         *flops;
+  int              *num_completions;
   char            **name;
 
   int size;
@@ -89,16 +120,17 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
  * Accessor functions
  *--------------------------------------------------------------------------*/
 
-#define TimingTime(i)    (timing->time[(i)])
-#define TimingCPUTime(i) (timing->cpu_time[(i)])
-#define TimingFLOPS(i)   (timing->flops[(i)])
-#define TimingName(i)    (timing->name[(i)])
+#define TimingTime(i)      (timing->time[(i)])
+#define TimingCPUTime(i)   (timing->cpu_time[(i)])
+#define TimingFLOPS(i)     (timing->flops[(i)])
+#define TimingCompleted(i) (timing->num_completions[(i)])
+#define TimingName(i)      (timing->name[(i)])
 
-#define TimingSize       (timing->size)
+#define TimingSize         (timing->size)
 
-#define TimingTimeCount  (timing->time_count)
-#define TimingCPUCount   (timing->CPU_count)
-#define TimingFLOPCount  (timing->FLOP_count)
+#define TimingTimeCount    (timing->time_count)
+#define TimingCPUCount     (timing->CPU_count)
+#define TimingFLOPCount    (timing->FLOP_count)
 
 /*--------------------------------------------------------------------------
  * Timing macros
@@ -111,33 +143,48 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
         TimingCPUCount += amps_CPUClock()
 
 #ifdef TIMING_WITH_SYNC
-#define BeginTiming(i)                        \
-        {                                     \
-          StopTiming();                       \
-          TimingTime(i) -= TimingTimeCount;   \
-          TimingCPUTime(i) -= TimingCPUCount; \
-          TimingFLOPS(i) -= TimingFLOPCount;  \
-          amps_Sync(amps_CommWorld);          \
-          StartTiming();                      \
+#define BeginTiming(i)                           \
+        {                                        \
+          if ((i) != NoTimingIndex)              \
+          {                                      \
+            StopTiming();                        \
+            TimingTime(i) -= TimingTimeCount;    \
+            TimingCPUTime(i) -= TimingCPUCount;  \
+            TimingFLOPS(i) -= TimingFLOPCount;   \
+            PARALLEL_SYNC;                       \
+            amps_Sync(amps_CommWorld);           \
+            StartTiming();                       \
+            LIKWID_MARKER_START(TimingName(i));  \
+          }                                      \
         }
 #else
-#define BeginTiming(i)                        \
-        {                                     \
-          StopTiming();                       \
-          TimingTime(i) -= TimingTimeCount;   \
-          TimingCPUTime(i) -= TimingCPUCount; \
-          TimingFLOPS(i) -= TimingFLOPCount;  \
-          StartTiming();                      \
+#define BeginTiming(i)                           \
+        {                                        \
+          if ((i) != NoTimingIndex)              \
+          {                                      \
+            StopTiming();                        \
+            TimingTime(i) -= TimingTimeCount;    \
+            TimingCPUTime(i) -= TimingCPUCount;  \
+            TimingFLOPS(i) -= TimingFLOPCount;   \
+            StartTiming();                       \
+            LIKWID_MARKER_START(TimingName(i));  \
+          }                                      \
         }
 #endif
 
-#define EndTiming(i)                          \
-        {                                     \
-          StopTiming();                       \
-          TimingTime(i) += TimingTimeCount;   \
-          TimingCPUTime(i) += TimingCPUCount; \
-          TimingFLOPS(i) += TimingFLOPCount;  \
-          StartTiming();                      \
+#define EndTiming(i)                             \
+        {                                        \
+          if ((i) != NoTimingIndex)              \
+          {                                      \
+            PARALLEL_SYNC;                       \
+            StopTiming();                        \
+            TimingTime(i) += TimingTimeCount;    \
+            TimingCPUTime(i) += TimingCPUCount;  \
+            TimingFLOPS(i) += TimingFLOPCount;   \
+            TimingCompleted(i) += 1;             \
+            StartTiming();                       \
+            LIKWID_MARKER_STOP(TimingName(i));   \
+          }                                      \
         }
 
 #ifdef VECTOR_UPDATE_TIMING

@@ -84,6 +84,9 @@
 #define EVALUATOR(x, y) PASTER(x, y)
 #define CHOOSE_BACKEND(name, id) EVALUATOR(name, id)
 
+#define GrGeomInLoopBoxes_IMPL_PASTE(id) GrGeomInLoopBoxes ## id ## _IMPL
+#define GrGeomInLoopBoxes_IMPL_EVAL(id) GrGeomInLoopBoxes_IMPL_PASTE(id)
+
 // Memory management
 
 #if defined(talloc_amps_cuda) || defined(talloc_amps_kokkos) || defined(talloc_amps_omp)
@@ -236,8 +239,10 @@
 
 #if defined(GrGeomInLoopBoxes_cuda) || defined(GrGeomInLoopBoxes_kokkos) || defined(GrGeomInLoopBoxes_omp)
   #define GrGeomInLoopBoxes CHOOSE_BACKEND(DEFER(GrGeomInLoopBoxes), ACC_ID)
+  #define GrGeomInLoopBoxes_IMPL GrGeomInLoopBoxes_IMPL_EVAL(ACC_ID)
 #else
   #define GrGeomInLoopBoxes GrGeomInLoopBoxes_default
+  #define GrGeomInLoopBoxes_IMPL GrGeomInLoopBoxes_default_IMPL
 #endif
 
 #if defined(GrGeomSurfLoopBoxes_cuda) || defined(GrGeomSurfLoopBoxes_kokkos) || defined(GrGeomSurfLoopBoxes_omp)

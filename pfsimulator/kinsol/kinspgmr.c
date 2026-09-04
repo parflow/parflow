@@ -486,6 +486,10 @@ static int KINSpgmrAtimesDQ(void *kinsol_mem, N_Vector v, N_Vector z)
 
   kin_mem = (KINMem)kinsol_mem;
 
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+  // fused single-pass computation of sutsv, vtv, and sq1norm below
+  PFVKINAtimesDQFusedReduce(uu, v, uscale, &sutsv, &vtv, &sq1norm);
+#else
   /* scale the vector v ,   Du * v is put into vtemp1 */
   N_VProd(v, uscale, vtemp1);
   /*  scale uu and put into z used as a temporary */
@@ -498,6 +502,7 @@ static int KINSpgmrAtimesDQ(void *kinsol_mem, N_Vector v, N_Vector z)
   vtv = N_VDotProd(vtemp1, vtemp1);
 
   sq1norm = N_VL1Norm(vtemp1);
+#endif
 
   sign = (sutsv >= ZERO) ? ONE : -ONE;
 
