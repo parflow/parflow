@@ -446,9 +446,8 @@ def _overland_flow_kinematic_wc(
             ),
             (0, 1),
         ),
-        mode='edge',
+        constant_values=1000,
     )  # pad right
-    
     Wc_x_up = (2 * Wc_x * Wc_x_pad) / (Wc_x + Wc_x_pad)
 
     Wc_x_up[Wc_x_up == 0] = 1000
@@ -518,7 +517,7 @@ def _overland_flow_kinematic_wc(
             ),
             (0, 0),
         ),
-        mode='edge',
+        constant_values=1000,
     )  # pad right
     Wc_y_up = (2 * Wc_y * Wc_y_pad) / (Wc_y + Wc_y_pad)
 
@@ -646,11 +645,11 @@ def calculate_overland_fluxes(
     elif flow_method == "OverlandKinematic_wc":
         if mask is None:
             mask = np.ones_like(pressure)
-        mask = np.where(mask > 0, 1, 0)
         if Wc_x is None:
             Wc_x = np.ones_like(pressure)*dy
         if Wc_y is None:
             Wc_y = np.ones_like(pressure)*dx
+        mask = np.where(mask > 0, 1, 0)
         qeast, qnorth = _overland_flow_kinematic_wc(
             mask, pressure_top, slopex, slopey, mannings, dx, dy, np.squeeze(Wc_x), np.squeeze(Wc_y), epsilon
         )
