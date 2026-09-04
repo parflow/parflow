@@ -161,6 +161,7 @@ typedef struct {
   double surface_predictor_pressure;  /* surface predictor pressure value RMM */
   int surface_predictor_print;  /* key to turn on surface predictor printing RMM */
   int surface_lateral_flows;          /* enable surface lateral flow prediction */
+  int overland_only;          /* route overland flow with inactive subsurface */
 
 
 #ifdef HAVE_CLM                 /* VARIABLES FOR CLM ONLY */
@@ -294,6 +295,86 @@ typedef struct {
   char *nc_evap_trans_filename; /* NetCDF File name for evap trans */
 } PublicXtra;
 
+static void ValidateOverlandOnlyInput(PublicXtra *public_xtra)
+{
+  char *names;
+  char *patch_name;
+  char key[IDB_MAX_KEY_LEN];
+  char *switch_name;
+  NameArray patch_na;
+  int i;
+  int num_patches;
+  int has_overland_bc = FALSE;
+
+  if (!public_xtra->overland_only)
+  {
+    return;
+  }
+
+  if (public_xtra->lsm != 0)
+  {
+    InputError("Solver.OverlandOnly is incompatible with Solver.LSM = CLM%s%s\n", "", "");
+  }
+
+  if (public_xtra->spinup)
+  {
+    InputError("Solver.OverlandOnly is incompatible with Solver.Spinup%s%s\n", "", "");
+  }
+
+  if (public_xtra->reset_surface_pressure)
+  {
+    InputError("Solver.OverlandOnly is incompatible with Solver.ResetSurfacePressure%s%s\n", "", "");
+  }
+
+  if (public_xtra->surface_predictor)
+  {
+    InputError("Solver.OverlandOnly is incompatible with Solver.SurfacePredictor%s%s\n", "", "");
+  }
+
+  names = GetStringDefault("Wells.Names", "");
+  if (strlen(names) > 0)
+  {
+    InputError("Solver.OverlandOnly is incompatible with Wells.Names%s%s\n", "", "");
+  }
+
+  names = GetStringDefault("Reservoirs.Names", "");
+  if (strlen(names) > 0)
+  {
+    InputError("Solver.OverlandOnly is incompatible with Reservoirs.Names%s%s\n", "", "");
+  }
+
+  names = GetStringDefault("BCPressure.PatchNames", "");
+  patch_na = NA_NewNameArray(names);
+  num_patches = NA_Sizeof(patch_na);
+
+  for (i = 0; i < num_patches; i++)
+  {
+    patch_name = NA_IndexToName(patch_na, i);
+    sprintf(key, "Patch.%s.BCPressure.Type", patch_name);
+    switch_name = GetString(key);
+
+    if (!strcmp(switch_name, "OverlandFlow")
+        || !strcmp(switch_name, "OverlandFlowPFB")
+        || !strcmp(switch_name, "OverlandKinematic")
+        || !strcmp(switch_name, "OverlandDiffusive"))
+    {
+      has_overland_bc = TRUE;
+    }
+    else if (!strcmp(switch_name, "FluxFile"))
+    {
+      NA_FreeNameArray(patch_na);
+      InputError("Solver.OverlandOnly does not support FluxFile as an overland-routing forcing on %s%s\n", key, "");
+    }
+  }
+
+  NA_FreeNameArray(patch_na);
+
+  if (!has_overland_bc)
+  {
+    InputError("Solver.OverlandOnly requires at least one BCPressure patch of type OverlandFlow, OverlandFlowPFB, OverlandKinematic, or OverlandDiffusive%s%s\n", "", "");
+  }
+}
+
 typedef struct {
   PFModule *permeability_face;
   PFModule *advect_concen;
@@ -328,6 +409,7 @@ typedef struct {
   Vector *old_density;
   Vector *old_saturation;
   Vector *old_pressure;
+  Vector *overland_only_pressure;
   Vector *mask;
 
   Vector *evap_trans;           /* sk: Vector that contains the sink terms from the land surface model */
@@ -1000,6 +1082,10 @@ SetupRichards(PFModule * this_module)
       NewVectorType(grid, 1, 1, vector_cell_centered);
     InitVectorAll(instance_xtra->old_pressure, 0.0);
 
+    instance_xtra->overland_only_pressure =
+      NewVectorType(grid, 1, 1, vector_cell_centered);
+    InitVectorAll(instance_xtra->overland_only_pressure, 0.0);
+
     instance_xtra->old_saturation =
       NewVectorType(grid, 1, 1, vector_cell_centered);
     InitVectorAll(instance_xtra->old_saturation, 0.0);
@@ -1423,6 +1509,8 @@ SetupRichards(PFModule * this_module)
 
     handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
     FinalizeVectorUpdate(handle);
+
+    PFVCopy(instance_xtra->pressure, instance_xtra->overland_only_pressure);
 
     /* Set initial densities and pass around ghost data to start */
     PFModuleInvokeType(PhaseDensityInvoke,
@@ -3365,6 +3453,59 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       /*          Solve the nonlinear system for this time step          */
       /*******************************************************************/
 
+      if (public_xtra->overland_only)
+      {
+        GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
+        Vector *top = ProblemDataIndexOfDomainTop(problem_data);
+
+        int i, j, k, r, is;
+        int ix, iy, iz;
+        int nx, ny, nz;
+        int ip, itop;
+        int top_k;
+
+        Subgrid *subgrid;
+        Grid *grid = VectorGrid(instance_xtra->pressure);
+
+        Subvector *p_sub;
+        Subvector *top_sub;
+        double *pp;
+        double *top_dat;
+
+        ForSubgridI(is, GridSubgrids(grid))
+        {
+          subgrid = GridSubgrid(grid, is);
+          p_sub = VectorSubvector(instance_xtra->pressure, is);
+          top_sub = VectorSubvector(top, is);
+
+          r = SubgridRX(subgrid);
+          ix = SubgridIX(subgrid);
+          iy = SubgridIY(subgrid);
+          iz = SubgridIZ(subgrid);
+          nx = SubgridNX(subgrid);
+          ny = SubgridNY(subgrid);
+          nz = SubgridNZ(subgrid);
+
+          pp = SubvectorData(p_sub);
+          top_dat = SubvectorData(top_sub);
+
+          GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+          {
+            ip = SubvectorEltIndex(p_sub, i, j, k);
+            itop = SubvectorEltIndex(top_sub, i, j, 0);
+            top_k = (int)top_dat[itop];
+
+            if (k == top_k)
+            {
+              pp[ip] = pfmax(pp[ip], 0.0);
+            }
+          });
+        }
+
+        handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
+        FinalizeVectorUpdate(handle);
+      }
+
       retval = PFModuleInvokeType(NonlinSolverInvoke, nonlin_solver,
                                   (instance_xtra->pressure,
                                    instance_xtra->density,
@@ -3642,6 +3783,72 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         #endif
         /* update pressure,  not sure if we need to do this but we might if pressures are reset along processor edges RMM */
       }
+      handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
+    }
+
+    if (public_xtra->overland_only)
+    {
+      GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
+      Vector *top = ProblemDataIndexOfDomainTop(problem_data);
+
+      int i, j, k, r, is;
+      int ix, iy, iz;
+      int nx, ny, nz;
+      int ip, itop;
+      int grid2d_iz;
+      int top_k;
+
+      Subgrid *subgrid;
+      Subgrid *grid2d_subgrid;
+      Grid *grid = VectorGrid(instance_xtra->pressure);
+      Grid *grid2d = VectorGrid(top);
+
+      Subvector *p_sub;
+      Subvector *op_sub;
+      Subvector *top_sub;
+      double *pp;
+      double *opp;
+      double *top_dat;
+
+      ForSubgridI(is, GridSubgrids(grid))
+      {
+        subgrid = GridSubgrid(grid, is);
+        grid2d_subgrid = GridSubgrid(grid2d, is);
+        grid2d_iz = SubgridIZ(grid2d_subgrid);
+
+        p_sub = VectorSubvector(instance_xtra->pressure, is);
+        op_sub = VectorSubvector(instance_xtra->overland_only_pressure, is);
+        top_sub = VectorSubvector(top, is);
+
+        r = SubgridRX(subgrid);
+        ix = SubgridIX(subgrid);
+        iy = SubgridIY(subgrid);
+        iz = SubgridIZ(subgrid);
+        nx = SubgridNX(subgrid);
+        ny = SubgridNY(subgrid);
+        nz = SubgridNZ(subgrid);
+
+        pp = SubvectorData(p_sub);
+        opp = SubvectorData(op_sub);
+        top_dat = SubvectorData(top_sub);
+
+        GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+        {
+          ip = SubvectorEltIndex(p_sub, i, j, k);
+          itop = SubvectorEltIndex(top_sub, i, j, grid2d_iz);
+          top_k = (int)top_dat[itop];
+
+          if (k != top_k)
+          {
+            pp[ip] = opp[ip];
+          }
+        });
+      }
+
+      InitVectorAll(instance_xtra->x_velocity, 0.0);
+      InitVectorAll(instance_xtra->y_velocity, 0.0);
+
       handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
     }
@@ -4888,6 +5095,7 @@ TeardownRichards(PFModule * this_module)
   FreeVector(instance_xtra->density);
   FreeVector(instance_xtra->old_saturation);
   FreeVector(instance_xtra->old_pressure);
+  FreeVector(instance_xtra->overland_only_pressure);
   FreeVector(instance_xtra->old_density);
   FreeVector(instance_xtra->pressure);
   FreeVector(instance_xtra->ovrl_bc_flx);
@@ -6975,7 +7183,12 @@ SolverRichardsNewPublicXtra(char *name)
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->surface_lateral_flows = switch_value;
 
+  sprintf(key, "Solver.OverlandOnly");
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->overland_only = switch_value;
 
+  ValidateOverlandOnlyInput(public_xtra);
 
   /* @RMM read evap trans as SS file before advance richards
    * for P-E spinup type runs                                  */

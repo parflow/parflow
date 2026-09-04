@@ -42,6 +42,7 @@ typedef struct {
   double SpinupDampP1;      // NBE
   double SpinupDampP2;      // NBE
   int tfgupwind;           //@RMM added for TFG formulation switch
+  int overland_only;
   SeepageLookup seepage;
 } PublicXtra;
 
@@ -542,6 +543,251 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
   bc_struct = PFModuleInvokeType(BCPressureInvoke, bc_pressure,
                                  (problem_data, grid, gr_domain, time));
+
+  if (public_xtra->overland_only)
+  {
+    InitVectorAll(x_velocity, 0.0);
+    InitVectorAll(y_velocity, 0.0);
+    InitVectorAll(z_velocity, 0.0);
+
+    ForSubgridI(is, GridSubgrids(grid))
+    {
+      subgrid = GridSubgrid(grid, is);
+
+      p_sub = VectorSubvector(pressure, is);
+      op_sub = VectorSubvector(old_pressure, is);
+      f_sub = VectorSubvector(fval, is);
+
+      r = SubgridRX(subgrid);
+      ix = SubgridIX(subgrid);
+      iy = SubgridIY(subgrid);
+      iz = SubgridIZ(subgrid);
+      nx = SubgridNX(subgrid);
+      ny = SubgridNY(subgrid);
+      nz = SubgridNZ(subgrid);
+
+      pp = SubvectorData(p_sub);
+      opp = SubvectorData(op_sub);
+      fp = SubvectorData(f_sub);
+
+      GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+      {
+        int ip = SubvectorEltIndex(f_sub, i, j, k);
+        fp[ip] = pp[ip] - opp[ip];
+      });
+    }
+
+    if ((instance_xtra->using_overland_flow) == TRUE)
+    {
+      ForSubgridI(is, GridSubgrids(grid))
+      {
+        subgrid = GridSubgrid(grid, is);
+
+        p_sub = VectorSubvector(pressure, is);
+        op_sub = VectorSubvector(old_pressure, is);
+        f_sub = VectorSubvector(fval, is);
+        et_sub = VectorSubvector(evap_trans, is);
+        x_sl_sub = VectorSubvector(x_sl, is);
+        vz_sub = VectorSubvector(z_velocity, is);
+
+        kw_sub = VectorSubvector(KW, is);
+        ke_sub = VectorSubvector(KE, is);
+        kn_sub = VectorSubvector(KN, is);
+        ks_sub = VectorSubvector(KS, is);
+        qx_sub = VectorSubvector(qx, is);
+        qy_sub = VectorSubvector(qy, is);
+
+        kw_ = SubvectorData(kw_sub);
+        ke_ = SubvectorData(ke_sub);
+        kn_ = SubvectorData(kn_sub);
+        ks_ = SubvectorData(ks_sub);
+        qx_ = SubvectorData(qx_sub);
+        qy_ = SubvectorData(qy_sub);
+
+        if (q_overlnd_x)
+        {
+          q_overlnd_x_sub = VectorSubvector(q_overlnd_x, is);
+          q_overlnd_x_ = SubvectorData(q_overlnd_x_sub);
+        }
+
+        if (q_overlnd_y)
+        {
+          q_overlnd_y_sub = VectorSubvector(q_overlnd_y, is);
+          q_overlnd_y_ = SubvectorData(q_overlnd_y_sub);
+        }
+
+        dx = SubgridDX(subgrid);
+        dy = SubgridDY(subgrid);
+        dz = SubgridDZ(subgrid);
+
+        ffz = dx * dy;
+        vol = dx * dy * dz;
+
+        nx_vz = SubvectorNX(vz_sub);
+        ny_vz = SubvectorNY(vz_sub);
+        sz_v = ny_vz * nx_vz;
+
+        pp = SubvectorData(p_sub);
+        opp = SubvectorData(op_sub);
+        fp = SubvectorData(f_sub);
+        et = SubvectorData(et_sub);
+        vz = SubvectorData(vz_sub);
+
+        ForBCStructNumPatches(ipatch, bc_struct)
+        {
+          bc_patch_values = BCStructPatchValues(bc_struct, ipatch, is);
+
+          ForPatchCellsPerFace(OverlandBC,
+                               BeforeAllCells(
+          {
+            if (diffusive == 0)
+            {
+              PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module,
+                                 (grid, is, bc_struct, ipatch,
+                                  problem_data, pressure, old_pressure,
+                                  ke_, kw_, kn_, ks_, qx_, qy_, CALCFCN));
+            }
+            else
+            {
+              PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
+                                 (grid, is, bc_struct, ipatch,
+                                  problem_data, pressure, old_pressure,
+                                  ke_, kw_, kn_, ks_,
+                                  NULL, NULL, NULL, NULL,
+                                  qx_, qy_, CALCFCN));
+            }
+          }),
+                               LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                               Locals(int ip, io, vz_l; double q_overlnd, surface_source; ),
+                               CellSetup(DoNothing),
+                               FACE(LeftFace, DoNothing),
+                               FACE(RightFace, DoNothing),
+                               FACE(DownFace, DoNothing),
+                               FACE(UpFace, DoNothing),
+                               FACE(BackFace, DoNothing),
+                               FACE(FrontFace,
+          {
+            ip = SubvectorEltIndex(p_sub, i, j, k);
+            io = SubvectorEltIndex(x_sl_sub, i, j, 0);
+            vz_l = SubvectorEltIndex(vz_sub, i, j, k);
+
+            if (q_overlnd_x_)
+              q_overlnd_x_[io] = ke_[io];
+
+            if (q_overlnd_y_)
+              q_overlnd_y_[io] = kn_[io];
+
+            q_overlnd = vol * (pfmax(pp[ip], 0.0) - pfmax(opp[ip], 0.0)) / dz
+                        + dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy) / dz
+                        + vol * dt / dz * (exp(pfmin(pp[ip], 0.0) * public_xtra->SpinupDampP1) * public_xtra->SpinupDampP2);
+
+            if (overlandspinup == 1)
+            {
+              q_overlnd = (vol / dz) * dt
+                          * ((pfmax(pp[ip], 0.0) - 0.0)
+                             + exp(pfmin(pp[ip], 0.0) * public_xtra->SpinupDampP1)
+                             * public_xtra->SpinupDampP2);
+            }
+
+            surface_source = bc_patch_values[ival] - dz * et[ip];
+            fp[ip] = q_overlnd + dt * ffz * surface_source;
+            vz[vz_l + sz_v] = surface_source + q_overlnd / (dt * ffz);
+          }),
+                               CellFinalize(DoNothing),
+                               AfterAllCells(DoNothing)
+                               );
+
+          ForPatchCellsPerFace(OverlandKinematicBC,
+                               BeforeAllCells(
+          {
+            PFModuleInvokeType(OverlandFlowEvalKinInvoke, overlandflow_module_kin,
+                               (grid, is, bc_struct, ipatch, problem_data, pressure,
+                                ke_, kw_, kn_, ks_,
+                                NULL, NULL, NULL, NULL,
+                                qx_, qy_, CALCFCN));
+          }),
+                               LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                               Locals(int ip, io, vz_l; double q_overlnd, surface_source; ),
+                               CellSetup(DoNothing),
+                               FACE(LeftFace, DoNothing),
+                               FACE(RightFace, DoNothing),
+                               FACE(DownFace, DoNothing),
+                               FACE(UpFace, DoNothing),
+                               FACE(BackFace, DoNothing),
+                               FACE(FrontFace,
+          {
+            ip = SubvectorEltIndex(p_sub, i, j, k);
+            io = SubvectorEltIndex(x_sl_sub, i, j, 0);
+            vz_l = SubvectorEltIndex(vz_sub, i, j, k);
+
+            if (q_overlnd_x_)
+              q_overlnd_x_[io] = ke_[io];
+
+            if (q_overlnd_y_)
+              q_overlnd_y_[io] = kn_[io];
+
+            q_overlnd = vol * (pfmax(pp[ip], 0.0) - pfmax(opp[ip], 0.0)) / dz
+                        + dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy) / dz;
+
+            surface_source = bc_patch_values[ival] - dz * et[ip];
+            fp[ip] = q_overlnd + dt * ffz * surface_source;
+            vz[vz_l + sz_v] = surface_source + q_overlnd / (dt * ffz);
+          }),
+                               CellFinalize(DoNothing),
+                               AfterAllCells(DoNothing)
+                               );
+
+          ForPatchCellsPerFace(OverlandDiffusiveBC,
+                               BeforeAllCells(
+          {
+            PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
+                               (grid, is, bc_struct, ipatch,
+                                problem_data, pressure, old_pressure,
+                                ke_, kw_, kn_, ks_,
+                                NULL, NULL, NULL, NULL,
+                                qx_, qy_, CALCFCN));
+          }),
+                               LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                               Locals(int ip, io, vz_l; double q_overlnd, surface_source; ),
+                               CellSetup(DoNothing),
+                               FACE(LeftFace, DoNothing),
+                               FACE(RightFace, DoNothing),
+                               FACE(DownFace, DoNothing),
+                               FACE(UpFace, DoNothing),
+                               FACE(BackFace, DoNothing),
+                               FACE(FrontFace,
+          {
+            ip = SubvectorEltIndex(p_sub, i, j, k);
+            io = SubvectorEltIndex(x_sl_sub, i, j, 0);
+            vz_l = SubvectorEltIndex(vz_sub, i, j, k);
+
+            if (q_overlnd_x_)
+              q_overlnd_x_[io] = ke_[io];
+
+            if (q_overlnd_y_)
+              q_overlnd_y_[io] = kn_[io];
+
+            q_overlnd = vol * (pfmax(pp[ip], 0.0) - pfmax(opp[ip], 0.0)) / dz
+                        + dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy) / dz;
+
+            surface_source = bc_patch_values[ival] - dz * et[ip];
+            fp[ip] = q_overlnd + dt * ffz * surface_source;
+            vz[vz_l + sz_v] = surface_source + q_overlnd / (dt * ffz);
+          }),
+                               CellFinalize(DoNothing),
+                               AfterAllCells(DoNothing)
+                               );
+        }
+      }
+    }
+
+    FreeBCStruct(bc_struct);
+    EndTiming(public_xtra->time_index);
+
+    POP_NVTX
+
+    return;
+  }
 
   /*
    * Temporarily insert boundary pressure values for Dirichlet
@@ -2465,7 +2711,7 @@ PFModule   *NlFunctionEvalNewPublicXtra(char *name)
   char *switch_name;
   int switch_value;
   NameArray upwind_switch_na;
-
+  NameArray switch_na;
 
   public_xtra = ctalloc(PublicXtra, 1);
 
@@ -2510,6 +2756,13 @@ PFModule   *NlFunctionEvalNewPublicXtra(char *name)
     }
   }
   NA_FreeNameArray(upwind_switch_na);
+
+  switch_na = NA_NewNameArray("False True");
+  sprintf(key, "Solver.OverlandOnly");
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->overland_only = switch_value;
+  NA_FreeNameArray(switch_na);
 
   (public_xtra->time_index) = RegisterTiming("NL_F_Eval");
 
