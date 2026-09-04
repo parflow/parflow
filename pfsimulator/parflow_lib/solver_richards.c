@@ -331,6 +331,7 @@ typedef struct {
   Vector *mask;
 
   Vector *evap_trans;           /* sk: Vector that contains the sink terms from the land surface model */
+  Vector *evap_trans_usr;
   Vector *evap_trans_sum;       /* running sum of evaporation and transpiration */
   Vector *overland_sum;
   Vector *ovrl_bc_flx;          /* vector containing outflow at the boundary */
@@ -1080,12 +1081,15 @@ SetupRichards(PFModule * this_module)
     instance_xtra->evap_trans = NewVectorType(grid, 1, 1, vector_cell_centered);
     InitVectorAll(instance_xtra->evap_trans, 0.0);
 
+    instance_xtra->evap_trans_usr = NewVectorType(grid, 1, 1, vector_cell_centered);
+    InitVectorAll(instance_xtra->evap_trans_usr, 0.0);
+
     if (public_xtra->evap_trans_file)
     {
-      sprintf(filename, "%s", public_xtra->evap_trans_filename);
-      ReadPFBinary(public_xtra->evap_trans_filename, instance_xtra->evap_trans);
+      //sprintf(filename, "%s", public_xtra->evap_trans_filename);
+      ReadPFBinary(public_xtra->evap_trans_filename, instance_xtra->evap_trans_usr);
 
-      handle = InitVectorUpdate(instance_xtra->evap_trans, VectorUpdateAll);
+      handle = InitVectorUpdate(instance_xtra->evap_trans_usr, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
     }
 #ifndef HAVE_CLM
@@ -1097,9 +1101,9 @@ SetupRichards(PFModule * this_module)
       /*Here looping similar to pfb is not implemented. All steps are assumed to be
        * present in the single NetCDF file*/
       //printf("DEBUG: read evap_trans file %s for step %i \n", filename, instance_xtra->file_number);
-      ReadPFNC(filename, instance_xtra->evap_trans, "evaptrans", instance_xtra->file_number, 3);
+      ReadPFNC(filename, instance_xtra->evap_trans_usr, "evaptrans", instance_xtra->file_number, 3);
       //printf("DEBUG: evap_trans max min: %e %e \n",PFVMax(instance_xtra->evap_trans),PFVMin(instance_xtra->evap_trans));
-      handle = InitVectorUpdate(instance_xtra->evap_trans, VectorUpdateAll);
+      handle = InitVectorUpdate(instance_xtra->evap_trans_usr, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
     }
 #endif
@@ -1929,11 +1933,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
   Vector *porosity = ProblemDataPorosity(problem_data);
   Vector *evap_trans_sum = instance_xtra->evap_trans_sum;
+  Vector *evap_trans_usr = instance_xtra->evap_trans_usr;
   Vector *overland_sum = instance_xtra->overland_sum;   /* sk: Vector of outflow at the boundary */
+  int use_internal_evap_trans = 0;
 
   if (evap_trans == NULL)
   {
     evap_trans = instance_xtra->evap_trans;
+    use_internal_evap_trans = 1;
   }
 
   char filename[2048];          // IMF: 1D input file name *or* 2D/3D input file base name
@@ -2117,6 +2124,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     {
       ct += cdt;
 
+      if (use_internal_evap_trans)
+      {
+        PFVConstInit(0.0, evap_trans);
+      }
+
       // Read in evap_trans even if not HAVE_CLM
 #ifndef HAVE_CLM
       /******************************************/
@@ -2130,9 +2142,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         /*Here looping similar to pfb is not implemented. All steps are assumed to be
          * present in the single NetCDF file*/
         //printf("DEBUG: read evap_trans file %s for step %i \n", filename, instance_xtra->file_number);
-        ReadPFNC(filename, evap_trans, "evaptrans", instance_xtra->file_number, 3);
+        ReadPFNC(filename, evap_trans_usr, "evaptrans", instance_xtra->file_number, 3);
         //printf("DEBUG: evap_trans max min: %e %e \n",PFVMax(evap_trans),PFVMin(evap_trans));
-        handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
+        handle = InitVectorUpdate(evap_trans_usr, VectorUpdateAll);
         FinalizeVectorUpdate(handle);
       }
 #endif
@@ -2893,8 +2905,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         /*KKu: evaptrans is the name of the variable expected in NetCDF file */
         /*Here looping similar to pfb is not implemented. All steps are assumed to be
          * present in the single NetCDF file*/
-        ReadPFNC(filename, evap_trans, "evaptrans", istep - 1, 3);
-        handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
+        ReadPFNC(filename, evap_trans_usr, "evaptrans", istep - 1, 3);
+        handle = InitVectorUpdate(evap_trans_usr, VectorUpdateAll);
         FinalizeVectorUpdate(handle);
       }
       else if (public_xtra->evap_trans_file_transient)
@@ -2928,11 +2940,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         printf("%d %s %s \n", istep, filename,
                public_xtra->evap_trans_filename);
 
-        ReadPFBinary(filename, evap_trans);
+        ReadPFBinary(filename, evap_trans_usr);
 
         //printf("Checking time step logging, steps = %i\n",Stepcount);
 
-        handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
+        handle = InitVectorUpdate(evap_trans_usr, VectorUpdateAll);
         FinalizeVectorUpdate(handle);
       }
 
@@ -2959,6 +2971,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
        *  isn't scaling the inputs properly.
        *  ============================================================= */
 #endif
+      PFVSum(evap_trans, evap_trans_usr, evap_trans);
+      handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
     }                           //Endif to check whether an entire dt is complete
 
     converged = 1;
@@ -4900,6 +4915,7 @@ TeardownRichards(PFModule * this_module)
 
   FreeVector(instance_xtra->q_overlnd_y);
   FreeVector(instance_xtra->evap_trans);
+  FreeVector(instance_xtra->evap_trans_usr);
 
   FreeVector(instance_xtra->evap_trans_sum);
   FreeVector(instance_xtra->overland_sum);
