@@ -75,6 +75,8 @@
 
 #cmakedefine PARFLOW_HAVE_PYSTENCILS
 
+#cmakedefine PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+
 #cmakedefine PARFLOW_HAVE_RMM
 
 /*

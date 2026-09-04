@@ -70,6 +70,7 @@ void  NewTiming()
   RegisterTiming("RBGS 7pt");
   RegisterTiming("VDotProduct");
   RegisterTiming("Vector Utility Routines");
+  RegisterTiming("KINAtimesDQ Fused Reduction");
 #ifdef VECTOR_UPDATE_TIMING
   RegisterTiming("VectorUpdate");
 #endif

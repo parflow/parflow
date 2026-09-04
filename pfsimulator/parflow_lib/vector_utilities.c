@@ -45,6 +45,7 @@
  * PFVWrmsNorm(x, w)                 Returns sqrt((sum_i (x_i * w_i)^2)/length)
  * PFVWL2Norm(x, w)                  Returns sqrt(sum_i (x_i * w_i)^2)
  * PFVL1Norm(x)                      Returns sum_i |x_i|
+ * PFVKINAtimesDQFusedReduce(uu, v, uscale, &sutsv, &vtv, &sq1norm) Fused reduction for KINSpgmrAtimesDQ
  * PFVMin(x)                         Returns min_i x_i
  * PFVMax(x)                         Returns max_i x_i
  * PFVConstrProdPos(c, x)            Returns FALSE if some c_i = 0 &
@@ -71,6 +72,10 @@
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
 #include "pystencils_vector_utilities.h"
+#endif
+
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+#include "pystencils_kinsol_atimesdq.h"
 #endif
 
 #ifdef PARFLOW_HAVE_CUDA
@@ -1133,6 +1138,98 @@ double PFVL1Norm(
   EndTiming(VectorUtilityRoutineIndex);
   return(sum);
 }
+
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+void PFVKINAtimesDQFusedReduce(
+/* KINAtimesDQFusedReduce: fused reduction used by KINSpgmrAtimesDQ (kinsol/kinspgmr.c) to compute the following three quantities in a single pass over the data:
+ *
+ *   *sutsv   = (Du * uu) . (Du * v)
+ *   *vtv     = (Du * v ) . (Du * v)
+ *   *sq1norm = || Du * v ||_1
+ */
+                        Vector *uu,
+                        Vector *v,
+                        Vector *uscale,
+                        double *sutsv,
+                        double *vtv,
+                        double *sq1norm)
+{
+  BeginTiming(VectorUtilityRoutineIndex);
+  Grid       *grid = VectorGrid(uu);
+  Subgrid    *subgrid;
+
+  Subvector  *uu_sub;
+  Subvector  *v_sub;
+  Subvector  *uscale_sub;
+
+  const double * __restrict__ uup;
+  const double * __restrict__ vp;
+  const double * __restrict__ uscalep;
+
+  int ix, iy, iz;
+  int nx, ny, nz;
+  int nx_uu, ny_uu, nz_uu;
+  int nx_v, ny_v, nz_v;
+  int nx_uscale, ny_uscale, nz_uscale;
+
+  int sg;
+
+  amps_Invoice result_invoice;
+
+  *sutsv = ZERO;
+  *vtv = ZERO;
+  *sq1norm = ZERO;
+
+  ForSubgridI(sg, GridSubgrids(grid))
+  {
+    subgrid = GridSubgrid(grid, sg);
+
+    uu_sub = VectorSubvector(uu, sg);
+    v_sub = VectorSubvector(v, sg);
+    uscale_sub = VectorSubvector(uscale, sg);
+
+    ix = SubgridIX(subgrid);
+    iy = SubgridIY(subgrid);
+    iz = SubgridIZ(subgrid);
+
+    nx = SubgridNX(subgrid);
+    ny = SubgridNY(subgrid);
+    nz = SubgridNZ(subgrid);
+
+    nx_uu = SubvectorNX(uu_sub);
+    ny_uu = SubvectorNY(uu_sub);
+    nz_uu = SubvectorNZ(uu_sub);
+
+    nx_v = SubvectorNX(v_sub);
+    ny_v = SubvectorNY(v_sub);
+    nz_v = SubvectorNZ(v_sub);
+
+    nx_uscale = SubvectorNX(uscale_sub);
+    ny_uscale = SubvectorNY(uscale_sub);
+    nz_uscale = SubvectorNZ(uscale_sub);
+
+    uup = SubvectorElt(uu_sub, ix, iy, iz);
+    vp = SubvectorElt(v_sub, ix, iy, iz);
+    uscalep = SubvectorElt(uscale_sub, ix, iy, iz);
+
+    PyCodegen_KINAtimesDQFusedReduce_wrapper(uscalep, uup, vp,
+                                        nx, ny, nz,
+                                        1, nx_uscale, nx_uscale * ny_uscale,
+                                        1, nx_uu, nx_uu * ny_uu,
+                                        1, nx_v, nx_v * ny_v,
+                                        sq1norm, sutsv, vtv,
+                                        KINAtimesDQFusedReduceTimingIndex);
+  }
+
+  result_invoice = amps_NewInvoice("%d%d%d", sutsv, vtv, sq1norm);
+  amps_AllReduce(amps_CommWorld, result_invoice, amps_Add);
+  amps_FreeInvoice(result_invoice);
+
+  IncFLOPCount(6 * VectorSize(uu));
+
+  EndTiming(VectorUtilityRoutineIndex);
+}
+#endif
 
 double PFVMin(
 /* Min = min_i(x_i)   */

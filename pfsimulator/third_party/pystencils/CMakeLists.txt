@@ -12,9 +12,15 @@ endif ()
 
 # run source file generator
 
+set ( PystencilsSfg_SCRIPTS pystencils_vector_utilities.py pystencils_nonlinear_eval.py pystencils_rbgs.py )
+
+if ( ${PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS} )
+        list ( APPEND PystencilsSfg_SCRIPTS pystencils_kinsol_atimesdq.py )
+endif ()
+
 add_library ( PystencilsGeneratedKernels )
 pystencilssfg_generate_target_sources ( PystencilsGeneratedKernels
-        SCRIPTS pystencils_vector_utilities.py pystencils_nonlinear_eval.py pystencils_rbgs.py
+        SCRIPTS ${PystencilsSfg_SCRIPTS}
         OUTPUT_DIRECTORY generated_kernels
 )
 

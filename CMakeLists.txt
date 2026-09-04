@@ -568,6 +568,15 @@ if (${PARFLOW_ENABLE_PYSTENCILS})
     endif (${PystencilsSfg_FOUND})
 endif (${PARFLOW_ENABLE_PYSTENCILS})
 
+option(PARFLOW_ENABLE_PYSTENCILS_FUSED_KERNELS "Build with fused Pystencils kernels" "OFF")
+if (${PARFLOW_ENABLE_PYSTENCILS_FUSED_KERNELS})
+    if (NOT ${PARFLOW_HAVE_PYSTENCILS})
+        message(FATAL_ERROR "PARFLOW_ENABLE_PYSTENCILS_FUSED_KERNELS requires PARFLOW_ENABLE_PYSTENCILS to be ON")
+    endif (NOT ${PARFLOW_HAVE_PYSTENCILS})
+    set(PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS "yes")
+    set(HAVE_PYSTENCILS_FUSED_KERNELS ${PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS})
+endif (${PARFLOW_ENABLE_PYSTENCILS_FUSED_KERNELS})
+
 #-----------------------------------------------------------------------------
 # libm
 #-----------------------------------------------------------------------------

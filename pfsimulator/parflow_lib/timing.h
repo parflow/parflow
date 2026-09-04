@@ -73,8 +73,9 @@
 #define RbgsSevenPointTimingIndex 17
 #define VDotProductTimingIndex 18
 #define VectorUtilityRoutineIndex 19
+#define KINAtimesDQFusedReduceTimingIndex 20
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex 20
+#define VectorUpdateTimingIndex 21
 #endif
 
 /*--------------------------------------------------------------------------
