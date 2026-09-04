@@ -448,7 +448,7 @@ def _overland_flow_kinematic_wc(
         ),
         mode='edge',
     )  # pad right
-    print("hi")
+    
     Wc_x_up = (2 * Wc_x * Wc_x_pad) / (Wc_x + Wc_x_pad)
 
     Wc_x_up[Wc_x_up == 0] = 1000
