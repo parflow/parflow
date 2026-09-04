@@ -71,6 +71,7 @@ void  NewTiming()
   RegisterTiming("VDotProduct");
   RegisterTiming("Vector Utility Routines");
   RegisterTiming("KINAtimesDQ Fused Reduction");
+  RegisterTiming("Flux FusedBaseAndCompressible Storage");
 #ifdef VECTOR_UPDATE_TIMING
   RegisterTiming("VectorUpdate");
 #endif

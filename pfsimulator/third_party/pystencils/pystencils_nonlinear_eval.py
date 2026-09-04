@@ -203,6 +203,34 @@ with SourceFileGenerator() as sfg:
         timing_index=True,
     )
 
+    # flux: fused base + compressible storage
+
+    create_kernel_func_and_wrapper(
+        sfg,
+        ps.Assignment(
+            fp.center(),
+            (sp.center() * dp.center() - osp.center() * odp.center())
+            * pop.center()
+            * vol
+            * del_x_slope
+            * del_y_slope
+            * z_mult_dat.center()
+            + (
+                ss.center()
+                * vol
+                * del_x_slope
+                * del_y_slope
+                * z_mult_dat.center()
+                * (
+                    pp.center() * sp.center() * dp.center()
+                    - opp.center() * osp.center() * odp.center()
+                )
+            ),
+        ),
+        "Flux_FusedBaseAndCompressibleStorage",
+        timing_index=True,
+    )
+
     # flux: add source terms
     # fp[ip] -= vol * del_x_slope * del_y_slope * z_mult_dat[ip] * dt * (sp[ip] + et[ip])
 
