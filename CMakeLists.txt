@@ -744,6 +744,7 @@ if(${PARFLOW_HAVE_CLM})
 
     if(${PARFLOW_HAVE_CLM})
         add_subdirectory(pfsimulator/clm)
+        add_subdirectory(pfsimulator/colm)
     endif(${PARFLOW_HAVE_CLM})
 endif(${PARFLOW_HAVE_CLM})
 
@@ -856,6 +857,10 @@ if(${PARFLOW_HAVE_CLM})
     configure_file(
         pfsimulator/clm/parflow_config.F90.in
         ${PROJECT_BINARY_DIR}/pfsimulator/clm/parflow_config.F90
+    )
+    configure_file(
+        pfsimulator/colm/parflow_config.F90.in
+        ${PROJECT_BINARY_DIR}/pfsimulator/colm/parflow_config.F90
     )
 endif(${PARFLOW_HAVE_CLM})
 
