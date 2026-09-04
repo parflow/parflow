@@ -196,7 +196,7 @@ void    OverlandFlowEvalKin_wc(
                      pfmin((wcx_dat[io]), dy),
                      pfmin((wcx_dat[iop1]), dy));
 
-        if (wcx_dat[iop1] > dy)
+        if (wcx_dat[iop1] == 0.0)
         {
           Wc_x = wcx_dat[io];
         }
@@ -210,7 +210,7 @@ void    OverlandFlowEvalKin_wc(
                      pfmin((wcy_dat[io]), dy),
                      pfmin((wcy_dat[iopsy]), dy));
 
-        if (wcy_dat[iopsy] > dx)
+        if (wcy_dat[iopsy] == 0.0)
         {
            Wc_y = wcy_dat[io];
         }
@@ -407,7 +407,7 @@ void    OverlandFlowEvalKin_wc(
                      pfmin((wcx_dat[io]), dy),
                      pfmin((wcx_dat[iop1]), dy));
 
-        if (wcx_dat[iop1] > dy)
+        if (wcx_dat[iop1] == 0.0)
         {
           Wc_x = wcx_dat[io];
         }
@@ -421,7 +421,7 @@ void    OverlandFlowEvalKin_wc(
                      pfmin((wcy_dat[io]), dy),
                      pfmin((wcy_dat[iopsy]), dy));
 
-        if (wcy_dat[iopsy] > dx)
+        if (wcy_dat[iopsy] == 0.0)
         {
            Wc_y = wcy_dat[io];
         }
