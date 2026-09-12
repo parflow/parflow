@@ -160,7 +160,6 @@ Click a name to open the full documentation.
 
    SubsurfacePropertiesExporter
    CLMExporter
-   NotOverwritableException
 
 .. rubric:: Compare Module
 
@@ -206,5 +205,4 @@ Click a name to open the full documentation.
 .. autosummary::
    :nosignatures:
 
-   ParflowBackendEntrypoint
    ParflowBackendArray
