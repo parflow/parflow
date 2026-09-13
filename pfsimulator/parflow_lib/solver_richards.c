@@ -3329,7 +3329,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                 double qy_south = (j > 0) ? qy_dat[io_q_south] : 0.0;
 
                 flux_surface_lateral = dt * ((qx_current - qx_west) * dy + (qy_current - qy_south) * dx);
-                flux_total = flux_in + flux_darcy + flux_surface_lateral;
+                /* flux_surface_lateral is the cell's net overland OUTFLOW, the same
+                 * expression the residual charges against storage, so it is subtracted
+                 * from the inflow.  Adding it credited draining cells with inflow and
+                 * debited receiving cells. */
+                flux_total = flux_in + flux_darcy - flux_surface_lateral;
               }
               else
               {
