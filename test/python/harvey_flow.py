@@ -116,7 +116,7 @@ hflow.Geom.lower_aquifer.Upper.Z = 1.5
 hflow.Geom.Perm.Names = "upper_aquifer lower_aquifer"
 
 # we open a file, in this case from PEST to set upper and lower kg and sigma
-cp("$PF_SRC/test/input/stats4.txt")
+#NOT REQUIRED cp("$PF_SRC/test/input/stats4.txt")
 chdir(".")
 
 file = open("stats4.txt", "r")

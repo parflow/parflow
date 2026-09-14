@@ -6,7 +6,7 @@ From TCL to Python
 Welcome to the tutorial for the Python pftools. You will need the following to
 fully follow this tutorial:
 
-- Python >= 3.6
+- Python >= 3.7
 - ParFlow installed and running, with the correct ``$PARFLOW_DIR`` environment variable established
   (You can check this by running ``echo $PARFLOW_DIR`` in your terminal)
 
@@ -17,29 +17,23 @@ The commands in the tutorial assume that you are running a bash shell in Linux o
 Virtual environment setup
 --------------------------
 
-In this first tutorial, we will set up a virtual environment with pftools and its dependencies before importing a TCL file, converting it to Python, and running ParFlow.
+In this first tutorial, we will set up a virtual environment with pftools and its dependencies before converting a TCL runscript to Python and running ParFlow.
 
 ----
 
-First, let's set an environment variable for the newly cloned repo:
-
-.. code-block::
-
-    export PARFLOW_SOURCE=/path/to/new/parflow/
-
-Now, set up a virtual environment and install pftools:
+Set up a virtual environment and install pftools:
 
 .. code-block::
 
     python3 -m venv tutorial-env
     source tutorial-env/bin/activate
-    pip install pftools[all]
+    pip install pftools
 
 Test your pftools installation:
 
 .. code-block::
 
-    python3 $PARFLOW_SOURCE/test/python/base_3d/default_richards/default_richards.py
+    python3 $PARFLOW_DIR/test/python/default_richards.py
 
 The run should execute successfully, printing the message ``ParFlow ran successfully``.
 
@@ -54,58 +48,35 @@ Great, now you have a working ParFlow interface! Next, create a new directory an
 
     mkdir -p pftools_tutorial/tcl_to_py
     cd pftools_tutorial/tcl_to_py
-    cp $PARFLOW_SOURCE/test/default_richards.tcl .
+    cp $PARFLOW_DIR/test/tcl/default_richards.tcl .
 
-You can use our ``tcl2py`` tool to convert the TCL script to a Python script using the following command:
+TCL ``pfset`` keys and Python ``run.Key =`` keys are the same ParFlow database entries written in two syntaxes. While you are converting a script — and afterward, when you need to look up a key — both forms are shown side by side in the :ref:`ParFlow Input Keys` chapter. For example:
+
+::
+
+   run.Process.Topology.P = 2  # Python syntax
+   pfset Process.Topology.P 2  # TCL syntax
+
+To convert the TCL runscript, use an AI coding assistant (for example Cursor, Claude, Copilot, or a similar tool). Give the assistant the TCL file and the ParFlow tcl-to-python skill, then ask it to convert the runscript to Python PFTools.
+
+Download the skill here: :download:`tcl-to-python SKILL.md <tcl-to-python/SKILL.md>`.
+In the ParFlow source tree it lives at ``docs/user_manual/python/tutorials/tcl-to-python/SKILL.md``.
+Attach or add that file as a skill in your AI tool so the conversion follows ParFlow Python conventions (``Run`` object, hyphenated patch names, ``dist()`` / ``run()``, and so on).
+
+A converted key assignment looks like this:
 
 .. code-block::
 
-   python3 -m parflow.cli.tcl2py -i default_richards.tcl
+   # TCL
+   pfset ComputationalGrid.NX                      18
 
-The converter gets you most of the way there, but there are a few things you'll have to change by hand. Open and edit the new ``.py`` file that you have generated and change the lines that need to be changed. If you are following this example, you will need to edit the ``Process.Topology`` values, the ``GeomInput.Names`` values, and comment out the two ``Solver.Linear.Preconditioner.MGSemi`` keys, as shown here:
+   # Python
+   default_richards.ComputationalGrid.NX = 18
 
-.. code-block::
-
-   default_richards.Process.Topology.P = 1
-   default_richards.Process.Topology.Q = 1
-   default_richards.Process.Topology.R = 1
-   ...
-
-   default_richards.GeomInput.Names = 'domain_input background_input source_region_input \
-            concen_region_input'
-   ...
-
-   # default_richards.Solver.Linear.Preconditioner.MGSemi.MaxIter = 1
-   # default_richards.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 100
-
-
-Once you have edited your Python script, you can run it like you would any other Python script:
+Review the generated ``.py`` file, then run it like any other Python script:
 
 .. code-block::
 
    python3 default_richards.py
 
 Voilà! You have now successfully converted your first ParFlow TCL script to Python. In the next tutorial, we'll get more advanced to leverage the many other features in the Python PFTools. Onward!
-
-.. _tcl2py_troubleshoot:
-
-Troubleshooting when converting TCL script to Python
------------------------------------------------------
-
-Although the tutorial above (hopefully) went without a hitch, you may not always be so lucky. For those instances, Python PFTools has a tool that allows you to sort two *.pfidb* files to determine any discrepancies between two files.
-This is especially useful when comparing an existing TCL script's generated file to its Python-generated equivalent. First, you must sort each of the
-*.pfidb* files, using the following command:
-
-.. code-block:: bash
-
-    python3 -m parflow.cli.pfdist_sort -i /path/to/file.pfidb -o /tmp/sorted.pfidb
-
-``/path/to/file.pfidb`` is the path to the existing (input, denoted by the ``-i``) *.pfidb* file, and ``/tmp/sorted.pfidb`` is the file path where you want the sorted output (denoted by the ``-o``) *.pfidb* file to be written.
-
-Once you have the newly sorted files, you can compare them using one of many methods of file comparison, such as ``diff``:
-
-.. code-block:: bash
-
-    diff /path/to/from_tcl_sorted.pfidb /path/to/from_py_sorted.pfidb
-
-You'll likely see some subtle format differences between the TCL- and Python-generated files (decimal printing, etc.). Most of these do not affect the execution of ParFlow.
