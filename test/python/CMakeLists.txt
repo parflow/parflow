@@ -15,6 +15,7 @@ set(TESTS
     indicator_field
     LW_surface_press
     overland_tiltedV_MGSemiTest
+    overland_only_validation
 )
 
 if(${PARFLOW_HAVE_HYPRE})
@@ -27,6 +28,8 @@ if(${PARFLOW_HAVE_HYPRE})
         default_richards_restart
         default_richards_nocluster
         default_overland
+        default_overland_only
+        FJC_overland_only_mannings
         octree-simple
         octree-large-domain
         LW_var_dz
@@ -125,6 +128,9 @@ if(${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI)
             default_overland.pfmg_octree.fulljac
             LW_var_dz
             LW_var_dz_spinup
+            LW_overland_only_overland_flow
+            LW_overland_only_kinematic
+            LW_overland_only_diffusive
             overland_slopingslab_KWE
             richards_box_proctest_vardz
             reservoir_mpi_test
