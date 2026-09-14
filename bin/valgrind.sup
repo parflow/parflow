@@ -827,7 +827,7 @@
 
 # Hypre logging references uninitialized values
 {
-   <insert_a_suppression_name_here>
+   hypre_pfmg_logging_uninitialized_cond
    Memcheck:Cond
    ...
    fun:hypre_printf
@@ -838,7 +838,7 @@
 }
 
 {
-   <insert_a_suppression_name_here>
+   hypre_pfmg_logging_uninitialized_value8
    Memcheck:Value8
    ...
    fun:hypre_printf
@@ -850,7 +850,7 @@
 
 
 {
-   <insert_a_suppression_name_here>
+   hypre_pfmg_logging_write_uninit_buf
    Memcheck:Param
    write(buf)
    ...
