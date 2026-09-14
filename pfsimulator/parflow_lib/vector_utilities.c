@@ -42,9 +42,10 @@
  * PFVAddConst(x, b, z)              z_i = x_i + b
  * PFVDotProd(x, y)                  Returns x dot y
  * PFVMaxNorm(x)                     Returns ||x||_{max}
- * PFVWrmsNorm(x, w)                 Returns sqrt((sum_i (x_i + w_i)^2)/length)
+ * PFVWrmsNorm(x, w)                 Returns sqrt((sum_i (x_i * w_i)^2)/length)
  * PFVWL2Norm(x, w)                  Returns sqrt(sum_i (x_i * w_i)^2)
  * PFVL1Norm(x)                      Returns sum_i |x_i|
+ * PFVKINAtimesDQFusedReduce(uu, v, uscale, &sutsv, &vtv, &sq1norm) Fused reduction for KINSpgmrAtimesDQ
  * PFVMin(x)                         Returns min_i x_i
  * PFVMax(x)                         Returns max_i x_i
  * PFVConstrProdPos(c, x)            Returns FALSE if some c_i = 0 &
@@ -68,6 +69,18 @@
 #include "parflow.h"
 
 #include <string.h>
+
+#ifdef PARFLOW_HAVE_PYSTENCILS
+#include "pystencils_vector_utilities.h"
+#endif
+
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+#include "pystencils_kinsol_atimesdq.h"
+#endif
+
+#ifdef PARFLOW_HAVE_CUDA
+#include "pf_cudamalloc.h"
+#endif
 
 #define ZERO 0.0
 #define ONE  1.0
@@ -184,6 +197,8 @@ void PFVLinearSum(
    * (2) a == 0.0, b == other - user should have called N_VScale
    * (3) a,b == other, a !=b, a != -b */
 
+  BeginTiming(VectorUtilityRoutineIndex);
+
   ForSubgridI(sg, GridSubgrids(grid))
   {
     subgrid = GridSubgrid(grid, sg);
@@ -216,6 +231,14 @@ void PFVLinearSum(
     xp = SubvectorElt(x_sub, ix, iy, iz);
     yp = SubvectorElt(y_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VLinearSum(xp, yp, zp,
+                         nx, ny, nz,
+                         1, nx_x, nx_x * ny_x,
+                         1, nx_y, nx_y * ny_y,
+                         1, nx_z, nx_z * ny_z,
+                         a, b);
+#else
     i_x = 0;
     i_y = 0;
     i_z = 0;
@@ -226,8 +249,10 @@ void PFVLinearSum(
     {
       zp[i_z] = a * xp[i_x] + b * yp[i_y];
     });
+#endif
   }
   IncFLOPCount(3 * VectorSize(z));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVConstInit(
@@ -235,6 +260,7 @@ void PFVConstInit(
                   double  c,
                   Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(z);
   Subgrid    *subgrid;
 
@@ -268,13 +294,21 @@ void PFVConstInit(
 
     zp = SubvectorElt(z_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VConstInit(zp,
+                         nx, ny, nz,
+                         1, nx_z, nx_z * ny_z,
+                         c);
+#else
     i_z = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               i_z, nx_z, ny_z, nz_z, 1, 1, 1,
     {
       zp[i_z] = c;
     });
+#endif
   }
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVProd(
@@ -283,6 +317,7 @@ void PFVProd(
              Vector *y,
              Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -335,6 +370,13 @@ void PFVProd(
     xp = SubvectorElt(x_sub, ix, iy, iz);
     yp = SubvectorElt(y_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VProd(xp, yp, zp,
+                    nx, ny, nz,
+                    1, nx_x, nx_x * ny_x,
+                    1, nx_y, nx_y * ny_y,
+                    1, nx_z, nx_z * ny_z);
+#else
     i_x = 0;
     i_y = 0;
     i_z = 0;
@@ -345,8 +387,10 @@ void PFVProd(
     {
       zp[i_z] = xp[i_x] * yp[i_y];
     });
+#endif
   }
   IncFLOPCount(VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVDiv(
@@ -355,6 +399,7 @@ void PFVDiv(
             Vector *y,
             Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -406,6 +451,13 @@ void PFVDiv(
     xp = SubvectorElt(x_sub, ix, iy, iz);
     yp = SubvectorElt(y_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VDiv(xp, yp, zp,
+                   nx, ny, nz,
+                   1, nx_x, nx_x * ny_x,
+                   1, nx_y, nx_y * ny_y,
+                   1, nx_z, nx_z * ny_z);
+#else
     i_x = 0;
     i_y = 0;
     i_z = 0;
@@ -416,8 +468,10 @@ void PFVDiv(
     {
       zp[i_z] = xp[i_x] / yp[i_y];
     });
+#endif
   }
   IncFLOPCount(VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVScale(
@@ -426,6 +480,7 @@ void PFVScale(
               Vector *x,
               Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -445,6 +500,7 @@ void PFVScale(
   if (z == x)
   {       /* BLAS usage: scale x <- cx */
     PFVScaleBy(c, x);
+    EndTiming(VectorUtilityRoutineIndex);
     return;
   }
 
@@ -484,6 +540,13 @@ void PFVScale(
       zp = SubvectorElt(z_sub, ix, iy, iz);
       xp = SubvectorElt(x_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+      PyCodegen_VScale(xp, zp,
+                       nx, ny, nz,
+                       1, nx_x, nx_x * ny_x,
+                       1, nx_z, nx_z * ny_z,
+                       c);
+#else
       i_x = 0;
       i_z = 0;
       BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
@@ -492,9 +555,11 @@ void PFVScale(
       {
         zp[i_z] = c * xp[i_x];
       });
+#endif
     }
   }
   IncFLOPCount(VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVAbs(
@@ -502,6 +567,7 @@ void PFVAbs(
             Vector *x,
             Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -544,6 +610,12 @@ void PFVAbs(
     zp = SubvectorElt(z_sub, ix, iy, iz);
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VAbs(xp, zp,
+                   nx, ny, nz,
+                   1, nx_x, nx_x * ny_x,
+                   1, nx_z, nx_z * ny_z);
+#else
     i_x = 0;
     i_z = 0;
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
@@ -552,7 +624,9 @@ void PFVAbs(
     {
       zp[i_z] = fabs(xp[i_x]);
     });
+#endif
   }
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVInv(
@@ -560,6 +634,7 @@ void PFVInv(
             Vector *x,
             Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -602,6 +677,12 @@ void PFVInv(
     zp = SubvectorElt(z_sub, ix, iy, iz);
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VInv(xp, zp,
+                   nx, ny, nz,
+                   1, nx_x, nx_x * ny_x,
+                   1, nx_z, nx_z * ny_z);
+#else
     i_x = 0;
     i_z = 0;
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
@@ -610,8 +691,10 @@ void PFVInv(
     {
       zp[i_z] = ONE / xp[i_x];
     });
+#endif
   }
   IncFLOPCount(VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVAddConst(
@@ -620,6 +703,7 @@ void PFVAddConst(
                  double  b,
                  Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -662,6 +746,13 @@ void PFVAddConst(
     zp = SubvectorElt(z_sub, ix, iy, iz);
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VAddConst(xp, zp,
+                        nx, ny, nz,
+                        1, nx_x, nx_x * ny_x,
+                        1, nx_z, nx_z * ny_z,
+                        b);
+#else
     i_x = 0;
     i_z = 0;
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
@@ -670,8 +761,10 @@ void PFVAddConst(
     {
       zp[i_z] = xp[i_x] + b;
     });
+#endif
   }
   IncFLOPCount(VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 double PFVDotProd(
@@ -679,6 +772,7 @@ double PFVDotProd(
                   Vector *x,
                   Vector *y)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -724,16 +818,24 @@ double PFVDotProd(
     xp = SubvectorElt(x_sub, ix, iy, iz);
     yp = SubvectorElt(y_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    sum = PyCodegen_VDotProd_wrapper(xp, yp,
+                                     nx, ny, nz,
+                                     1, nx_x, nx_x * ny_x,
+                                     1, nx_y, nx_y * ny_y,
+                                     VDotProductTimingIndex);
+#else
     i_x = 0;
     i_y = 0;
-
     BoxLoopReduceI2(sum,
                     i, j, k, ix, iy, iz, nx, ny, nz,
                     i_x, nx_x, ny_x, nz_x, 1, 1, 1,
                     i_y, nx_y, ny_y, nz_y, 1, 1, 1,
+                    VDotProductTimingIndex,
     {
       ReduceSum(sum, xp[i_x] * yp[i_y]);
     });
+#endif
   }
 
   result_invoice = amps_NewInvoice("%d", &sum);
@@ -742,6 +844,7 @@ double PFVDotProd(
 
   IncFLOPCount(2 * VectorSize(x));
 
+  EndTiming(VectorUtilityRoutineIndex);
   return(sum);
 }
 
@@ -749,6 +852,7 @@ double PFVMaxNorm(
 /* MaxNorm = || x ||_{max}   */
                   Vector *x)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -785,6 +889,11 @@ double PFVMaxNorm(
 
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    max_val = PyCodegen_VMaxNorm_wrapper(xp,
+                                         nx, ny, nz,
+                                         1, nx_x, nx_x * ny_x);
+#else
     i_x = 0;
     BoxLoopReduceI1(max_val,
                     i, j, k, ix, iy, iz, nx, ny, nz,
@@ -793,12 +902,14 @@ double PFVMaxNorm(
       double xp_abs = fabs(xp[i_x]);
       ReduceMax(max_val, xp_abs);
     });
+#endif
   }
 
   result_invoice = amps_NewInvoice("%d", &max_val);
   amps_AllReduce(amps_CommWorld, result_invoice, amps_Max);
   amps_FreeInvoice(result_invoice);
 
+  EndTiming(VectorUtilityRoutineIndex);
   return(max_val);
 }
 
@@ -807,6 +918,7 @@ double PFVWrmsNorm(
                    Vector *x,
                    Vector *w)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -852,6 +964,12 @@ double PFVWrmsNorm(
     xp = SubvectorElt(x_sub, ix, iy, iz);
     wp = SubvectorElt(w_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    sum = PyCodegen_VWrmsNormHelper_wrapper(wp, xp,
+                                            nx, ny, nz,
+                                            1, nx_w, nx_w * ny_w,
+                                            1, nx_x, nx_x * ny_x);
+#else
     i_x = 0;
     i_w = 0;
 
@@ -863,6 +981,7 @@ double PFVWrmsNorm(
       double prod = xp[i_x] * wp[i_w];
       ReduceSum(sum, prod * prod);
     });
+#endif
   }
 
   result_invoice = amps_NewInvoice("%d", &sum);
@@ -871,6 +990,7 @@ double PFVWrmsNorm(
 
   IncFLOPCount(3 * VectorSize(x));
 
+  EndTiming(VectorUtilityRoutineIndex);
   return(sqrt(sum / (x->size)));
 }
 
@@ -879,6 +999,7 @@ double PFVWL2Norm(
                   Vector *x,
                   Vector *w)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -927,6 +1048,12 @@ double PFVWL2Norm(
     i_x = 0;
     i_w = 0;
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    sum = PyCodegen_VWrmsNormHelper_wrapper(wp, xp,
+                                            nx, ny, nz,
+                                            1, nx_w, nx_w * ny_w,
+                                            1, nx_x, nx_x * ny_x);
+#else
     BoxLoopReduceI2(sum,
                     i, j, k, ix, iy, iz, nx, ny, nz,
                     i_x, nx_x, ny_x, nz_x, 1, 1, 1,
@@ -935,6 +1062,7 @@ double PFVWL2Norm(
       const double prod = xp[i_x] * wp[i_w];
       ReduceSum(sum, prod * prod);
     });
+#endif
   }
 
   result_invoice = amps_NewInvoice("%d", &sum);
@@ -943,6 +1071,7 @@ double PFVWL2Norm(
 
   IncFLOPCount(3 * VectorSize(x));
 
+  EndTiming(VectorUtilityRoutineIndex);
   return(sqrt(sum));
 }
 
@@ -950,6 +1079,7 @@ double PFVL1Norm(
 /* L1Norm = sum_i |x_i|  */
                  Vector *x)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -986,6 +1116,11 @@ double PFVL1Norm(
 
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    sum = PyCodegen_VL1Norm_wrapper(xp,
+                                    nx, ny, nz,
+                                    1, nx_x, nx_x * ny_x);
+#else
     i_x = 0;
     BoxLoopReduceI1(sum,
                     i, j, k, ix, iy, iz, nx, ny, nz,
@@ -993,19 +1128,114 @@ double PFVL1Norm(
     {
       ReduceSum(sum, fabs(xp[i_x]));
     });
+#endif
   }
 
   result_invoice = amps_NewInvoice("%d", &sum);
   amps_AllReduce(amps_CommWorld, result_invoice, amps_Add);
   amps_FreeInvoice(result_invoice);
 
+  EndTiming(VectorUtilityRoutineIndex);
   return(sum);
 }
+
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+void PFVKINAtimesDQFusedReduce(
+/* KINAtimesDQFusedReduce: fused reduction used by KINSpgmrAtimesDQ (kinsol/kinspgmr.c) to compute the following three quantities in a single pass over the data:
+ *
+ *   *sutsv   = (Du * uu) . (Du * v)
+ *   *vtv     = (Du * v ) . (Du * v)
+ *   *sq1norm = || Du * v ||_1
+ */
+                        Vector *uu,
+                        Vector *v,
+                        Vector *uscale,
+                        double *sutsv,
+                        double *vtv,
+                        double *sq1norm)
+{
+  BeginTiming(VectorUtilityRoutineIndex);
+  Grid       *grid = VectorGrid(uu);
+  Subgrid    *subgrid;
+
+  Subvector  *uu_sub;
+  Subvector  *v_sub;
+  Subvector  *uscale_sub;
+
+  const double * __restrict__ uup;
+  const double * __restrict__ vp;
+  const double * __restrict__ uscalep;
+
+  int ix, iy, iz;
+  int nx, ny, nz;
+  int nx_uu, ny_uu, nz_uu;
+  int nx_v, ny_v, nz_v;
+  int nx_uscale, ny_uscale, nz_uscale;
+
+  int sg;
+
+  amps_Invoice result_invoice;
+
+  *sutsv = ZERO;
+  *vtv = ZERO;
+  *sq1norm = ZERO;
+
+  ForSubgridI(sg, GridSubgrids(grid))
+  {
+    subgrid = GridSubgrid(grid, sg);
+
+    uu_sub = VectorSubvector(uu, sg);
+    v_sub = VectorSubvector(v, sg);
+    uscale_sub = VectorSubvector(uscale, sg);
+
+    ix = SubgridIX(subgrid);
+    iy = SubgridIY(subgrid);
+    iz = SubgridIZ(subgrid);
+
+    nx = SubgridNX(subgrid);
+    ny = SubgridNY(subgrid);
+    nz = SubgridNZ(subgrid);
+
+    nx_uu = SubvectorNX(uu_sub);
+    ny_uu = SubvectorNY(uu_sub);
+    nz_uu = SubvectorNZ(uu_sub);
+
+    nx_v = SubvectorNX(v_sub);
+    ny_v = SubvectorNY(v_sub);
+    nz_v = SubvectorNZ(v_sub);
+
+    nx_uscale = SubvectorNX(uscale_sub);
+    ny_uscale = SubvectorNY(uscale_sub);
+    nz_uscale = SubvectorNZ(uscale_sub);
+
+    uup = SubvectorElt(uu_sub, ix, iy, iz);
+    vp = SubvectorElt(v_sub, ix, iy, iz);
+    uscalep = SubvectorElt(uscale_sub, ix, iy, iz);
+
+    PyCodegen_KINAtimesDQFusedReduce_wrapper(uscalep, uup, vp,
+                                        nx, ny, nz,
+                                        1, nx_uscale, nx_uscale * ny_uscale,
+                                        1, nx_uu, nx_uu * ny_uu,
+                                        1, nx_v, nx_v * ny_v,
+                                        sq1norm, sutsv, vtv,
+                                        KINAtimesDQFusedReduceTimingIndex);
+  }
+
+  result_invoice = amps_NewInvoice("%d%d%d", sutsv, vtv, sq1norm);
+  amps_AllReduce(amps_CommWorld, result_invoice, amps_Add);
+  amps_FreeInvoice(result_invoice);
+
+  IncFLOPCount(6 * VectorSize(uu));
+
+  EndTiming(VectorUtilityRoutineIndex);
+}
+#endif
 
 double PFVMin(
 /* Min = min_i(x_i)   */
               Vector *x)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1049,6 +1279,11 @@ double PFVMin(
     /* Get initial guess for min_val */
     if (sg == 0)
     {
+#ifdef PARFLOW_HAVE_PYSTENCILS
+      min_val = PyCodegen_VSumNorm_wrapper(xp,
+                                           nx, ny, nz,
+                                           1, nx_x, nx_x * ny_x);
+#else
       i_x = 0;
       BoxLoopReduceI1(min_val,
                       i, j, k, ix, iy, iz, 1, 1, 1,
@@ -1056,8 +1291,15 @@ double PFVMin(
       {
         ReduceSum(min_val, xp[i_x]);
       });
+#endif
     }
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    min_val = PyCodegen_VMin_wrapper(xp,
+                                     nx, ny, nz,
+                                     1, nx_x, nx_x * ny_x,
+                                     min_val);
+#else
     i_x = 0;
     BoxLoopReduceI1(min_val,
                     i, j, k, ix, iy, iz, nx, ny, nz,
@@ -1065,11 +1307,13 @@ double PFVMin(
     {
       ReduceMin(min_val, xp[i_x]);
     });
+#endif
   }
 
   amps_AllReduce(amps_CommWorld, result_invoice, amps_Min);
   amps_FreeInvoice(result_invoice);
 
+  EndTiming(VectorUtilityRoutineIndex);
   return(min_val);
 }
 
@@ -1077,6 +1321,7 @@ double PFVMax(
 /* Max = max_i(x_i)   */
               Vector *x)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1116,6 +1361,11 @@ double PFVMax(
     /* Get initial guess for max_val */
     if (sg == 0)
     {
+#ifdef PARFLOW_HAVE_PYSTENCILS
+      max_val = PyCodegen_VSumNorm_wrapper(xp,
+                                           nx, ny, nz,
+                                           1, nx_x, nx_x * ny_x);
+#else
       i_x = 0;
       BoxLoopReduceI1(max_val,
                       i, j, k, ix, iy, iz, 1, 1, 1,
@@ -1123,8 +1373,15 @@ double PFVMax(
       {
         ReduceSum(max_val, xp[i_x]);
       });
+#endif
     }
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    max_val = PyCodegen_VMax_wrapper(xp,
+                                     nx, ny, nz,
+                                     1, nx_x, nx_x * ny_x,
+                                     max_val);
+#else
     i_x = 0;
 
     BoxLoopReduceI1(max_val,
@@ -1133,12 +1390,14 @@ double PFVMax(
     {
       ReduceMax(max_val, xp[i_x]);
     });
+#endif
   }
 
   result_invoice = amps_NewInvoice("%d", &max_val);
   amps_AllReduce(amps_CommWorld, result_invoice, amps_Max);
   amps_FreeInvoice(result_invoice);
 
+  EndTiming(VectorUtilityRoutineIndex);
   return(max_val);
 }
 
@@ -1231,6 +1490,7 @@ void PFVCompare(
                 Vector *x,
                 Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1273,6 +1533,13 @@ void PFVCompare(
     zp = SubvectorElt(z_sub, ix, iy, iz);
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VCompare(xp, zp,
+                       nx, ny, nz,
+                       1, nx_x, nx_x * ny_x,
+                       1, nx_z, nx_z * ny_z,
+                       c);
+#else
     i_x = 0;
     i_z = 0;
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
@@ -1281,7 +1548,9 @@ void PFVCompare(
     {
       zp[i_z] = (fabs(xp[i_x]) >= c) ? ONE : ZERO;
     });
+#endif
   }
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 
@@ -1400,6 +1669,7 @@ void PFVSum(
             Vector *y,
             Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1451,6 +1721,13 @@ void PFVSum(
     yp = SubvectorElt(y_sub, ix, iy, iz);
     zp = SubvectorElt(z_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VSum(xp, yp, zp,
+                   nx, ny, nz,
+                   1, nx_x, nx_x * ny_x,
+                   1, nx_y, nx_y * ny_y,
+                   1, nx_z, nx_z * ny_z);
+#else
     i_x = 0;
     i_y = 0;
     i_z = 0;
@@ -1461,8 +1738,10 @@ void PFVSum(
     {
       zp[i_z] = xp[i_x] + yp[i_y];
     });
+#endif
   }
   IncFLOPCount(VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVDiff(
@@ -1471,6 +1750,7 @@ void PFVDiff(
              Vector *y,
              Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1523,6 +1803,13 @@ void PFVDiff(
     yp = SubvectorElt(y_sub, ix, iy, iz);
     zp = SubvectorElt(z_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VDiff(xp, yp, zp,
+                    nx, ny, nz,
+                    1, nx_x, nx_x * ny_x,
+                    1, nx_y, nx_y * ny_y,
+                    1, nx_z, nx_z * ny_z);
+#else
     i_x = 0;
     i_y = 0;
     i_z = 0;
@@ -1533,8 +1820,10 @@ void PFVDiff(
     {
       zp[i_z] = xp[i_x] - yp[i_y];
     });
+#endif
   }
   IncFLOPCount(VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVNeg(
@@ -1542,6 +1831,7 @@ void PFVNeg(
             Vector *x,
             Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1585,6 +1875,12 @@ void PFVNeg(
     xp = SubvectorElt(x_sub, ix, iy, iz);
     zp = SubvectorElt(z_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VNeg(xp, zp,
+                   nx, ny, nz,
+                   1, nx_x, nx_x * ny_x,
+                   1, nx_z, nx_z * ny_z);
+#else
     i_x = 0;
     i_z = 0;
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
@@ -1593,16 +1889,19 @@ void PFVNeg(
     {
       zp[i_z] = -xp[i_x];
     });
+#endif
   }
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVScaleSum(
-/* ScaleSum : z = c * x + y   */
+/* ScaleSum : z = c * (x + y)   */
                  double  c,
                  Vector *x,
                  Vector *y,
                  Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1655,6 +1954,14 @@ void PFVScaleSum(
     yp = SubvectorElt(y_sub, ix, iy, iz);
     zp = SubvectorElt(z_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VScaleSum(xp, yp, zp,
+                        nx, ny, nz,
+                        1, nx_x, nx_x * ny_x,
+                        1, nx_y, nx_y * ny_y,
+                        1, nx_z, nx_z * ny_z,
+                        c);
+#else
     i_x = 0;
     i_y = 0;
     i_z = 0;
@@ -1665,17 +1972,20 @@ void PFVScaleSum(
     {
       zp[i_z] = c * (xp[i_x] + yp[i_y]);
     });
+#endif
   }
   IncFLOPCount(2 * VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVScaleDiff(
-/* ScaleDiff : z = c * x - y   */
+/* ScaleDiff : z = c * (x - y)   */
                   double  c,
                   Vector *x,
                   Vector *y,
                   Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1728,6 +2038,14 @@ void PFVScaleDiff(
     yp = SubvectorElt(y_sub, ix, iy, iz);
     zp = SubvectorElt(z_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VScaleDiff(xp, yp, zp,
+                         nx, ny, nz,
+                         1, nx_x, nx_x * ny_x,
+                         1, nx_y, nx_y * ny_y,
+                         1, nx_z, nx_z * ny_z,
+                         c);
+#else
     i_x = 0;
     i_y = 0;
     i_z = 0;
@@ -1738,8 +2056,10 @@ void PFVScaleDiff(
     {
       zp[i_z] = c * (xp[i_x] - yp[i_y]);
     });
+#endif
   }
   IncFLOPCount(2 * VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVLin1(
@@ -1749,6 +2069,7 @@ void PFVLin1(
              Vector *y,
              Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1801,6 +2122,14 @@ void PFVLin1(
     yp = SubvectorElt(y_sub, ix, iy, iz);
     zp = SubvectorElt(z_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VLin1(xp, yp, zp,
+                    nx, ny, nz,
+                    1, nx_x, nx_x * ny_x,
+                    1, nx_y, nx_y * ny_y,
+                    1, nx_z, nx_z * ny_z,
+                    a);
+#else
     i_x = 0;
     i_y = 0;
     i_z = 0;
@@ -1811,8 +2140,10 @@ void PFVLin1(
     {
       zp[i_z] = a * (xp[i_x]) + yp[i_y];
     });
+#endif
   }
   IncFLOPCount(2 * VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVLin2(
@@ -1822,6 +2153,7 @@ void PFVLin2(
              Vector *y,
              Vector *z)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1874,6 +2206,14 @@ void PFVLin2(
     yp = SubvectorElt(y_sub, ix, iy, iz);
     zp = SubvectorElt(z_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VLin2(xp, yp, zp,
+                    nx, ny, nz,
+                    1, nx_x, nx_x * ny_x,
+                    1, nx_y, nx_y * ny_y,
+                    1, nx_z, nx_z * ny_z,
+                    a);
+#else
     i_x = 0;
     i_y = 0;
     i_z = 0;
@@ -1884,8 +2224,10 @@ void PFVLin2(
     {
       zp[i_z] = a * (xp[i_x]) - yp[i_y];
     });
+#endif
   }
   IncFLOPCount(2 * VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVAxpy(
@@ -1894,6 +2236,7 @@ void PFVAxpy(
              Vector *x,
              Vector *y)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1937,6 +2280,13 @@ void PFVAxpy(
     xp = SubvectorElt(x_sub, ix, iy, iz);
     yp = SubvectorElt(y_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VAxpy(xp, yp,
+                    nx, ny, nz,
+                    1, nx_x, nx_x * ny_x,
+                    1, nx_y, nx_y * ny_y,
+                    a);
+#else
     i_x = 0;
     i_y = 0;
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
@@ -1945,8 +2295,10 @@ void PFVAxpy(
     {
       yp[i_y] += a * (xp[i_x]);
     });
+#endif
   }
   IncFLOPCount(2 * VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVScaleBy(
@@ -1954,6 +2306,7 @@ void PFVScaleBy(
                 double  a,
                 Vector *x)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -1988,14 +2341,22 @@ void PFVScaleBy(
 
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VScaleBy(xp,
+                       nx, ny, nz,
+                       1, nx_x, nx_x * ny_x,
+                       a);
+#else
     i_x = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
       xp[i_x] = xp[i_x] * a;
     });
+#endif
   }
   IncFLOPCount(VectorSize(x));
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVLayerCopy(
