@@ -53,3 +53,5 @@ checkOK("test_directory/test1/test2")
 rm("test_directory")
 rm("test_directory")
 checkKO("test_directory")
+
+print("PASSED")

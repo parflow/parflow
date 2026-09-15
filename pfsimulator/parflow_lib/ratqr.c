@@ -4,6 +4,7 @@
  */
 
 #include "f2c.h"
+#include "math.h"
 
 extern double epslon_(double *x);
 
@@ -31,7 +32,7 @@ extern double epslon_(double *x);
   integer i, j, k;
   doublereal p, q, r, s, delta;
   integer k1, ii, jj;
-  doublereal ep, qp;
+  doublereal ep, qp = NAN;
   doublereal err, tot;
 
 

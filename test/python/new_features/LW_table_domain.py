@@ -9,7 +9,8 @@ from parflow import Run
 from parflow.tools.fs import get_absolute_path
 from parflow.tools.builders import SubsurfacePropertiesBuilder, DomainBuilder
 
-LW_Test = Run("LW_Test", __file__)
+run_name = "LW_Test"
+LW_Test = Run(run_name, __file__)
 
 LW_Test.FileVersion = 4
 
@@ -200,17 +201,21 @@ LW_Test.Solver.Linear.MaxRestarts = 2
 # Test validation
 # -----------------------------------------------------------------------------
 
+passed = True
+
 
 def test_output(file_name):
+    new_filename = get_absolute_path(f"{file_name}.yaml")
+    correct_filename = get_absolute_path(
+        f"$PF_SRC/test/correct_output/LW_test_ref.yaml.ref"
+    )
     LW_Test.write(file_name, file_format="yaml")
-    with open(get_absolute_path(f"{file_name}.yaml")) as new, open(
-        get_absolute_path("$PF_SRC/test/correct_output/LW_test_ref.yaml.ref")
-    ) as ref:
+    with open(new_filename) as new, open(correct_filename) as ref:
         if new.read() == ref.read():
-            print("Success we have the same file")
+            print("Files are the same")
             return True
         else:
-            print("Files are different")
+            print(f"Files are different {new_filename} {correct_filename}")
             return False
 
 
@@ -220,5 +225,11 @@ print("Comparing table and domain builder output to ref:")
 print("...")
 # LW_Test.write_subsurface_table('inline_input.txt')
 if not test_output("LW_table_domain"):
-    sys.exit(1)
+    passed = False
 print("")
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)

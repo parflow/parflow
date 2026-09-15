@@ -10,7 +10,6 @@ from parflow.tools.fs import mkdir, get_absolute_path, rm
 from parflow.tools.compare import pf_test_file, pf_test_file_with_abs
 
 run_name = "default_richards"
-
 default_richards = Run(run_name, __file__)
 
 # ---------------------------------------------------------
@@ -348,7 +347,7 @@ default_richards.Solver.PrintVelocities = True
 # Run ParFlow
 # -----------------------------------------------------------------------------
 
-new_output_dir_name = get_absolute_path("test_output/default_richards")
+new_output_dir_name = get_absolute_path(f"test_output/{run_name}")
 mkdir(new_output_dir_name)
 correct_output_dir_name = get_absolute_path("../correct_output")
 default_richards.run(working_directory=new_output_dir_name)
