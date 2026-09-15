@@ -502,3 +502,8 @@ Parflow is released under the GNU General Public License version 2.1
 
 For details and restrictions, please read the LICENSE.txt file.
 - [LICENSE](./LICENSE.txt)
+
+## Community resources
+
+- Unofficial, community-maintained AI-agent skill for onboarding new users (not an official parflow resource): [earth-space-ai/parflow-skill](https://github.com/earth-space-ai/parflow-skill). It restructures the existing ParFlow documentation for AI coding agents and defers to this repository as the source of truth.
+
