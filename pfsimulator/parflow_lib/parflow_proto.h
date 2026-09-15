@@ -938,6 +938,48 @@ PFModule *OverlandFlowEvalKinNewPublicXtra(void);
 void OverlandFlowEvalKinFreePublicXtra(void);
 int OverlandFlowEvalKinSizeOfTempData(void);
 
+/* overlandflow_eval_kin_wc.c */
+typedef void (*OverlandFlowEvalKin_wcInvoke) (Grid *       grid,
+                                              int          sg,
+                                              BCStruct *   bc_struct,
+                                              int          ipatch,
+                                              ProblemData *problem_data,
+                                              Vector *     pressure,
+                                              double *     ke_v,
+                                              double *     kw_v,
+                                              double *     kn_v,
+                                              double *     ks_v,
+                                              double *     ke_vns,
+                                              double *     kw_vns,
+                                              double *     kn_vns,
+                                              double *     ks_vns,
+                                              double *     qx_v,
+                                              double *     qy_v,
+                                              int          fcn);
+
+void OverlandFlowEvalKin_wc(Grid *       grid,
+                            int          sg,
+                            BCStruct *   bc_struct,
+                            int          ipatch,
+                            ProblemData *problem_data,
+                            Vector *     pressure,
+                            double *     ke_v,
+                            double *     kw_v,
+                            double *     kn_v,
+                            double *     ks_v,
+                            double *     ke_vns,
+                            double *     kw_vns,
+                            double *     kn_vns,
+                            double *     ks_vns,
+                            double *     qx_v,
+                            double *     qy_v,
+                            int          fcn);
+PFModule *OverlandFlowEvalKin_wcInitInstanceXtra(void);
+void OverlandFlowEvalKin_wcFreeInstanceXtra(void);
+PFModule *OverlandFlowEvalKin_wcNewPublicXtra(void);
+void OverlandFlowEvalKin_wcFreePublicXtra(void);
+int OverlandFlowEvalKin_wcSizeOfTempData(void);
+
 typedef void (*ICPhaseSaturInvoke) (Vector *ic_phase_satur, int phase, ProblemData *problem_data);
 typedef PFModule *(*ICPhaseSaturNewPublicXtraInvoke) (int num_phases);
 
