@@ -1,0 +1,10 @@
+&nl_colm
+
+   DEF_simulation_time%start_year   = 2010
+   DEF_simulation_time%start_month  = 1
+   DEF_simulation_time%start_day    = 1
+   DEF_simulation_time%start_sec    = 0
+   DEF_WRST_FREQ = 'DAILY'
+   DEF_hotstart = .false.
+
+/
