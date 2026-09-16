@@ -57,13 +57,13 @@ extern "C++" {
  * It is also important that the total blocksize (the product of x, y,
  * and z-blocksizes) is divisible by the warp size (32).
  */
-#define BLOCKSIZE_X 32
+#define BLOCKSIZE_X 64
 
 /**
  * The default blocksize for the y-dimension. Blocksizes along y and
  * z-dimensions are less important compared to the x-dimension.
  */
-#define BLOCKSIZE_Y 8
+#define BLOCKSIZE_Y 4
 
 /**
  * The default blocksize for the z-dimension. Blocksizes along y and
@@ -512,11 +512,39 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
           }                                                                                                 \
         }
 
+/**
+ * Launches `lambda_body` and (optionally) times just the launch.
+ */
+#define BOXLOOP_CUDA_LAUNCH(timing_index, lambda_body, grid, block, nx, ny, nz)               \
+        BeginTiming(timing_index);                                                            \
+        BoxKernel << < grid, block >> > (lambda_body, nx, ny, nz);                            \
+        EndTiming(timing_index)                                                               \
+        CUDA_ERR(cudaPeekAtLastError());                                                      \
+        {                                                                                     \
+          typedef function_traits < decltype(lambda_body) > traits;                           \
+          if (!std::is_same < traits::result_type, struct SkipParallelSync > ::value)         \
+          CUDA_ERR(cudaStreamSynchronize(0));                                                 \
+        }
+
+#define BOXLOOP_CUDA_REDUCE_LAUNCH(timing_index, lambda_body, grid, block, nx, ny, nz, rslt, ptr_rslt) \
+        BeginTiming(timing_index);                                                                     \
+        {                                                                                              \
+          typedef function_traits < decltype(lambda_body) > traits;                                    \
+          DotKernel < traits::result_type > << < grid, block >> > (lambda_body,                        \
+                                                                   rslt, ptr_rslt, nx, ny, nz);        \
+        }                                                                                              \
+        EndTiming(timing_index)                                                                        \
+        CUDA_ERR(cudaPeekAtLastError());                                                               \
+        CUDA_ERR(cudaStreamSynchronize(0));
+
 /** Loop definition for CUDA. */
-#define BoxLoopI1_cuda(i, j, k,                                                                          \
+#define BoxLoopI1_cuda(i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, ...) \
+        BOXLOOP_APPLY(BoxLoopI1_cuda_IMPL, i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, BOXLOOP_TIMING(__VA_ARGS__))
+
+#define BoxLoopI1_cuda_IMPL(i, j, k,                                                                     \
                        ix, iy, iz, nx, ny, nz,                                                           \
                        i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
-                       loop_body)                                                                        \
+                       timing_index, loop_body)                                                          \
         {                                                                                                \
           if (nx > 0 && ny > 0 && nz > 0)                                                                \
           {                                                                                              \
@@ -540,22 +568,20 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
               loop_body;                                                                                 \
             };                                                                                           \
                                                                                                          \
-            BoxKernel << < grid, block >> > (lambda_body, nx, ny, nz);                                   \
-            CUDA_ERR(cudaPeekAtLastError());                                                             \
-                                                                                                         \
-            typedef function_traits < decltype(lambda_body) > traits;                                    \
-            if (!std::is_same < traits::result_type, struct SkipParallelSync > ::value)                  \
-            CUDA_ERR(cudaStreamSynchronize(0));                                                          \
+            BOXLOOP_CUDA_LAUNCH(timing_index, lambda_body, grid, block, nx, ny, nz);                     \
           }                                                                                              \
           (void)i; (void)j; (void)k;                                                                     \
         }
 
 /** Loop definition for CUDA. */
-#define BoxLoopI2_cuda(i, j, k,                                                                          \
+#define BoxLoopI2_cuda(i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, i2, nx2, ny2, nz2, sx2, sy2, sz2, ...) \
+        BOXLOOP_APPLY(BoxLoopI2_cuda_IMPL, i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, i2, nx2, ny2, nz2, sx2, sy2, sz2, BOXLOOP_TIMING(__VA_ARGS__))
+
+#define BoxLoopI2_cuda_IMPL(i, j, k,                                                                     \
                        ix, iy, iz, nx, ny, nz,                                                           \
                        i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
                        i2, nx2, ny2, nz2, sx2, sy2, sz2,                                                 \
-                       loop_body)                                                                        \
+                       timing_index, loop_body)                                                          \
         {                                                                                                \
           if (nx > 0 && ny > 0 && nz > 0)                                                                \
           {                                                                                              \
@@ -583,23 +609,21 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
               loop_body;                                                                                 \
             };                                                                                           \
                                                                                                          \
-            BoxKernel << < grid, block >> > (lambda_body, nx, ny, nz);                                   \
-            CUDA_ERR(cudaPeekAtLastError());                                                             \
-                                                                                                         \
-            typedef function_traits < decltype(lambda_body) > traits;                                    \
-            if (!std::is_same < traits::result_type, struct SkipParallelSync > ::value)                  \
-            CUDA_ERR(cudaStreamSynchronize(0));                                                          \
+            BOXLOOP_CUDA_LAUNCH(timing_index, lambda_body, grid, block, nx, ny, nz);                     \
           }                                                                                              \
           (void)i; (void)j; (void)k;                                                                     \
         }
 
 /** Loop definition for CUDA. */
-#define BoxLoopI3_cuda(i, j, k,                                                                          \
+#define BoxLoopI3_cuda(i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, i2, nx2, ny2, nz2, sx2, sy2, sz2, i3, nx3, ny3, nz3, sx3, sy3, sz3, ...) \
+        BOXLOOP_APPLY(BoxLoopI3_cuda_IMPL, i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, i2, nx2, ny2, nz2, sx2, sy2, sz2, i3, nx3, ny3, nz3, sx3, sy3, sz3, BOXLOOP_TIMING(__VA_ARGS__))
+
+#define BoxLoopI3_cuda_IMPL(i, j, k,                                                                     \
                        ix, iy, iz, nx, ny, nz,                                                           \
                        i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
                        i2, nx2, ny2, nz2, sx2, sy2, sz2,                                                 \
                        i3, nx3, ny3, nz3, sx3, sy3, sz3,                                                 \
-                       loop_body)                                                                        \
+                       timing_index, loop_body)                                                          \
         {                                                                                                \
           if (nx > 0 && ny > 0 && nz > 0)                                                                \
           {                                                                                              \
@@ -631,21 +655,19 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
               loop_body;                                                                                 \
             };                                                                                           \
                                                                                                          \
-            BoxKernel << < grid, block >> > (lambda_body, nx, ny, nz);                                   \
-            CUDA_ERR(cudaPeekAtLastError());                                                             \
-                                                                                                         \
-            typedef function_traits < decltype(lambda_body) > traits;                                    \
-            if (!std::is_same < traits::result_type, struct SkipParallelSync > ::value)                  \
-            CUDA_ERR(cudaStreamSynchronize(0));                                                          \
+            BOXLOOP_CUDA_LAUNCH(timing_index, lambda_body, grid, block, nx, ny, nz);                     \
           }                                                                                              \
           (void)i; (void)j; (void)k;                                                                     \
         }
 
 /** Loop definition for CUDA. */
-#define BoxLoopReduceI1_cuda(rslt, i, j, k,                                                                                                        \
+#define BoxLoopReduceI1_cuda(rslt, i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, ...) \
+        BOXLOOP_APPLY(BoxLoopReduceI1_cuda_IMPL, rslt, i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, BOXLOOP_TIMING(__VA_ARGS__))
+
+#define BoxLoopReduceI1_cuda_IMPL(rslt, i, j, k,                                                                                                        \
                              ix, iy, iz, nx, ny, nz,                                                                                               \
                              i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                                                     \
-                             loop_body)                                                                                                            \
+                             timing_index, loop_body)                                                                                              \
         {                                                                                                                                          \
           if (nx > 0 && ny > 0 && nz > 0)                                                                                                          \
           {                                                                                                                                        \
@@ -676,11 +698,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
             *ptr_rslt = rslt;                                                                                                                      \
             MemPrefetchHostToDevice_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);                                                                     \
                                                                                                                                                    \
-            typedef function_traits < decltype(lambda_body) > traits;                                                                              \
-            DotKernel < traits::result_type > << < grid, block >> > (lambda_body,                                                                  \
-                                                                     rslt, ptr_rslt, nx, ny, nz);                                                  \
-            CUDA_ERR(cudaPeekAtLastError());                                                                                                       \
-            CUDA_ERR(cudaStreamSynchronize(0));                                                                                                    \
+            BOXLOOP_CUDA_REDUCE_LAUNCH(timing_index, lambda_body, grid, block, nx, ny, nz, rslt, ptr_rslt); \
                                                                                                                                                    \
             MemPrefetchDeviceToHost_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);                                                                     \
             rslt = *ptr_rslt;                                                                                                                      \
@@ -690,11 +708,14 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         }
 
 /** Loop definition for CUDA. */
-#define BoxLoopReduceI2_cuda(rslt, i, j, k,                                                                                                        \
+#define BoxLoopReduceI2_cuda(rslt, i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, i2, nx2, ny2, nz2, sx2, sy2, sz2, ...) \
+        BOXLOOP_APPLY(BoxLoopReduceI2_cuda_IMPL, rslt, i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, i2, nx2, ny2, nz2, sx2, sy2, sz2, BOXLOOP_TIMING(__VA_ARGS__))
+
+#define BoxLoopReduceI2_cuda_IMPL(rslt, i, j, k,                                                                                                        \
                              ix, iy, iz, nx, ny, nz,                                                                                               \
                              i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                                                     \
                              i2, nx2, ny2, nz2, sx2, sy2, sz2,                                                                                     \
-                             loop_body)                                                                                                            \
+                             timing_index, loop_body)                                                                                              \
         {                                                                                                                                          \
           if (nx > 0 && ny > 0 && nz > 0)                                                                                                          \
           {                                                                                                                                        \
@@ -729,11 +750,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
             *ptr_rslt = rslt;                                                                                                                      \
             MemPrefetchHostToDevice_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);                                                                     \
                                                                                                                                                    \
-            typedef function_traits < decltype(lambda_body) > traits;                                                                              \
-            DotKernel < traits::result_type > << < grid, block >> > (lambda_body,                                                                  \
-                                                                     rslt, ptr_rslt, nx, ny, nz);                                                  \
-            CUDA_ERR(cudaPeekAtLastError());                                                                                                       \
-            CUDA_ERR(cudaStreamSynchronize(0));                                                                                                    \
+            BOXLOOP_CUDA_REDUCE_LAUNCH(timing_index, lambda_body, grid, block, nx, ny, nz, rslt, ptr_rslt); \
                                                                                                                                                    \
             MemPrefetchDeviceToHost_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);                                                                     \
             rslt = *ptr_rslt;                                                                                                                      \
@@ -743,8 +760,12 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         }
 
 /** Loop definition for CUDA. */
-#define GrGeomInLoopBoxes_cuda(i, j, k,                                                                          \
-                               grgeom, ix, iy, iz, nx, ny, nz, loop_body)                                        \
+
+#define GrGeomInLoopBoxes_cuda(i, j, k, grgeom, ix, iy, iz, nx, ny, nz, ...) \
+        BOXLOOP_APPLY(GrGeomInLoopBoxes_cuda_IMPL, i, j, k, grgeom, ix, iy, iz, nx, ny, nz, BOXLOOP_TIMING(__VA_ARGS__))
+
+#define GrGeomInLoopBoxes_cuda_IMPL(i, j, k,                                                                     \
+                               grgeom, ix, iy, iz, nx, ny, nz, timing_index, loop_body)                          \
         {                                                                                                        \
           BoxArray* boxes = GrGeomSolidInteriorBoxes(grgeom);                                                    \
           int ix_bxs = BoxArrayMinCell(boxes, 0);                                                                \
@@ -799,7 +820,9 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
                   }                                                                                              \
                 };                                                                                               \
                                                                                                                  \
+                BeginTiming(timing_index);                                                                       \
                 BoxKernel << < grid, block >> > (lambda_body, PV_nx, PV_ny, PV_nz);                              \
+                EndTiming(timing_index);                                                                         \
                 CUDA_ERR(cudaPeekAtLastError());                                                                 \
                 CUDA_ERR(cudaStreamSynchronize(0));                                                              \
               }                                                                                                  \
@@ -835,7 +858,9 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
                 }                                                                                                \
               };                                                                                                 \
                                                                                                                  \
+              BeginTiming(timing_index);                                                                         \
               BoxKernel << < grid, block >> > (lambda_body, nx_gpu, ny_gpu, nz_gpu);                             \
+              EndTiming(timing_index);                                                                           \
               CUDA_ERR(cudaPeekAtLastError());                                                                   \
               CUDA_ERR(cudaStreamSynchronize(0));                                                                \
             }                                                                                                    \

@@ -132,7 +132,10 @@ typedef struct {
  *   Macro for looping over the inside of a solid.
  *--------------------------------------------------------------------------*/
 
-#define GrGeomInLoopBoxes_default(i, j, k, grgeom, ix, iy, iz, nx, ny, nz, body) \
+#define GrGeomInLoopBoxes_default(i, j, k, grgeom, ix, iy, iz, nx, ny, nz, ...) \
+        BOXLOOP_APPLY(GrGeomInLoopBoxes_default_IMPL, i, j, k, grgeom, ix, iy, iz, nx, ny, nz, BOXLOOP_TIMING(__VA_ARGS__))
+
+#define GrGeomInLoopBoxes_default_IMPL(i, j, k, grgeom, ix, iy, iz, nx, ny, nz, timing_index, body) \
         {                                                                        \
           int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;                    \
           int *PV_visiting = NULL;                                               \
@@ -149,22 +152,27 @@ typedef struct {
             PV_iyu = pfmin((iy + ny - 1), box.up[1]);                            \
             PV_izu = pfmin((iz + nz - 1), box.up[2]);                            \
                                                                                  \
+            BeginTiming(timing_index);                                          \
             for (k = PV_izl; k <= PV_izu; k++)                                   \
             for (j = PV_iyl; j <= PV_iyu; j++)                                   \
             for (i = PV_ixl; i <= PV_ixu; i++)                                   \
             {                                                                    \
               body;                                                              \
             }                                                                    \
+            EndTiming(timing_index);                                            \
           }                                                                      \
         }
 
-#define GrGeomInLoop(i, j, k, grgeom,                                          \
-                     r, ix, iy, iz, nx, ny, nz, body)                          \
+#define GrGeomInLoop(i, j, k, grgeom, r, ix, iy, iz, nx, ny, nz, ...) \
+        BOXLOOP_APPLY(GrGeomInLoop_IMPL, i, j, k, grgeom, r, ix, iy, iz, nx, ny, nz, BOXLOOP_TIMING(__VA_ARGS__))
+
+#define GrGeomInLoop_IMPL(i, j, k, grgeom,                                    \
+                          r, ix, iy, iz, nx, ny, nz, timing_index, body)      \
         {                                                                      \
           if (r == 0 && GrGeomSolidInteriorBoxes(grgeom))                      \
           {                                                                    \
-            GrGeomInLoopBoxes(i, j, k, grgeom,                                 \
-                              ix, iy, iz, nx, ny, nz, body);                   \
+            GrGeomInLoopBoxes_IMPL(i, j, k, grgeom,                           \
+                              ix, iy, iz, nx, ny, nz, timing_index, body);     \
           }                                                                    \
           else                                                                 \
           {                                                                    \
@@ -174,12 +182,14 @@ typedef struct {
             i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref;                     \
             j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref;                     \
             k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref;                     \
+            BeginTiming(timing_index);                                        \
             GrGeomOctreeInteriorNodeLoop(i, j, k, PV_node,                     \
                                          GrGeomSolidData(grgeom),              \
                                          GrGeomSolidOctreeBGLevel(grgeom) + r, \
                                          ix, iy, iz, nx, ny, nz,               \
                                          TRUE,                                 \
                                          body);                                \
+            EndTiming(timing_index);                                          \
           }                                                                    \
         }
 

@@ -40,6 +40,23 @@
 #define _LOOPS_HEADER
 
 /**
+ * Resolves the optional trailing timing index accepted by the BoxLoopI*()/BoxLoopReduceI*() macros.
+ *
+ * Callers that omit the timing index are unaffected: it then defaults to NoTimingIndex, 
+ * which BeginTiming()/EndTiming() turn into a no-op:
+ *
+ *   BOXLOOP_TIMING(body)                -> NoTimingIndex, body
+ *   BOXLOOP_TIMING(timing_index, body)  -> timing_index, body
+ */
+#define BOXLOOP_TIMING_PICK(_1, _2, NAME, ...) NAME
+#define BOXLOOP_TIMING(...) \
+        BOXLOOP_TIMING_PICK(__VA_ARGS__, BOXLOOP_TIMING2, BOXLOOP_TIMING1)(__VA_ARGS__)
+#define BOXLOOP_TIMING1(body) NoTimingIndex, body
+#define BOXLOOP_TIMING2(timing_index, body) timing_index, body
+
+#define BOXLOOP_APPLY(macro, ...) macro(__VA_ARGS__)
+
+/**
  * @brief Declare increment variables for striding indices in BoxLoops
  * @param[in,out] jinc Name of the Y increment variable to be declared
  * @param[in,out] kinc Name of the Z increment variable to be declared
@@ -89,10 +106,18 @@
  */
 #define BoxLoopReduceI3_default(sum, ...) BoxLoopI3(__VA_ARGS__)
 
-#define BoxLoopI0_default(i, j, k,                \
+/* BoxLoopI0() takes an optional trailing timing index (see BOXLOOP_TIMING()
+ * above) after its fixed parameters -- forward to a fixed-arity _IMPL macro
+ * so the timing index/body pair resolved by BOXLOOP_TIMING() lands in named
+ * parameters instead of having to live inside a variadic body. */
+#define BoxLoopI0_default(i, j, k, ix, iy, iz, nx, ny, nz, ...) \
+        BOXLOOP_APPLY(BoxLoopI0_default_IMPL, i, j, k, ix, iy, iz, nx, ny, nz, BOXLOOP_TIMING(__VA_ARGS__))
+
+#define BoxLoopI0_default_IMPL(i, j, k,           \
                           ix, iy, iz, nx, ny, nz, \
-                          body)                   \
+                          timing_index, body)     \
         {                                         \
+          BeginTiming(timing_index);              \
           for (k = iz; k < iz + nz; k++)          \
           {                                       \
             for (j = iy; j < iy + ny; j++)        \
@@ -103,14 +128,19 @@
               }                                   \
             }                                     \
           }                                       \
+          EndTiming(timing_index);                \
         }
 
-#define BoxLoopI1_default(i, j, k,                                                      \
+#define BoxLoopI1_default(i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, ...) \
+        BOXLOOP_APPLY(BoxLoopI1_default_IMPL, i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, BOXLOOP_TIMING(__VA_ARGS__))
+
+#define BoxLoopI1_default_IMPL(i, j, k,                                                 \
                           ix, iy, iz, nx, ny, nz,                                       \
                           i1, nx1, ny1, nz1, sx1, sy1, sz1,                             \
-                          body)                                                         \
+                          timing_index, body)                                           \
         {                                                                               \
           DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);   \
+          BeginTiming(timing_index);                                                    \
           for (k = iz; k < iz + nz; k++)                                                \
           {                                                                             \
             for (j = iy; j < iy + ny; j++)                                              \
@@ -124,16 +154,21 @@
             }                                                                           \
             i1 += PV_kinc_1;                                                            \
           }                                                                             \
+          EndTiming(timing_index);                                                      \
         }
 
-#define BoxLoopI2_default(i, j, k,                                                      \
+#define BoxLoopI2_default(i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, i2, nx2, ny2, nz2, sx2, sy2, sz2, ...) \
+        BOXLOOP_APPLY(BoxLoopI2_default_IMPL, i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, i2, nx2, ny2, nz2, sx2, sy2, sz2, BOXLOOP_TIMING(__VA_ARGS__))
+
+#define BoxLoopI2_default_IMPL(i, j, k,                                                 \
                           ix, iy, iz, nx, ny, nz,                                       \
                           i1, nx1, ny1, nz1, sx1, sy1, sz1,                             \
                           i2, nx2, ny2, nz2, sx2, sy2, sz2,                             \
-                          body)                                                         \
+                          timing_index, body)                                           \
         {                                                                               \
           DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);   \
           DeclareInc(PV_jinc_2, PV_kinc_2, nx, ny, nz, nx2, ny2, nz2, sx2, sy2, sz2);   \
+          BeginTiming(timing_index);                                                    \
           for (k = iz; k < iz + nz; k++)                                                \
           {                                                                             \
             for (j = iy; j < iy + ny; j++)                                              \
@@ -150,18 +185,23 @@
             i1 += PV_kinc_1;                                                            \
             i2 += PV_kinc_2;                                                            \
           }                                                                             \
+          EndTiming(timing_index);                                                      \
         }
 
-#define BoxLoopI3_default(i, j, k,                                                      \
+#define BoxLoopI3_default(i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, i2, nx2, ny2, nz2, sx2, sy2, sz2, i3, nx3, ny3, nz3, sx3, sy3, sz3, ...) \
+        BOXLOOP_APPLY(BoxLoopI3_default_IMPL, i, j, k, ix, iy, iz, nx, ny, nz, i1, nx1, ny1, nz1, sx1, sy1, sz1, i2, nx2, ny2, nz2, sx2, sy2, sz2, i3, nx3, ny3, nz3, sx3, sy3, sz3, BOXLOOP_TIMING(__VA_ARGS__))
+
+#define BoxLoopI3_default_IMPL(i, j, k,                                                 \
                           ix, iy, iz, nx, ny, nz,                                       \
                           i1, nx1, ny1, nz1, sx1, sy1, sz1,                             \
                           i2, nx2, ny2, nz2, sx2, sy2, sz2,                             \
                           i3, nx3, ny3, nz3, sx3, sy3, sz3,                             \
-                          body)                                                         \
+                          timing_index, body)                                           \
         {                                                                               \
           DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);   \
           DeclareInc(PV_jinc_2, PV_kinc_2, nx, ny, nz, nx2, ny2, nz2, sx2, sy2, sz2);   \
           DeclareInc(PV_jinc_3, PV_kinc_3, nx, ny, nz, nx3, ny3, nz3, sx3, sy3, sz3);   \
+          BeginTiming(timing_index);                                                    \
           for (k = iz; k < iz + nz; k++)                                                \
           {                                                                             \
             for (j = iy; j < iy + ny; j++)                                              \
@@ -181,6 +221,7 @@
             i2 += PV_kinc_2;                                                            \
             i3 += PV_kinc_3;                                                            \
           }                                                                             \
+          EndTiming(timing_index);                                                      \
         }
 
 /******************************************************************************
