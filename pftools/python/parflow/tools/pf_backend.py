@@ -1,18 +1,15 @@
-import contextlib
-import dask
+import dask.array as da
 import json
 import numpy as np
 import pandas as pd
 import os
 import warnings
 import xarray as xr
-import yaml
 
-from pprint import pprint
 from . import util
 from .io import ParflowBinaryReader, read_pfb_sequence, read_pfb
 from collections.abc import Iterable
-from typing import Mapping, List, Union
+from typing import Mapping
 from xarray.backends import BackendEntrypoint, BackendArray
 from xarray.core import indexing
 from dask import delayed
@@ -353,8 +350,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         )
         if not dims:
             dims = data.array.dims
-        if not shape:
-            shape = data.array.shape
+
         var = xr.Variable(
             dims,
             data,
@@ -376,8 +372,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         )
         if not dims:
             dims = data.array.dims
-        if not shape:
-            shape = data.array.shape
+
         var = xr.Variable(dims, data)
         return var
 
@@ -457,15 +452,14 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is="z"):
     :return:
         A numpy array of the data
     """
+    accessor = {d: util._key_to_explicit_accessor(k) for d, k in zip(dims, key)}
     if mode == "single":
-        accessor = {d: util._key_to_explicit_accessor(k) for d, k in zip(dims, key)}
         sub = read_pfb(
             file_or_seq,
             keys=accessor,
             z_first=z_first,
         )
     elif mode == "sequence":
-        accessor = {d: util._key_to_explicit_accessor(k) for d, k in zip(dims, key)}
         t_start = accessor["time"]["start"]
         t_end = accessor["time"]["stop"]
         if z_is == "time":
@@ -574,36 +568,38 @@ class ParflowBackendArray(BackendArray):
     def _set_dims_and_shape(self):
         with ParflowBinaryReader(
             self.header_file, precompute_subgrid_info=False
-        ) as pfd:
-            if self.z_first:
-                _shape = [pfd.header["nz"], pfd.header["ny"], pfd.header["nx"]]
-            else:
-                _shape = [pfd.header["nx"], pfd.header["ny"], pfd.header["nz"]]
+        ) as pfb:
+            _lens = dict(z=pfb.header["nz"], y=pfb.header["ny"], x=pfb.header["nx"])
+
+        if self.z_first:
+            _dims = ["z", "y", "x"]
+        else:
+            _dims = ["x", "y", "z"]
+
         if self.mode == "sequence":
-            _shape = [len(self.file_or_seq), *_shape]
-        # Construct dimension template
-        if self.mode == "single":
-            if self.z_first:
-                _dims = ["z", "y", "x"]
+            _dims = ["time"] + _dims
+            if self.z_is == "time":
+                _lens["time"] = len(self.file_or_seq) * _lens["z"]
+                _dims.remove("z")
             else:
-                _dims = ["x", "y", "z"]
-        elif self.mode == "sequence":
-            if self.z_first:
-                _dims = ["time", "z", "y", "x"]
-            else:
-                _dims = ["time", "x", "y", "z"]
-        # Add some logic for dealing with clm output's inconsistent format
+                _lens["time"] = len(self.file_or_seq)
+
         if self.init_key:
-            for i, (dim, size) in enumerate(zip(_dims, _shape)):
+            for dim in _dims:
                 if dim in self.init_key:
-                    _shape[i] = self._size_from_key([self.init_key[dim]])[0]
-        self._squeeze_dims = tuple(i for i, s in enumerate(_shape) if s == 1)
-        if not self._shape:
-            self._shape = tuple(s for s in _shape if s > 1)
-        if not self._dims:
-            self._dims = tuple(d for s, d in zip(_shape, _dims) if s > 1)
+                    _lens[dim] = self._size_from_key([self.init_key[dim]])[0]
+
         self._pfb_dims = tuple(_dims)
-        self._pfb_shape = tuple(_shape)
+        self._pfb_shape = tuple(_lens[d] for d in _dims)
+
+        self._squeeze_dims = [i for i, dim in enumerate(_dims) if _lens[dim] == 1]
+        _dims = [dim for dim in _dims if _lens[dim] == 1]
+
+        if not self._dims:
+            self._dims = tuple(_dims)
+
+        if not self._shape:
+            self._shape = tuple(_lens[d] for d in _dims)
 
     @property
     def dims(self):
@@ -642,13 +638,12 @@ class ParflowBackendArray(BackendArray):
 
     def _getitem(self, key: tuple) -> np.ndarray:
         """Mapping between keys to the actual data"""
-        real_size = self._size_from_key(key)
         sub = delayed(_getitem_no_state)(
             self.file_or_seq, key, self.dims, self.mode, self.z_first, self.z_is
         )
-        sub = dask.array.from_delayed(sub, self.pfb_shape, dtype=np.float64)
+        sub = da.from_delayed(sub, self.pfb_shape, dtype=np.float64)
         if self.shape != sub.shape:
-            sub = dask.array.squeeze(sub, axis=self.squeeze_dims)
+            sub = da.squeeze(sub, axis=self.squeeze_dims)
         return sub
 
     def _size_from_key(self, key):
