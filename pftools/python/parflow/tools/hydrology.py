@@ -651,6 +651,8 @@ def calculate_overland_fluxes(
             Wc_x = np.ones_like(pressure)*dy
         if Wc_y is None:
             Wc_y = np.ones_like(pressure)*dx
+        Wc_x[Wc_x == 0] = dy
+        Wc_y[Wc_y == 0] = dx
         qeast, qnorth = _overland_flow_kinematic_wc(
             mask, pressure_top, slopex, slopey, mannings, dx, dy, np.squeeze(Wc_x), np.squeeze(Wc_y), epsilon
         )
