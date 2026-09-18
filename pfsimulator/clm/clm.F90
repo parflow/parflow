@@ -282,6 +282,18 @@ interception_schemepf,interception_tanh_alphapf)
            grid(c,r)%wtfact = u
            grid(c,r)%trsmx0 = u
            grid(c,r)%pondmx = u
+           grid(c,r)%capr = u
+           grid(c,r)%cnfac = u
+           grid(c,r)%smpmin = u
+           grid(c,r)%ssi = u
+           grid(c,r)%wimp = u
+           grid(c,r)%csoilc = u
+           grid(c,r)%dewmx = u
+           grid(c,r)%forc_hgt_q = u
+           grid(c,r)%forc_hgt_t = u
+           grid(c,r)%forc_hgt_u = u
+           grid(c,r)%zlnd = u
+           grid(c,r)%zsno = u
            allocate (grid(c,r)%fgrd(drv%nt))
            allocate (grid(c,r)%pveg(drv%nt))
         enddo                                   ! columns

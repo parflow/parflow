@@ -10,7 +10,8 @@ from parflow import Run
 from parflow.tools.fs import get_absolute_path
 from parflow.tools.builders import DomainBuilder
 
-drich = Run("drich", __file__)
+run_name = "drich"
+drich = Run(run_name, __file__)
 
 # ---------------------------------------------------------
 
@@ -153,11 +154,19 @@ drich.validate()
 
 drich.write(file_format="yaml")
 
+passed = True
+
 with open(get_absolute_path("drich.yaml")) as new, open(
     get_absolute_path("../../correct_output/domain_builder.yaml.ref")
 ) as ref:
     if new.read() == ref.read():
-        print("Success we have the same file")
+        print("Files are the same")
     else:
         print("Files are different")
-        sys.exit(1)
+        passed = False
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)

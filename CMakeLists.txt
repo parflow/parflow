@@ -561,6 +561,7 @@ if(${PARFLOW_ENABLE_VALGRIND})
     set(PARFLOW_MEMORYCHECK_COMMAND_OPTIONS
         "--gen-suppressions=all --leak-check=full --suppressions=${PARFLOW_MEMORYCHECK_SUPPRESSIONS_FILE}"
     )
+    message(STATUS "Using valgrind : ${PARFLOW_MEMORYCHECK_COMMAND}")
 endif(${PARFLOW_ENABLE_VALGRIND})
 
 #-----------------------------------------------------------------------------
