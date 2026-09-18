@@ -3,6 +3,21 @@ from parflow.tools.io import read_pfb, read_pfsb
 
 
 def pf_test_equal(a, b, message):
+    """Compare two scalar values using the ParFlow test tolerance.
+
+    Parameters
+    ----------
+    a, b : number
+        Values to compare.
+    message : str
+        Description printed when the comparison fails.
+
+    Returns
+    -------
+    bool
+        ``True`` when the absolute difference is at most ``1e-5``; otherwise
+        ``False``.
+    """
     pf_eps = 1e-5
     if abs(a - b) > pf_eps:
         print(f"FAILED : {message} {a} is not equal to {b}")
