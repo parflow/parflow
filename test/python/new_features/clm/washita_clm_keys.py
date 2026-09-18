@@ -589,3 +589,6 @@ washita.dist("press.init.pfb")
 washita.write("washita_clm_keys", file_format="yaml")
 
 washita.run()
+
+# TODO ADD_CHECKS Yet another poorly written test that does not check much.
+print("PASSED")

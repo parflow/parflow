@@ -478,6 +478,7 @@ void         PhaseSource(
               data[ips] += weight * flux;
             });
           }
+          FreeSubgrid(tmp_subgrid);
         }
       }
     }

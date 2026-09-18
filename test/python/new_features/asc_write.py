@@ -45,7 +45,9 @@ with open(get_absolute_path("$PF_SRC/test/input/Sabino_Mask.sa"), "rt") as ref:
         "rt",
     ) as new:
         if new.read() == ref.read():
-            print("Success we have the same file")
+            print("Files are the same")
+            print("PASSED")
         else:
             print("Files are different")
+            print("FAILED")
             sys.exit(1)
