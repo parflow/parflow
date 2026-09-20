@@ -252,6 +252,7 @@ typedef struct {
   int clm_stomata_scheme;          /* Stomatal model: 0=BallBerry, 1=Medlyn */
   int clm_interception_scheme;     /* Interception scheme: 0=CLM3, 1=CLM5Tanh */
   double clm_interception_tanh_alpha; /* CLM5 tanh scaling coefficient [-] */
+  double clm_von_karman;        /* von Karman constant [-], default 0.378 (PILPS/BATS value, see Chen et al. 1997) */
 
   int clm_reuse_count;          /* NBE: Number of times to use each CLM input */
   int clm_write_logs;           /* NBE: Write the processor logs for CLM or not */
@@ -2867,7 +2868,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          public_xtra->clm_fwet_exponent,
                          public_xtra->clm_stomata_scheme,
                          public_xtra->clm_interception_scheme,
-                         public_xtra->clm_interception_tanh_alpha);
+                         public_xtra->clm_interception_tanh_alpha,
+                         public_xtra->clm_von_karman);
 
             break;
           }
@@ -5985,6 +5987,12 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "%s.CLM.InterceptionTanhAlpha", name);
   public_xtra->clm_interception_tanh_alpha = GetDoubleDefault(key, 1.0);
+
+  /* von Karman constant: default 0.378 preserves historical PF-CLM behavior (BATS1e/PILPS value);
+   * 0.4 is the standard CLM value and is recommended. The historical Fortran initializer was a
+   * single-precision literal, so the default is the float-rounded value to keep results bit-for-bit. */
+  sprintf(key, "%s.CLM.VonKarman", name);
+  public_xtra->clm_von_karman = GetDoubleDefault(key, (double)0.378f);
 
   /* IMF Write CLM as Silo (default=False) */
   sprintf(key, "%s.WriteSiloCLM", name);
