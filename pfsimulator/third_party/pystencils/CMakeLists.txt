@@ -18,11 +18,24 @@ if ( ${PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS} )
         list ( APPEND PystencilsSfg_SCRIPTS pystencils_kinsol_atimesdq.py )
 endif ()
 
+# time codegen and compilation of each kernel
+
+set ( PystencilsSfg_TIMING_LOG ${CMAKE_BINARY_DIR}/pystencils_kernel_times.log )
+set ( PystencilsSfg_TIMING_CMD ${PystencilsSfg_PYTHON_INTERPRETER} ${CMAKE_CURRENT_SOURCE_DIR}/pystencils_timing.py ${PystencilsSfg_TIMING_LOG} )
+list ( JOIN PystencilsSfg_TIMING_CMD "\" \"" PystencilsSfg_TIMING_LAUNCHER )
+
+set_property ( DIRECTORY PROPERTY RULE_LAUNCH_CUSTOM "\"${PystencilsSfg_TIMING_LAUNCHER}\" codegen=<OUTPUT>" )
+set_property ( DIRECTORY PROPERTY RULE_LAUNCH_COMPILE "\"${PystencilsSfg_TIMING_LAUNCHER}\" compile=<SOURCE>" )
+
 add_library ( PystencilsGeneratedKernels )
 pystencilssfg_generate_target_sources ( PystencilsGeneratedKernels
         SCRIPTS ${PystencilsSfg_SCRIPTS}
         OUTPUT_DIRECTORY generated_kernels
 )
+
+list ( TRANSFORM PystencilsSfg_SCRIPTS REPLACE "\\.py$" "" OUTPUT_VARIABLE PystencilsSfg_KERNELS )
+add_custom_command ( TARGET PystencilsGeneratedKernels POST_BUILD
+        COMMAND ${PystencilsSfg_TIMING_CMD} summary ${PystencilsSfg_KERNELS} )
 
 target_link_libraries ( PystencilsGeneratedKernels PRIVATE pfsimulator amps )
 
