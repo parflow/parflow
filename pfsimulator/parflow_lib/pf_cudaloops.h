@@ -32,7 +32,8 @@
 
 extern "C++" {
 #include <tuple>
-#include <cub/cub.cuh>
+#include <cub/block/block_reduce.cuh>
+#include <cub/thread/thread_operators.cuh>
 
 /*--------------------------------------------------------------------------
  * CUDA blocksize definitions
