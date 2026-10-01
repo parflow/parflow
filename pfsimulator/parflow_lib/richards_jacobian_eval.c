@@ -186,8 +186,6 @@ int       KINSolMatVec(
 
   StateBCPressure((State*)current_state) = bc_pressure;
 
-  InitVector(y, 0.0);
-
   /*
    * Compute Jacobian if needed.
    */
