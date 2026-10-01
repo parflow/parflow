@@ -37,10 +37,10 @@
 #define tfree_amps_cuda(ptr) amps_TFree_managed(ptr)
 
 #define talloc_cuda(type, count) \
-        ((count) ? (type*)_talloc_device(sizeof(type) * (unsigned int)(count)) : NULL)
+        ((count) > 0 ? (type*)_talloc_device(sizeof(type) * (size_t)(count)) : NULL)
 
 #define ctalloc_cuda(type, count) \
-        ((count) ? (type*)_ctalloc_device(sizeof(type) * (unsigned int)(count)) : NULL)
+        ((count) > 0? (type*)_ctalloc_device(sizeof(type) * (size_t)(count)) : NULL)
 
 #define tfree_cuda(ptr) if (ptr) _tfree_device(ptr); else {}
 

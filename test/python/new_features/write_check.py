@@ -6,7 +6,8 @@ import sys
 from parflow import Run
 from parflow.tools.fs import get_absolute_path
 
-dsingle = Run("dsingle", __file__)
+run_name = "dsingle"
+dsingle = Run(run_name, __file__)
 
 # -----------------------------------------------------------------------------
 # File input version number
@@ -359,12 +360,20 @@ dsingle.Solver.MaxIter = 5
 
 generatedFile, runArg = dsingle.write()
 
+passed = True
+
 # Prevent regression
 with open(generatedFile) as new, open(
     get_absolute_path("$PF_SRC/test/correct_output/dsingle.pfidb.ref")
 ) as ref:
     if new.read() == ref.read():
-        print("Success we have the same file")
+        print("Files are the same")
     else:
         print("Files are different")
-        sys.exit(1)
+        passed = False
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)

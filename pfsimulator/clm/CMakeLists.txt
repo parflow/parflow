@@ -21,7 +21,6 @@ set(SRC_FILES
     clm_combin.F90
     clm_leaftem.F90
     clm_surfalb.F90
-    drv_almaout.F90
     drv_readvegtf.F90
     clm_combo.F90
     clm_main.F90

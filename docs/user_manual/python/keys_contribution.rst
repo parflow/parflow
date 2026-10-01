@@ -210,3 +210,58 @@ You should see a longer message indicating an update that lists the overlapping 
 fields were found``.
 
 5. Test your new key. If you have an input script with the new key, you can run that to check whether it's working.
+
+.. _keys_contribution_clm_variables:
+
+Adding new CLM variables
+=========================
+
+New CLM options usually pair a ``Solver.CLM.*`` key (added as described
+above) with a new state variable in the CLM Fortran code. If that state must
+survive a restart, it also has to be added to the CLM restart file, and this
+step has strict ordering rules.
+
+The restart file (``pfsimulator/clm/drv_restart.F90``) is a Fortran
+sequential unformatted stream. The ``rw=1`` read block must consume records
+in exactly the order the ``rw=2`` write block emits them. A field written
+mid-file without a matching read at the same position shifts every later
+record, and any restarted run fails at its first step with
+``Fortran runtime error: I/O past end of record``. This is not hypothetical:
+the two-band snow age fields (``snowage_vis``/``snowage_nir``) were once
+written directly after ``snowage`` with no matching read, which broke every
+restart written with that code.
+
+When adding a variable that must persist across restarts:
+
+1. Append the write at the END of the file, after the last appended field
+   (currently ``snowage_nir``). Never insert a write between existing
+   records: that desynchronizes the stream and makes old restart files
+   unreadable.
+
+2. Read it back at the same position with an ``iostat`` guard and a sensible
+   legacy default, so restart files written before your change stay
+   readable:
+
+   .. code-block:: fortran
+
+      read(40, iostat=ios) my_field
+      if (ios /= 0) then
+         my_field = <legacy default>
+         if (rank.eq.0) then
+            write(*,*) 'CLM Restart: my_field not found, using default'
+         endif
+      endif
+
+3. Wire the field through the tile-transfer blocks of ``drv_restart``
+   (the ``drv_t2gr`` grid averaging, the matched-tile copy, and the
+   tile-count-match copy loop), following ``snowage_vis`` as the pattern.
+
+4. Update ``EXPECTED_RECORDS`` in ``test/python/clm/clm_restart.py`` by
+   appending the new record at the end. The test parses the restart file
+   record by record, so it fails if the write block changes without a
+   matching update, and its restarted run fails if the read block does not
+   consume what the write block emits.
+
+5. Run the ``clm_restart`` test. It writes a restart file with all fields,
+   checks the file layout, reads the file back in a restarted run, and
+   verifies the restarted run reproduces the continuous reference run.

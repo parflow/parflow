@@ -220,7 +220,7 @@ subroutine clm_thermal (clm)
      fac  = min(dble(1.), wx/clm%watsat(1))
      fac  = max( fac, dble(0.01) )
      psit = -clm%sucsat(1) * fac ** (- clm%bsw(1))
-     psit = max(clm%smpmin, psit)
+     ! psit = max(clm%smpmin, psit)  ! dead: ParFlow overwrites psit below
      !@ Stefan: replace original psit with values from Parflow
      !    do i=1,nlevsoi
      !@ RMM this need no-longer be a loop, since psit is just set to the top soil layer

@@ -120,3 +120,5 @@ VegParamBuilder(clm).load_default_properties().print()
 
 clm.Solver.CLM.Vegetation.Map.Clay.Type = "Constant"
 clm.Solver.CLM.Vegetation.Map.Clay.Value = 0.264
+
+print("PASSED")

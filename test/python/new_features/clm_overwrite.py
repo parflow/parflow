@@ -226,3 +226,5 @@ if __name__ == "__main__":
     test_overwrite_failure(clm)
     test_overwrite_success(clm)
     test_write_allowed(clm)
+
+    print("PASSED")

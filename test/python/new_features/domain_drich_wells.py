@@ -371,11 +371,13 @@ drich.Solver.Linear.Preconditioner = "MGSemi"
 
 drich.write(file_format="yaml")
 
+passed = True
+
 with open(get_absolute_path("drich_wells_build.yaml")) as new, open(
     get_absolute_path("../../correct_output/drich_wells.yaml.ref")
 ) as ref:
     if new.read() == ref.read():
-        print("Success we have the same file")
+        print("Files are the same")
     else:
         print("Files are different")
-        sys.exit(1)
+        passed = False
