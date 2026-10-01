@@ -350,9 +350,6 @@ void    RichardsJacobianEval(
   vector_update_handle = InitVectorUpdate(pressure, VectorUpdateAll);
   FinalizeVectorUpdate(vector_update_handle);
 
-  InitVectorAll(density_der, 0.0);
-  InitVectorAll(saturation_der, 0.0);
-
   // /* Define grid for surface contribution */
   if ((instance_xtra->using_overland_flow) == TRUE)
   {
