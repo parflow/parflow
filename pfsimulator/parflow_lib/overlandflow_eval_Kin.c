@@ -541,12 +541,14 @@ void    OverlandFlowEvalKin(
           double D_y = D_coeff * RPowerR(Press_y, 5.0 / 3.0);
 
           if (k1x >= 0) {
-            ke_v[io] += D_x / dx;
+            if (Pdown > 0.0)
+              ke_v[io] += D_x / dx;
             if (Pup_x > 0.0)
               kw_v[io + 1] += -D_x / dx;
           }
           if (k1y >= 0) {
-            kn_v[io] += D_y / dy;
+            if (Pdown > 0.0)
+              kn_v[io] += D_y / dy;
             if (Pup_y > 0.0)
               ks_v[io + sy_v] += -D_y / dy;
           }
@@ -563,12 +565,14 @@ void    OverlandFlowEvalKin(
             double fy = (Seff2 > 0) ? dhdy_val * dhdy_val / (2.0 * Seff2) : 0.0;
 
             if (k1x >= 0) {
-              ke_v[io] += fx * D_x / dx;
+              if (Pdown > 0.0)
+                ke_v[io] += fx * D_x / dx;
               if (Pup_x > 0.0)
                 kw_v[io + 1] += -fx * D_x / dx;
             }
             if (k1y >= 0) {
-              kn_v[io] += fy * D_y / dy;
+              if (Pdown > 0.0)
+                kn_v[io] += fy * D_y / dy;
               if (Pup_y > 0.0)
                 ks_v[io + sy_v] += -fy * D_y / dy;
             }
@@ -640,7 +644,8 @@ void    OverlandFlowEvalKin(
                              / (RPowerR(fabs(D_denom_mag), 0.5) * mann_dat[io - 1]);
             double D_x = D_coeff * RPowerR(Press_x, 5.0 / 3.0);
 
-            ke_v[io - 1] += D_x / dx;
+            if (Pdown_w > 0.0)
+              ke_v[io - 1] += D_x / dx;
             if (Pup_w > 0.0)
               kw_v[io] += -D_x / dx;
 
@@ -649,7 +654,8 @@ void    OverlandFlowEvalKin(
               double dhdx_w = diff_alpha * (Pup_w - Pdown_w) / dx;
               double Seff2 = D_denom_mag * D_denom_mag;
               double fx = (Seff2 > 0) ? dhdx_w * dhdx_w / (2.0 * Seff2) : 0.0;
-              ke_v[io - 1] += fx * D_x / dx;
+              if (Pdown_w > 0.0)
+                ke_v[io - 1] += fx * D_x / dx;
               if (Pup_w > 0.0)
                 kw_v[io] += -fx * D_x / dx;
             }
@@ -711,7 +717,8 @@ void    OverlandFlowEvalKin(
                              / (RPowerR(fabs(D_denom_mag), 0.5) * mann_dat[io - sy_v]);
             double D_y = D_coeff * RPowerR(Press_y, 5.0 / 3.0);
 
-            kn_v[io - sy_v] += D_y / dy;
+            if (Pdown_s > 0.0)
+              kn_v[io - sy_v] += D_y / dy;
             if (Pup_s > 0.0)
               ks_v[io] += -D_y / dy;
 
@@ -720,7 +727,8 @@ void    OverlandFlowEvalKin(
               double dhdy_s = diff_alpha * (Pup_s - Pdown_s) / dy;
               double Seff2 = D_denom_mag * D_denom_mag;
               double fy = (Seff2 > 0) ? dhdy_s * dhdy_s / (2.0 * Seff2) : 0.0;
-              kn_v[io - sy_v] += fy * D_y / dy;
+              if (Pdown_s > 0.0)
+                kn_v[io - sy_v] += fy * D_y / dy;
               if (Pup_s > 0.0)
                 ks_v[io] += -fy * D_y / dy;
             }
