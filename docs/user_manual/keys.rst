@@ -4503,8 +4503,12 @@ This key selects the type of diffusion correction applied to the
 **OverlandKinematic** boundary condition. ``None`` disables the
 correction (default). ``Isotropic`` adds an isotropic diffusive flux
 :math:`\delta\mathbf{q} = -D\,\nabla\psi` where
-:math:`D = \alpha\,|\psi|^{5/3} / (n\,|S_f|^{1/2})` and
-:math:`S_f = S_0 + \nabla\psi` is the friction slope. The correction
+:math:`D = \alpha\,|\psi|^{5/3} / (n\,|S_{denom}|^{1/2})`. The slope
+magnitude :math:`S_{denom}` is set by the **Denominator** key below. The
+ponded depth is upwinded by the sign of the friction slope
+:math:`S_f = S_0 + \alpha\,\nabla\psi`. The correction is applied on
+faces between two surface cells and is switched off at domain
+boundaries, where the flux is the kinematic one. The correction
 is strongest on flat terrain and in backwater zones where the kinematic
 approximation is weakest, and vanishes where the kinematic wave is
 appropriate.
@@ -4534,13 +4538,33 @@ constant when computing the derivative (:math:`\pm D/\Delta x`), which
 is simple and robust. ``FullNewton`` includes the full
 :math:`\partial D / \partial\psi` terms in the Jacobian for faster
 Newton convergence near the solution, at the cost of additional
-arithmetic per cell.
+arithmetic per cell. ``FullNewtonDdx`` adds the derivative of
+:math:`D` with respect to the water-surface gradient. It differs from
+``FullNewton`` only for the ``FrictionSlope`` and ``Pythagorean``
+denominators.
 
 ::
 
       pfset Solver.OverlandKinematic.DiffusionCorrection.Jacobian FullNewton          ## TCL syntax
 
       <runname>.Solver.OverlandKinematic.DiffusionCorrection.Jacobian = 'FullNewton'  ## Python syntax
+
+*string* **Solver.OverlandKinematic.DiffusionCorrection.Denominator** BedSlope
+This key selects the slope magnitude :math:`S_{denom}` in the
+diffusion coefficient :math:`D`. ``BedSlope`` uses the bed slope
+:math:`|S_0|`. On flat terrain this falls back to
+**Solver.OverlandKinematic.Epsilon**, so the result there depends on
+that value. ``FrictionSlope`` uses :math:`|S_0 + \alpha\,\nabla\psi|`.
+``Pythagorean`` uses
+:math:`(|S_0|^2 + |\alpha\,\nabla\psi|^2)^{1/2}`. The last two remain
+well defined at zero bed slope. The kinematic part of the flux keeps
+:math:`|S_0|` for every choice.
+
+::
+
+      pfset Solver.OverlandKinematic.DiffusionCorrection.Denominator Pythagorean          ## TCL syntax
+
+      <runname>.Solver.OverlandKinematic.DiffusionCorrection.Denominator = 'Pythagorean'  ## Python syntax
 
 
 *string* **Solver.PrintInitialConditions** True This key is used to

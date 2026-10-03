@@ -157,7 +157,7 @@ Full API
     :param ``mask``: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of mask values (bottom layer to top layer). If ``None``, assumed to be an ``nz`` by ``ny`` by ``nx`` ``ndarray`` of 1s.
     :return: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of evapotranspiration values (units L^3/T), spanning all layers (bottom to top)
 
-5. ``calculate_overland_fluxes(pressure, slopex, slopey, mannings, dx, dy, flow_method='OverlandKinematic', epsilon=1e-5, mask=None, alpha=1.0)``
+5. ``calculate_overland_fluxes(pressure, slopex, slopey, mannings, dx, dy, flow_method='OverlandKinematic', epsilon=1e-5, mask=None, alpha=1.0, denominator='BedSlope')``
     Calculate overland fluxes across grid faces.
 
     :param ``pressure``: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of pressure values (bottom layer to top layer)
@@ -170,6 +170,7 @@ Full API
     :param ``epsilon``: Minimum slope magnitude for solver. Only applicable if ``flow_method='OverlandKinematic'`` or ``'OverlandKinematicDiffusive'``. This is set using the ``Solver.OverlandKinematic.Epsilon`` key in Parflow.
     :param ``mask``: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of mask values (bottom layer to top layer). If ``None``, assumed to be an ``nz`` by ``ny`` by ``nx`` ``ndarray`` of 1s.
     :param ``alpha``: Strength multiplier for diffusion correction (default 1.0). Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
+    :param ``denominator``: ``'BedSlope'``, ``'FrictionSlope'``, or ``'Pythagorean'``. ``'BedSlope'`` by default. Use the value of the ``Solver.OverlandKinematic.DiffusionCorrection.Denominator`` key from the run. Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
     :return: A 2-tuple: 
 
         (``qeast``: A ``ny`` by ``(nx+1)`` ``ndarray`` of overland flux values,  
@@ -201,7 +202,7 @@ Full API
         (North)
 
 
-6. ``calculate_overland_flow_grid(pressure, slopex, slopey, mannings, dx, dy, flow_method='OverlandKinematic', epsilon=1e-5, mask=None, alpha=1.0)``
+6. ``calculate_overland_flow_grid(pressure, slopex, slopey, mannings, dx, dy, flow_method='OverlandKinematic', epsilon=1e-5, mask=None, alpha=1.0, denominator='BedSlope')``
     Calculate overland outflow per grid cell of a domain.
 
     :param ``pressure``: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of pressure values (bottom layer to top layer)
@@ -214,9 +215,10 @@ Full API
     :param ``epsilon``: Minimum slope magnitude for solver. Only applicable if ``flow_method='OverlandKinematic'`` or ``'OverlandKinematicDiffusive'``. This is set using the ``Solver.OverlandKinematic.Epsilon`` key in Parflow.
     :param ``mask``: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of mask values (bottom layer to top layer). If ``None``, assumed to be an ``nz`` by ``ny`` by ``nx`` ``ndarray`` of 1s.
     :param ``alpha``: Strength multiplier for diffusion correction (default 1.0). Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
+    :param ``denominator``: ``'BedSlope'``, ``'FrictionSlope'``, or ``'Pythagorean'``. ``'BedSlope'`` by default. Use the value of the ``Solver.OverlandKinematic.DiffusionCorrection.Denominator`` key from the run. Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
     :return: An ``ny`` by ``nx`` ``ndarray`` of overland flow values
 
-7. ``calculate_overland_flow(pressure, slopex, slopey, mannings, dx, dy, flow_method='OverlandKinematic', epsilon=1e-5, mask=None, alpha=1.0)``
+7. ``calculate_overland_flow(pressure, slopex, slopey, mannings, dx, dy, flow_method='OverlandKinematic', epsilon=1e-5, mask=None, alpha=1.0, denominator='BedSlope')``
 
     :param ``pressure``: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of pressure values (bottom layer to top layer)
     :param ``slopex``: ``ny`` by ``nx``
@@ -228,4 +230,5 @@ Full API
     :param ``epsilon``: Minimum slope magnitude for solver. Only applicable if ``flow_method='OverlandKinematic'`` or ``'OverlandKinematicDiffusive'``. This is set using the ``Solver.OverlandKinematic.Epsilon`` key in Parflow.
     :param ``mask``: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of mask values (bottom layer to top layer). If None, assumed to be an ``nz`` by ``ny`` by ``nx`` ``ndarray`` of 1s.
     :param ``alpha``: Strength multiplier for diffusion correction (default 1.0). Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
+    :param ``denominator``: ``'BedSlope'``, ``'FrictionSlope'``, or ``'Pythagorean'``. ``'BedSlope'`` by default. Use the value of the ``Solver.OverlandKinematic.DiffusionCorrection.Denominator`` key from the run. Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
     :return: A ``ny`` by ``nx`` ``ndarray`` of overland flow values
