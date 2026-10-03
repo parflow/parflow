@@ -200,7 +200,6 @@ int       KINSolMatVec(
     *recompute = 0;
     StateJac(((State*)current_state)) = J;
     StateJacC(((State*)current_state)) = JC;
-
   }
 
   if (JC == NULL)
