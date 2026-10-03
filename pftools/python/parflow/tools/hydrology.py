@@ -394,64 +394,84 @@ def _overland_flow_kinematic(
 
 
 def _overland_flow_kinematic_diffusive(
-    mask, pressure_top, slopex, slopey, mannings, dx, dy, epsilon, alpha=1.0
+    mask,
+    pressure_top,
+    slopex,
+    slopey,
+    mannings,
+    dx,
+    dy,
+    epsilon,
+    alpha=1.0,
+    denominator="BedSlope",
 ):
     """Kinematic wave flux with isotropic diffusion correction.
 
-    Same as _overland_flow_kinematic but adds:
-        delta_q = -D * grad(psi)
-    where D = alpha * psi^{5/3} / (n * |Sf|^{1/2}) and Sf = S0 + grad(psi).
+    Mirrors OverlandFlowEvalKin with Solver.OverlandKinematic.DiffusionCorrection.Type
+    = Isotropic.  The flux across the east face of a cell is
+
+        q = -(S0 / (n |S0|^1/2)) h^5/3 - (alpha / (n |S_denom|^1/2)) h^5/3 dh/dx
+
+    where h is the ponded depth upwinded by the sign of Sf* = S0 + alpha dh/dx and
+    S_denom is set by ``denominator``: |S0| for 'BedSlope', |Sf*| for 'FrictionSlope',
+    and (|S0|^2 + |alpha grad(h)|^2)^1/2 for 'Pythagorean'.  The correction applies
+    only on faces with an active cell on both sides; all other faces keep the
+    kinematic flux.
     """
-    # Start with the kinematic flux
-    qeast_kin, qnorth_kin = _overland_flow_kinematic(
+    assert denominator in (
+        "BedSlope",
+        "FrictionSlope",
+        "Pythagorean",
+    ), "Unknown denominator"
+
+    # Faces without an active cell on both sides keep the kinematic flux
+    qeast, qnorth = _overland_flow_kinematic(
         mask, pressure_top, slopex, slopey, mannings, dx, dy, epsilon
     )
 
-    ny, nx = pressure_top.shape
+    surface_mask = mask[-1, ...]
+    pdown = pressure_top
 
-    # --- Diffusion flux in x-direction ---
-    # Pressure gradient at east faces (between cell i and i+1)
-    grad_x = np.diff(pressure_top, axis=1) / dx  # shape (ny, nx-1)
+    # Depth and activity of the east (i+1) and north (j+1) neighbors
+    pup_x = np.pad(pressure_top[:, 1:], ((0, 0), (0, 1)))
+    pup_y = np.pad(pressure_top[1:, :], ((0, 1), (0, 0)))
+    has_x = (surface_mask == 1) & (np.pad(surface_mask[:, 1:], ((0, 0), (0, 1))) == 1)
+    has_y = (surface_mask == 1) & (np.pad(surface_mask[1:, :], ((0, 1), (0, 0))) == 1)
 
-    # Friction slope at east faces
-    Sf_x = slopex[:, :-1] + grad_x
-    Sf_y_east = slopey[:, :-1]  # bed slope only for cross-component
-    Sf_mag = np.maximum(epsilon, np.hypot(Sf_x, Sf_y_east))
+    # Water-surface gradients, zero where there is no neighbor
+    dhdx = np.where(has_x, alpha * (pup_x - pdown) / dx, 0.0)
+    dhdy = np.where(has_y, alpha * (pup_y - pdown) / dy, 0.0)
 
-    # Upwind depth for D (same convention as kinematic)
-    pupwindx = np.where(
-        slopex[:, :-1] <= 0,
-        pressure_top[:, :-1],
-        pressure_top[:, 1:],
-    )
+    sf_star_x = slopex + dhdx
+    sf_star_y = slopey + dhdy
 
-    D_x = alpha * pupwindx ** (5 / 3) / (np.sqrt(Sf_mag) * mannings[:, :-1])
-    diff_qx = -D_x * grad_x * dy  # shape (ny, nx-1)
+    # Depth upwinded by the friction slope
+    press_x = np.where(sf_star_x < 0, pdown, pup_x)
+    press_y = np.where(sf_star_y < 0, pdown, pup_y)
 
-    # Add diffusion to kinematic flux (interior faces only)
-    qeast_diff = qeast_kin.copy()
-    qeast_diff[:, 1:-1] += diff_qx  # skip boundary faces
+    slope = np.maximum(epsilon, np.hypot(slopex, slopey))
+    if denominator == "BedSlope":
+        d_denom = slope
+    elif denominator == "FrictionSlope":
+        d_denom = np.maximum(epsilon, np.hypot(sf_star_x, sf_star_y))
+    else:
+        d_denom = np.maximum(
+            epsilon, np.sqrt(slopex**2 + slopey**2 + dhdx**2 + dhdy**2)
+        )
 
-    # --- Diffusion flux in y-direction ---
-    grad_y = np.diff(pressure_top, axis=0) / dy  # shape (ny-1, nx)
+    q_x = (
+        -slopex / (np.sqrt(slope) * mannings) * press_x ** (5 / 3)
+        - press_x ** (5 / 3) / (np.sqrt(d_denom) * mannings) * dhdx
+    ) * dy
+    q_y = (
+        -slopey / (np.sqrt(slope) * mannings) * press_y ** (5 / 3)
+        - press_y ** (5 / 3) / (np.sqrt(d_denom) * mannings) * dhdy
+    ) * dx
 
-    Sf_y = slopey[:-1, :] + grad_y
-    Sf_x_north = slopex[:-1, :]
-    Sf_mag = np.maximum(epsilon, np.hypot(Sf_x_north, Sf_y))
+    qeast[:, 1:] = np.where(has_x, q_x, qeast[:, 1:])
+    qnorth[1:, :] = np.where(has_y, q_y, qnorth[1:, :])
 
-    pupwindy = np.where(
-        slopey[:-1, :] <= 0,
-        pressure_top[:-1, :],
-        pressure_top[1:, :],
-    )
-
-    D_y = alpha * pupwindy ** (5 / 3) / (np.sqrt(Sf_mag) * mannings[:-1, :])
-    diff_qy = -D_y * grad_y * dx  # shape (ny-1, nx)
-
-    qnorth_diff = qnorth_kin.copy()
-    qnorth_diff[1:-1, :] += diff_qy  # skip boundary faces
-
-    return qeast_diff, qnorth_diff
+    return qeast, qnorth
 
 
 # -----------------------------------------------------------------------------
@@ -468,6 +488,7 @@ def calculate_overland_fluxes(
     epsilon=1e-5,
     mask=None,
     alpha=1.0,
+    denominator="BedSlope",
 ):
     """
     Calculate overland fluxes across grid faces
@@ -487,6 +508,9 @@ def calculate_overland_fluxes(
         If None, assumed to be an nz-by-ny-by-nx ndarray of 1s.
     :param alpha: Strength multiplier for diffusion correction. Only applicable if
         flow_method='OverlandKinematicDiffusive'. Default 1.0.
+    :param denominator: 'BedSlope', 'FrictionSlope', or 'Pythagorean'. Matches the
+        Solver.OverlandKinematic.DiffusionCorrection.Denominator key. Only applicable if
+        flow_method='OverlandKinematicDiffusive'. 'BedSlope' by default.
     :return: A 2-tuple:
         qeast - A ny-by-(nx+1) ndarray of overland flux values
         qnorth - A (ny+1)-by-nx ndarray of overland flux values
@@ -546,7 +570,16 @@ def calculate_overland_fluxes(
         mask = np.where(mask > 0, 1, 0)
         if flow_method == "OverlandKinematicDiffusive":
             qeast, qnorth = _overland_flow_kinematic_diffusive(
-                mask, pressure_top, slopex, slopey, mannings, dx, dy, epsilon, alpha
+                mask,
+                pressure_top,
+                slopex,
+                slopey,
+                mannings,
+                dx,
+                dy,
+                epsilon,
+                alpha,
+                denominator,
             )
         else:
             qeast, qnorth = _overland_flow_kinematic(
@@ -572,6 +605,7 @@ def calculate_overland_flow_grid(
     epsilon=1e-5,
     mask=None,
     alpha=1.0,
+    denominator="BedSlope",
 ):
     """
     Calculate overland outflow per grid cell of a domain
@@ -590,6 +624,8 @@ def calculate_overland_flow_grid(
         If None, assumed to be an nz-by-ny-by-nx ndarray of 1s.
     :param alpha: Strength multiplier for diffusion correction (default 1.0).
         Only applicable if flow_method='OverlandKinematicDiffusive'.
+    :param denominator: 'BedSlope', 'FrictionSlope', or 'Pythagorean' (default 'BedSlope').
+        Only applicable if flow_method='OverlandKinematicDiffusive'.
     :return: A ny-by-nx ndarray of overland flow values
     """
     mask = np.where(mask > 0, 1, 0)
@@ -604,6 +640,7 @@ def calculate_overland_flow_grid(
         epsilon=epsilon,
         mask=mask,
         alpha=alpha,
+        denominator=denominator,
     )
 
     # Outflow is a positive qeast[i,j+1] or qnorth[i+1,j] or a negative qeast[i,j], qnorth[i,j]
@@ -634,6 +671,7 @@ def calculate_overland_flow(
     epsilon=1e-5,
     mask=None,
     alpha=1.0,
+    denominator="BedSlope",
 ):
     """
     Calculate overland outflow out of a domain
@@ -652,6 +690,8 @@ def calculate_overland_flow(
         If None, assumed to be an nz-by-ny-by-nx ndarray of 1s.
     :param alpha: Strength multiplier for diffusion correction (default 1.0).
         Only applicable if flow_method='OverlandKinematicDiffusive'.
+    :param denominator: 'BedSlope', 'FrictionSlope', or 'Pythagorean' (default 'BedSlope').
+        Only applicable if flow_method='OverlandKinematicDiffusive'.
     :return: A float value representing the total overland flow over the domain.
     """
     qeast, qnorth = calculate_overland_fluxes(
@@ -665,6 +705,7 @@ def calculate_overland_flow(
         epsilon=epsilon,
         mask=mask,
         alpha=alpha,
+        denominator=denominator,
     )
 
     if mask is not None:
