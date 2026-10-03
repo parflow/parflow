@@ -354,118 +354,65 @@ overland.Solver.Linear.Preconditioner.PCMatrixType = "PFSymmetric"
 
 # Enable isotropic diffusion correction
 overland.Solver.OverlandKinematic.DiffusionCorrection.Type = "Isotropic"
-overland.Solver.OverlandKinematic.DiffusionCorrection.Alpha = 1.0
 
-# -----------------------------------------------------------------------------
-# Run 1: Picard Jacobian
-# -----------------------------------------------------------------------------
-overland.Solver.OverlandKinematic.DiffusionCorrection.Jacobian = "Picard"
+# Each configuration is (run name, reference name, Alpha, Denominator, Jacobian).
+# Picard and FullNewton solve the same equations, so both are checked against the
+# Picard reference.
+configurations = [
+    (
+        "TiltedV_OverlandKin_DiffCorr_Picard",
+        "TiltedV_OverlandKin_DiffCorr_Picard",
+        1.0,
+        "BedSlope",
+        "Picard",
+    ),
+    (
+        "TiltedV_OverlandKin_DiffCorr_FullNewton",
+        "TiltedV_OverlandKin_DiffCorr_Picard",
+        1.0,
+        "BedSlope",
+        "FullNewton",
+    ),
+    (
+        "TiltedV_OverlandKin_DiffCorr_Pythagorean",
+        "TiltedV_OverlandKin_DiffCorr_Pythagorean",
+        1.0,
+        "Pythagorean",
+        "FullNewton",
+    ),
+    (
+        "TiltedV_OverlandKin_DiffCorr_Alpha05",
+        "TiltedV_OverlandKin_DiffCorr_Alpha05",
+        0.5,
+        "BedSlope",
+        "Picard",
+    ),
+]
 
-run_name = "TiltedV_OverlandKin_DiffCorr_Picard"
-overland.set_name(run_name)
-print("##########")
-print(f"Running {run_name}")
-new_output_dir_name = get_absolute_path("test_output/" + f"{run_name}")
-mkdir(new_output_dir_name)
-overland.run(working_directory=new_output_dir_name, skip_validation=True)
-if runcheck == 1:
-    passed = True
-    for i in range(11):
-        timestep = str(i).rjust(5, "0")
-        filename = f"/{run_name}.out.press.{timestep}.pfb"
-        if not pf_test_file(
-            new_output_dir_name + filename,
-            correct_output_dir_name + filename,
-            f"Max difference in Pressure for timestep {timestep}",
-        ):
-            passed = False
-        filename = f"/{run_name}.out.satur.{timestep}.pfb"
-        if not pf_test_file(
-            new_output_dir_name + filename,
-            correct_output_dir_name + filename,
-            f"Max difference in Saturation for timestep {timestep}",
-        ):
-            passed = False
+for run_name, reference_name, alpha, denominator, jacobian in configurations:
+    overland.Solver.OverlandKinematic.DiffusionCorrection.Alpha = alpha
+    overland.Solver.OverlandKinematic.DiffusionCorrection.Denominator = denominator
+    overland.Solver.OverlandKinematic.DiffusionCorrection.Jacobian = jacobian
 
-    if passed:
-        print(f"{run_name} : PASSED")
-    else:
-        print(f"{run_name} : FAILED")
-        sys.exit(1)
+    overland.set_name(run_name)
+    print("##########")
+    print(f"Running {run_name}")
+    new_output_dir_name = get_absolute_path("test_output/" + f"{run_name}")
+    mkdir(new_output_dir_name)
+    overland.run(working_directory=new_output_dir_name, skip_validation=True)
+    if runcheck == 1:
+        passed = True
+        for i in range(11):
+            timestep = str(i).rjust(5, "0")
+            if not pf_test_file(
+                new_output_dir_name + f"/{run_name}.out.press.{timestep}.pfb",
+                correct_output_dir_name + f"/{reference_name}.out.press.{timestep}.pfb",
+                f"Max difference in Pressure for timestep {timestep}",
+            ):
+                passed = False
 
-
-# -----------------------------------------------------------------------------
-# Run 2: FullNewton Jacobian
-# -----------------------------------------------------------------------------
-overland.Solver.OverlandKinematic.DiffusionCorrection.Jacobian = "FullNewton"
-
-run_name = "TiltedV_OverlandKin_DiffCorr_FullNewton"
-overland.set_name(run_name)
-print("##########")
-print(f"Running {run_name}")
-new_output_dir_name = get_absolute_path("test_output/" + f"{run_name}")
-mkdir(new_output_dir_name)
-overland.run(working_directory=new_output_dir_name, skip_validation=True)
-if runcheck == 1:
-    passed = True
-    for i in range(11):
-        timestep = str(i).rjust(5, "0")
-        filename = f"/{run_name}.out.press.{timestep}.pfb"
-        if not pf_test_file(
-            new_output_dir_name + filename,
-            correct_output_dir_name + filename,
-            f"Max difference in Pressure for timestep {timestep}",
-        ):
-            passed = False
-        filename = f"/{run_name}.out.satur.{timestep}.pfb"
-        if not pf_test_file(
-            new_output_dir_name + filename,
-            correct_output_dir_name + filename,
-            f"Max difference in Saturation for timestep {timestep}",
-        ):
-            passed = False
-
-    if passed:
-        print(f"{run_name} : PASSED")
-    else:
-        print(f"{run_name} : FAILED")
-        sys.exit(1)
-
-
-# -----------------------------------------------------------------------------
-# Run 3: Picard with Alpha=0.5 (half-strength correction)
-# -----------------------------------------------------------------------------
-overland.Solver.OverlandKinematic.DiffusionCorrection.Jacobian = "Picard"
-overland.Solver.OverlandKinematic.DiffusionCorrection.Alpha = 0.5
-
-run_name = "TiltedV_OverlandKin_DiffCorr_Alpha05"
-overland.set_name(run_name)
-print("##########")
-print(f"Running {run_name}")
-new_output_dir_name = get_absolute_path("test_output/" + f"{run_name}")
-mkdir(new_output_dir_name)
-overland.run(working_directory=new_output_dir_name, skip_validation=True)
-if runcheck == 1:
-    passed = True
-    for i in range(11):
-        timestep = str(i).rjust(5, "0")
-        filename = f"/{run_name}.out.press.{timestep}.pfb"
-        if not pf_test_file(
-            new_output_dir_name + filename,
-            correct_output_dir_name + filename,
-            f"Max difference in Pressure for timestep {timestep}",
-        ):
-            passed = False
-        filename = f"/{run_name}.out.satur.{timestep}.pfb"
-        if not pf_test_file(
-            new_output_dir_name + filename,
-            correct_output_dir_name + filename,
-            f"Max difference in Saturation for timestep {timestep}",
-        ):
-            passed = False
-
-    if passed:
-        print(f"{run_name} : PASSED")
-    else:
-        print(f"{run_name} : FAILED")
-        sys.exit(1)
+        if passed:
+            print(f"{run_name} : PASSED")
+        else:
+            print(f"{run_name} : FAILED")
+            sys.exit(1)

@@ -50,6 +50,8 @@ if(${PARFLOW_HAVE_HYPRE})
         overland_slopingslab_DWE
         overland_tiltedV_DWE
         overland_FlatICP
+        overland_slopingslab_diffcorr
+        overland_tiltedV_diffcorr
         richards_FBx
         richards_FBy
         richards_box_proctest

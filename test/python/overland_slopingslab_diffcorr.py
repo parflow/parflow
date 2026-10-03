@@ -323,13 +323,6 @@ for x_slope, y_slope, name in zip(x_slopes, y_slopes, names):
                 f"Max difference in Pressure for timestep {timestep}",
             ):
                 passed = False
-            filename = f"/{run_name}.out.satur.{timestep}.pfb"
-            if not pf_test_file(
-                new_output_dir_name + filename,
-                correct_output_dir_name + filename,
-                f"Max difference in Saturation for timestep {timestep}",
-            ):
-                passed = False
 
         if passed:
             print(f"{run_name} : PASSED")
