@@ -52,6 +52,8 @@ if(${PARFLOW_HAVE_HYPRE})
         overland_FlatICP
         overland_slopingslab_diffcorr
         overland_tiltedV_diffcorr
+        overland_backwater
+        overland_pond_diffusion
         richards_FBx
         richards_FBy
         richards_box_proctest
@@ -124,6 +126,7 @@ if(${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI)
             default_overland.pfmg_octree.fulljac
             LW_var_dz
             LW_var_dz_spinup
+            overland_pond_diffusion
             overland_slopingslab_KWE
             overland_tiltedV_DWE
             richards_box_proctest_vardz
@@ -157,10 +160,19 @@ foreach(inputfile ${PARALLEL_2DTOPO_TESTS})
     pf_add_py_parallel_test(${inputfile} 4 1 1)
 endforeach()
 
-# OverlandDiffusive reads corner ghost cells, which only a split in both
+# OverlandDiffusive, and OverlandKinematic with a FrictionSlope or Pythagorean
+# slope magnitude, read corner ghost cells, which only a split in both
 # directions exercises.
-if(overland_tiltedV_DWE IN_LIST PARALLEL_2DTOPO_TESTS)
-    pf_add_py_parallel_test(overland_tiltedV_DWE 2 2 1)
+foreach(inputfile overland_tiltedV_DWE overland_pond_diffusion)
+    if(${inputfile} IN_LIST PARALLEL_2DTOPO_TESTS)
+        pf_add_py_parallel_test(${inputfile} 2 2 1)
+    endif()
+endforeach()
+
+# overland_backwater is one cell wide in x, so it splits in y only.
+if(overland_pond_diffusion IN_LIST PARALLEL_2DTOPO_TESTS)
+    pf_add_py_parallel_test(overland_backwater 1 2 1)
+    pf_add_py_parallel_test(overland_backwater 1 4 1)
 endif()
 
 foreach(inputfile ${PARALLEL_3DTOPO_TESTS})
