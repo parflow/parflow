@@ -347,7 +347,10 @@ void    RichardsJacobianEval(
   VectorUpdateCommHandle  *vector_update_handle;
 
   /* Pass pressure values to neighbors.  */
-  vector_update_handle = InitVectorUpdate(pressure, VectorUpdatePGS1);
+  /* Include corner ghost cells where the overland formulation reads them */
+  vector_update_handle = InitVectorUpdate(pressure,
+                                          OverlandFlowNeedsCornerGhosts() ?
+                                          VectorUpdatePGS1 : VectorUpdateAll);
   FinalizeVectorUpdate(vector_update_handle);
 
   InitVectorAll(density_der, 0.0);

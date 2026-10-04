@@ -313,7 +313,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   overlandspinup = GetIntDefault("OverlandFlowSpinUp", 0);
 
   /* Pass pressure values to neighbors.  */
-  handle = InitVectorUpdate(pressure, VectorUpdatePGS1);
+  /* Include corner ghost cells where the overland formulation reads them */
+  handle = InitVectorUpdate(pressure,
+                            OverlandFlowNeedsCornerGhosts() ?
+                            VectorUpdatePGS1 : VectorUpdateAll);
   FinalizeVectorUpdate(handle);
 
   /* Calculate pressure dependent properties: density and saturation */
