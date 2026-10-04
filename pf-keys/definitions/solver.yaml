@@ -2315,6 +2315,23 @@ Solver:
               - FrictionSlope
               - Pythagorean
 
+      VelocityCorrection:
+        help: >
+          [Type: string] Puts the slope magnitude selected by Denominator under the
+          kinematic term as well as the diffusive term. This adds the velocity
+          correction S_0 * |psi|^{5/3} / n * (1/|S_0|^{1/2} - 1/|S_denom|^{1/2}) to
+          the flux, which makes a pool at rest on a slope level. None leaves |S_0|
+          under the kinematic term. Lagged takes |S_denom| from the pressure at the
+          previous time step. Implicit takes it from the current pressure. Has no
+          effect with Denominator BedSlope, or at domain boundaries.
+        default: None
+        domains:
+          EnumDomain:
+            enum_list:
+              - None
+              - Lagged
+              - Implicit
+
   # missing from manual
   PolyDegree:
     help: >

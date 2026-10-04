@@ -404,6 +404,8 @@ def _overland_flow_kinematic_diffusive(
     epsilon,
     alpha=1.0,
     denominator="BedSlope",
+    velocity_correction="None",
+    pressure_top_old=None,
 ):
     """Kinematic wave flux with isotropic diffusion correction.
 
@@ -419,12 +421,26 @@ def _overland_flow_kinematic_diffusive(
     the face is the average of the centered differences in the two cells that share
     it.  The correction applies only on faces with an active cell on both sides; all
     other faces keep the kinematic flux.
+
+    ``velocity_correction`` mirrors the VelocityCorrection key.  'Implicit' puts
+    S_denom under the kinematic term as well, computed from ``pressure_top``.
+    'Lagged' does the same with S_denom computed from ``pressure_top_old``, the
+    ponded depth at the previous time step.  'None' leaves |S0| there.
     """
     assert denominator in (
         "BedSlope",
         "FrictionSlope",
         "Pythagorean",
     ), "Unknown denominator"
+    assert velocity_correction in (
+        "None",
+        "Lagged",
+        "Implicit",
+    ), "Unknown velocity correction"
+    if velocity_correction == "Lagged" and denominator != "BedSlope":
+        assert (
+            pressure_top_old is not None
+        ), "velocity_correction='Lagged' needs the pressure at the previous time step"
 
     # Faces without an active cell on both sides keep the kinematic flux
     qeast, qnorth = _overland_flow_kinematic(
@@ -452,18 +468,30 @@ def _overland_flow_kinematic_diffusive(
     press_y = np.where(sf_star_y < 0, pdown, pup_y)
 
     slope = np.maximum(epsilon, np.hypot(slopex, slopey))
-    if denominator == "BedSlope":
-        d_denom_x = slope
-        d_denom_y = slope
-    else:
+    active = surface_mask == 1
+
+    def face_denominators(depth):
+        """Slope magnitude in D at the east and north faces, for a depth field."""
+        if denominator == "BedSlope":
+            return slope, slope
+
+        g_e = np.where(
+            has_x,
+            alpha * (np.pad(depth[:, 1:], ((0, 0), (0, 1))) - depth) / dx,
+            0.0,
+        )
+        g_n = np.where(
+            has_y,
+            alpha * (np.pad(depth[1:, :], ((0, 1), (0, 0))) - depth) / dy,
+            0.0,
+        )
+
         # Gradient along each face: the average of the centered differences in
         # the two cells that share the face.  A centered difference becomes
         # one-sided where only one neighbor is active, and zero where neither is.
-        active = surface_mask == 1
-
         def centered(axis, d):
-            h_m = np.roll(pdown, 1, axis=axis)
-            h_p = np.roll(pdown, -1, axis=axis)
+            h_m = np.roll(depth, 1, axis=axis)
+            h_p = np.roll(depth, -1, axis=axis)
             has_m = active & np.roll(active, 1, axis=axis)
             has_p = active & np.roll(active, -1, axis=axis)
             edge = [slice(None), slice(None)]
@@ -476,8 +504,8 @@ def _overland_flow_kinematic_diffusive(
                 (h_p - h_m) / (2.0 * d),
                 np.where(
                     has_p,
-                    (h_p - pdown) / d,
-                    np.where(has_m, (pdown - h_m) / d, 0.0),
+                    (h_p - depth) / d,
+                    np.where(has_m, (depth - h_m) / d, 0.0),
                 ),
             )
 
@@ -490,20 +518,29 @@ def _overland_flow_kinematic_diffusive(
             has_y, 0.5 * (gx_c + np.pad(gx_c[1:, :], ((0, 1), (0, 0)))), gx_c
         )
         if denominator == "FrictionSlope":
-            d_denom_x = np.hypot(slopex + dhdx, slopey + gy_e)
-            d_denom_y = np.hypot(slopex + gx_n, slopey + dhdy)
+            d_x = np.hypot(slopex + g_e, slopey + gy_e)
+            d_y = np.hypot(slopex + gx_n, slopey + g_n)
         else:
-            d_denom_x = np.sqrt(slopex**2 + slopey**2 + dhdx**2 + gy_e**2)
-            d_denom_y = np.sqrt(slopex**2 + slopey**2 + gx_n**2 + dhdy**2)
-        d_denom_x = np.maximum(epsilon, d_denom_x)
-        d_denom_y = np.maximum(epsilon, d_denom_y)
+            d_x = np.sqrt(slopex**2 + slopey**2 + g_e**2 + gy_e**2)
+            d_y = np.sqrt(slopex**2 + slopey**2 + gx_n**2 + g_n**2)
+        return np.maximum(epsilon, d_x), np.maximum(epsilon, d_y)
+
+    d_denom_x, d_denom_y = face_denominators(pdown)
+
+    # Slope magnitude under the kinematic term
+    if velocity_correction == "Implicit":
+        k_denom_x, k_denom_y = d_denom_x, d_denom_y
+    elif velocity_correction == "Lagged" and denominator != "BedSlope":
+        k_denom_x, k_denom_y = face_denominators(pressure_top_old)
+    else:
+        k_denom_x, k_denom_y = slope, slope
 
     q_x = (
-        -slopex / (np.sqrt(slope) * mannings) * press_x ** (5 / 3)
+        -slopex / (np.sqrt(k_denom_x) * mannings) * press_x ** (5 / 3)
         - press_x ** (5 / 3) / (np.sqrt(d_denom_x) * mannings) * dhdx
     ) * dy
     q_y = (
-        -slopey / (np.sqrt(slope) * mannings) * press_y ** (5 / 3)
+        -slopey / (np.sqrt(k_denom_y) * mannings) * press_y ** (5 / 3)
         - press_y ** (5 / 3) / (np.sqrt(d_denom_y) * mannings) * dhdy
     ) * dx
 
@@ -528,6 +565,8 @@ def calculate_overland_fluxes(
     mask=None,
     alpha=1.0,
     denominator="BedSlope",
+    velocity_correction="None",
+    pressure_old=None,
 ):
     """
     Calculate overland fluxes across grid faces
@@ -550,6 +589,11 @@ def calculate_overland_fluxes(
     :param denominator: 'BedSlope', 'FrictionSlope', or 'Pythagorean'. Matches the
         Solver.OverlandKinematic.DiffusionCorrection.Denominator key. Only applicable if
         flow_method='OverlandKinematicDiffusive'. 'BedSlope' by default.
+    :param velocity_correction: 'None', 'Lagged', or 'Implicit' (default 'None'). Matches
+        Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection. Only applicable if
+        flow_method='OverlandKinematicDiffusive'.
+    :param pressure_old: Pressure at the previous time step, same shape as ``pressure``.
+        Needed for velocity_correction='Lagged'.
     :return: A 2-tuple:
         qeast - A ny-by-(nx+1) ndarray of overland flux values
         qnorth - A (ny+1)-by-nx ndarray of overland flux values
@@ -597,6 +641,9 @@ def calculate_overland_fluxes(
     pressure_top = pressure[-1, ...].copy()
     pressure_top = np.nan_to_num(pressure_top)
     pressure_top[pressure_top < 0] = 0
+    if pressure_old is not None:
+        old_top = np.nan_to_num(pressure_old[-1, ...].copy())
+        old_top[old_top < 0] = 0
 
     assert flow_method in (
         "OverlandFlow",
@@ -619,6 +666,8 @@ def calculate_overland_fluxes(
                 epsilon,
                 alpha,
                 denominator,
+                velocity_correction,
+                None if pressure_old is None else old_top,
             )
         else:
             qeast, qnorth = _overland_flow_kinematic(
@@ -645,6 +694,8 @@ def calculate_overland_flow_grid(
     mask=None,
     alpha=1.0,
     denominator="BedSlope",
+    velocity_correction="None",
+    pressure_old=None,
 ):
     """
     Calculate overland outflow per grid cell of a domain
@@ -665,6 +716,11 @@ def calculate_overland_flow_grid(
         Only applicable if flow_method='OverlandKinematicDiffusive'.
     :param denominator: 'BedSlope', 'FrictionSlope', or 'Pythagorean' (default 'BedSlope').
         Only applicable if flow_method='OverlandKinematicDiffusive'.
+    :param velocity_correction: 'None', 'Lagged', or 'Implicit' (default 'None'). Matches
+        Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection. Only applicable if
+        flow_method='OverlandKinematicDiffusive'.
+    :param pressure_old: Pressure at the previous time step, same shape as ``pressure``.
+        Needed for velocity_correction='Lagged'.
     :return: A ny-by-nx ndarray of overland flow values
     """
     mask = np.where(mask > 0, 1, 0)
@@ -680,6 +736,8 @@ def calculate_overland_flow_grid(
         mask=mask,
         alpha=alpha,
         denominator=denominator,
+        velocity_correction=velocity_correction,
+        pressure_old=pressure_old,
     )
 
     # Outflow is a positive qeast[i,j+1] or qnorth[i+1,j] or a negative qeast[i,j], qnorth[i,j]
@@ -711,6 +769,8 @@ def calculate_overland_flow(
     mask=None,
     alpha=1.0,
     denominator="BedSlope",
+    velocity_correction="None",
+    pressure_old=None,
 ):
     """
     Calculate overland outflow out of a domain
@@ -731,6 +791,11 @@ def calculate_overland_flow(
         Only applicable if flow_method='OverlandKinematicDiffusive'.
     :param denominator: 'BedSlope', 'FrictionSlope', or 'Pythagorean' (default 'BedSlope').
         Only applicable if flow_method='OverlandKinematicDiffusive'.
+    :param velocity_correction: 'None', 'Lagged', or 'Implicit' (default 'None'). Matches
+        Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection. Only applicable if
+        flow_method='OverlandKinematicDiffusive'.
+    :param pressure_old: Pressure at the previous time step, same shape as ``pressure``.
+        Needed for velocity_correction='Lagged'.
     :return: A float value representing the total overland flow over the domain.
     """
     qeast, qnorth = calculate_overland_fluxes(
@@ -745,6 +810,8 @@ def calculate_overland_flow(
         mask=mask,
         alpha=alpha,
         denominator=denominator,
+        velocity_correction=velocity_correction,
+        pressure_old=pressure_old,
     )
 
     if mask is not None:

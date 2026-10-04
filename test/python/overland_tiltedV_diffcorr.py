@@ -355,9 +355,9 @@ overland.Solver.Linear.Preconditioner.PCMatrixType = "PFSymmetric"
 # Enable isotropic diffusion correction
 overland.Solver.OverlandKinematic.DiffusionCorrection.Type = "Isotropic"
 
-# Each configuration is (run name, reference name, Alpha, Denominator, Jacobian).
-# Picard and FullNewton solve the same equations, so both are checked against the
-# Picard reference.
+# Each configuration is (run name, reference name, Alpha, Denominator, Jacobian,
+# VelocityCorrection).  Picard and FullNewton solve the same equations, so both
+# are checked against the Picard reference.
 configurations = [
     (
         "TiltedV_OverlandKin_DiffCorr_Picard",
@@ -365,6 +365,7 @@ configurations = [
         1.0,
         "BedSlope",
         "Picard",
+        "None",
     ),
     (
         "TiltedV_OverlandKin_DiffCorr_FullNewton",
@@ -372,6 +373,7 @@ configurations = [
         1.0,
         "BedSlope",
         "FullNewton",
+        "None",
     ),
     (
         "TiltedV_OverlandKin_DiffCorr_Pythagorean",
@@ -379,6 +381,23 @@ configurations = [
         1.0,
         "Pythagorean",
         "FullNewton",
+        "None",
+    ),
+    (
+        "TiltedV_OverlandKin_DiffCorr_PythagoreanVelImplicit",
+        "TiltedV_OverlandKin_DiffCorr_PythagoreanVelImplicit",
+        1.0,
+        "Pythagorean",
+        "FullNewton",
+        "Implicit",
+    ),
+    (
+        "TiltedV_OverlandKin_DiffCorr_PythagoreanVelLagged",
+        "TiltedV_OverlandKin_DiffCorr_PythagoreanVelLagged",
+        1.0,
+        "Pythagorean",
+        "FullNewton",
+        "Lagged",
     ),
     (
         "TiltedV_OverlandKin_DiffCorr_Alpha05",
@@ -386,13 +405,15 @@ configurations = [
         0.5,
         "BedSlope",
         "Picard",
+        "None",
     ),
 ]
 
-for run_name, reference_name, alpha, denominator, jacobian in configurations:
+for run_name, reference_name, alpha, denominator, jacobian, velocity in configurations:
     overland.Solver.OverlandKinematic.DiffusionCorrection.Alpha = alpha
     overland.Solver.OverlandKinematic.DiffusionCorrection.Denominator = denominator
     overland.Solver.OverlandKinematic.DiffusionCorrection.Jacobian = jacobian
+    overland.Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection = velocity
 
     overland.set_name(run_name)
     print("##########")

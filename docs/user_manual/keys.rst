@@ -4558,13 +4558,37 @@ that value. ``FrictionSlope`` uses :math:`|S_0 + \alpha\,\nabla\psi|`.
 ``Pythagorean`` uses
 :math:`(|S_0|^2 + |\alpha\,\nabla\psi|^2)^{1/2}`. The last two remain
 well defined at zero bed slope. The kinematic part of the flux keeps
-:math:`|S_0|` for every choice.
+:math:`|S_0|` for every choice, unless **VelocityCorrection** below is
+set.
 
 ::
 
       pfset Solver.OverlandKinematic.DiffusionCorrection.Denominator Pythagorean          ## TCL syntax
 
       <runname>.Solver.OverlandKinematic.DiffusionCorrection.Denominator = 'Pythagorean'  ## Python syntax
+
+*string* **Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection** None
+This key puts the slope magnitude :math:`S_{denom}` under the kinematic
+part of the flux as well, which then reads
+:math:`-S_0\,|\psi|^{5/3} / (n\,|S_{denom}|^{1/2})`. This is the same as
+adding the term
+:math:`S_0\,|\psi|^{5/3}/n\,(|S_0|^{-1/2} - |S_{denom}|^{-1/2})` to the
+flux. Without it, the ``FrictionSlope`` and ``Pythagorean`` denominators
+do not hold a pool at rest on a sloping bed level once the pool covers
+more than one or two cells, because the two parts of the flux then carry
+different slope magnitudes. ``None`` leaves :math:`|S_0|` under the
+kinematic part. ``Implicit`` uses :math:`S_{denom}` from the current
+pressure; with ``FrictionSlope`` the flux is then the diffusive wave
+flux. ``Lagged`` uses :math:`S_{denom}` from the pressure at the previous
+time step, which leaves the kinematic part linear in that quantity
+within a time step. The key has no effect with the ``BedSlope``
+denominator, where the term is zero, or on faces at a domain boundary.
+
+::
+
+      pfset Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection Implicit          ## TCL syntax
+
+      <runname>.Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection = 'Implicit'  ## Python syntax
 
 
 *string* **Solver.PrintInitialConditions** True This key is used to

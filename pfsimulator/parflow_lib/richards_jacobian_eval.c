@@ -1377,7 +1377,7 @@ void    RichardsJacobianEval(
                            AfterAllCells(
       {
         PFModuleInvokeType(OverlandFlowEvalKinInvoke, overlandflow_module_kin,
-                           (grid, is, bc_struct, ipatch, problem_data, pressure,
+                           (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                             ke_der, kw_der, kn_der, ks_der,
                             NULL, NULL, NULL, NULL, NULL, NULL, CALCDER));
       })

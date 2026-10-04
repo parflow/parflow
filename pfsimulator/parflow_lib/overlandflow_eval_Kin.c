@@ -58,9 +58,9 @@ typedef void InstanceXtra;
  *--------------------------------------------------------------------------*/
 
 /* Ponded depth of the surface cell at (ii, jj), or zero where there is none */
-#define DCPondedDepth(ktop, ii, jj)                                            \
+#define DCPondedDepth(pdat, ktop, ii, jj)                                      \
         (((ktop) >= 0) ?                                                       \
-         pfmax(pp[SubvectorEltIndex(p_sub, (ii), (jj), (ktop))], 0.0) : 0.0)
+         pfmax((pdat)[SubvectorEltIndex(p_sub, (ii), (jj), (ktop))], 0.0) : 0.0)
 
 /* Centered difference where both neighbors exist, one-sided where only one
  * does, zero where neither does */
@@ -74,8 +74,10 @@ typedef void InstanceXtra;
  * face is the two-point difference across it.  The gradient along a face is
  * the average of the centered differences in the two cells that share it,
  * which keeps the scheme symmetric.  That average reads the diagonal
- * neighbors, so pressure and the top index need corner ghost cells. */
-#define DCFaceDenominators(Pdown, Pup_x_dc, Pup_y_dc, D_denom_x, D_denom_y)                \
+ * neighbors, so pressure and the top index need corner ghost cells.  pdat is
+ * the pressure array to read: the current pressure, or the old-time pressure
+ * for the lagged velocity correction. */
+#define DCFaceDenominators(pdat, Pdown, Pup_x_dc, Pup_y_dc, D_denom_x, D_denom_y)          \
         {                                                                                  \
           if (diff_denom == 0)                                                             \
           {                                                                                \
@@ -89,11 +91,11 @@ typedef void InstanceXtra;
             int dc_knw = (int)top_dat[itop - 1 + sy_v];                                    \
             double dc_he = (k1x >= 0) ? (Pup_x_dc) : 0.0;                                  \
             double dc_hn = (k1y >= 0) ? (Pup_y_dc) : 0.0;                                  \
-            double dc_hw = DCPondedDepth(k0x, i - 1, j);                                   \
-            double dc_hs = DCPondedDepth(k0y, i, j - 1);                                   \
-            double dc_hne = DCPondedDepth(dc_kne, i + 1, j + 1);                           \
-            double dc_hse = DCPondedDepth(dc_kse, i + 1, j - 1);                           \
-            double dc_hnw = DCPondedDepth(dc_knw, i - 1, j + 1);                           \
+            double dc_hw = DCPondedDepth(pdat, k0x, i - 1, j);                             \
+            double dc_hs = DCPondedDepth(pdat, k0y, i, j - 1);                             \
+            double dc_hne = DCPondedDepth(pdat, dc_kne, i + 1, j + 1);                     \
+            double dc_hse = DCPondedDepth(pdat, dc_kse, i + 1, j - 1);                     \
+            double dc_hnw = DCPondedDepth(pdat, dc_knw, i - 1, j + 1);                     \
             double dc_gx_c = DCCenteredGrad((Pdown), dc_hw, k0x >= 0,                      \
                                             dc_he, k1x >= 0, dx);                          \
             double dc_gy_c = DCCenteredGrad((Pdown), dc_hs, k0y >= 0,                      \
@@ -132,6 +134,28 @@ typedef void InstanceXtra;
           }                                                                                \
         }
 
+/* Slope magnitude at an internal patch edge, where only the gradient normal to
+ * the edge is known.  S_n and S_t are the bed slope normal to and along the
+ * edge, grad_n the water-surface gradient across it. */
+static double DCEdgeDenominator(int diff_denom, double diff_alpha,
+                                double S_n, double S_t, double grad_n,
+                                double S0_mag, double ov_epsilon)
+{
+  double denom;
+
+  if (diff_denom == 0)
+    return S0_mag;
+
+  if (diff_denom == 1)
+    denom = RPowerR((S_n + diff_alpha * grad_n) * (S_n + diff_alpha * grad_n)
+                    + S_t * S_t, 0.5);
+  else
+    denom = RPowerR(S_n * S_n + S_t * S_t
+                    + diff_alpha * grad_n * diff_alpha * grad_n, 0.5);
+
+  return (denom < ov_epsilon) ? ov_epsilon : denom;
+}
+
 
 /*-------------------------------------------------------------------------
  * OverlandFlowEval
@@ -144,6 +168,7 @@ void    OverlandFlowEvalKin(
                             int          ipatch,  /* current boundary patch */
                             ProblemData *problem_data,  /* Geometry data for problem */
                             Vector *     pressure,  /* Vector of phase pressures at each block */
+                            Vector *     old_pressure,  /* Vector of phase pressures at previous time */
                             double *     ke_v,  /* return array corresponding to the east face KE  */
                             double *     kw_v,  /* return array corresponding to the west face KW */
                             double *     kn_v,  /* return array corresponding to the north face KN */
@@ -168,12 +193,14 @@ void    OverlandFlowEvalKin(
   Subvector     *sx_sub, *sy_sub, *mann_sub, *top_sub, *patch_sub, *p_sub;
 
   double        *sx_dat, *sy_dat, *mann_dat, *top_dat, *patch_dat, *pp;
+  double        *opp = NULL;
 
   double ov_epsilon;
 
   int diffusion_correction;
   int diff_jacobian;
   int diff_denom;        /* 0=BedSlope, 1=FrictionSlope, 2=Pythagorean */
+  int vel_corr;          /* 0=None, 1=Lagged, 2=Implicit */
   double diff_alpha;
   double dx, dy;
 
@@ -224,6 +251,26 @@ void    OverlandFlowEvalKin(
       diff_denom = 2;
   }
   diff_alpha = GetDoubleDefault("Solver.OverlandKinematic.DiffusionCorrection.Alpha", 1.0);
+
+  /* Velocity correction: the slope magnitude of the diffusion coefficient goes
+   * under the kinematic term as well, q_kin = -S_0 h^{5/3} / (n |S_denom|^{1/2}).
+   * This adds S_0 h^{5/3}/n (1/|S_0|^{1/2} - 1/|S_denom|^{1/2}) to the flux,
+   * which is what makes a pool at rest on a slope level.  Lagged takes
+   * |S_denom| from the old-time pressure, so the kinematic term keeps its
+   * Jacobian structure with a frozen multiplier.  Implicit takes it from the
+   * current pressure.  With BedSlope the term is zero. */
+  {
+    char *vel_str = GetStringDefault("Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection", "None");
+    vel_corr = 0;
+    if (strcmp(vel_str, "Lagged") == 0)
+      vel_corr = 1;
+    if (strcmp(vel_str, "Implicit") == 0)
+      vel_corr = 2;
+    if (!diffusion_correction || diff_denom == 0)
+      vel_corr = 0;
+    if (vel_corr == 1)
+      opp = SubvectorData(VectorSubvector(old_pressure, sg));
+  }
 
   {
     Subgrid *subgrid = GridSubgrid(grid, sg);
@@ -306,10 +353,48 @@ void    OverlandFlowEvalKin(
                            pfmax((PP_ippsy), 0.0));
         }
 
-        /* Kinematic flux: S_0 in numerator, |S_0| in denominator, Sf*-upwinded depth */
-        qx_v[io] = -(Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]))
+        /* Slope magnitude under the kinematic term at the east and north
+         * faces: |S_0|, or with the velocity correction the slope magnitude of
+         * the diffusion coefficient.  Faces at a domain boundary keep |S_0|. */
+        double K_denom_x = Sf_mag;
+        double K_denom_y = Sf_mag;
+        double D_denom_x = Sf_mag;
+        double D_denom_y = Sf_mag;
+        if (diffusion_correction)
+        {
+          double Pdown = pfmax(PP_ip, 0.0);
+          double Pup_x = (k1x >= 0) ? pfmax(PP_ipp1, 0.0) : Pdown;
+          double Pup_y = (k1y >= 0) ? pfmax(PP_ippsy, 0.0) : Pdown;
+
+          /* Slope magnitude in D at the east and north faces */
+          DCFaceDenominators(pp, Pdown, Pup_x, Pup_y, D_denom_x, D_denom_y);
+
+          if (vel_corr == 2)
+          {
+            if (k1x >= 0)
+              K_denom_x = D_denom_x;
+            if (k1y >= 0)
+              K_denom_y = D_denom_y;
+          }
+          else if (vel_corr == 1)
+          {
+            double Pdown_o = pfmax(opp[ip], 0.0);
+            double Pup_x_o = (k1x >= 0) ? pfmax(opp[ipp1], 0.0) : Pdown_o;
+            double Pup_y_o = (k1y >= 0) ? pfmax(opp[ippsy], 0.0) : Pdown_o;
+            double D_old_x;
+            double D_old_y;
+            DCFaceDenominators(opp, Pdown_o, Pup_x_o, Pup_y_o, D_old_x, D_old_y);
+            if (k1x >= 0)
+              K_denom_x = D_old_x;
+            if (k1y >= 0)
+              K_denom_y = D_old_y;
+          }
+        }
+
+        /* Kinematic flux: S_0 in numerator, Sf*-upwinded depth */
+        qx_v[io] = -(Sf_x / (RPowerR(fabs(K_denom_x), 0.5) * mann_dat[io]))
                    * RPowerR(Press_x, (5.0 / 3.0));
-        qy_v[io] = -(Sf_y / (RPowerR(fabs(Sf_mag), 0.5)
+        qy_v[io] = -(Sf_y / (RPowerR(fabs(K_denom_y), 0.5)
                              * mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
 
         /* Diffusion correction: -D * grad(psi), D = alpha * Press^{5/3}/(n * |S_denom|^{1/2})
@@ -319,11 +404,6 @@ void    OverlandFlowEvalKin(
           double Pdown = pfmax(PP_ip, 0.0);
           double Pup_x = (k1x >= 0) ? pfmax(PP_ipp1, 0.0) : Pdown;
           double Pup_y = (k1y >= 0) ? pfmax(PP_ippsy, 0.0) : Pdown;
-
-          /* Slope magnitude in D at the east and north faces */
-          double D_denom_x;
-          double D_denom_y;
-          DCFaceDenominators(Pdown, Pup_x, Pup_y, D_denom_x, D_denom_y);
 
           if (ipp1 >= 0 && k1x >= 0)
           {
@@ -366,7 +446,17 @@ void    OverlandFlowEvalKin(
             Press_x = RPMean(-Sf_x, 0.0, Pdown_w, Pup_w);
           }
 
-          qx_v[io - 1] = -(Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - 1]))
+          double K_denom_w = Sf_mag;
+          if (vel_corr)
+          {
+            double grad_w = (vel_corr == 1) ?
+                            (pfmax(opp[ip], 0.0) - pfmax(opp[ipm1], 0.0)) / dx :
+                            (Pup_w - Pdown_w) / dx;
+            K_denom_w = DCEdgeDenominator(diff_denom, diff_alpha, Sf_x, Sf_y, grad_w,
+                                          Sf_mag, ov_epsilon);
+          }
+
+          qx_v[io - 1] = -(Sf_x / (RPowerR(fabs(K_denom_w), 0.5) * mann_dat[io - 1]))
                          * RPowerR(Press_x, (5.0 / 3.0));
 
           if (diffusion_correction)
@@ -427,7 +517,17 @@ void    OverlandFlowEvalKin(
             Press_y = RPMean(-Sf_y, 0.0, Pdown_s, Pup_s);
           }
 
-          qy_v[io - sy_v] = -(Sf_y / (RPowerR(fabs(Sf_mag), 0.5)
+          double K_denom_s = Sf_mag;
+          if (vel_corr)
+          {
+            double grad_s = (vel_corr == 1) ?
+                            (pfmax(opp[ip], 0.0) - pfmax(opp[ipmsy], 0.0)) / dy :
+                            (Pup_s - Pdown_s) / dy;
+            K_denom_s = DCEdgeDenominator(diff_denom, diff_alpha, Sf_y, Sf_x, grad_s,
+                                          Sf_mag, ov_epsilon);
+          }
+
+          qy_v[io - sy_v] = -(Sf_y / (RPowerR(fabs(K_denom_s), 0.5)
                                       * mann_dat[io - sy_v])) * RPowerR(Press_y, (5.0 / 3.0));
 
           if (diffusion_correction)
@@ -601,25 +701,83 @@ void    OverlandFlowEvalKin(
           Press_x = RPMean(-Sf_star_x, 0.0, Pdown, Pup_x);
           Press_y = RPMean(-Sf_star_y, 0.0, Pdown, Pup_y);
 
+          /* Slope magnitude in D at the east face and at the north face */
+          double D_denom_x;
+          double D_denom_y;
+          DCFaceDenominators(pp, Pdown, Pup_x_dc, Pup_y_dc, D_denom_x, D_denom_y);
+
           /* h-derivative: Picard uses S_0 (freezes D), FullNewton uses Sf*
            * (adds dD/dh * grad(h) cross-term to upwind diagonal) */
           double slope_jac_x = diff_jacobian ? Sf_star_x : Sf_x;
           double slope_jac_y = diff_jacobian ? Sf_star_y : Sf_y;
-          qx_temp = -(5.0 / 3.0) * (slope_jac_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]))
-                    * RPowerR(Press_x, (2.0 / 3.0));
-          qy_temp = -(5.0 / 3.0) * (slope_jac_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]))
-                    * RPowerR(Press_y, (2.0 / 3.0));
+          if (diff_denom == 0)
+          {
+            qx_temp = -(5.0 / 3.0) * (slope_jac_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]))
+                      * RPowerR(Press_x, (2.0 / 3.0));
+            qy_temp = -(5.0 / 3.0) * (slope_jac_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]))
+                      * RPowerR(Press_y, (2.0 / 3.0));
+          }
+          else
+          {
+            /* The flux is -(S_0 / |K_denom|^{1/2} + alpha grad(h) / |D_denom|^{1/2})
+             * h^{5/3} / n, so each term carries its own slope magnitude in the
+             * h-derivative.  K_denom is |S_0|, or with the velocity correction
+             * the slope magnitude of D, held fixed in the derivative.  For
+             * Lagged that is exact.  For Implicit it leaves out the derivative
+             * of the denominator, as FullNewton does for D. */
+            double K_denom_x = Sf_mag;
+            double K_denom_y = Sf_mag;
+            if (vel_corr == 2)
+            {
+              if (k1x >= 0)
+                K_denom_x = D_denom_x;
+              if (k1y >= 0)
+                K_denom_y = D_denom_y;
+            }
+            else if (vel_corr == 1)
+            {
+              double Pdown_o = pfmax(opp[ip], 0.0);
+              double Pup_x_o = (k1x >= 0) ? pfmax(opp[ipp1], 0.0) : Pdown_o;
+              double Pup_y_o = (k1y >= 0) ? pfmax(opp[ippsy], 0.0) : Pdown_o;
+              double D_old_x;
+              double D_old_y;
+              DCFaceDenominators(opp, Pdown_o, Pup_x_o, Pup_y_o, D_old_x, D_old_y);
+              if (k1x >= 0)
+                K_denom_x = D_old_x;
+              if (k1y >= 0)
+                K_denom_y = D_old_y;
+            }
+            double grad_jac_x = diff_jacobian ? (Sf_star_x - Sf_x) : 0.0;
+            double grad_jac_y = diff_jacobian ? (Sf_star_y - Sf_y) : 0.0;
+            qx_temp = -(5.0 / 3.0) * ((Sf_x / RPowerR(fabs(K_denom_x), 0.5)
+                                       + grad_jac_x / RPowerR(fabs(D_denom_x), 0.5)) / mann_dat[io])
+                      * RPowerR(Press_x, (2.0 / 3.0));
+            qy_temp = -(5.0 / 3.0) * ((Sf_y / RPowerR(fabs(K_denom_y), 0.5)
+                                       + grad_jac_y / RPowerR(fabs(D_denom_y), 0.5)) / mann_dat[io])
+                      * RPowerR(Press_y, (2.0 / 3.0));
+          }
 
-          ke_v[io] = pfmax(qx_temp, 0);
-          kw_v[io + 1] = -pfmax(-qx_temp, 0);
-          kn_v[io] = pfmax(qy_temp, 0);
-          ks_v[io + sy_v] = -pfmax(-qy_temp, 0);
+          if (diff_denom == 0)
+          {
+            ke_v[io] = pfmax(qx_temp, 0);
+            kw_v[io + 1] = -pfmax(-qx_temp, 0);
+            kn_v[io] = pfmax(qy_temp, 0);
+            ks_v[io + sy_v] = -pfmax(-qy_temp, 0);
+          }
+          else
+          {
+            /* The depth is upwinded by the sign of Sf*, so the h-derivative
+             * belongs to the cell that sign selects.  With two different
+             * slope magnitudes the flux can have the other sign, so do not
+             * route by the sign of the derivative. */
+            ke_v[io] = (Sf_star_x < 0.0) ? qx_temp : 0.0;
+            kw_v[io + 1] = (Sf_star_x < 0.0) ? 0.0 : qx_temp;
+            kn_v[io] = (Sf_star_y < 0.0) ? qy_temp : 0.0;
+            ks_v[io + sy_v] = (Sf_star_y < 0.0) ? 0.0 : qy_temp;
+          }
 
           /* Sf*-derivative: ±D/dx with ponding guards.  D uses the slope
            * magnitude at the east face for D_x and at the north face for D_y. */
-          double D_denom_x;
-          double D_denom_y;
-          DCFaceDenominators(Pdown, Pup_x_dc, Pup_y_dc, D_denom_x, D_denom_y);
 
           double D_x = diff_alpha * RPowerR(Press_x, 5.0 / 3.0)
                        / (RPowerR(fabs(D_denom_x), 0.5) * mann_dat[io]);
@@ -641,31 +799,36 @@ void    OverlandFlowEvalKin(
               ks_v[io + sy_v] += -D_y / dy;
           }
 
-          /* Level 2: dD/dhx correction — adds hx^2/(2*|Seff|^2) * (±D/dx)
-           * Only active for FrictionSlope/Pythagorean (BedSlope has no hx in D) */
+          /* Level 2: derivative of D through its slope magnitude.  With
+           * D ~ |Seff|^{-1/2}, d(D hx)/dhx = D (1 - f), where f = hx^2/(2|Seff|^2)
+           * for Pythagorean and f = hx (S_0 + hx)/(2|Seff|^2) for FrictionSlope,
+           * taking the normal component only.  f is 1/2 on flat ground, which
+           * is the nonlinear diffusion h_x/|h_x|^{1/2}.  It is kept within
+           * [-1/2, 1/2].  Only active for FrictionSlope/Pythagorean. */
           if (diff_jacobian >= 2 && diff_denom > 0)
           {
             double dhdx_val = diff_alpha * (Pup_x_dc - Pdown) / dx;
             double dhdy_val = diff_alpha * (Pup_y_dc - Pdown) / dy;
             double Seff2_x = D_denom_x * D_denom_x;
             double Seff2_y = D_denom_y * D_denom_y;
-            /* Factor: hx^2 / (2 * |Seff|^2), bounded in [0, 0.5] */
-            double fx = (Seff2_x > 0) ? dhdx_val * dhdx_val / (2.0 * Seff2_x) : 0.0;
-            double fy = (Seff2_y > 0) ? dhdy_val * dhdy_val / (2.0 * Seff2_y) : 0.0;
+            double numx = (diff_denom == 1) ? dhdx_val * (sx_dat[io] + dhdx_val) : dhdx_val * dhdx_val;
+            double numy = (diff_denom == 1) ? dhdy_val * (sy_dat[io] + dhdy_val) : dhdy_val * dhdy_val;
+            double fx = (Seff2_x > 0) ? pfmax(-0.5, pfmin(0.5, numx / (2.0 * Seff2_x))) : 0.0;
+            double fy = (Seff2_y > 0) ? pfmax(-0.5, pfmin(0.5, numy / (2.0 * Seff2_y))) : 0.0;
 
             if (k1x >= 0)
             {
               if (Pdown > 0.0)
-                ke_v[io] += fx * D_x / dx;
+                ke_v[io] += -fx * D_x / dx;
               if (Pup_x > 0.0)
-                kw_v[io + 1] += -fx * D_x / dx;
+                kw_v[io + 1] += fx * D_x / dx;
             }
             if (k1y >= 0)
             {
               if (Pdown > 0.0)
-                kn_v[io] += fy * D_y / dy;
+                kn_v[io] += -fy * D_y / dy;
               if (Pup_y > 0.0)
-                ks_v[io + sy_v] += -fy * D_y / dy;
+                ks_v[io + sy_v] += fy * D_y / dy;
             }
           }
         }
@@ -713,10 +876,36 @@ void    OverlandFlowEvalKin(
             Press_x = RPMean(-Sf_star_w, 0.0, Pdown_w, Pup_w);
 
             double slope_jac_w = diff_jacobian ? Sf_star_w : Sf_x;
-            qx_temp = -(5.0 / 3.0) * (slope_jac_w / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - 1]))
-                      * RPowerR(Press_x, (2.0 / 3.0));
-            kw_v[io] = -pfmax(-qx_temp, 0);
-            ke_v[io - 1] = pfmax(qx_temp, 0);
+            if (diff_denom == 0)
+            {
+              qx_temp = -(5.0 / 3.0) * (slope_jac_w / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - 1]))
+                        * RPowerR(Press_x, (2.0 / 3.0));
+            }
+            else
+            {
+              double grad_now_w = (Pup_w - Pdown_w) / dx;
+              double grad_w = (vel_corr == 1) ?
+                              (pfmax(opp[ip], 0.0) - pfmax(opp[ipm1], 0.0)) / dx : grad_now_w;
+              double K_denom_w = (vel_corr == 0) ? Sf_mag :
+                                 DCEdgeDenominator(diff_denom, diff_alpha, Sf_x, Sf_y, grad_w,
+                                                   Sf_mag, ov_epsilon);
+              double D_now_w = DCEdgeDenominator(diff_denom, diff_alpha, Sf_x, Sf_y, grad_now_w,
+                                                 Sf_mag, ov_epsilon);
+              double grad_jac_w = diff_jacobian ? (Sf_star_w - Sf_x) : 0.0;
+              qx_temp = -(5.0 / 3.0) * ((Sf_x / RPowerR(fabs(K_denom_w), 0.5)
+                                         + grad_jac_w / RPowerR(fabs(D_now_w), 0.5)) / mann_dat[io - 1])
+                        * RPowerR(Press_x, (2.0 / 3.0));
+            }
+            if (diff_denom == 0)
+            {
+              kw_v[io] = -pfmax(-qx_temp, 0);
+              ke_v[io - 1] = pfmax(qx_temp, 0);
+            }
+            else
+            {
+              kw_v[io] = (Sf_star_w < 0.0) ? 0.0 : qx_temp;
+              ke_v[io - 1] = (Sf_star_w < 0.0) ? qx_temp : 0.0;
+            }
 
             double D_denom_mag;
             if (diff_denom == 0)
@@ -751,11 +940,12 @@ void    OverlandFlowEvalKin(
             {
               double dhdx_w = diff_alpha * (Pup_w - Pdown_w) / dx;
               double Seff2 = D_denom_mag * D_denom_mag;
-              double fx = (Seff2 > 0) ? dhdx_w * dhdx_w / (2.0 * Seff2) : 0.0;
+              double numx = (diff_denom == 1) ? dhdx_w * (Sf_x + dhdx_w) : dhdx_w * dhdx_w;
+              double fx = (Seff2 > 0) ? pfmax(-0.5, pfmin(0.5, numx / (2.0 * Seff2))) : 0.0;
               if (Pdown_w > 0.0)
-                ke_v[io - 1] += fx * D_x / dx;
+                ke_v[io - 1] += -fx * D_x / dx;
               if (Pup_w > 0.0)
-                kw_v[io] += -fx * D_x / dx;
+                kw_v[io] += fx * D_x / dx;
             }
           }
           else
@@ -793,10 +983,36 @@ void    OverlandFlowEvalKin(
             Press_y = RPMean(-Sf_star_s, 0.0, Pdown_s, Pup_s);
 
             double slope_jac_s = diff_jacobian ? Sf_star_s : Sf_y;
-            qy_temp = -(5.0 / 3.0) * (slope_jac_s / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - sy_v]))
-                      * RPowerR(Press_y, (2.0 / 3.0));
-            ks_v[io] = -pfmax(-qy_temp, 0);
-            kn_v[io - sy_v] = pfmax(qy_temp, 0);
+            if (diff_denom == 0)
+            {
+              qy_temp = -(5.0 / 3.0) * (slope_jac_s / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io - sy_v]))
+                        * RPowerR(Press_y, (2.0 / 3.0));
+            }
+            else
+            {
+              double grad_now_s = (Pup_s - Pdown_s) / dy;
+              double grad_s = (vel_corr == 1) ?
+                              (pfmax(opp[ip], 0.0) - pfmax(opp[ipmsy], 0.0)) / dy : grad_now_s;
+              double K_denom_s = (vel_corr == 0) ? Sf_mag :
+                                 DCEdgeDenominator(diff_denom, diff_alpha, Sf_y, Sf_x, grad_s,
+                                                   Sf_mag, ov_epsilon);
+              double D_now_s = DCEdgeDenominator(diff_denom, diff_alpha, Sf_y, Sf_x, grad_now_s,
+                                                 Sf_mag, ov_epsilon);
+              double grad_jac_s = diff_jacobian ? (Sf_star_s - Sf_y) : 0.0;
+              qy_temp = -(5.0 / 3.0) * ((Sf_y / RPowerR(fabs(K_denom_s), 0.5)
+                                         + grad_jac_s / RPowerR(fabs(D_now_s), 0.5)) / mann_dat[io - sy_v])
+                        * RPowerR(Press_y, (2.0 / 3.0));
+            }
+            if (diff_denom == 0)
+            {
+              ks_v[io] = -pfmax(-qy_temp, 0);
+              kn_v[io - sy_v] = pfmax(qy_temp, 0);
+            }
+            else
+            {
+              ks_v[io] = (Sf_star_s < 0.0) ? 0.0 : qy_temp;
+              kn_v[io - sy_v] = (Sf_star_s < 0.0) ? qy_temp : 0.0;
+            }
 
             double D_denom_mag;
             if (diff_denom == 0)
@@ -831,11 +1047,12 @@ void    OverlandFlowEvalKin(
             {
               double dhdy_s = diff_alpha * (Pup_s - Pdown_s) / dy;
               double Seff2 = D_denom_mag * D_denom_mag;
-              double fy = (Seff2 > 0) ? dhdy_s * dhdy_s / (2.0 * Seff2) : 0.0;
+              double numy = (diff_denom == 1) ? dhdy_s * (Sf_y + dhdy_s) : dhdy_s * dhdy_s;
+              double fy = (Seff2 > 0) ? pfmax(-0.5, pfmin(0.5, numy / (2.0 * Seff2))) : 0.0;
               if (Pdown_s > 0.0)
-                kn_v[io - sy_v] += fy * D_y / dy;
+                kn_v[io - sy_v] += -fy * D_y / dy;
               if (Pup_s > 0.0)
-                ks_v[io] += -fy * D_y / dy;
+                ks_v[io] += fy * D_y / dy;
             }
           }
           else

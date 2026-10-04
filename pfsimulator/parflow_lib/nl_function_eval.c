@@ -1792,7 +1792,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 /*  @RMM this is modified to be kinematic wave routing, with a new module for diffusive wave
  * routing added */
         PFModuleInvokeType(OverlandFlowEvalKinInvoke, overlandflow_module_kin,
-                           (grid, is, bc_struct, ipatch, problem_data, pressure,
+                           (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                             ke_, kw_, kn_, ks_,
                             NULL, NULL, NULL, NULL,
                             qx_, qy_, CALCFCN));
