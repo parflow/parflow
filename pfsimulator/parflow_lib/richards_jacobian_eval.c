@@ -347,7 +347,7 @@ void    RichardsJacobianEval(
   VectorUpdateCommHandle  *vector_update_handle;
 
   /* Pass pressure values to neighbors.  */
-  vector_update_handle = InitVectorUpdate(pressure, VectorUpdateAll);
+  vector_update_handle = InitVectorUpdate(pressure, VectorUpdatePGS1);
   FinalizeVectorUpdate(vector_update_handle);
 
   InitVectorAll(density_der, 0.0);
