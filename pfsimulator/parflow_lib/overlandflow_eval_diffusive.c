@@ -304,7 +304,12 @@ void    OverlandFlowEvalDiff(
           ke_v[io] = (5.0 / 3.0) * (-sx_dat[io] - (Pupx / dx)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]) * RPowerR(Pdown, (2.0 / 3.0)) +
                      (8.0 / 3.0) * RPowerR(Pdown, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx);
 
-          kw_v[io + 1] = -RPowerR(Pdown, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx);
+          /* The flux depends on the east cell through its ponded depth,
+           * pfmax(p, 0), so the derivative is zero while that cell is dry.
+           * Without this guard the Jacobian is wrong at a wetting front and
+           * the Newton step for the dry cell is far too small. */
+          kw_v[io + 1] = (Pupx > 0.0) ?
+                         -RPowerR(Pdown, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx) : 0.0;
 
           ke_vns[io] = kw_v[io + 1];
           kw_vns[io + 1] = ke_v[io];
@@ -312,7 +317,9 @@ void    OverlandFlowEvalDiff(
 
         if (Sf_x >= 0)
         {
-          ke_v[io] = RPowerR(Pupx, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx);
+          /* Zero while this cell is dry; see the note above. */
+          ke_v[io] = (Pdown > 0.0) ?
+                     RPowerR(Pupx, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx) : 0.0;
 
           kw_v[io + 1] = (5.0 / 3.0) * (-sx_dat[io] + (Pdown / dx)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]) * RPowerR(Pupx, (2.0 / 3.0)) -
                          (8.0 / 3.0) * RPowerR(Pupx, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx);
@@ -326,7 +333,8 @@ void    OverlandFlowEvalDiff(
           kn_v[io] = (5.0 / 3.0) * (-sy_dat[io] - (Pupy / dy)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]) * RPowerR(Pdown, (2.0 / 3.0)) +
                      (8.0 / 3.0) * RPowerR(Pdown, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dy);
 
-          ks_v[io + sy_v] = -RPowerR(Pdown, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dy);
+          ks_v[io + sy_v] = (Pupy > 0.0) ?
+                            -RPowerR(Pdown, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dy) : 0.0;
 
           kn_vns[io] = ks_v[io + sy_v];
           ks_vns[io + sy_v] = kn_v[io];
@@ -334,7 +342,8 @@ void    OverlandFlowEvalDiff(
 
         if (Sf_y >= 0)
         {
-          kn_v[io] = RPowerR(Pupy, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dy);
+          kn_v[io] = (Pdown > 0.0) ?
+                     RPowerR(Pupy, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dy) : 0.0;
 
           ks_v[io + sy_v] = (5.0 / 3.0) * (-sy_dat[io] + (Pdown / dy)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]) * RPowerR(Pupy, (2.0 / 3.0)) -
                             (8.0 / 3.0) * RPowerR(Pupy, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dy);
