@@ -414,9 +414,11 @@ def _overland_flow_kinematic_diffusive(
 
     where h is the ponded depth upwinded by the sign of Sf* = S0 + alpha dh/dx and
     S_denom is set by ``denominator``: |S0| for 'BedSlope', |Sf*| for 'FrictionSlope',
-    and (|S0|^2 + |alpha grad(h)|^2)^1/2 for 'Pythagorean'.  The correction applies
-    only on faces with an active cell on both sides; all other faces keep the
-    kinematic flux.
+    and (|S0|^2 + |alpha grad(h)|^2)^1/2 for 'Pythagorean'.  In S_denom the gradient
+    normal to a face is the two-point difference across it, and the gradient along
+    the face is the average of the centered differences in the two cells that share
+    it.  The correction applies only on faces with an active cell on both sides; all
+    other faces keep the kinematic flux.
     """
     assert denominator in (
         "BedSlope",
@@ -438,7 +440,7 @@ def _overland_flow_kinematic_diffusive(
     has_x = (surface_mask == 1) & (np.pad(surface_mask[:, 1:], ((0, 0), (0, 1))) == 1)
     has_y = (surface_mask == 1) & (np.pad(surface_mask[1:, :], ((0, 1), (0, 0))) == 1)
 
-    # Water-surface gradients, zero where there is no neighbor
+    # Gradient normal to each face, zero where there is no neighbor
     dhdx = np.where(has_x, alpha * (pup_x - pdown) / dx, 0.0)
     dhdy = np.where(has_y, alpha * (pup_y - pdown) / dy, 0.0)
 
@@ -451,21 +453,58 @@ def _overland_flow_kinematic_diffusive(
 
     slope = np.maximum(epsilon, np.hypot(slopex, slopey))
     if denominator == "BedSlope":
-        d_denom = slope
-    elif denominator == "FrictionSlope":
-        d_denom = np.maximum(epsilon, np.hypot(sf_star_x, sf_star_y))
+        d_denom_x = slope
+        d_denom_y = slope
     else:
-        d_denom = np.maximum(
-            epsilon, np.sqrt(slopex**2 + slopey**2 + dhdx**2 + dhdy**2)
+        # Gradient along each face: the average of the centered differences in
+        # the two cells that share the face.  A centered difference becomes
+        # one-sided where only one neighbor is active, and zero where neither is.
+        active = surface_mask == 1
+
+        def centered(axis, d):
+            h_m = np.roll(pdown, 1, axis=axis)
+            h_p = np.roll(pdown, -1, axis=axis)
+            has_m = active & np.roll(active, 1, axis=axis)
+            has_p = active & np.roll(active, -1, axis=axis)
+            edge = [slice(None), slice(None)]
+            edge[axis] = 0
+            has_m[tuple(edge)] = False
+            edge[axis] = -1
+            has_p[tuple(edge)] = False
+            return np.where(
+                has_m & has_p,
+                (h_p - h_m) / (2.0 * d),
+                np.where(
+                    has_p,
+                    (h_p - pdown) / d,
+                    np.where(has_m, (pdown - h_m) / d, 0.0),
+                ),
+            )
+
+        gx_c = centered(1, dx)
+        gy_c = centered(0, dy)
+        gy_e = alpha * np.where(
+            has_x, 0.5 * (gy_c + np.pad(gy_c[:, 1:], ((0, 0), (0, 1)))), gy_c
         )
+        gx_n = alpha * np.where(
+            has_y, 0.5 * (gx_c + np.pad(gx_c[1:, :], ((0, 1), (0, 0)))), gx_c
+        )
+        if denominator == "FrictionSlope":
+            d_denom_x = np.hypot(slopex + dhdx, slopey + gy_e)
+            d_denom_y = np.hypot(slopex + gx_n, slopey + dhdy)
+        else:
+            d_denom_x = np.sqrt(slopex**2 + slopey**2 + dhdx**2 + gy_e**2)
+            d_denom_y = np.sqrt(slopex**2 + slopey**2 + gx_n**2 + dhdy**2)
+        d_denom_x = np.maximum(epsilon, d_denom_x)
+        d_denom_y = np.maximum(epsilon, d_denom_y)
 
     q_x = (
         -slopex / (np.sqrt(slope) * mannings) * press_x ** (5 / 3)
-        - press_x ** (5 / 3) / (np.sqrt(d_denom) * mannings) * dhdx
+        - press_x ** (5 / 3) / (np.sqrt(d_denom_x) * mannings) * dhdx
     ) * dy
     q_y = (
         -slopey / (np.sqrt(slope) * mannings) * press_y ** (5 / 3)
-        - press_y ** (5 / 3) / (np.sqrt(d_denom) * mannings) * dhdy
+        - press_y ** (5 / 3) / (np.sqrt(d_denom_y) * mannings) * dhdy
     ) * dx
 
     qeast[:, 1:] = np.where(has_x, q_x, qeast[:, 1:])

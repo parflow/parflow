@@ -53,6 +53,86 @@ typedef void InstanceXtra;
  *---------------------------------------------------------------------*/
 #define RPMean(a, b, c, d)   UpstreamMean(a, b, c, d)
 
+/*--------------------------------------------------------------------------
+ * Diffusion correction helpers
+ *--------------------------------------------------------------------------*/
+
+/* Ponded depth of the surface cell at (ii, jj), or zero where there is none */
+#define DCPondedDepth(ktop, ii, jj)                                            \
+        (((ktop) >= 0) ?                                                       \
+         pfmax(pp[SubvectorEltIndex(p_sub, (ii), (jj), (ktop))], 0.0) : 0.0)
+
+/* Centered difference where both neighbors exist, one-sided where only one
+ * does, zero where neither does */
+#define DCCenteredGrad(hc, hm, has_m, hp, has_p, d)                            \
+        (((has_m) && (has_p)) ? ((hp) - (hm)) / (2.0 * (d)) :                  \
+         ((has_p) ? ((hp) - (hc)) / (d) :                                      \
+          ((has_m) ? ((hc) - (hm)) / (d) : 0.0)))
+
+/* Slope magnitude in the diffusion coefficient at the east face (D_denom_x)
+ * and the north face (D_denom_y) of cell (i, j).  The gradient normal to a
+ * face is the two-point difference across it.  The gradient along a face is
+ * the average of the centered differences in the two cells that share it,
+ * which keeps the scheme symmetric.  That average reads the diagonal
+ * neighbors, so pressure and the top index need corner ghost cells. */
+#define DCFaceDenominators(Pdown, Pup_x_dc, Pup_y_dc, D_denom_x, D_denom_y)                \
+        {                                                                                  \
+          if (diff_denom == 0)                                                             \
+          {                                                                                \
+            D_denom_x = Sf_mag;                                                            \
+            D_denom_y = Sf_mag;                                                            \
+          }                                                                                \
+          else                                                                             \
+          {                                                                                \
+            int dc_kne = (int)top_dat[itop + 1 + sy_v];                                    \
+            int dc_kse = (int)top_dat[itop + 1 - sy_v];                                    \
+            int dc_knw = (int)top_dat[itop - 1 + sy_v];                                    \
+            double dc_he = (k1x >= 0) ? (Pup_x_dc) : 0.0;                                  \
+            double dc_hn = (k1y >= 0) ? (Pup_y_dc) : 0.0;                                  \
+            double dc_hw = DCPondedDepth(k0x, i - 1, j);                                   \
+            double dc_hs = DCPondedDepth(k0y, i, j - 1);                                   \
+            double dc_hne = DCPondedDepth(dc_kne, i + 1, j + 1);                           \
+            double dc_hse = DCPondedDepth(dc_kse, i + 1, j - 1);                           \
+            double dc_hnw = DCPondedDepth(dc_knw, i - 1, j + 1);                           \
+            double dc_gx_c = DCCenteredGrad((Pdown), dc_hw, k0x >= 0,                      \
+                                            dc_he, k1x >= 0, dx);                          \
+            double dc_gy_c = DCCenteredGrad((Pdown), dc_hs, k0y >= 0,                      \
+                                            dc_hn, k1y >= 0, dy);                          \
+            double dc_gy_e = (k1x >= 0) ?                                                  \
+                             0.5 * (dc_gy_c                                                \
+                                    + DCCenteredGrad(dc_he, dc_hse, dc_kse >= 0,           \
+                                                     dc_hne, dc_kne >= 0, dy))             \
+                             : dc_gy_c;                                                    \
+            double dc_gx_n = (k1y >= 0) ?                                                  \
+                             0.5 * (dc_gx_c                                                \
+                                    + DCCenteredGrad(dc_hn, dc_hnw, dc_knw >= 0,           \
+                                                     dc_hne, dc_kne >= 0, dx))             \
+                             : dc_gx_c;                                                    \
+            double dc_gx_e = diff_alpha * ((Pup_x_dc) - (Pdown)) / dx;                     \
+            double dc_gy_n = diff_alpha * ((Pup_y_dc) - (Pdown)) / dy;                     \
+            dc_gy_e *= diff_alpha;                                                         \
+            dc_gx_n *= diff_alpha;                                                         \
+            if (diff_denom == 1)                                                           \
+            {                                                                              \
+              D_denom_x = RPowerR((sx_dat[io] + dc_gx_e) * (sx_dat[io] + dc_gx_e)          \
+                                  + (sy_dat[io] + dc_gy_e) * (sy_dat[io] + dc_gy_e), 0.5); \
+              D_denom_y = RPowerR((sx_dat[io] + dc_gx_n) * (sx_dat[io] + dc_gx_n)          \
+                                  + (sy_dat[io] + dc_gy_n) * (sy_dat[io] + dc_gy_n), 0.5); \
+            }                                                                              \
+            else                                                                           \
+            {                                                                              \
+              double dc_s02 = sx_dat[io] * sx_dat[io] + sy_dat[io] * sy_dat[io];           \
+              D_denom_x = RPowerR(dc_s02 + dc_gx_e * dc_gx_e + dc_gy_e * dc_gy_e, 0.5);    \
+              D_denom_y = RPowerR(dc_s02 + dc_gx_n * dc_gx_n + dc_gy_n * dc_gy_n, 0.5);    \
+            }                                                                              \
+            if (D_denom_x < ov_epsilon)                                                    \
+            D_denom_x = ov_epsilon;                                                        \
+            if (D_denom_y < ov_epsilon)                                                    \
+            D_denom_y = ov_epsilon;                                                        \
+          }                                                                                \
+        }
+
+
 /*-------------------------------------------------------------------------
  * OverlandFlowEval
  *-------------------------------------------------------------------------*/
@@ -240,41 +320,21 @@ void    OverlandFlowEvalKin(
           double Pup_x = (k1x >= 0) ? pfmax(PP_ipp1, 0.0) : Pdown;
           double Pup_y = (k1y >= 0) ? pfmax(PP_ippsy, 0.0) : Pdown;
 
-          /* Denominator choice for D */
-          double D_denom_mag;
-          if (diff_denom == 0)
-          {
-            D_denom_mag = Sf_mag;  /* BedSlope: |S_0|, already computed */
-          }
-          else if (diff_denom == 1)
-          {
-            double Sf_star_x = sx_dat[io] + diff_alpha * (Pup_x - Pdown) / dx;
-            double Sf_star_y = sy_dat[io] + diff_alpha * (Pup_y - Pdown) / dy;
-            D_denom_mag = RPowerR(Sf_star_x * Sf_star_x + Sf_star_y * Sf_star_y, 0.5);
-            if (D_denom_mag < ov_epsilon)
-              D_denom_mag = ov_epsilon;
-          }
-          else
-          {
-            double dhdx_val = diff_alpha * (Pup_x - Pdown) / dx;
-            double dhdy_val = diff_alpha * (Pup_y - Pdown) / dy;
-            D_denom_mag = RPowerR(sx_dat[io] * sx_dat[io] + sy_dat[io] * sy_dat[io]
-                                  + dhdx_val * dhdx_val + dhdy_val * dhdy_val, 0.5);
-            if (D_denom_mag < ov_epsilon)
-              D_denom_mag = ov_epsilon;
-          }
-
-          double D_coeff = diff_alpha
-                           / (RPowerR(fabs(D_denom_mag), 0.5) * mann_dat[io]);
+          /* Slope magnitude in D at the east and north faces */
+          double D_denom_x;
+          double D_denom_y;
+          DCFaceDenominators(Pdown, Pup_x, Pup_y, D_denom_x, D_denom_y);
 
           if (ipp1 >= 0 && k1x >= 0)
           {
-            double D_x = D_coeff * RPowerR(Press_x, 5.0 / 3.0);
+            double D_x = diff_alpha * RPowerR(Press_x, 5.0 / 3.0)
+                         / (RPowerR(fabs(D_denom_x), 0.5) * mann_dat[io]);
             qx_v[io] += -D_x * (Pup_x - Pdown) / dx;
           }
           if (ippsy >= 0 && k1y >= 0)
           {
-            double D_y = D_coeff * RPowerR(Press_y, 5.0 / 3.0);
+            double D_y = diff_alpha * RPowerR(Press_y, 5.0 / 3.0)
+                         / (RPowerR(fabs(D_denom_y), 0.5) * mann_dat[io]);
             qy_v[io] += -D_y * (Pup_y - Pdown) / dy;
           }
         }
@@ -555,32 +615,16 @@ void    OverlandFlowEvalKin(
           kn_v[io] = pfmax(qy_temp, 0);
           ks_v[io + sy_v] = -pfmax(-qy_temp, 0);
 
-          /* Sf*-derivative: ±D/dx with ponding guards */
-          double D_denom_mag;
-          if (diff_denom == 0)
-          {
-            D_denom_mag = Sf_mag;
-          }
-          else if (diff_denom == 1)
-          {
-            D_denom_mag = RPowerR(Sf_star_x * Sf_star_x + Sf_star_y * Sf_star_y, 0.5);
-            if (D_denom_mag < ov_epsilon)
-              D_denom_mag = ov_epsilon;
-          }
-          else
-          {
-            double dhdx_val = diff_alpha * (Pup_x_dc - Pdown) / dx;
-            double dhdy_val = diff_alpha * (Pup_y_dc - Pdown) / dy;
-            D_denom_mag = RPowerR(sx_dat[io] * sx_dat[io] + sy_dat[io] * sy_dat[io]
-                                  + dhdx_val * dhdx_val + dhdy_val * dhdy_val, 0.5);
-            if (D_denom_mag < ov_epsilon)
-              D_denom_mag = ov_epsilon;
-          }
+          /* Sf*-derivative: ±D/dx with ponding guards.  D uses the slope
+           * magnitude at the east face for D_x and at the north face for D_y. */
+          double D_denom_x;
+          double D_denom_y;
+          DCFaceDenominators(Pdown, Pup_x_dc, Pup_y_dc, D_denom_x, D_denom_y);
 
-          double D_coeff = diff_alpha
-                           / (RPowerR(fabs(D_denom_mag), 0.5) * mann_dat[io]);
-          double D_x = D_coeff * RPowerR(Press_x, 5.0 / 3.0);
-          double D_y = D_coeff * RPowerR(Press_y, 5.0 / 3.0);
+          double D_x = diff_alpha * RPowerR(Press_x, 5.0 / 3.0)
+                       / (RPowerR(fabs(D_denom_x), 0.5) * mann_dat[io]);
+          double D_y = diff_alpha * RPowerR(Press_y, 5.0 / 3.0)
+                       / (RPowerR(fabs(D_denom_y), 0.5) * mann_dat[io]);
 
           if (k1x >= 0)
           {
@@ -603,10 +647,11 @@ void    OverlandFlowEvalKin(
           {
             double dhdx_val = diff_alpha * (Pup_x_dc - Pdown) / dx;
             double dhdy_val = diff_alpha * (Pup_y_dc - Pdown) / dy;
-            double Seff2 = D_denom_mag * D_denom_mag;
+            double Seff2_x = D_denom_x * D_denom_x;
+            double Seff2_y = D_denom_y * D_denom_y;
             /* Factor: hx^2 / (2 * |Seff|^2), bounded in [0, 0.5] */
-            double fx = (Seff2 > 0) ? dhdx_val * dhdx_val / (2.0 * Seff2) : 0.0;
-            double fy = (Seff2 > 0) ? dhdy_val * dhdy_val / (2.0 * Seff2) : 0.0;
+            double fx = (Seff2_x > 0) ? dhdx_val * dhdx_val / (2.0 * Seff2_x) : 0.0;
+            double fy = (Seff2_y > 0) ? dhdy_val * dhdy_val / (2.0 * Seff2_y) : 0.0;
 
             if (k1x >= 0)
             {
