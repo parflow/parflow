@@ -250,9 +250,9 @@ void    OverlandFlowEvalDiff(
   else          //fcn = CALCDER calculates the derivs of KE KW KN KS wrt to current cell (i,j,k)
   {
     /* Loop over ghost cells too, as OverlandFlowEvalKin does.  The west and
-     * south entries of a cell are written while processing its west and south
-     * neighbors.  For the first row and column of a subgrid those neighbors
-     * are ghost cells, so without them the entries stay zero in parallel. */
+    * south entries of a cell are written while processing its west and south
+    * neighbors.  For the first row and column of a subgrid those neighbors
+    * are ghost cells, so without them the entries stay zero in parallel. */
     ForPatchCellsPerFaceWithGhost(BC_ALL,
                                   BeforeAllCells(DoNothing),
                                   LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
@@ -442,9 +442,9 @@ void    OverlandFlowEvalDiff(
         }
       }
     }),
-                         CellFinalize(DoNothing),
-                         AfterAllCells(DoNothing)
-                         );
+                                  CellFinalize(DoNothing),
+                                  AfterAllCells(DoNothing)
+                                  );
   }
 }
 
