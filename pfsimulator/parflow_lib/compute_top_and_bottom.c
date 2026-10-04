@@ -114,7 +114,7 @@ void ComputeTopAndBottom(Problem *    problem,      /* General problem informati
   }      /* End of subgrid loop */
 
   /* Pass top values to neighbors.  */
-  handle = InitVectorUpdate(top, VectorUpdateAll);
+  handle = InitVectorUpdate(top, VectorUpdatePGS1);
   FinalizeVectorUpdate(handle);
 
   /* Pass bottom values to neighbors.  */
