@@ -325,10 +325,6 @@ overland.Geom.domain.ICPressure.RefPatch = "z_upper"
 # -----------------------------------------------------------------------------
 # set runcheck to 1 if you want to run the pass fail tests
 runcheck = 1
-# The Jacobian-free, analytical-Jacobian, and nonsymmetric-preconditioner runs
-# are checked against one reference.  They agree to five digits; cells holding
-# about 1e-5 m of water differ in the sixth.
-sig_digits = 5
 
 
 # -----------------------------------------------------------------------------
@@ -374,7 +370,6 @@ if runcheck == 1:
             new_output_dir_name + filename,
             correct_output_dir_name + filename,
             f"Max difference in Pressure for timestep {timestep}",
-            sig_digits=sig_digits,
         ):
             passed = False
         filename = f"/{run_name}.out.satur.{timestep}.pfb"
@@ -382,7 +377,6 @@ if runcheck == 1:
             new_output_dir_name + filename,
             correct_output_dir_name + filename,
             f"Max difference in Saturation for timestep {timestep}",
-            sig_digits=sig_digits,
         ):
             passed = False
 
@@ -412,7 +406,6 @@ if runcheck == 1:
             new_output_dir_name + filename,
             correct_output_dir_name + filename,
             f"Max difference in Pressure for timestep {timestep}",
-            sig_digits=sig_digits,
         ):
             passed = False
         filename = f"/{run_name}.out.satur.{timestep}.pfb"
@@ -420,7 +413,6 @@ if runcheck == 1:
             new_output_dir_name + filename,
             correct_output_dir_name + filename,
             f"Max difference in Saturation for timestep {timestep}",
-            sig_digits=sig_digits,
         ):
             passed = False
     if passed:
@@ -451,7 +443,6 @@ if runcheck == 1:
             new_output_dir_name + filename,
             correct_output_dir_name + filename,
             f"Max difference in Pressure for timestep {timestep}",
-            sig_digits=sig_digits,
         ):
             passed = False
         filename = f"/{run_name}.out.satur.{timestep}.pfb"
@@ -459,7 +450,6 @@ if runcheck == 1:
             new_output_dir_name + filename,
             correct_output_dir_name + filename,
             f"Max difference in Saturation for timestep {timestep}",
-            sig_digits=sig_digits,
         ):
             passed = False
     if passed:

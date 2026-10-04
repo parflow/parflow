@@ -318,11 +318,6 @@ pfset Geom.domain.ICPressure.RefPatch                   z-upper
 set runcheck 1
 source pftest.tcl
 
-# The Jacobian-free, analytical-Jacobian, and nonsymmetric-preconditioner runs
-# are checked against one reference.  They agree to five digits; cells holding
-# about 1e-5 m of water differ in the sixth.
-set sig_digits 5
-
 #-----------------------------------------------------------------------------
 # New diffusive formulations without the zero channel (as compared to the first
 #    tests in overland_tiltedV_KWE.tcl)
