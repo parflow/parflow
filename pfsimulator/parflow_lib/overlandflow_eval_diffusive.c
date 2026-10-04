@@ -338,6 +338,26 @@ void    OverlandFlowEvalDiff(
           kn_vns[io] = ks_v[io + sy_v];
           ks_vns[io + sy_v] = kn_v[io];
         }
+
+        /* No surface neighbor to the east or north: the flux there uses bed
+         * slope only, so it depends on this cell's depth alone, and only when
+         * this cell is upwind. */
+        if (k1x < 0)
+        {
+          ke_v[io] = (Sf_x < 0) ?
+                     (5.0 / 3.0) * (-sx_dat[io]) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]) * RPowerR(Pdown, (2.0 / 3.0)) : 0.0;
+          kw_v[io + 1] = 0.0;
+          ke_vns[io] = kw_v[io + 1];
+          kw_vns[io + 1] = ke_v[io];
+        }
+        if (k1y < 0)
+        {
+          kn_v[io] = (Sf_y < 0) ?
+                     (5.0 / 3.0) * (-sy_dat[io]) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]) * RPowerR(Pdown, (2.0 / 3.0)) : 0.0;
+          ks_v[io + sy_v] = 0.0;
+          kn_vns[io] = ks_v[io + sy_v];
+          ks_vns[io + sy_v] = kn_v[io];
+        }
       }
 
       //fix for lower x boundary — use bed slope only (no gradient to ghost h=0)
@@ -362,9 +382,8 @@ void    OverlandFlowEvalDiff(
 
         if (Sf_x >= 0)
         {
-          ke_v[io - 1] = RPowerR(Pupx, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx);
-          kw_v[io] = (5.0 / 3.0) * (-sx_dat[io] + 0.0) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]) * RPowerR(Pupx, (2.0 / 3.0)) -
-                     (8.0 / 3.0) * RPowerR(Pupx, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx);
+          ke_v[io - 1] = 0.0;
+          kw_v[io] = (5.0 / 3.0) * (-sx_dat[io]) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]) * RPowerR(Pupx, (2.0 / 3.0));
           ke_vns[io - 1] = kw_v[io];
           kw_vns[io] = ke_v[io - 1];
         }
@@ -392,9 +411,8 @@ void    OverlandFlowEvalDiff(
 
         if (Sf_y >= 0)
         {
-          kn_vns[io - sy_v] = RPowerR(Pupy, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dy);
-          ks_v[io] = (5.0 / 3.0) * (-sy_dat[io] + 0.0) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]) * RPowerR(Pupy, (2.0 / 3.0)) -
-                     (8.0 / 3.0) * RPowerR(Pupy, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dy);
+          kn_v[io - sy_v] = 0.0;
+          ks_v[io] = (5.0 / 3.0) * (-sy_dat[io]) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]) * RPowerR(Pupy, (2.0 / 3.0));
           kn_vns[io - sy_v] = ks_v[io];
           ks_vns[io] = kn_v[io - sy_v];
         }
@@ -404,17 +422,16 @@ void    OverlandFlowEvalDiff(
         {
           if (Sf_x < 0)
           {
-            kn_v[io - sy_v] = 0.0;
-            ks_v[io] = 0.0;
-            ks_vns[io] = 0.0;
-            kn_vns[io - sy_v] = 0.0;
+            ke_v[io - 1] = 0.0;
+            kw_v[io] = 0.0;
+            kw_vns[io] = 0.0;
+            ke_vns[io - 1] = 0.0;
           }
 
           if (Sf_x >= 0)
           {
-            ke_v[io - 1] = RPowerR(Pupx, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx);
-            kw_v[io] = (5.0 / 3.0) * (-sx_dat[io] + 0.0) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]) * RPowerR(Pupx, (2.0 / 3.0)) -
-                       (8.0 / 3.0) * RPowerR(Pupx, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx);
+            ke_v[io - 1] = 0.0;
+            kw_v[io] = (5.0 / 3.0) * (-sx_dat[io]) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]) * RPowerR(Pupx, (2.0 / 3.0));
             ke_vns[io - 1] = kw_v[io];
             kw_vns[io] = ke_v[io - 1];
           }
