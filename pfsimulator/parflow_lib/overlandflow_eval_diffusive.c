@@ -520,8 +520,9 @@ void  OverlandFlowEvalDiffFreePublicXtra()
  * The diffusive wave computes fluxes for ghost cells, and the friction slope
  * of a ghost cell reads that cell's own neighbors.  At a processor corner
  * such a neighbor is a corner ghost cell, which the default vector update
- * does not exchange.  Returns 1 when any pressure boundary patch is
- * OverlandDiffusive, so callers can pick an update that includes corners.
+ * does not exchange.  The OverlandKinematic diffusion correction does the
+ * same for the FrictionSlope and Pythagorean denominators.  Returns 1 in
+ * either case, so callers can pick an update that includes corners.
  *--------------------------------------------------------------------------*/
 
 int  OverlandFlowNeedsCornerGhosts()
@@ -552,6 +553,16 @@ int  OverlandFlowNeedsCornerGhosts()
         }
       }
       NA_FreeNameArray(patches_na);
+    }
+
+    /* The OverlandKinematic diffusion correction reads corner ghost cells
+     * when its denominator uses the water-surface gradient. */
+    if (strcmp(GetStringDefault("Solver.OverlandKinematic.DiffusionCorrection.Type",
+                                "None"), "Isotropic") == 0
+        && strcmp(GetStringDefault("Solver.OverlandKinematic.DiffusionCorrection.Denominator",
+                                   "BedSlope"), "BedSlope") != 0)
+    {
+      needs_corner_ghosts = 1;
     }
   }
 
