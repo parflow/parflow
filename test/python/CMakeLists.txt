@@ -123,6 +123,7 @@ if(${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI)
             LW_var_dz
             LW_var_dz_spinup
             overland_slopingslab_KWE
+            overland_tiltedV_DWE
             richards_box_proctest_vardz
             reservoir_mpi_test
         )
@@ -153,6 +154,12 @@ foreach(inputfile ${PARALLEL_2DTOPO_TESTS})
     pf_add_py_parallel_test(${inputfile} 1 4 1)
     pf_add_py_parallel_test(${inputfile} 4 1 1)
 endforeach()
+
+# OverlandDiffusive reads corner ghost cells, which only a split in both
+# directions exercises.
+if(overland_tiltedV_DWE IN_LIST PARALLEL_2DTOPO_TESTS)
+    pf_add_py_parallel_test(overland_tiltedV_DWE 2 2 1)
+endif()
 
 foreach(inputfile ${PARALLEL_3DTOPO_TESTS})
     pf_add_py_parallel_test(${inputfile} 1 1 2)

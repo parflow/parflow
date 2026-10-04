@@ -511,6 +511,50 @@ void  OverlandFlowEvalDiffFreePublicXtra()
 }
 
 /*--------------------------------------------------------------------------
+ * OverlandFlowNeedsCornerGhosts
+ *
+ * The diffusive wave computes fluxes for ghost cells, and the friction slope
+ * of a ghost cell reads that cell's own neighbors.  At a processor corner
+ * such a neighbor is a corner ghost cell, which the default vector update
+ * does not exchange.  Returns 1 when any pressure boundary patch is
+ * OverlandDiffusive, so callers can pick an update that includes corners.
+ *--------------------------------------------------------------------------*/
+
+int  OverlandFlowNeedsCornerGhosts()
+{
+  static int needs_corner_ghosts = -1;
+
+  if (needs_corner_ghosts < 0)
+  {
+    char *patch_names = GetStringDefault("BCPressure.PatchNames", NULL);
+
+    needs_corner_ghosts = 0;
+    if (patch_names != NULL)
+    {
+      NameArray patches_na = NA_NewNameArray(patch_names);
+      int num_patches = NA_Sizeof(patches_na);
+      int idx;
+
+      for (idx = 0; idx < num_patches; idx++)
+      {
+        char key[IDB_MAX_KEY_LEN];
+        char *type_name;
+
+        sprintf(key, "Patch.%s.BCPressure.Type", NA_IndexToName(patches_na, idx));
+        type_name = GetStringDefault(key, "");
+        if (strcmp(type_name, "OverlandDiffusive") == 0)
+        {
+          needs_corner_ghosts = 1;
+        }
+      }
+      NA_FreeNameArray(patches_na);
+    }
+  }
+
+  return needs_corner_ghosts;
+}
+
+/*--------------------------------------------------------------------------
  * OverlandFlowEvalSizeOfTempData
  *--------------------------------------------------------------------------*/
 
