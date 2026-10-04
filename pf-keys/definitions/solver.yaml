@@ -2332,6 +2332,22 @@ Solver:
               - Lagged
               - Implicit
 
+      DenominatorTimeLevel:
+        help: >
+          [Type: string] Time level of the slope magnitude selected by Denominator.
+          Current computes it from the current pressure. Old computes it from the
+          pressure at the previous time step, so the diffusion coefficient is fixed
+          within a time step. With Denominator FrictionSlope and a VelocityCorrection,
+          Old gives the diffusive wave with a lagged friction-slope magnitude, which
+          equals the BedSlope flux times (|S_0| / |S_f,old|)^{1/2}. Has no effect
+          with Denominator BedSlope.
+        default: Current
+        domains:
+          EnumDomain:
+            enum_list:
+              - Current
+              - Old
+
   # missing from manual
   PolyDegree:
     help: >

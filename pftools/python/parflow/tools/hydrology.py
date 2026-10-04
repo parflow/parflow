@@ -406,6 +406,7 @@ def _overland_flow_kinematic_diffusive(
     denominator="BedSlope",
     velocity_correction="None",
     pressure_top_old=None,
+    denominator_time_level="Current",
 ):
     """Kinematic wave flux with isotropic diffusion correction.
 
@@ -426,6 +427,10 @@ def _overland_flow_kinematic_diffusive(
     S_denom under the kinematic term as well, computed from ``pressure_top``.
     'Lagged' does the same with S_denom computed from ``pressure_top_old``, the
     ponded depth at the previous time step.  'None' leaves |S0| there.
+
+    ``denominator_time_level`` mirrors the DenominatorTimeLevel key.  'Old' computes
+    S_denom of the diffusive term from ``pressure_top_old``; the 'Implicit' velocity
+    correction then uses that same old-time S_denom.
     """
     assert denominator in (
         "BedSlope",
@@ -437,10 +442,15 @@ def _overland_flow_kinematic_diffusive(
         "Lagged",
         "Implicit",
     ), "Unknown velocity correction"
-    if velocity_correction == "Lagged" and denominator != "BedSlope":
+    assert denominator_time_level in (
+        "Current",
+        "Old",
+    ), "Unknown denominator time level"
+    use_old = denominator_time_level == "Old" and denominator != "BedSlope"
+    if (velocity_correction == "Lagged" or use_old) and denominator != "BedSlope":
         assert (
             pressure_top_old is not None
-        ), "velocity_correction='Lagged' needs the pressure at the previous time step"
+        ), "The pressure at the previous time step is needed"
 
     # Faces without an active cell on both sides keep the kinematic flux
     qeast, qnorth = _overland_flow_kinematic(
@@ -525,7 +535,7 @@ def _overland_flow_kinematic_diffusive(
             d_y = np.sqrt(slopex**2 + slopey**2 + gx_n**2 + g_n**2)
         return np.maximum(epsilon, d_x), np.maximum(epsilon, d_y)
 
-    d_denom_x, d_denom_y = face_denominators(pdown)
+    d_denom_x, d_denom_y = face_denominators(pressure_top_old if use_old else pdown)
 
     # Slope magnitude under the kinematic term
     if velocity_correction == "Implicit":
@@ -567,6 +577,7 @@ def calculate_overland_fluxes(
     denominator="BedSlope",
     velocity_correction="None",
     pressure_old=None,
+    denominator_time_level="Current",
 ):
     """
     Calculate overland fluxes across grid faces
@@ -593,7 +604,10 @@ def calculate_overland_fluxes(
         Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection. Only applicable if
         flow_method='OverlandKinematicDiffusive'.
     :param pressure_old: Pressure at the previous time step, same shape as ``pressure``.
-        Needed for velocity_correction='Lagged'.
+        Needed for velocity_correction='Lagged' and for denominator_time_level='Old'.
+    :param denominator_time_level: 'Current' or 'Old' (default 'Current'). Matches
+        Solver.OverlandKinematic.DiffusionCorrection.DenominatorTimeLevel. Only applicable if
+        flow_method='OverlandKinematicDiffusive'.
     :return: A 2-tuple:
         qeast - A ny-by-(nx+1) ndarray of overland flux values
         qnorth - A (ny+1)-by-nx ndarray of overland flux values
@@ -668,6 +682,7 @@ def calculate_overland_fluxes(
                 denominator,
                 velocity_correction,
                 None if pressure_old is None else old_top,
+                denominator_time_level,
             )
         else:
             qeast, qnorth = _overland_flow_kinematic(
@@ -696,6 +711,7 @@ def calculate_overland_flow_grid(
     denominator="BedSlope",
     velocity_correction="None",
     pressure_old=None,
+    denominator_time_level="Current",
 ):
     """
     Calculate overland outflow per grid cell of a domain
@@ -720,7 +736,10 @@ def calculate_overland_flow_grid(
         Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection. Only applicable if
         flow_method='OverlandKinematicDiffusive'.
     :param pressure_old: Pressure at the previous time step, same shape as ``pressure``.
-        Needed for velocity_correction='Lagged'.
+        Needed for velocity_correction='Lagged' and for denominator_time_level='Old'.
+    :param denominator_time_level: 'Current' or 'Old' (default 'Current'). Matches
+        Solver.OverlandKinematic.DiffusionCorrection.DenominatorTimeLevel. Only applicable if
+        flow_method='OverlandKinematicDiffusive'.
     :return: A ny-by-nx ndarray of overland flow values
     """
     mask = np.where(mask > 0, 1, 0)
@@ -738,6 +757,7 @@ def calculate_overland_flow_grid(
         denominator=denominator,
         velocity_correction=velocity_correction,
         pressure_old=pressure_old,
+        denominator_time_level=denominator_time_level,
     )
 
     # Outflow is a positive qeast[i,j+1] or qnorth[i+1,j] or a negative qeast[i,j], qnorth[i,j]
@@ -771,6 +791,7 @@ def calculate_overland_flow(
     denominator="BedSlope",
     velocity_correction="None",
     pressure_old=None,
+    denominator_time_level="Current",
 ):
     """
     Calculate overland outflow out of a domain
@@ -795,7 +816,10 @@ def calculate_overland_flow(
         Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection. Only applicable if
         flow_method='OverlandKinematicDiffusive'.
     :param pressure_old: Pressure at the previous time step, same shape as ``pressure``.
-        Needed for velocity_correction='Lagged'.
+        Needed for velocity_correction='Lagged' and for denominator_time_level='Old'.
+    :param denominator_time_level: 'Current' or 'Old' (default 'Current'). Matches
+        Solver.OverlandKinematic.DiffusionCorrection.DenominatorTimeLevel. Only applicable if
+        flow_method='OverlandKinematicDiffusive'.
     :return: A float value representing the total overland flow over the domain.
     """
     qeast, qnorth = calculate_overland_fluxes(
@@ -812,6 +836,7 @@ def calculate_overland_flow(
         denominator=denominator,
         velocity_correction=velocity_correction,
         pressure_old=pressure_old,
+        denominator_time_level=denominator_time_level,
     )
 
     if mask is not None:

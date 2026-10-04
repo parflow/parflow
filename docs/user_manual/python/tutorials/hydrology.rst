@@ -157,7 +157,7 @@ Full API
     :param ``mask``: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of mask values (bottom layer to top layer). If ``None``, assumed to be an ``nz`` by ``ny`` by ``nx`` ``ndarray`` of 1s.
     :return: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of evapotranspiration values (units L^3/T), spanning all layers (bottom to top)
 
-5. ``calculate_overland_fluxes(pressure, slopex, slopey, mannings, dx, dy, flow_method='OverlandKinematic', epsilon=1e-5, mask=None, alpha=1.0, denominator='BedSlope', velocity_correction='None', pressure_old=None)``
+5. ``calculate_overland_fluxes(pressure, slopex, slopey, mannings, dx, dy, flow_method='OverlandKinematic', epsilon=1e-5, mask=None, alpha=1.0, denominator='BedSlope', velocity_correction='None', pressure_old=None, denominator_time_level='Current')``
     Calculate overland fluxes across grid faces.
 
     :param ``pressure``: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of pressure values (bottom layer to top layer)
@@ -172,7 +172,8 @@ Full API
     :param ``alpha``: Strength multiplier for diffusion correction (default 1.0). Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
     :param ``denominator``: ``'BedSlope'``, ``'FrictionSlope'``, or ``'Pythagorean'``. ``'BedSlope'`` by default. Use the value of the ``Solver.OverlandKinematic.DiffusionCorrection.Denominator`` key from the run. Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
     :param ``velocity_correction``: ``'None'``, ``'Lagged'``, or ``'Implicit'``. ``'None'`` by default. Use the value of the ``Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection`` key from the run. Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
-    :param ``pressure_old``: pressure at the previous time step, same shape as ``pressure``. Needed if ``velocity_correction='Lagged'``.
+    :param ``pressure_old``: pressure at the previous time step, same shape as ``pressure``. Needed if ``velocity_correction='Lagged'`` or ``denominator_time_level='Old'``.
+    :param ``denominator_time_level``: ``'Current'`` or ``'Old'``. ``'Current'`` by default. Use the value of the ``Solver.OverlandKinematic.DiffusionCorrection.DenominatorTimeLevel`` key from the run. Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
     :return: A 2-tuple: 
 
         (``qeast``: A ``ny`` by ``(nx+1)`` ``ndarray`` of overland flux values,  
@@ -204,7 +205,7 @@ Full API
         (North)
 
 
-6. ``calculate_overland_flow_grid(pressure, slopex, slopey, mannings, dx, dy, flow_method='OverlandKinematic', epsilon=1e-5, mask=None, alpha=1.0, denominator='BedSlope', velocity_correction='None', pressure_old=None)``
+6. ``calculate_overland_flow_grid(pressure, slopex, slopey, mannings, dx, dy, flow_method='OverlandKinematic', epsilon=1e-5, mask=None, alpha=1.0, denominator='BedSlope', velocity_correction='None', pressure_old=None, denominator_time_level='Current')``
     Calculate overland outflow per grid cell of a domain.
 
     :param ``pressure``: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of pressure values (bottom layer to top layer)
@@ -219,10 +220,11 @@ Full API
     :param ``alpha``: Strength multiplier for diffusion correction (default 1.0). Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
     :param ``denominator``: ``'BedSlope'``, ``'FrictionSlope'``, or ``'Pythagorean'``. ``'BedSlope'`` by default. Use the value of the ``Solver.OverlandKinematic.DiffusionCorrection.Denominator`` key from the run. Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
     :param ``velocity_correction``: ``'None'``, ``'Lagged'``, or ``'Implicit'``. ``'None'`` by default. Use the value of the ``Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection`` key from the run. Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
-    :param ``pressure_old``: pressure at the previous time step, same shape as ``pressure``. Needed if ``velocity_correction='Lagged'``.
+    :param ``pressure_old``: pressure at the previous time step, same shape as ``pressure``. Needed if ``velocity_correction='Lagged'`` or ``denominator_time_level='Old'``.
+    :param ``denominator_time_level``: ``'Current'`` or ``'Old'``. ``'Current'`` by default. Use the value of the ``Solver.OverlandKinematic.DiffusionCorrection.DenominatorTimeLevel`` key from the run. Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
     :return: An ``ny`` by ``nx`` ``ndarray`` of overland flow values
 
-7. ``calculate_overland_flow(pressure, slopex, slopey, mannings, dx, dy, flow_method='OverlandKinematic', epsilon=1e-5, mask=None, alpha=1.0, denominator='BedSlope', velocity_correction='None', pressure_old=None)``
+7. ``calculate_overland_flow(pressure, slopex, slopey, mannings, dx, dy, flow_method='OverlandKinematic', epsilon=1e-5, mask=None, alpha=1.0, denominator='BedSlope', velocity_correction='None', pressure_old=None, denominator_time_level='Current')``
 
     :param ``pressure``: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of pressure values (bottom layer to top layer)
     :param ``slopex``: ``ny`` by ``nx``
@@ -236,5 +238,6 @@ Full API
     :param ``alpha``: Strength multiplier for diffusion correction (default 1.0). Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
     :param ``denominator``: ``'BedSlope'``, ``'FrictionSlope'``, or ``'Pythagorean'``. ``'BedSlope'`` by default. Use the value of the ``Solver.OverlandKinematic.DiffusionCorrection.Denominator`` key from the run. Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
     :param ``velocity_correction``: ``'None'``, ``'Lagged'``, or ``'Implicit'``. ``'None'`` by default. Use the value of the ``Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection`` key from the run. Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
-    :param ``pressure_old``: pressure at the previous time step, same shape as ``pressure``. Needed if ``velocity_correction='Lagged'``.
+    :param ``pressure_old``: pressure at the previous time step, same shape as ``pressure``. Needed if ``velocity_correction='Lagged'`` or ``denominator_time_level='Old'``.
+    :param ``denominator_time_level``: ``'Current'`` or ``'Old'``. ``'Current'`` by default. Use the value of the ``Solver.OverlandKinematic.DiffusionCorrection.DenominatorTimeLevel`` key from the run. Only applicable if ``flow_method='OverlandKinematicDiffusive'``.
     :return: A ``ny`` by ``nx`` ``ndarray`` of overland flow values

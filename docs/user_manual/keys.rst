@@ -4590,6 +4590,27 @@ denominator, where the term is zero, or on faces at a domain boundary.
 
       <runname>.Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection = 'Implicit'  ## Python syntax
 
+*string* **Solver.OverlandKinematic.DiffusionCorrection.DenominatorTimeLevel** Current
+This key sets the time level of the slope magnitude :math:`S_{denom}`.
+``Current`` computes it from the current pressure. ``Old`` computes it
+from the pressure at the previous time step. The diffusion coefficient
+is then fixed within a time step, the flux is linear in the
+water-surface gradient, and the solve costs about what ``BedSlope``
+costs. With ``Old``, the ``Implicit`` velocity correction uses the same
+old-time magnitude, so both parts of the flux share one. With
+``FrictionSlope`` and a velocity correction, ``Old`` gives the diffusive
+wave with a lagged friction-slope magnitude, as ``OverlandDiffusive``
+does; it equals the ``BedSlope`` flux multiplied by
+:math:`(|S_0| / |S_f^{old}|)^{1/2}`. The lag introduces an error that
+grows with the time step. The key has no effect with the ``BedSlope``
+denominator.
+
+::
+
+      pfset Solver.OverlandKinematic.DiffusionCorrection.DenominatorTimeLevel Old          ## TCL syntax
+
+      <runname>.Solver.OverlandKinematic.DiffusionCorrection.DenominatorTimeLevel = 'Old'  ## Python syntax
+
 
 *string* **Solver.PrintInitialConditions** True This key is used to
       turn on printing of the initial conditions.  This includes the
