@@ -251,18 +251,22 @@ void    OverlandFlowEvalDiff(
   }
   else          //fcn = CALCDER calculates the derivs of KE KW KN KS wrt to current cell (i,j,k)
   {
-    ForPatchCellsPerFace(BC_ALL,
-                         BeforeAllCells(DoNothing),
-                         LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
-                         Locals(int io, itop, ip = 0, ipp1, ippsy;
-                                int k1, k0x, k0y, k1x, k1y;
-                                double Pupx = NAN, Pupy, Pupox, Pupoy, Pdown, Pdowno;
-                                double Sf_x = NAN, Sf_y, Sf_xo = NAN, Sf_yo = NAN, Sf_mag; ),
-                         CellSetup(DoNothing),
-                         FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
-                         FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
-                         FACE(BackFace, DoNothing),
-                         FACE(FrontFace,
+    /* Loop over ghost cells too, as OverlandFlowEvalKin does.  The west and
+    * south entries of a cell are written while processing its west and south
+    * neighbors.  For the first row and column of a subgrid those neighbors
+    * are ghost cells, so without them the entries stay zero in parallel. */
+    ForPatchCellsPerFaceWithGhost(BC_ALL,
+                                  BeforeAllCells(DoNothing),
+                                  LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
+                                  Locals(int io, itop, ip = 0, ipp1, ippsy;
+                                         int k1, k0x, k0y, k1x, k1y;
+                                         double Pupx = NAN, Pupy, Pupox, Pupoy, Pdown, Pdowno;
+                                         double Sf_x = NAN, Sf_y, Sf_xo = NAN, Sf_yo = NAN, Sf_mag; ),
+                                  CellSetup(DoNothing),
+                                  FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                                  FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                                  FACE(BackFace, DoNothing),
+                                  FACE(FrontFace,
     {
       io = SubvectorEltIndex(sx_sub, i, j, 0);
       itop = SubvectorEltIndex(top_sub, i, j, 0);
@@ -442,9 +446,9 @@ void    OverlandFlowEvalDiff(
         }
       }
     }),
-                         CellFinalize(DoNothing),
-                         AfterAllCells(DoNothing)
-                         );
+                                  CellFinalize(DoNothing),
+                                  AfterAllCells(DoNothing)
+                                  );
   }
 }
 
