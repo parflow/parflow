@@ -321,76 +321,83 @@ assumes that the user provides face centered bedslopes
 (:math:`S_{o,i}`). This is different from the original formulation which
 assumes the user provides grid cenered bedslopes.
 
-Isotropic Diffusion Correction
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Water-Surface Term for the Kinematic Wave
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The **OverlandKinematic** boundary condition can be augmented with an
-optional isotropic diffusion correction that adds the dominant diffusive
-physics missing from the kinematic wave approximation. This is enabled
-by setting ``Solver.OverlandKinematic.DiffusionCorrection.Type`` to
-``Isotropic``. The corrected overland flow equation is:
+The **OverlandKinematic** boundary condition can add a term driven by
+the gradient of the ponded depth, which the kinematic wave approximation
+leaves out. It is selected with
+``Solver.OverlandKinematic.Diffusion.SlopeMagnitude``. The flux across a
+cell face becomes:
 
 .. math::
    :label: diffcorr_eq
 
    \begin{aligned}
-   \frac{\partial \|\psi,0\|}{\partial t}
-   + \nabla \cdot \mathbf{q}_{\mathrm{kin}}
-   - \nabla \cdot \left(D(\psi)\,\nabla\psi\right)
-   = q_r + q_e
+   \mathbf{q} = -\frac{|\psi|^{5/3}}{n}
+   \left( \frac{\mathbf{S}_0}{|A|^{1/2}}
+   + \frac{\alpha\,\nabla\psi}{|B|^{1/2}} \right)
    \end{aligned}
 
-where :math:`\mathbf{q}_{\mathrm{kin}}` is the existing kinematic flux
-and the diffusion coefficient is:
+Here :math:`n` is the Manning's coefficient, :math:`\mathbf{S}_0` is the
+bed slope, :math:`\alpha` is a multiplier
+(``Solver.OverlandKinematic.Diffusion.Alpha``, default 1.0), and
+:math:`A` and :math:`B` are slope magnitudes. The upwind depth selection
+uses the friction slope
+:math:`\mathbf{S}_f^* = \mathbf{S}_0 + \alpha\,\nabla\psi` to determine
+which cell provides the depth for the flux evaluation.
 
-.. math::
-   :label: diffcoeff
+``SlopeMagnitude`` selects the magnitude:
 
-   \begin{aligned}
-   D(\psi) = \frac{\alpha\,|\psi|^{5/3}}{n\,|\mathbf{S}_0|^{1/2}}
-   \end{aligned}
+- ``Kinematic`` (default): the kinematic wave. There is no second term
+  and :math:`A = |\mathbf{S}_0|`.
+- ``BedSlope``: :math:`A = B = |\mathbf{S}_0|`, with an epsilon floor set
+  by ``Solver.OverlandKinematic.Epsilon``.
+- ``FrictionSlope``: the slope of the water surface,
+  :math:`|\mathbf{S}_0 + \alpha\,\nabla\psi|`. Under both terms this is
+  the diffusive wave.
+- ``Pythagorean``:
+  :math:`(|\mathbf{S}_0|^2 + |\alpha\,\nabla\psi|^2)^{1/2}`, which never
+  falls below the bed slope.
 
-Here :math:`\alpha` is a strength parameter
-(``Solver.OverlandKinematic.DiffusionCorrection.Alpha``, default 1.0),
-:math:`n` is the Manning's coefficient, and :math:`\mathbf{S}_0` is the
-bed slope. The denominator uses the **bed slope magnitude**
-:math:`|\mathbf{S}_0|` (with an epsilon floor set by
-``Solver.OverlandKinematic.Epsilon``), keeping the formulation consistent
-with the kinematic wave structure. The upwind depth selection uses the
-friction slope :math:`\mathbf{S}_f^* = \mathbf{S}_0 + \alpha\,\nabla\psi`
-to determine which cell provides the depth for the flux evaluation.
-
-The correction is self-activating: it is strongest where the pressure
-gradient opposes or supplements the bed slope, and vanishes where the
-kinematic wave is appropriate (steep terrain with uniform flow).
+For ``FrictionSlope`` and ``Pythagorean`` two further keys say where the
+magnitude is applied and from which time step it is computed.
+``Solver.OverlandKinematic.Diffusion.BedTermMagnitude`` sets :math:`A`:
+``BedSlope``, or the selected magnitude ``Lagged`` (from the pressure at
+the previous time step, the default) or ``Implicit`` (from the current
+pressure). ``Solver.OverlandKinematic.Diffusion.SurfaceTermMagnitude``
+sets the time level of :math:`B`: ``Lagged`` (default) or ``Implicit``.
+When :math:`A` and :math:`B` are the same magnitude, a pool at rest on a
+sloping bed is level. With ``BedTermMagnitude`` set to ``BedSlope`` they
+differ, and a pool that covers more than one or two cells is not held
+level.
 
 .. note::
-   On flat terrain (:math:`|\mathbf{S}_0| \approx 0`), the diffusion
-   coefficient is controlled by the epsilon floor, which acts as a
-   physical parameter limiting the maximum diffusion rate. For
-   flat-terrain applications, consider adjusting
-   ``Solver.OverlandKinematic.Epsilon`` or using the full
-   ``OverlandDiffusive`` formulation instead.
+   With ``BedSlope`` on flat terrain (:math:`|\mathbf{S}_0| \approx 0`),
+   the diffusion rate is controlled by the epsilon floor and not by the
+   water surface. For flat terrain use ``FrictionSlope`` or
+   ``Pythagorean``.
 
-The Jacobian linearization of the diffusion term can be selected via
-``Solver.OverlandKinematic.DiffusionCorrection.Jacobian``:
+The Jacobian linearization of the water-surface term, written as
+:math:`-D\,\nabla\psi`, can be selected via
+``Solver.OverlandKinematic.Diffusion.Jacobian``:
 
-- ``Picard`` (default): treats :math:`D` as constant in the derivative,
-  giving :math:`\pm D/\Delta x`. Simple and robust.
-- ``FullNewton``: includes the full :math:`\partial D/\partial\psi`
+- ``Picard``: treats :math:`D` as constant in the derivative,
+  giving :math:`\pm D/\Delta x`.
+- ``FullNewton`` (default): includes the :math:`\partial D/\partial\psi`
   terms for faster Newton convergence near the solution.
+- ``FullNewtonDdx``: adds the derivative of :math:`D` with respect to
+  the water-surface gradient.
 
-Both options converge to the same solution. The correction is
-implemented entirely within the kinematic module and inherits all
-boundary handling (internal patch edges, lower boundaries, seepage
-faces). No changes to the Jacobian assembly or stencil structure are
-required.
+All options converge to the same solution. The term is implemented
+within the kinematic module, is switched off on faces at a domain
+boundary, and keeps the 5-point stencil.
 
 The corresponding Python post-processing function
 ``calculate_overland_fluxes()`` in ``parflow.tools.hydrology`` supports
-the diffusion correction via
-``flow_method='OverlandKinematicDiffusive'`` with an optional ``alpha``
-parameter.
+it via ``flow_method='OverlandKinematicDiffusive'`` with the
+``slope_magnitude``, ``bed_term_magnitude``, and
+``surface_term_magnitude`` arguments.
 
 .. _Multi-Phase Flow Equations:
 

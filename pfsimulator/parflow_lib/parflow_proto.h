@@ -917,6 +917,7 @@ typedef void (*OverlandFlowEvalKinInvoke) (Grid *       grid,
                                            double *     qy_v,
                                            int          fcn);
 
+void OverlandKinDiffusionOptions(int *slope_magnitude, int *bed_term, int *surface_term, int *jacobian, double *alpha);
 void OverlandFlowEvalKin(Grid *       grid,
                          int          sg,
                          BCStruct *   bc_struct,

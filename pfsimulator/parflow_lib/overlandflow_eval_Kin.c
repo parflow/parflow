@@ -157,6 +157,99 @@ static double DCEdgeDenominator(int diff_denom, double diff_alpha,
 }
 
 
+/*--------------------------------------------------------------------------
+ * OverlandKinDiffusionOptions
+ *
+ * Reads the Solver.OverlandKinematic.Diffusion keys once, checks them, and
+ * returns them as indices.  The flux across a face is
+ *
+ *   q = -(h^{5/3} / n) (S_0 / |A|^{1/2} + alpha dh / |B|^{1/2}).
+ *
+ * slope_magnitude:  0 Kinematic (no water-surface term), 1 BedSlope,
+ *                   2 FrictionSlope, 3 Pythagorean.  The magnitude used
+ *                   for A and B.
+ * bed_term:         what A is.  0 BedSlope, 1 Lagged (the magnitude from the
+ *                   pressure at the previous time step), 2 Implicit (from
+ *                   the current pressure).
+ * surface_term:     the time level of B.  0 Lagged, 1 Implicit.
+ * jacobian:         0 Picard, 1 FullNewton, 2 FullNewtonDdx.
+ *
+ * With BedSlope both A and B are |S_0| and the two term keys have no effect.
+ *--------------------------------------------------------------------------*/
+
+void OverlandKinDiffusionOptions(int *slope_magnitude, int *bed_term,
+                                 int *surface_term, int *jacobian,
+                                 double *alpha)
+{
+  static int options_read = 0;
+  static int s_slope_magnitude, s_bed_term, s_surface_term, s_jacobian;
+  static double s_alpha;
+
+  if (!options_read)
+  {
+    const char *old_keys[] = { "Type", "Alpha", "Jacobian", "Denominator",
+                               "VelocityCorrection", "DenominatorTimeLevel" };
+    char key[IDB_MAX_KEY_LEN];
+    NameArray na;
+    int idx;
+
+    /* The keys were renamed; a deck with the old names must not run as the
+     * kinematic wave without saying so. */
+    for (idx = 0; idx < 6; idx++)
+    {
+      sprintf(key, "Solver.OverlandKinematic.DiffusionCorrection.%s", old_keys[idx]);
+      IDB_Entry lookup_entry;
+
+      lookup_entry.key = key;
+      if (HBT_lookup(amps_ThreadLocal(input_database), &lookup_entry) != NULL)
+      {
+        InputError("Error: key <%s> is no longer used.  Use the %s keys:\n"
+                   "       SlopeMagnitude, BedTermMagnitude, SurfaceTermMagnitude, Jacobian, Alpha\n",
+                   key, "Solver.OverlandKinematic.Diffusion");
+      }
+    }
+
+    sprintf(key, "Solver.OverlandKinematic.Diffusion.SlopeMagnitude");
+    na = NA_NewNameArray("Kinematic BedSlope FrictionSlope Pythagorean");
+    s_slope_magnitude = NA_NameToIndexExitOnError(na, GetStringDefault(key, "Kinematic"), key);
+    NA_FreeNameArray(na);
+
+    sprintf(key, "Solver.OverlandKinematic.Diffusion.BedTermMagnitude");
+    na = NA_NewNameArray("BedSlope Lagged Implicit");
+    s_bed_term = NA_NameToIndexExitOnError(na, GetStringDefault(key, "Lagged"), key);
+    NA_FreeNameArray(na);
+
+    sprintf(key, "Solver.OverlandKinematic.Diffusion.SurfaceTermMagnitude");
+    na = NA_NewNameArray("Lagged Implicit");
+    s_surface_term = NA_NameToIndexExitOnError(na, GetStringDefault(key, "Lagged"), key);
+    NA_FreeNameArray(na);
+
+    sprintf(key, "Solver.OverlandKinematic.Diffusion.Jacobian");
+    na = NA_NewNameArray("Picard FullNewton FullNewtonDdx");
+    s_jacobian = NA_NameToIndexExitOnError(na, GetStringDefault(key, "FullNewton"), key);
+    NA_FreeNameArray(na);
+
+    s_alpha = GetDoubleDefault("Solver.OverlandKinematic.Diffusion.Alpha", 1.0);
+
+    /* An implicit bed term with a lagged surface term is not implemented */
+    if (s_slope_magnitude > 1 && s_bed_term == 2 && s_surface_term == 0)
+    {
+      InputError("Error: %s = Implicit needs %s = Implicit\n",
+                 "Solver.OverlandKinematic.Diffusion.BedTermMagnitude",
+                 "Solver.OverlandKinematic.Diffusion.SurfaceTermMagnitude");
+    }
+
+    options_read = 1;
+  }
+
+  *slope_magnitude = s_slope_magnitude;
+  *bed_term = s_bed_term;
+  *surface_term = s_surface_term;
+  *jacobian = s_jacobian;
+  *alpha = s_alpha;
+}
+
+
 /*-------------------------------------------------------------------------
  * OverlandFlowEval
  *-------------------------------------------------------------------------*/
@@ -200,7 +293,7 @@ void    OverlandFlowEvalKin(
   int diffusion_correction;
   int diff_jacobian;
   int diff_denom;        /* 0=BedSlope, 1=FrictionSlope, 2=Pythagorean */
-  int vel_corr;          /* 0=None, 1=Lagged, 2=Implicit */
+  int vel_corr;          /* bed term: 0=bed slope, 1=old-time magnitude, 2=same magnitude as the surface term */
   int denom_old;         /* 1 if the slope magnitude in D uses the old-time pressure */
   double diff_alpha;
   double dx, dy;
@@ -230,59 +323,34 @@ void    OverlandFlowEvalKin(
   //ov_epsilon= 1.0e-5;
   ov_epsilon = GetDoubleDefault("Solver.OverlandKinematic.Epsilon", 1.0e-5);
 
-  /* Diffusion correction keys */
-  {
-    char *dc_str = GetStringDefault("Solver.OverlandKinematic.DiffusionCorrection.Type", "None");
-    diffusion_correction = (strcmp(dc_str, "Isotropic") == 0) ? 1 : 0;
-  }
-  {
-    char *jac_str = GetStringDefault("Solver.OverlandKinematic.DiffusionCorrection.Jacobian", "Picard");
-    diff_jacobian = 0;  /* 0=Picard, 1=FullNewton, 2=FullNewton+dD/dhx */
-    if (strcmp(jac_str, "FullNewton") == 0)
-      diff_jacobian = 1;
-    if (strcmp(jac_str, "FullNewtonDdx") == 0)
-      diff_jacobian = 2;
-  }
-  {
-    char *denom_str = GetStringDefault("Solver.OverlandKinematic.DiffusionCorrection.Denominator", "BedSlope");
-    diff_denom = 0;
-    if (strcmp(denom_str, "FrictionSlope") == 0)
-      diff_denom = 1;
-    if (strcmp(denom_str, "Pythagorean") == 0)
-      diff_denom = 2;
-  }
-  diff_alpha = GetDoubleDefault("Solver.OverlandKinematic.DiffusionCorrection.Alpha", 1.0);
-
-  /* Velocity correction: the slope magnitude of the diffusion coefficient goes
-   * under the kinematic term as well, q_kin = -S_0 h^{5/3} / (n |S_denom|^{1/2}).
-   * This adds S_0 h^{5/3}/n (1/|S_0|^{1/2} - 1/|S_denom|^{1/2}) to the flux,
-   * which is what makes a pool at rest on a slope level.  Lagged takes
-   * |S_denom| from the old-time pressure, so the kinematic term keeps its
-   * Jacobian structure with a frozen multiplier.  Implicit takes it from the
-   * current pressure.  With BedSlope the term is zero. */
-  {
-    char *vel_str = GetStringDefault("Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection", "None");
-    vel_corr = 0;
-    if (strcmp(vel_str, "Lagged") == 0)
-      vel_corr = 1;
-    if (strcmp(vel_str, "Implicit") == 0)
-      vel_corr = 2;
-    if (!diffusion_correction || diff_denom == 0)
-      vel_corr = 0;
-  }
-
-  /* Time level of the slope magnitude in the diffusion coefficient.  Old takes
-   * it from the pressure at the previous time step, so D is fixed within a time
-   * step and the flux is linear in the water-surface gradient.  With
-   * FrictionSlope and a velocity correction this is the diffusive wave with a
+  /* Diffusion keys, mapped to the flags used below.  With the bed term on
+   * the bed slope the flux is the kinematic flux plus a diffusive term.
+   * Putting the slope magnitude under the bed term as well adds
+   * S_0 h^{5/3}/n (1/|S_0|^{1/2} - 1/|S_denom|^{1/2}) to the flux, which is
+   * what makes a pool at rest on a slope level.  A lagged magnitude comes
+   * from the old-time pressure, so it is fixed within a time step.  With
+   * FrictionSlope and both terms lagged this is the diffusive wave with a
    * lagged friction-slope magnitude: the BedSlope flux times
-   * (|S_0| / |S_f,old|)^{1/2}.  With Old, the Implicit velocity correction
-   * also uses the old-time magnitude, so both terms always share one. */
+   * (|S_0| / |S_f,old|)^{1/2}. */
   {
-    char *time_str = GetStringDefault("Solver.OverlandKinematic.DiffusionCorrection.DenominatorTimeLevel", "Current");
-    denom_old = (strcmp(time_str, "Old") == 0) ? 1 : 0;
-    if (!diffusion_correction || diff_denom == 0)
-      denom_old = 0;
+    int slope_magnitude, bed_term, surface_term;
+
+    OverlandKinDiffusionOptions(&slope_magnitude, &bed_term, &surface_term,
+                                &diff_jacobian, &diff_alpha);
+
+    diffusion_correction = (slope_magnitude > 0) ? 1 : 0;
+    diff_denom = (slope_magnitude > 0) ? slope_magnitude - 1 : 0;
+    vel_corr = 0;
+    denom_old = 0;
+    if (diff_denom > 0)
+    {
+      denom_old = (surface_term == 0) ? 1 : 0;
+      /* With a lagged surface term, vel_corr 2 shares its old-time magnitude */
+      if (bed_term == 1)
+        vel_corr = denom_old ? 2 : 1;
+      else if (bed_term == 2)
+        vel_corr = 2;
+    }
     if (vel_corr == 1 || denom_old)
       opp = SubvectorData(VectorSubvector(old_pressure, sg));
   }

@@ -403,54 +403,61 @@ def _overland_flow_kinematic_diffusive(
     dy,
     epsilon,
     alpha=1.0,
-    denominator="BedSlope",
-    velocity_correction="None",
+    slope_magnitude="BedSlope",
+    bed_term_magnitude="Lagged",
     pressure_top_old=None,
-    denominator_time_level="Current",
+    surface_term_magnitude="Lagged",
 ):
-    """Kinematic wave flux with isotropic diffusion correction.
+    """Kinematic wave flux with a water-surface term.
 
-    Mirrors OverlandFlowEvalKin with Solver.OverlandKinematic.DiffusionCorrection.Type
-    = Isotropic.  The flux across the east face of a cell is
+    Mirrors OverlandFlowEvalKin with Solver.OverlandKinematic.Diffusion.SlopeMagnitude
+    set to BedSlope, FrictionSlope, or Pythagorean.  The flux across the east face
+    of a cell is
 
-        q = -(S0 / (n |S0|^1/2)) h^5/3 - (alpha / (n |S_denom|^1/2)) h^5/3 dh/dx
+        q = -(h^5/3 / n) (S0 / |A|^1/2 + alpha dh/dx / |B|^1/2)
 
-    where h is the ponded depth upwinded by the sign of Sf* = S0 + alpha dh/dx and
-    S_denom is set by ``denominator``: |S0| for 'BedSlope', |Sf*| for 'FrictionSlope',
-    and (|S0|^2 + |alpha grad(h)|^2)^1/2 for 'Pythagorean'.  In S_denom the gradient
-    normal to a face is the two-point difference across it, and the gradient along
-    the face is the average of the centered differences in the two cells that share
-    it.  The correction applies only on faces with an active cell on both sides; all
-    other faces keep the kinematic flux.
+    where h is the ponded depth upwinded by the sign of Sf* = S0 + alpha dh/dx.
+    ``slope_magnitude`` picks the magnitude: |S0| for 'BedSlope', |Sf*| for
+    'FrictionSlope', and (|S0|^2 + |alpha grad(h)|^2)^1/2 for 'Pythagorean'.  In
+    it the gradient normal to a face is the two-point difference across it, and
+    the gradient along the face is the average of the centered differences in the
+    two cells that share it.  The water-surface term applies only on faces with an
+    active cell on both sides; all other faces keep the kinematic flux.
 
-    ``velocity_correction`` mirrors the VelocityCorrection key.  'Implicit' puts
-    S_denom under the kinematic term as well, computed from ``pressure_top``.
-    'Lagged' does the same with S_denom computed from ``pressure_top_old``, the
-    ponded depth at the previous time step.  'None' leaves |S0| there.
+    ``surface_term_magnitude`` mirrors the SurfaceTermMagnitude key.  It is the
+    time level of B: 'Lagged' computes the magnitude from ``pressure_top_old``,
+    the ponded depth at the previous time step, and 'Implicit' from
+    ``pressure_top``.
 
-    ``denominator_time_level`` mirrors the DenominatorTimeLevel key.  'Old' computes
-    S_denom of the diffusive term from ``pressure_top_old``; the 'Implicit' velocity
-    correction then uses that same old-time S_denom.
+    ``bed_term_magnitude`` mirrors the BedTermMagnitude key.  It sets A: 'BedSlope'
+    leaves |S0| there, 'Lagged' uses the magnitude from ``pressure_top_old``, and
+    'Implicit' uses it from ``pressure_top``.  'Implicit' needs an 'Implicit'
+    surface term.  Neither argument has an effect with 'BedSlope'.
     """
-    assert denominator in (
+    assert slope_magnitude in (
         "BedSlope",
         "FrictionSlope",
         "Pythagorean",
-    ), "Unknown denominator"
-    assert velocity_correction in (
-        "None",
+    ), "Unknown slope magnitude"
+    assert bed_term_magnitude in (
+        "BedSlope",
         "Lagged",
         "Implicit",
-    ), "Unknown velocity correction"
-    assert denominator_time_level in (
-        "Current",
-        "Old",
-    ), "Unknown denominator time level"
-    use_old = denominator_time_level == "Old" and denominator != "BedSlope"
-    if (velocity_correction == "Lagged" or use_old) and denominator != "BedSlope":
-        assert (
-            pressure_top_old is not None
-        ), "The pressure at the previous time step is needed"
+    ), "Unknown bed term magnitude"
+    assert surface_term_magnitude in (
+        "Lagged",
+        "Implicit",
+    ), "Unknown surface term magnitude"
+    uses_gradient = slope_magnitude != "BedSlope"
+    use_old = surface_term_magnitude == "Lagged" and uses_gradient
+    if uses_gradient:
+        assert not (
+            bed_term_magnitude == "Implicit" and use_old
+        ), "An Implicit bed term needs an Implicit surface term"
+        if use_old or bed_term_magnitude == "Lagged":
+            assert (
+                pressure_top_old is not None
+            ), "The pressure at the previous time step is needed"
 
     # Faces without an active cell on both sides keep the kinematic flux
     qeast, qnorth = _overland_flow_kinematic(
@@ -482,7 +489,7 @@ def _overland_flow_kinematic_diffusive(
 
     def face_denominators(depth):
         """Slope magnitude in D at the east and north faces, for a depth field."""
-        if denominator == "BedSlope":
+        if slope_magnitude == "BedSlope":
             return slope, slope
 
         g_e = np.where(
@@ -527,7 +534,7 @@ def _overland_flow_kinematic_diffusive(
         gx_n = alpha * np.where(
             has_y, 0.5 * (gx_c + np.pad(gx_c[1:, :], ((0, 1), (0, 0)))), gx_c
         )
-        if denominator == "FrictionSlope":
+        if slope_magnitude == "FrictionSlope":
             d_x = np.hypot(slopex + g_e, slopey + gy_e)
             d_y = np.hypot(slopex + gx_n, slopey + g_n)
         else:
@@ -537,13 +544,13 @@ def _overland_flow_kinematic_diffusive(
 
     d_denom_x, d_denom_y = face_denominators(pressure_top_old if use_old else pdown)
 
-    # Slope magnitude under the kinematic term
-    if velocity_correction == "Implicit":
-        k_denom_x, k_denom_y = d_denom_x, d_denom_y
-    elif velocity_correction == "Lagged" and denominator != "BedSlope":
+    # Slope magnitude under the bed term
+    if not uses_gradient or bed_term_magnitude == "BedSlope":
+        k_denom_x, k_denom_y = slope, slope
+    elif bed_term_magnitude == "Lagged" and not use_old:
         k_denom_x, k_denom_y = face_denominators(pressure_top_old)
     else:
-        k_denom_x, k_denom_y = slope, slope
+        k_denom_x, k_denom_y = d_denom_x, d_denom_y
 
     q_x = (
         -slopex / (np.sqrt(k_denom_x) * mannings) * press_x ** (5 / 3)
@@ -574,10 +581,10 @@ def calculate_overland_fluxes(
     epsilon=1e-5,
     mask=None,
     alpha=1.0,
-    denominator="BedSlope",
-    velocity_correction="None",
+    slope_magnitude="BedSlope",
+    bed_term_magnitude="Lagged",
     pressure_old=None,
-    denominator_time_level="Current",
+    surface_term_magnitude="Lagged",
 ):
     """
     Calculate overland fluxes across grid faces
@@ -589,24 +596,25 @@ def calculate_overland_fluxes(
     :param dx: Length of a grid element in the x direction
     :param dy: Length of a grid element in the y direction
     :param flow_method: 'OverlandFlow', 'OverlandKinematic', or 'OverlandKinematicDiffusive'
-        'OverlandKinematic' by default. 'OverlandKinematicDiffusive' adds an isotropic
-        diffusion correction to the kinematic wave flux.
+        'OverlandKinematic' by default. 'OverlandKinematicDiffusive' adds the
+        water-surface term to the kinematic wave flux.
     :param epsilon: Minimum slope magnitude for solver. Only applicable if flow_method='OverlandKinematic'
         or 'OverlandKinematicDiffusive'. Set using the Solver.OverlandKinematic.Epsilon key in Parflow.
     :param mask: A nz-by-ny-by-nx ndarray of mask values (bottom layer to top layer)
         If None, assumed to be an nz-by-ny-by-nx ndarray of 1s.
-    :param alpha: Strength multiplier for diffusion correction. Only applicable if
+    :param alpha: Multiplier on the water-surface term. Only applicable if
         flow_method='OverlandKinematicDiffusive'. Default 1.0.
-    :param denominator: 'BedSlope', 'FrictionSlope', or 'Pythagorean'. Matches the
-        Solver.OverlandKinematic.DiffusionCorrection.Denominator key. Only applicable if
+    :param slope_magnitude: 'BedSlope', 'FrictionSlope', or 'Pythagorean'. Matches the
+        Solver.OverlandKinematic.Diffusion.SlopeMagnitude key. Only applicable if
         flow_method='OverlandKinematicDiffusive'. 'BedSlope' by default.
-    :param velocity_correction: 'None', 'Lagged', or 'Implicit' (default 'None'). Matches
-        Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection. Only applicable if
+    :param bed_term_magnitude: 'BedSlope', 'Lagged', or 'Implicit' (default 'Lagged'). Matches
+        Solver.OverlandKinematic.Diffusion.BedTermMagnitude. Only applicable if
         flow_method='OverlandKinematicDiffusive'.
     :param pressure_old: Pressure at the previous time step, same shape as ``pressure``.
-        Needed for velocity_correction='Lagged' and for denominator_time_level='Old'.
-    :param denominator_time_level: 'Current' or 'Old' (default 'Current'). Matches
-        Solver.OverlandKinematic.DiffusionCorrection.DenominatorTimeLevel. Only applicable if
+        Needed for a 'Lagged' bed term or surface term with a 'FrictionSlope' or
+        'Pythagorean' slope magnitude.
+    :param surface_term_magnitude: 'Lagged' or 'Implicit' (default 'Lagged'). Matches
+        Solver.OverlandKinematic.Diffusion.SurfaceTermMagnitude. Only applicable if
         flow_method='OverlandKinematicDiffusive'.
     :return: A 2-tuple:
         qeast - A ny-by-(nx+1) ndarray of overland flux values
@@ -679,10 +687,10 @@ def calculate_overland_fluxes(
                 dy,
                 epsilon,
                 alpha,
-                denominator,
-                velocity_correction,
+                slope_magnitude,
+                bed_term_magnitude,
                 None if pressure_old is None else old_top,
-                denominator_time_level,
+                surface_term_magnitude,
             )
         else:
             qeast, qnorth = _overland_flow_kinematic(
@@ -708,10 +716,10 @@ def calculate_overland_flow_grid(
     epsilon=1e-5,
     mask=None,
     alpha=1.0,
-    denominator="BedSlope",
-    velocity_correction="None",
+    slope_magnitude="BedSlope",
+    bed_term_magnitude="Lagged",
     pressure_old=None,
-    denominator_time_level="Current",
+    surface_term_magnitude="Lagged",
 ):
     """
     Calculate overland outflow per grid cell of a domain
@@ -728,17 +736,18 @@ def calculate_overland_flow_grid(
         flow_method='OverlandKinematic' or 'OverlandKinematicDiffusive'.
     :param mask: A nz-by-ny-by-nx ndarray of mask values (bottom layer to top layer)
         If None, assumed to be an nz-by-ny-by-nx ndarray of 1s.
-    :param alpha: Strength multiplier for diffusion correction (default 1.0).
+    :param alpha: Multiplier on the water-surface term (default 1.0).
         Only applicable if flow_method='OverlandKinematicDiffusive'.
-    :param denominator: 'BedSlope', 'FrictionSlope', or 'Pythagorean' (default 'BedSlope').
+    :param slope_magnitude: 'BedSlope', 'FrictionSlope', or 'Pythagorean' (default 'BedSlope').
         Only applicable if flow_method='OverlandKinematicDiffusive'.
-    :param velocity_correction: 'None', 'Lagged', or 'Implicit' (default 'None'). Matches
-        Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection. Only applicable if
+    :param bed_term_magnitude: 'BedSlope', 'Lagged', or 'Implicit' (default 'Lagged'). Matches
+        Solver.OverlandKinematic.Diffusion.BedTermMagnitude. Only applicable if
         flow_method='OverlandKinematicDiffusive'.
     :param pressure_old: Pressure at the previous time step, same shape as ``pressure``.
-        Needed for velocity_correction='Lagged' and for denominator_time_level='Old'.
-    :param denominator_time_level: 'Current' or 'Old' (default 'Current'). Matches
-        Solver.OverlandKinematic.DiffusionCorrection.DenominatorTimeLevel. Only applicable if
+        Needed for a 'Lagged' bed term or surface term with a 'FrictionSlope' or
+        'Pythagorean' slope magnitude.
+    :param surface_term_magnitude: 'Lagged' or 'Implicit' (default 'Lagged'). Matches
+        Solver.OverlandKinematic.Diffusion.SurfaceTermMagnitude. Only applicable if
         flow_method='OverlandKinematicDiffusive'.
     :return: A ny-by-nx ndarray of overland flow values
     """
@@ -754,10 +763,10 @@ def calculate_overland_flow_grid(
         epsilon=epsilon,
         mask=mask,
         alpha=alpha,
-        denominator=denominator,
-        velocity_correction=velocity_correction,
+        slope_magnitude=slope_magnitude,
+        bed_term_magnitude=bed_term_magnitude,
         pressure_old=pressure_old,
-        denominator_time_level=denominator_time_level,
+        surface_term_magnitude=surface_term_magnitude,
     )
 
     # Outflow is a positive qeast[i,j+1] or qnorth[i+1,j] or a negative qeast[i,j], qnorth[i,j]
@@ -788,10 +797,10 @@ def calculate_overland_flow(
     epsilon=1e-5,
     mask=None,
     alpha=1.0,
-    denominator="BedSlope",
-    velocity_correction="None",
+    slope_magnitude="BedSlope",
+    bed_term_magnitude="Lagged",
     pressure_old=None,
-    denominator_time_level="Current",
+    surface_term_magnitude="Lagged",
 ):
     """
     Calculate overland outflow out of a domain
@@ -808,17 +817,18 @@ def calculate_overland_flow(
         flow_method='OverlandKinematic' or 'OverlandKinematicDiffusive'.
     :param mask: A nz-by-ny-by-nx ndarray of mask values (bottom layer to top layer)
         If None, assumed to be an nz-by-ny-by-nx ndarray of 1s.
-    :param alpha: Strength multiplier for diffusion correction (default 1.0).
+    :param alpha: Multiplier on the water-surface term (default 1.0).
         Only applicable if flow_method='OverlandKinematicDiffusive'.
-    :param denominator: 'BedSlope', 'FrictionSlope', or 'Pythagorean' (default 'BedSlope').
+    :param slope_magnitude: 'BedSlope', 'FrictionSlope', or 'Pythagorean' (default 'BedSlope').
         Only applicable if flow_method='OverlandKinematicDiffusive'.
-    :param velocity_correction: 'None', 'Lagged', or 'Implicit' (default 'None'). Matches
-        Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection. Only applicable if
+    :param bed_term_magnitude: 'BedSlope', 'Lagged', or 'Implicit' (default 'Lagged'). Matches
+        Solver.OverlandKinematic.Diffusion.BedTermMagnitude. Only applicable if
         flow_method='OverlandKinematicDiffusive'.
     :param pressure_old: Pressure at the previous time step, same shape as ``pressure``.
-        Needed for velocity_correction='Lagged' and for denominator_time_level='Old'.
-    :param denominator_time_level: 'Current' or 'Old' (default 'Current'). Matches
-        Solver.OverlandKinematic.DiffusionCorrection.DenominatorTimeLevel. Only applicable if
+        Needed for a 'Lagged' bed term or surface term with a 'FrictionSlope' or
+        'Pythagorean' slope magnitude.
+    :param surface_term_magnitude: 'Lagged' or 'Implicit' (default 'Lagged'). Matches
+        Solver.OverlandKinematic.Diffusion.SurfaceTermMagnitude. Only applicable if
         flow_method='OverlandKinematicDiffusive'.
     :return: A float value representing the total overland flow over the domain.
     """
@@ -833,10 +843,10 @@ def calculate_overland_flow(
         epsilon=epsilon,
         mask=mask,
         alpha=alpha,
-        denominator=denominator,
-        velocity_correction=velocity_correction,
+        slope_magnitude=slope_magnitude,
+        bed_term_magnitude=bed_term_magnitude,
         pressure_old=pressure_old,
-        denominator_time_level=denominator_time_level,
+        surface_term_magnitude=surface_term_magnitude,
     )
 
     if mask is not None:

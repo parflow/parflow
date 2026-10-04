@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# Tilted-V with isotropic diffusion correction
+# Tilted-V with the water-surface (diffusion) term
 #
 # Tests the diffusion correction on the standard tilted-V catchment.
 # Runs with Picard and FullNewton Jacobian options.
@@ -336,7 +336,7 @@ correct_output_dir_name = get_absolute_path("../correct_output")
 
 
 # -----------------------------------------------------------------------------
-# Tilted-V with KWE slopes and isotropic diffusion correction
+# Tilted-V with KWE slopes and the water-surface (diffusion) term
 # -----------------------------------------------------------------------------
 
 overland.TopoSlopesX.Type = "Constant"
@@ -352,12 +352,13 @@ overland.TopoSlopesY.Geom.domain.Value = 0.01
 overland.Patch.z_upper.BCPressure.Type = "OverlandKinematic"
 overland.Solver.Linear.Preconditioner.PCMatrixType = "PFSymmetric"
 
-# Enable isotropic diffusion correction
-overland.Solver.OverlandKinematic.DiffusionCorrection.Type = "Isotropic"
+# The water-surface term of every run here uses the slope magnitude from the
+# current pressure
+overland.Solver.OverlandKinematic.Diffusion.SurfaceTermMagnitude = "Implicit"
 
-# Each configuration is (run name, reference name, Alpha, Denominator, Jacobian,
-# VelocityCorrection).  Picard and FullNewton solve the same equations, so both
-# are checked against the Picard reference.
+# Each configuration is (run name, reference name, Alpha, SlopeMagnitude,
+# Jacobian, BedTermMagnitude).  Picard and FullNewton solve the same equations,
+# so both are checked against the Picard reference.
 configurations = [
     (
         "TiltedV_OverlandKin_DiffCorr_Picard",
@@ -365,7 +366,7 @@ configurations = [
         1.0,
         "BedSlope",
         "Picard",
-        "None",
+        "BedSlope",
     ),
     (
         "TiltedV_OverlandKin_DiffCorr_FullNewton",
@@ -373,7 +374,7 @@ configurations = [
         1.0,
         "BedSlope",
         "FullNewton",
-        "None",
+        "BedSlope",
     ),
     (
         "TiltedV_OverlandKin_DiffCorr_Pythagorean",
@@ -381,7 +382,7 @@ configurations = [
         1.0,
         "Pythagorean",
         "FullNewton",
-        "None",
+        "BedSlope",
     ),
     (
         "TiltedV_OverlandKin_DiffCorr_PythagoreanVelImplicit",
@@ -405,15 +406,22 @@ configurations = [
         0.5,
         "BedSlope",
         "Picard",
-        "None",
+        "BedSlope",
     ),
 ]
 
-for run_name, reference_name, alpha, denominator, jacobian, velocity in configurations:
-    overland.Solver.OverlandKinematic.DiffusionCorrection.Alpha = alpha
-    overland.Solver.OverlandKinematic.DiffusionCorrection.Denominator = denominator
-    overland.Solver.OverlandKinematic.DiffusionCorrection.Jacobian = jacobian
-    overland.Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection = velocity
+for (
+    run_name,
+    reference_name,
+    alpha,
+    slope_magnitude,
+    jacobian,
+    bed_term,
+) in configurations:
+    overland.Solver.OverlandKinematic.Diffusion.Alpha = alpha
+    overland.Solver.OverlandKinematic.Diffusion.SlopeMagnitude = slope_magnitude
+    overland.Solver.OverlandKinematic.Diffusion.Jacobian = jacobian
+    overland.Solver.OverlandKinematic.Diffusion.BedTermMagnitude = bed_term
 
     overland.set_name(run_name)
     print("##########")

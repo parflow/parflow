@@ -1,5 +1,5 @@
 # ---------------------------------------------------------
-#  Testing overland flow with isotropic diffusion correction
+#  Testing overland flow with the water-surface (diffusion) term
 #  Sloping slab in all four slope directions
 # ---------------------------------------------------------
 
@@ -280,12 +280,12 @@ overland.Geom.domain.ICPressure.RefPatch = "z_upper"
 runcheck = 1
 correct_output_dir_name = get_absolute_path("../correct_output")
 
-# OverlandKinematic with isotropic diffusion correction
+# OverlandKinematic with the water-surface term, bed slope magnitude
 overland.Patch.z_upper.BCPressure.Type = "OverlandKinematic"
 overland.Solver.Linear.Preconditioner.PCMatrixType = "PFSymmetric"
-overland.Solver.OverlandKinematic.DiffusionCorrection.Type = "Isotropic"
-overland.Solver.OverlandKinematic.DiffusionCorrection.Alpha = 1.0
-overland.Solver.OverlandKinematic.DiffusionCorrection.Jacobian = "Picard"
+overland.Solver.OverlandKinematic.Diffusion.SlopeMagnitude = "BedSlope"
+overland.Solver.OverlandKinematic.Diffusion.Alpha = 1.0
+overland.Solver.OverlandKinematic.Diffusion.Jacobian = "Picard"
 
 # All four slope directions
 x_slopes = [0.01, -0.01, 0.01, -0.01]

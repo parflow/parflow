@@ -2243,7 +2243,7 @@ Solver:
   OverlandKinematic:
     __doc__: >
       Settings for the kinematic wave overland flow formulation, including
-      the optional isotropic diffusion correction.
+      the optional water-surface (diffusion) term.
 
     Epsilon:
       help: >
@@ -2253,44 +2253,81 @@ Solver:
         DoubleValue:
           min_value: 0.0
 
-    DiffusionCorrection:
+    Diffusion:
       __doc__: >
-        Optional diffusion correction for the kinematic wave overland flow.
-        Adds a diffusive flux to smooth water surfaces on flat terrain and
-        in backwater zones.
+        Optional water-surface term for the kinematic wave overland flow. The
+        flux across a cell face is
+        q = -(h^{5/3} / n) * (S_0 / |A|^{1/2} + alpha * dh / |B|^{1/2}),
+        where h is the ponded depth, S_0 the bed slope, and dh the gradient of
+        the ponded depth. The keys choose the slope magnitudes A and B.
 
-      Type:
+      SlopeMagnitude:
         help: >
-          [Type: string] Selects the type of diffusion correction applied to the
-          OverlandKinematic boundary condition. None disables the correction (default).
-          Isotropic adds an isotropic diffusive flux delta_q = -D * grad(psi) where
-          D = alpha * |psi|^{5/3} / (n * |Sf|^{1/2}).
-        default: None
+          [Type: string] Selects the slope magnitude used in the overland flux.
+          Kinematic (default) gives the kinematic wave, with no water-surface
+          term. BedSlope uses |S_0| under both terms; on flat terrain this is the
+          Solver.OverlandKinematic.Epsilon floor. FrictionSlope uses
+          |S_f| = |S_0 + alpha*grad(h)|, the slope of the water surface, which is
+          the diffusive wave when it is under both terms. Pythagorean uses
+          sqrt(|S_0|^2 + |alpha*grad(h)|^2), which never falls below the bed
+          slope. With FrictionSlope or Pythagorean, BedTermMagnitude and
+          SurfaceTermMagnitude say where the magnitude is applied and from which
+          time step it is computed.
+        default: Kinematic
         domains:
           EnumDomain:
             enum_list:
-              - None
-              - Isotropic
+              - Kinematic
+              - BedSlope
+              - FrictionSlope
+              - Pythagorean
 
-      Alpha:
+      BedTermMagnitude:
         help: >
-          [Type: double] Strength multiplier for the diffusion correction coefficient.
-          D = alpha * |psi|^{5/3} / (n * |Sf|^{1/2}). Range [0,1]: 0 = no correction,
-          1 = full correction.
-        default: 1.0
+          [Type: string] What divides the bed-slope term of the flux, A, when
+          SlopeMagnitude is FrictionSlope or Pythagorean. BedSlope leaves |S_0|
+          there, as in the kinematic wave; a pool at rest on a slope is then not
+          level. Lagged (default) uses the selected slope magnitude computed from
+          the pressure at the previous time step. Implicit uses it computed from
+          the current pressure, and needs SurfaceTermMagnitude Implicit. Has no
+          effect with SlopeMagnitude Kinematic or BedSlope, or at domain
+          boundaries.
+        default: Lagged
         domains:
-          DoubleValue:
-            min_value: 0.0
+          EnumDomain:
+            enum_list:
+              - BedSlope
+              - Lagged
+              - Implicit
+
+      SurfaceTermMagnitude:
+        help: >
+          [Type: string] Time level of the slope magnitude that divides the
+          water-surface term of the flux, B, when SlopeMagnitude is FrictionSlope
+          or Pythagorean. Lagged (default) computes it from the pressure at the
+          previous time step, so the diffusion coefficient is fixed within a time
+          step. Implicit computes it from the current pressure. With SlopeMagnitude
+          FrictionSlope and both terms Lagged the flux is the diffusive wave with a
+          lagged friction-slope magnitude, which equals the BedSlope flux times
+          (|S_0| / |S_f,old|)^{1/2}. Has no effect with SlopeMagnitude Kinematic
+          or BedSlope.
+        default: Lagged
+        domains:
+          EnumDomain:
+            enum_list:
+              - Lagged
+              - Implicit
 
       Jacobian:
         help: >
-          [Type: string] Selects the Jacobian linearization for the diffusion correction.
-          Picard treats D as constant in the derivative (simple, robust). FullNewton
-          includes the depth derivative through D for faster Newton convergence.
-          FullNewtonDdx adds the dD/d(grad_psi) terms through the x-gradient at each
-          face (5-point stencil, no diagonal neighbors). Only active for FrictionSlope
-          or Pythagorean denominators (BedSlope has no gradient dependence in D).
-        default: Picard
+          [Type: string] Selects the Jacobian linearization for the water-surface
+          term. Picard treats the diffusion coefficient as constant in the
+          derivative. FullNewton (default) includes its depth derivative.
+          FullNewtonDdx adds the derivative with respect to the gradient normal to
+          each face (5-point stencil, no diagonal neighbors); it differs from
+          FullNewton only when the slope magnitude is FrictionSlope or Pythagorean
+          and computed from the current pressure.
+        default: FullNewton
         domains:
           EnumDomain:
             enum_list:
@@ -2298,55 +2335,14 @@ Solver:
               - FullNewton
               - FullNewtonDdx
 
-      Denominator:
+      Alpha:
         help: >
-          [Type: string] Selects the slope magnitude used in the denominator of the
-          diffusion coefficient D = alpha * |psi|^{5/3} / (n * |S_denom|^{1/2}).
-          BedSlope uses |S_0| (bed slope only, ATS-style, needs epsilon floor on flat
-          terrain). FrictionSlope uses |S_f| = |S_0 + alpha*grad(psi)| (self-regularizes
-          on flat terrain via water surface gradient). Pythagorean uses
-          sqrt(|S_0|^2 + |alpha*grad(psi)|^2) (self-regularizes, smoother Jacobian
-          than FrictionSlope because dD/d(grad psi) vanishes on steep terrain).
-        default: BedSlope
+          [Type: double] Multiplier on the water-surface term of the flux.
+          Range [0,1]: 0 removes the term, 1 (default) applies it in full.
+        default: 1.0
         domains:
-          EnumDomain:
-            enum_list:
-              - BedSlope
-              - FrictionSlope
-              - Pythagorean
-
-      VelocityCorrection:
-        help: >
-          [Type: string] Puts the slope magnitude selected by Denominator under the
-          kinematic term as well as the diffusive term. This adds the velocity
-          correction S_0 * |psi|^{5/3} / n * (1/|S_0|^{1/2} - 1/|S_denom|^{1/2}) to
-          the flux, which makes a pool at rest on a slope level. None leaves |S_0|
-          under the kinematic term. Lagged takes |S_denom| from the pressure at the
-          previous time step. Implicit takes it from the current pressure. Has no
-          effect with Denominator BedSlope, or at domain boundaries.
-        default: None
-        domains:
-          EnumDomain:
-            enum_list:
-              - None
-              - Lagged
-              - Implicit
-
-      DenominatorTimeLevel:
-        help: >
-          [Type: string] Time level of the slope magnitude selected by Denominator.
-          Current computes it from the current pressure. Old computes it from the
-          pressure at the previous time step, so the diffusion coefficient is fixed
-          within a time step. With Denominator FrictionSlope and a VelocityCorrection,
-          Old gives the diffusive wave with a lagged friction-slope magnitude, which
-          equals the BedSlope flux times (|S_0| / |S_f,old|)^{1/2}. Has no effect
-          with Denominator BedSlope.
-        default: Current
-        domains:
-          EnumDomain:
-            enum_list:
-              - Current
-              - Old
+          DoubleValue:
+            min_value: 0.0
 
   # missing from manual
   PolyDegree:

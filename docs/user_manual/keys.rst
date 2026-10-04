@@ -4498,118 +4498,107 @@ minimum value for the :math:`\bar{S_{f}}` used in the
 
       <runname>.Solver.OverlandKinematic.Epsilon = 1E-7     ## Python syntax
 
-*string* **Solver.OverlandKinematic.DiffusionCorrection.Type** None
-This key selects the type of diffusion correction applied to the
-**OverlandKinematic** boundary condition. ``None`` disables the
-correction (default). ``Isotropic`` adds an isotropic diffusive flux
-:math:`\delta\mathbf{q} = -D\,\nabla\psi` where
-:math:`D = \alpha\,|\psi|^{5/3} / (n\,|S_{denom}|^{1/2})`. The slope
-magnitude :math:`S_{denom}` is set by the **Denominator** key below. The
-ponded depth is upwinded by the sign of the friction slope
-:math:`S_f = S_0 + \alpha\,\nabla\psi`. The correction is applied on
-faces between two surface cells and is switched off at domain
-boundaries, where the flux is the kinematic one. The correction
-is strongest on flat terrain and in backwater zones where the kinematic
-approximation is weakest, and vanishes where the kinematic wave is
-appropriate.
+*string* **Solver.OverlandKinematic.Diffusion.SlopeMagnitude** Kinematic
+This key adds a water-surface term to the flux of the
+**OverlandKinematic** boundary condition and selects the slope magnitude
+it uses. The flux across a cell face is
 
-::
+.. math::
 
-      pfset Solver.OverlandKinematic.DiffusionCorrection.Type Isotropic          ## TCL syntax
+   q = -\frac{|\psi|^{5/3}}{n}
+       \left( \frac{S_0}{|A|^{1/2}}
+       + \frac{\alpha\,\nabla\psi}{|B|^{1/2}} \right)
 
-      <runname>.Solver.OverlandKinematic.DiffusionCorrection.Type = 'Isotropic'  ## Python syntax
-
-*double* **Solver.OverlandKinematic.DiffusionCorrection.Alpha** 1.0
-This key sets the strength multiplier :math:`\alpha` for the diffusion
-correction coefficient. Values range from 0 (no correction) to 1 (full
-correction). Intermediate values provide a linear blend between pure
-kinematic and kinematic-plus-diffusion.
-
-::
-
-      pfset Solver.OverlandKinematic.DiffusionCorrection.Alpha 0.5          ## TCL syntax
-
-      <runname>.Solver.OverlandKinematic.DiffusionCorrection.Alpha = 0.5    ## Python syntax
-
-*string* **Solver.OverlandKinematic.DiffusionCorrection.Jacobian** Picard
-This key selects the Jacobian linearization for the diffusion
-correction. ``Picard`` treats the diffusion coefficient :math:`D` as
-constant when computing the derivative (:math:`\pm D/\Delta x`), which
-is simple and robust. ``FullNewton`` includes the full
-:math:`\partial D / \partial\psi` terms in the Jacobian for faster
-Newton convergence near the solution, at the cost of additional
-arithmetic per cell. ``FullNewtonDdx`` adds the derivative of
-:math:`D` with respect to the water-surface gradient. It differs from
-``FullNewton`` only for the ``FrictionSlope`` and ``Pythagorean``
-denominators.
-
-::
-
-      pfset Solver.OverlandKinematic.DiffusionCorrection.Jacobian FullNewton          ## TCL syntax
-
-      <runname>.Solver.OverlandKinematic.DiffusionCorrection.Jacobian = 'FullNewton'  ## Python syntax
-
-*string* **Solver.OverlandKinematic.DiffusionCorrection.Denominator** BedSlope
-This key selects the slope magnitude :math:`S_{denom}` in the
-diffusion coefficient :math:`D`. ``BedSlope`` uses the bed slope
-:math:`|S_0|`. On flat terrain this falls back to
+where :math:`S_0` is the bed slope and :math:`A` and :math:`B` are slope
+magnitudes. ``Kinematic`` (default) gives the kinematic wave: there is
+no second term and :math:`A = |S_0|`. ``BedSlope`` uses :math:`|S_0|`
+for both :math:`A` and :math:`B`. On flat terrain this falls back to
 **Solver.OverlandKinematic.Epsilon**, so the result there depends on
-that value. ``FrictionSlope`` uses :math:`|S_0 + \alpha\,\nabla\psi|`.
-``Pythagorean`` uses
-:math:`(|S_0|^2 + |\alpha\,\nabla\psi|^2)^{1/2}`. The last two remain
-well defined at zero bed slope. The kinematic part of the flux keeps
-:math:`|S_0|` for every choice, unless **VelocityCorrection** below is
-set.
+that value. ``FrictionSlope`` uses the slope of the water surface,
+:math:`|S_0 + \alpha\,\nabla\psi|`; under both terms this is the
+diffusive wave. ``Pythagorean`` uses
+:math:`(|S_0|^2 + |\alpha\,\nabla\psi|^2)^{1/2}`, which never falls
+below the bed slope. The last two remain well defined at zero bed slope.
+For these two, **BedTermMagnitude** and **SurfaceTermMagnitude** below
+say where the magnitude is applied and from which time step it is
+computed; with their defaults, ``FrictionSlope`` is the diffusive wave
+with a lagged friction-slope magnitude. The ponded depth is upwinded by
+the sign of the friction slope :math:`S_f = S_0 + \alpha\,\nabla\psi`.
+The water-surface term is applied on faces between two surface cells
+and is switched off at domain boundaries, where the flux is the
+kinematic one.
 
 ::
 
-      pfset Solver.OverlandKinematic.DiffusionCorrection.Denominator Pythagorean          ## TCL syntax
+      pfset Solver.OverlandKinematic.Diffusion.SlopeMagnitude FrictionSlope          ## TCL syntax
 
-      <runname>.Solver.OverlandKinematic.DiffusionCorrection.Denominator = 'Pythagorean'  ## Python syntax
+      <runname>.Solver.OverlandKinematic.Diffusion.SlopeMagnitude = 'FrictionSlope'  ## Python syntax
 
-*string* **Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection** None
-This key puts the slope magnitude :math:`S_{denom}` under the kinematic
-part of the flux as well, which then reads
-:math:`-S_0\,|\psi|^{5/3} / (n\,|S_{denom}|^{1/2})`. This is the same as
-adding the term
-:math:`S_0\,|\psi|^{5/3}/n\,(|S_0|^{-1/2} - |S_{denom}|^{-1/2})` to the
-flux. Without it, the ``FrictionSlope`` and ``Pythagorean`` denominators
-do not hold a pool at rest on a sloping bed level once the pool covers
-more than one or two cells, because the two parts of the flux then carry
-different slope magnitudes. ``None`` leaves :math:`|S_0|` under the
-kinematic part. ``Implicit`` uses :math:`S_{denom}` from the current
-pressure; with ``FrictionSlope`` the flux is then the diffusive wave
-flux. ``Lagged`` uses :math:`S_{denom}` from the pressure at the previous
-time step, which leaves the kinematic part linear in that quantity
-within a time step. The key has no effect with the ``BedSlope``
-denominator, where the term is zero, or on faces at a domain boundary.
+*string* **Solver.OverlandKinematic.Diffusion.BedTermMagnitude** Lagged
+This key sets :math:`A`, the magnitude that divides the bed-slope term,
+when **SlopeMagnitude** is ``FrictionSlope`` or ``Pythagorean``.
+``BedSlope`` leaves :math:`|S_0|` there, as in the kinematic wave. The
+two terms then carry different magnitudes, and a pool at rest on a
+sloping bed is not held level once it covers more than one or two cells.
+``Lagged`` (default) uses the selected slope magnitude computed from the
+pressure at the previous time step. ``Implicit`` uses it computed from
+the current pressure, and requires **SurfaceTermMagnitude** ``Implicit``.
+The key has no effect with ``Kinematic`` or ``BedSlope``, or on faces at
+a domain boundary.
 
 ::
 
-      pfset Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection Implicit          ## TCL syntax
+      pfset Solver.OverlandKinematic.Diffusion.BedTermMagnitude Implicit          ## TCL syntax
 
-      <runname>.Solver.OverlandKinematic.DiffusionCorrection.VelocityCorrection = 'Implicit'  ## Python syntax
+      <runname>.Solver.OverlandKinematic.Diffusion.BedTermMagnitude = 'Implicit'  ## Python syntax
 
-*string* **Solver.OverlandKinematic.DiffusionCorrection.DenominatorTimeLevel** Current
-This key sets the time level of the slope magnitude :math:`S_{denom}`.
-``Current`` computes it from the current pressure. ``Old`` computes it
-from the pressure at the previous time step. The diffusion coefficient
-is then fixed within a time step, the flux is linear in the
-water-surface gradient, and the solve costs about what ``BedSlope``
-costs. With ``Old``, the ``Implicit`` velocity correction uses the same
-old-time magnitude, so both parts of the flux share one. With
-``FrictionSlope`` and a velocity correction, ``Old`` gives the diffusive
-wave with a lagged friction-slope magnitude, as ``OverlandDiffusive``
-does; it equals the ``BedSlope`` flux multiplied by
-:math:`(|S_0| / |S_f^{old}|)^{1/2}`. The lag introduces an error that
-grows with the time step. The key has no effect with the ``BedSlope``
-denominator.
+*string* **Solver.OverlandKinematic.Diffusion.SurfaceTermMagnitude** Lagged
+This key sets the time level of :math:`B`, the magnitude that divides
+the water-surface term, when **SlopeMagnitude** is ``FrictionSlope`` or
+``Pythagorean``. ``Lagged`` (default) computes it from the pressure at
+the previous time step. The diffusion coefficient is then fixed within a
+time step, the flux is linear in the water-surface gradient, and the
+solve costs about what ``BedSlope`` costs. ``Implicit`` computes it from
+the current pressure. With ``FrictionSlope`` and both terms ``Lagged``
+the flux is the diffusive wave with a lagged friction-slope magnitude,
+as ``OverlandDiffusive`` uses; it equals the ``BedSlope`` flux
+multiplied by :math:`(|S_0| / |S_f^{old}|)^{1/2}`. With both terms
+``Implicit`` it is the fully implicit diffusive wave. The lag introduces
+an error that grows with the time step. The key has no effect with
+``Kinematic`` or ``BedSlope``.
 
 ::
 
-      pfset Solver.OverlandKinematic.DiffusionCorrection.DenominatorTimeLevel Old          ## TCL syntax
+      pfset Solver.OverlandKinematic.Diffusion.SurfaceTermMagnitude Implicit          ## TCL syntax
 
-      <runname>.Solver.OverlandKinematic.DiffusionCorrection.DenominatorTimeLevel = 'Old'  ## Python syntax
+      <runname>.Solver.OverlandKinematic.Diffusion.SurfaceTermMagnitude = 'Implicit'  ## Python syntax
+
+*string* **Solver.OverlandKinematic.Diffusion.Jacobian** FullNewton
+This key selects the Jacobian linearization for the water-surface term.
+Writing the term as :math:`-D\,\nabla\psi`, ``Picard`` treats the
+diffusion coefficient :math:`D` as constant when computing the
+derivative (:math:`\pm D/\Delta x`). ``FullNewton`` (default) includes
+the :math:`\partial D / \partial\psi` terms in the Jacobian for faster
+Newton convergence near the solution. ``FullNewtonDdx`` adds the
+derivative of :math:`D` with respect to the water-surface gradient. It
+differs from ``FullNewton`` only for the ``FrictionSlope`` and
+``Pythagorean`` slope magnitudes computed from the current pressure.
+
+::
+
+      pfset Solver.OverlandKinematic.Diffusion.Jacobian Picard          ## TCL syntax
+
+      <runname>.Solver.OverlandKinematic.Diffusion.Jacobian = 'Picard'  ## Python syntax
+
+*double* **Solver.OverlandKinematic.Diffusion.Alpha** 1.0
+This key sets the multiplier :math:`\alpha` on the water-surface term.
+Values range from 0 (no term) to 1 (the full term).
+
+::
+
+      pfset Solver.OverlandKinematic.Diffusion.Alpha 0.5          ## TCL syntax
+
+      <runname>.Solver.OverlandKinematic.Diffusion.Alpha = 0.5    ## Python syntax
 
 
 *string* **Solver.PrintInitialConditions** True This key is used to
