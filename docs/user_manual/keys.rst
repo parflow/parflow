@@ -3311,7 +3311,10 @@ and **OverlandDiffusive** both turn on a kinematic and diffusive wave
 overland flow routing boundary that solve Maning's equation in
 :ref:`Overland Flow` and do the upwinding internally
 (i.e. assuming that the user provides cell face slopes, as opposed to
-the traditional cell centered slopes). The key **SeepageFace** simulates
+the traditional cell centered slopes). **OverlandKinematic** can also
+carry the diffusive wave terms, selected with the
+**Solver.OverlandKinematic.Diffusion** keys and described in
+:ref:`Overland Diffusion Options`. The key **SeepageFace** simulates
 a boundary that allows flow to exit but keeps the surface pressure at
 zero. Consider a sign flip in top boundary condition values (i.e., outgoing
 fluxes are positive and incoming fluxes are negative). The choice
@@ -4499,34 +4502,38 @@ minimum value for the :math:`\bar{S_{f}}` used in the
       <runname>.Solver.OverlandKinematic.Epsilon = 1E-7     ## Python syntax
 
 *string* **Solver.OverlandKinematic.Diffusion.SlopeMagnitude** Kinematic
-This key adds a water-surface term to the flux of the
-**OverlandKinematic** boundary condition and selects the slope magnitude
-it uses. The flux across a cell face is
+This key adds a term driven by the gradient of the ponded depth to the
+flux of the **OverlandKinematic** boundary condition, and selects the
+slope magnitude it uses. The equations, a table of the key combinations,
+and the behavior of each are in :ref:`Overland Diffusion Options`. The
+flux across a cell face is Equation :eq:`diffcorr_eq`,
 
 .. math::
 
-   q = -\frac{|\psi|^{5/3}}{n}
-       \left( \frac{S_0}{|A|^{1/2}}
-       + \frac{\alpha\,\nabla\psi}{|B|^{1/2}} \right)
+   \mathbf{q} = -\frac{\psi_s^{5/3}}{n}
+       \left( \frac{\mathbf{S}_0}{A^{1/2}}
+       + \frac{\alpha\,\nabla\psi_s}{B^{1/2}} \right)
 
-where :math:`S_0` is the bed slope and :math:`A` and :math:`B` are slope
-magnitudes. ``Kinematic`` (default) gives the kinematic wave: there is
-no second term and :math:`A = |S_0|`. ``BedSlope`` uses :math:`|S_0|`
-for both :math:`A` and :math:`B`. On flat terrain this falls back to
+where :math:`\mathbf{S}_0` is the bed slope and :math:`A` and
+:math:`B` are slope magnitudes. ``Kinematic`` (default) gives the
+kinematic wave: there is no second term and :math:`A = |\mathbf{S}_0|`.
+``BedSlope`` uses :math:`|\mathbf{S}_0|` for both :math:`A` and
+:math:`B`. On flat terrain this falls back to
 **Solver.OverlandKinematic.Epsilon**, so the result there depends on
 that value. ``FrictionSlope`` uses the slope of the water surface,
-:math:`|S_0 + \alpha\,\nabla\psi|`; under both terms this is the
-diffusive wave. ``Pythagorean`` uses
-:math:`(|S_0|^2 + |\alpha\,\nabla\psi|^2)^{1/2}`, which never falls
-below the bed slope. The last two remain well defined at zero bed slope.
-For these two, **BedTermMagnitude** and **SurfaceTermMagnitude** below
-say where the magnitude is applied and from which time step it is
-computed; with their defaults, ``FrictionSlope`` is the diffusive wave
-with a lagged friction-slope magnitude. The ponded depth is upwinded by
-the sign of the friction slope :math:`S_f = S_0 + \alpha\,\nabla\psi`.
-The water-surface term is applied on faces between two surface cells
-and is switched off at domain boundaries, where the flux is the
-kinematic one.
+:math:`|\mathbf{S}_0 + \alpha\,\nabla\psi_s|`; under both terms this
+is the diffusive wave. ``Pythagorean`` uses
+:math:`(|\mathbf{S}_0|^2 + |\alpha\,\nabla\psi_s|^2)^{1/2}`, which
+never falls below the bed slope. The last two remain well defined at
+zero bed slope. For these two, **BedTermMagnitude** and
+**SurfaceTermMagnitude** below say where the magnitude is applied and
+from which time step it is computed. With their defaults,
+``FrictionSlope`` alone selects the diffusive wave with a lagged
+friction-slope magnitude, the formulation **OverlandDiffusive** uses.
+The term is applied on faces between two surface cells and is switched
+off at domain boundaries, where the flux is the kinematic one. An
+unrecognized value for this or the other keys in this group stops the
+run.
 
 ::
 
@@ -4575,10 +4582,10 @@ an error that grows with the time step. The key has no effect with
 
 *string* **Solver.OverlandKinematic.Diffusion.Jacobian** FullNewton
 This key selects the Jacobian linearization for the water-surface term.
-Writing the term as :math:`-D\,\nabla\psi`, ``Picard`` treats the
+Writing the term as :math:`-D\,\nabla\psi_s`, ``Picard`` treats the
 diffusion coefficient :math:`D` as constant when computing the
 derivative (:math:`\pm D/\Delta x`). ``FullNewton`` (default) includes
-the :math:`\partial D / \partial\psi` terms in the Jacobian for faster
+the :math:`\partial D / \partial\psi_s` terms in the Jacobian for faster
 Newton convergence near the solution. ``FullNewtonDdx`` adds the
 derivative of :math:`D` with respect to the water-surface gradient. It
 differs from ``FullNewton`` only for the ``FrictionSlope`` and

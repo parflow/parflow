@@ -321,83 +321,205 @@ assumes that the user provides face centered bedslopes
 (:math:`S_{o,i}`). This is different from the original formulation which
 assumes the user provides grid cenered bedslopes.
 
-Water-Surface Term for the Kinematic Wave
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. _Overland Diffusion Options:
 
-The **OverlandKinematic** boundary condition can add a term driven by
-the gradient of the ponded depth, which the kinematic wave approximation
-leaves out. It is selected with
-``Solver.OverlandKinematic.Diffusion.SlopeMagnitude``. The flux across a
-cell face becomes:
+Diffusive Wave Options for OverlandKinematic
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The friction slope in Equation :eq:`manningsnew` is the bed slope plus
+the gradient of the ponded depth,
+
+.. math::
+   :label: frictionslope
+
+   \begin{aligned}
+   \mathbf{S}_f = \mathbf{S}_0 + \nabla\psi_s .
+   \end{aligned}
+
+The kinematic wave drops the gradient and sets
+:math:`\mathbf{S}_f = \mathbf{S}_0`. Water then moves only down the bed
+slope: it cannot cross flat ground, and it cannot fill a pool behind an
+obstruction. The diffusive wave keeps the gradient, in the direction of
+the flow and in its magnitude.
+
+The **OverlandKinematic** boundary condition can keep the gradient in
+several ways, selected with the keys under
+``Solver.OverlandKinematic.Diffusion`` (see
+:ref:`Code Parameters`). Every option computes the flux
+per unit width across a cell face as
 
 .. math::
    :label: diffcorr_eq
 
    \begin{aligned}
-   \mathbf{q} = -\frac{|\psi|^{5/3}}{n}
-   \left( \frac{\mathbf{S}_0}{|A|^{1/2}}
-   + \frac{\alpha\,\nabla\psi}{|B|^{1/2}} \right)
+   \mathbf{q} = -\frac{\psi_s^{5/3}}{n}
+   \left( \frac{\mathbf{S}_0}{A^{1/2}}
+   + \frac{\alpha\,\nabla\psi_s}{B^{1/2}} \right)
    \end{aligned}
 
-Here :math:`n` is the Manning's coefficient, :math:`\mathbf{S}_0` is the
-bed slope, :math:`\alpha` is a multiplier
-(``Solver.OverlandKinematic.Diffusion.Alpha``, default 1.0), and
-:math:`A` and :math:`B` are slope magnitudes. The upwind depth selection
-uses the friction slope
-:math:`\mathbf{S}_f^* = \mathbf{S}_0 + \alpha\,\nabla\psi` to determine
-which cell provides the depth for the flux evaluation.
+The first term in the parentheses is the flow driven by the bed, and the
+second is the flow driven by the water surface. :math:`A` and :math:`B`
+are slope magnitudes; they set how fast the water moves. :math:`\alpha`
+is a multiplier (``Alpha``, default 1). The options differ only in what
+is used for :math:`A` and :math:`B` and in the time level they are
+computed from. The ponded depth :math:`\psi_s` at a face is taken from
+the upwind cell, where upwind is decided by the sign of
+:math:`\mathbf{S}_0 + \alpha\,\nabla\psi_s`.
 
-``SlopeMagnitude`` selects the magnitude:
+``SlopeMagnitude`` selects the slope magnitude :math:`M`:
 
-- ``Kinematic`` (default): the kinematic wave. There is no second term
-  and :math:`A = |\mathbf{S}_0|`.
-- ``BedSlope``: :math:`A = B = |\mathbf{S}_0|`, with an epsilon floor set
-  by ``Solver.OverlandKinematic.Epsilon``.
-- ``FrictionSlope``: the slope of the water surface,
-  :math:`|\mathbf{S}_0 + \alpha\,\nabla\psi|`. Under both terms this is
-  the diffusive wave.
-- ``Pythagorean``:
-  :math:`(|\mathbf{S}_0|^2 + |\alpha\,\nabla\psi|^2)^{1/2}`, which never
-  falls below the bed slope.
+.. list-table::
+   :header-rows: 1
+   :widths: 20 30 50
 
-For ``FrictionSlope`` and ``Pythagorean`` two further keys say where the
-magnitude is applied and from which time step it is computed.
-``Solver.OverlandKinematic.Diffusion.BedTermMagnitude`` sets :math:`A`:
-``BedSlope``, or the selected magnitude ``Lagged`` (from the pressure at
-the previous time step, the default) or ``Implicit`` (from the current
-pressure). ``Solver.OverlandKinematic.Diffusion.SurfaceTermMagnitude``
-sets the time level of :math:`B`: ``Lagged`` (default) or ``Implicit``.
-When :math:`A` and :math:`B` are the same magnitude, a pool at rest on a
-sloping bed is level. With ``BedTermMagnitude`` set to ``BedSlope`` they
-differ, and a pool that covers more than one or two cells is not held
-level.
+   * - ``SlopeMagnitude``
+     - :math:`M`
+     - Behavior
+   * - ``Kinematic``
+     - none
+     - The kinematic wave (default). There is no second term and
+       :math:`A = |\mathbf{S}_0|`.
+   * - ``BedSlope``
+     - :math:`|\mathbf{S}_0|`
+     - Known in advance, so the flux is linear in the gradient. Zero on
+       flat ground, where the floor ``Solver.OverlandKinematic.Epsilon``
+       is used.
+   * - ``FrictionSlope``
+     - :math:`|\mathbf{S}_0 + \alpha\,\nabla\psi_s|`
+     - The slope of the water surface, as in the diffusive wave. It goes
+       to zero as the water surface becomes level.
+   * - ``Pythagorean``
+     - :math:`\left(|\mathbf{S}_0|^2 + |\alpha\,\nabla\psi_s|^2\right)^{1/2}`
+     - Never falls below the bed slope, so it stays bounded where a pool
+       comes to rest on a slope.
 
-.. note::
-   With ``BedSlope`` on flat terrain (:math:`|\mathbf{S}_0| \approx 0`),
-   the diffusion rate is controlled by the epsilon floor and not by the
-   water surface. For flat terrain use ``FrictionSlope`` or
-   ``Pythagorean``.
+For ``FrictionSlope`` and ``Pythagorean`` two more keys say where
+:math:`M` is applied and from which time step it is computed.
+``BedTermMagnitude`` sets :math:`A`: ``BedSlope`` for
+:math:`|\mathbf{S}_0|`, ``Lagged`` for :math:`M` computed from the
+pressure at the previous time step, or ``Implicit`` for :math:`M`
+computed from the pressure being solved for. ``SurfaceTermMagnitude``
+sets the time level of :math:`B = M` in the same way, ``Lagged`` or
+``Implicit``. Both default to ``Lagged``. The combinations are:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 16 14 14 56
+
+   * - ``SlopeMagnitude``
+     - ``BedTermMagnitude``
+     - ``SurfaceTermMagnitude``
+     - Scheme
+   * - ``Kinematic``
+     -
+     -
+     - Kinematic wave.
+   * - ``BedSlope``
+     -
+     -
+     - Bed-slope diffusion: :math:`A = B = |\mathbf{S}_0|`.
+   * - ``FrictionSlope``
+     - ``Lagged``
+     - ``Lagged``
+     - Diffusive wave with a lagged friction-slope magnitude:
+       :math:`A = B = |\mathbf{S}_f^{n}|`. This is the formulation of
+       **OverlandDiffusive**. Default for ``FrictionSlope``.
+   * - ``FrictionSlope``
+     - ``Implicit``
+     - ``Implicit``
+     - Fully implicit diffusive wave:
+       :math:`A = B = |\mathbf{S}_f^{n+1}|`.
+   * - ``Pythagorean``
+     - ``Lagged``
+     - ``Lagged``
+     - :math:`A = B = M^{n}`. Default for ``Pythagorean``.
+   * - ``Pythagorean``
+     - ``Implicit``
+     - ``Implicit``
+     - :math:`A = B = M^{n+1}`.
+   * - ``FrictionSlope`` or ``Pythagorean``
+     - ``BedSlope``
+     - ``Implicit`` or ``Lagged``
+     - Kinematic flux plus a diffusive term:
+       :math:`A = |\mathbf{S}_0|`, :math:`B = M`. Not level at rest on a
+       slope; see below.
+   * - ``FrictionSlope`` or ``Pythagorean``
+     - ``Lagged``
+     - ``Implicit``
+     - :math:`A = M^{n}`, :math:`B = M^{n+1}`. With ``FrictionSlope``
+       this fails where pools form.
+   * - ``FrictionSlope`` or ``Pythagorean``
+     - ``Implicit``
+     - ``Lagged``
+     - Not available; the run stops with an error.
+
+Here :math:`n` is the previous time level and :math:`n+1` the one being
+solved for.
+
+**Flat ground.** With ``BedSlope`` the flux divides by the bed slope. On
+flat ground that is the epsilon floor, so water spreads at a rate set by
+``Solver.OverlandKinematic.Epsilon`` and not by the water surface.
+``FrictionSlope`` and ``Pythagorean`` reduce to
+:math:`-\psi_s^{5/3}\,\nabla\psi_s / (n\,|\nabla\psi_s|^{1/2})` there,
+which is the diffusive wave.
+
+**A pool at rest on a slope.** Where water backs up against a slope, the
+surface of the pool at rest is level, so
+:math:`\nabla\psi_s = -\mathbf{S}_0` and the true flux is zero. In
+Equation :eq:`diffcorr_eq` the two terms cancel at that gradient only if
+:math:`A = B`. Every scheme with one magnitude under both terms
+therefore holds a level pool. With ``BedTermMagnitude`` set to
+``BedSlope`` the two magnitudes differ, the terms cancel at a tilted
+surface, and a pool that extends over more than one or two cells does
+not come to rest level. The pool extends over more than one cell when
+its depth exceeds the bed slope times the cell size.
+
+**Lagged or implicit.** With both terms ``Lagged`` the magnitude is fixed
+within a time step. The flux is then the ``BedSlope`` flux multiplied by
+:math:`(|\mathbf{S}_0| / M^{n})^{1/2}`, the nonlinear solve costs about
+what ``BedSlope`` costs, and the lag adds a time error that grows with
+the time step. With both terms ``Implicit`` there is no lag, and the
+magnitude changes during the solve, which takes more nonlinear
+iterations where pools form.
+
+**Relation to OverlandDiffusive.** ``SlopeMagnitude`` ``FrictionSlope``
+with both terms ``Lagged`` solves the same equation as the
+**OverlandDiffusive** boundary condition. The two differ in the
+discretization of the magnitude: here the gradient normal to a face is
+the difference across that face, and the gradient along the face is the
+average of the centered differences in the two cells that share it.
+
+**Boundaries.** The water-surface term is applied on faces between two
+surface cells. On faces at the edge of the domain, and at the edge of an
+overland patch, the flux is the kinematic one, so a flat edge is closed
+to flow.
+
+**Parallel runs.** ``FrictionSlope`` and ``Pythagorean`` read corner
+ghost cells through the gradient along a face. ParFlow exchanges them
+when one of these is selected.
 
 The Jacobian linearization of the water-surface term, written as
-:math:`-D\,\nabla\psi`, can be selected via
+:math:`-D\,\nabla\psi_s` with
+:math:`D = \alpha\,\psi_s^{5/3} / (n\,B^{1/2})`, is selected with
 ``Solver.OverlandKinematic.Diffusion.Jacobian``:
 
 - ``Picard``: treats :math:`D` as constant in the derivative,
   giving :math:`\pm D/\Delta x`.
-- ``FullNewton`` (default): includes the :math:`\partial D/\partial\psi`
-  terms for faster Newton convergence near the solution.
+- ``FullNewton`` (default): includes the
+  :math:`\partial D/\partial\psi_s` terms for faster Newton convergence
+  near the solution.
 - ``FullNewtonDdx``: adds the derivative of :math:`D` with respect to
-  the water-surface gradient.
+  the gradient normal to the face. It differs from ``FullNewton`` only
+  for an ``Implicit`` ``FrictionSlope`` or ``Pythagorean`` magnitude.
 
-All options converge to the same solution. The term is implemented
-within the kinematic module, is switched off on faces at a domain
-boundary, and keeps the 5-point stencil.
+All three converge to the same solution, and all keep the 5-point
+stencil.
 
-The corresponding Python post-processing function
-``calculate_overland_fluxes()`` in ``parflow.tools.hydrology`` supports
-it via ``flow_method='OverlandKinematicDiffusive'`` with the
-``slope_magnitude``, ``bed_term_magnitude``, and
-``surface_term_magnitude`` arguments.
+The Python post-processing function ``calculate_overland_fluxes()`` in
+``parflow.tools.hydrology`` computes the same fluxes with
+``flow_method='OverlandKinematicDiffusive'`` and the ``slope_magnitude``,
+``bed_term_magnitude``, and ``surface_term_magnitude`` arguments, which
+take the values of the three keys.
 
 .. _Multi-Phase Flow Equations:
 
