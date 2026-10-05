@@ -336,11 +336,12 @@ the gradient of the ponded depth,
    \mathbf{S}_f = \mathbf{S}_0 + \nabla\psi_s .
    \end{aligned}
 
-The kinematic wave drops the gradient and sets
-:math:`\mathbf{S}_f = \mathbf{S}_0`. Water then moves only down the bed
-slope: it cannot cross flat ground, and it cannot fill a pool behind an
-obstruction. The diffusive wave keeps the gradient, in the direction of
-the flow and in its magnitude.
+The kinematic wave approximation neglects the depth-gradient term of
+the momentum equation and sets :math:`\mathbf{S}_f = \mathbf{S}_0`
+(Equation :eq:`ovmom`). It therefore cannot represent backwater, and it
+gives no flow where the bed slope is zero. The diffusive wave
+approximation retains the depth gradient, both in the direction of the
+flux and in the magnitude of the friction slope.
 
 The **OverlandKinematic** boundary condition can keep the gradient in
 several ways, selected with the keys under
@@ -381,17 +382,17 @@ the upwind cell, where upwind is decided by the sign of
        :math:`A = |\mathbf{S}_0|`.
    * - ``BedSlope``
      - :math:`|\mathbf{S}_0|`
-     - Known in advance, so the flux is linear in the gradient. Zero on
-       flat ground, where the floor ``Solver.OverlandKinematic.Epsilon``
-       is used.
+     - Independent of the solution, so the flux is linear in the depth
+       gradient. Zero where the bed slope is zero; the floor
+       ``Solver.OverlandKinematic.Epsilon`` is used there.
    * - ``FrictionSlope``
      - :math:`|\mathbf{S}_0 + \alpha\,\nabla\psi_s|`
-     - The slope of the water surface, as in the diffusive wave. It goes
-       to zero as the water surface becomes level.
+     - The magnitude of the friction slope, as in the diffusive wave. It
+       goes to zero as the water surface becomes horizontal.
    * - ``Pythagorean``
      - :math:`\left(|\mathbf{S}_0|^2 + |\alpha\,\nabla\psi_s|^2\right)^{1/2}`
-     - Never falls below the bed slope, so it stays bounded where a pool
-       comes to rest on a slope.
+     - Never falls below the bed slope, so it stays bounded as ponded
+       water on a sloping bed approaches hydrostatic conditions.
 
 For ``FrictionSlope`` and ``Pythagorean`` two more keys say where
 :math:`M` is applied and from which time step it is computed.
@@ -441,13 +442,13 @@ sets the time level of :math:`B = M` in the same way, ``Lagged`` or
      - ``BedSlope``
      - ``Implicit`` or ``Lagged``
      - Kinematic flux plus a diffusive term:
-       :math:`A = |\mathbf{S}_0|`, :math:`B = M`. Not level at rest on a
-       slope; see below.
+       :math:`A = |\mathbf{S}_0|`, :math:`B = M`. Not well balanced; see
+       below.
    * - ``FrictionSlope`` or ``Pythagorean``
      - ``Lagged``
      - ``Implicit``
      - :math:`A = M^{n}`, :math:`B = M^{n+1}`. With ``FrictionSlope``
-       this fails where pools form.
+       the nonlinear solve fails in backwater.
    * - ``FrictionSlope`` or ``Pythagorean``
      - ``Implicit``
      - ``Lagged``
@@ -456,37 +457,38 @@ sets the time level of :math:`B = M` in the same way, ``Lagged`` or
 Here :math:`n` is the previous time level and :math:`n+1` the one being
 solved for.
 
-**Flat ground.** With ``BedSlope`` the flux divides by the bed slope. On
-flat ground that is the epsilon floor, so water spreads at a rate set by
-``Solver.OverlandKinematic.Epsilon`` and not by the water surface.
-``FrictionSlope`` and ``Pythagorean`` reduce to
+**Zero bed slope.** With ``BedSlope`` the flux divides by the bed-slope
+magnitude. Where the bed slope is zero that is the epsilon floor, so the
+diffusivity is set by ``Solver.OverlandKinematic.Epsilon`` and not by the
+depth gradient. ``FrictionSlope`` and ``Pythagorean`` reduce to
 :math:`-\psi_s^{5/3}\,\nabla\psi_s / (n\,|\nabla\psi_s|^{1/2})` there,
-which is the diffusive wave.
+which is the diffusive wave flux.
 
-**A pool at rest on a slope.** Where water backs up against a slope
-(:numref:`overland_backwater_test`), the surface of the pool at rest is
-level, so
-:math:`\nabla\psi_s = -\mathbf{S}_0` and the true flux is zero. In
-Equation :eq:`diffcorr_eq` the two terms cancel at that gradient only if
-:math:`A = B`. Every scheme with one magnitude under both terms
-therefore holds a level pool. With ``BedTermMagnitude`` set to
-``BedSlope`` the two magnitudes differ, the terms cancel at a tilted
-surface, and a pool that extends over more than one or two cells does
-not come to rest level. The pool extends over more than one cell when
-its depth exceeds the bed slope times the cell size.
+**Hydrostatic conditions and backwater.** Under hydrostatic conditions
+the water surface is horizontal, so
+:math:`\nabla\psi_s = -\mathbf{S}_0`, the friction slope is zero, and
+the flux must vanish. In Equation :eq:`diffcorr_eq` the two terms cancel
+at that gradient only if :math:`A = B`. Every scheme with one magnitude
+under both terms therefore preserves the hydrostatic state; it is well
+balanced. With ``BedTermMagnitude`` set to ``BedSlope`` the two
+magnitudes differ, the flux vanishes at some other gradient, and the
+steady state has a sloping water surface
+(:numref:`overland_backwater_test`). The error appears where backwater
+extends over more than one or two cells, that is, where the ponded depth
+exceeds the bed slope times the cell size.
 
 .. figure:: overland_backwater_test.png
    :name: overland_backwater_test
    :width: 85%
 
    A backwater test case, used in the ``overland_backwater`` test. (a) A
-   plane with a bed slope of 0.0005 drains into a flat reach with a
-   closed end. Rain falls for 60 min and the water collects in a pool
-   that backs up the slope. (b) The pool at rest. With one slope
-   magnitude under both terms of Equation :eq:`diffcorr_eq` the surface
-   is level. With ``FrictionSlope`` and ``BedTermMagnitude`` set to
-   ``BedSlope`` the two terms cancel at a surface tilted at 0.38 of the
-   bed slope.
+   plane with a bed slope of 0.0005 drains to a reach of zero bed slope
+   with a no-flow boundary. Rain falls for 60 min, the water ponds in
+   the flat reach, and the backwater extends up the slope. (b) The
+   steady state. With one slope magnitude under both terms of Equation
+   :eq:`diffcorr_eq` the water surface is horizontal. With
+   ``FrictionSlope`` and ``BedTermMagnitude`` set to ``BedSlope`` the
+   flux vanishes at a water-surface slope of 0.38 of the bed slope.
 
 **Lagged or implicit.** With both terms ``Lagged`` the magnitude is fixed
 within a time step. The flux is then the ``BedSlope`` flux multiplied by
@@ -494,7 +496,7 @@ within a time step. The flux is then the ``BedSlope`` flux multiplied by
 what ``BedSlope`` costs, and the lag adds a time error that grows with
 the time step. With both terms ``Implicit`` there is no lag, and the
 magnitude changes during the solve, which takes more nonlinear
-iterations where pools form.
+iterations in backwater.
 
 **Relation to OverlandDiffusive.** ``SlopeMagnitude`` ``FrictionSlope``
 with both terms ``Lagged`` solves the same equation as the
@@ -505,37 +507,37 @@ average of the centered differences in the two cells that share it.
 
 **Boundaries.** The water-surface term is applied on faces between two
 surface cells. On faces at the edge of the domain, and at the edge of an
-overland patch, the flux is the kinematic one, so a flat edge is closed
-to flow.
+overland patch, the flux is the kinematic one, so an edge with zero bed
+slope is a no-flow boundary.
 
 **Parallel runs.** ``FrictionSlope`` and ``Pythagorean`` read corner
 ghost cells through the gradient along a face. ParFlow exchanges them
 when one of these is selected.
 
 **Choosing an option.** These suggestions rest on a small set of
-tests: the backwater case above, a mound spreading on flat and tilted
-planes, and one mountain watershed at hourly time steps. They are a
+tests: the backwater case above, a mound of water spreading on
+horizontal and sloping planes, and one mountain watershed at hourly time steps. They are a
 starting point and not a full evaluation.
 
-- On steep terrain where water neither ponds on flat ground nor backs
-  up, the kinematic wave (``Kinematic``, the default) is appropriate and
-  is the least expensive.
-- Where water crosses flat ground or pools behind an obstruction, start
-  with ``SlopeMagnitude`` set to ``FrictionSlope`` and the other two keys
-  at their defaults. This is the diffusive wave with a lagged magnitude.
-  It holds a level pool and is well defined on flat ground. In these
-  tests it took 9 to 24 percent more nonlinear iterations than the
-  kinematic wave on the two small cases, and less than 1 percent more on
-  the watershed.
+- On steep terrain without backwater or zero bed slope, the kinematic
+  wave (``Kinematic``, the default) is appropriate and is the least
+  expensive.
+- Where the bed slope is zero or small, or backwater occurs, start with
+  ``SlopeMagnitude`` set to ``FrictionSlope`` and the other two keys at
+  their defaults. This is the diffusive wave with a lagged magnitude. It
+  is well balanced and is well defined at zero bed slope. In these tests
+  it took 9 to 24 percent more nonlinear iterations than the kinematic
+  wave on the two small cases, and less than 1 percent more on the
+  watershed.
 - To check whether the lag matters for a problem, for example at large
   time steps, repeat a run with both ``BedTermMagnitude`` and
   ``SurfaceTermMagnitude`` set to ``Implicit`` and compare.
-- Avoid ``BedSlope`` as the slope magnitude where the ground is flat,
-  and avoid ``BedTermMagnitude`` ``BedSlope`` where pools extend over
-  more than one or two cells.
+- Avoid ``BedSlope`` as the slope magnitude where the bed slope is
+  zero, and avoid ``BedTermMagnitude`` ``BedSlope`` where backwater
+  extends over more than one or two cells.
 
-Basins with pools many cells long, run at large time steps, have not
-been tested.
+Low-gradient basins with extensive backwater, run at large time steps,
+have not been tested.
 
 The Jacobian linearization of the water-surface term, written as
 :math:`-D\,\nabla\psi_s` with

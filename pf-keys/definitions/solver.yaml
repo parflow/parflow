@@ -2286,8 +2286,9 @@ Solver:
         help: >
           [Type: string] What divides the bed-slope term of the flux, A, when
           SlopeMagnitude is FrictionSlope or Pythagorean. BedSlope leaves |S_0|
-          there, as in the kinematic wave; a pool at rest on a slope is then not
-          level. Lagged (default) uses the selected slope magnitude computed from
+          there, as in the kinematic wave; the scheme is then not well balanced,
+          and the steady state in backwater has a sloping water surface.
+          Lagged (default) uses the selected slope magnitude computed from
           the pressure at the previous time step. Implicit uses it computed from
           the current pressure, and needs SurfaceTermMagnitude Implicit. Has no
           effect with SlopeMagnitude Kinematic or BedSlope, or at domain

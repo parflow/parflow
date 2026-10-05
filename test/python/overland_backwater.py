@@ -1,16 +1,18 @@
 # -----------------------------------------------------------------------------
-# Backwater test for the OverlandKinematic water-surface (diffusion) term
+# Backwater test for the OverlandKinematic diffusive wave options
 #
-# A sloped plane drains into a flat reach with a closed end.  The domain is one
-# cell wide and 40 cells of 20 m long.  Cells 0-9 are flat and cells 10-39 slope
-# toward the flat reach at 5e-4.  Rain falls for 60 min and then stops.  The
-# water fills the flat reach and backs up the slope.  At rest the pool is level:
-# over the sloped cells the water-surface gradient cancels the bed slope.
+# A sloped plane drains to a reach of zero bed slope with a no-flow boundary.
+# The domain is one cell wide and 40 cells of 20 m long.  Cells 0-9 have zero
+# bed slope and cells 10-39 slope toward them at 5e-4.  Rain falls for 60 min
+# and then stops.  The water ponds in the flat reach and the backwater extends
+# up the slope.  The steady state is hydrostatic: the water surface is
+# horizontal, so over the sloped cells the depth gradient cancels the bed slope.
 #
-# The kinematic wave cannot form this pool.  A scheme with different slope
-# magnitudes under the two terms of the flux does not rest level.  The test
-# runs the schemes that share one magnitude and checks, besides the reference
-# files, that the pool is level and that no water is lost.
+# The kinematic wave cannot represent this backwater.  A scheme with different
+# slope magnitudes under the two terms of the flux is not well balanced, and
+# its steady state has a sloping water surface.  The test runs the schemes that
+# share one magnitude and checks, besides the reference files, that the steady
+# water surface is horizontal and that water is conserved.
 # -----------------------------------------------------------------------------
 
 import sys, argparse
@@ -289,13 +291,16 @@ configurations = [
 
 # Rain depth times the number of cells, in m of water per unit width and dy
 rain_volume = rain * rain_steps * dt * ny
-# Largest allowed range of water-surface elevation over the pool at rest (m).
+# Largest allowed range of water-surface elevation over the ponded reach at
+# the end of the run (m).
 # The bed rises 0.01 m per cell on the slope, and a scheme that is not well
-# balanced tilts the pool by a third of that or more per cell.  The Pythagorean
-# pool is still settling at the end of the run and is within 0.6 mm.
+# balanced leaves a water-surface slope of a third of that or more per cell.
+# The Pythagorean runs are still approaching steady state at the end and are
+# within 0.6 mm.
 level_tolerance = 2.0e-3
-# A cell belongs to the pool if its bed is this far below the water surface (m)
-pool_margin = 2.0e-3
+# A cell is in the ponded reach if its bed is this far below the water surface
+# at the no-flow boundary (m)
+ponded_margin = 2.0e-3
 # Largest allowed relative loss of water
 mass_tolerance = 1.0e-3
 
@@ -333,7 +338,7 @@ for run_name, slope_magnitude, bed_term, surface_term in configurations:
             ):
                 passed = False
 
-        # The pool at rest: ponded depth and water-surface elevation
+        # The end of the run: ponded depth and water-surface elevation
         timestep = str(n_dumps - 1).rjust(5, "0")
         depth = np.maximum(
             read_pfb(new_output_dir_name + f"/{run_name}.out.press.{timestep}.pfb")[
@@ -341,21 +346,24 @@ for run_name, slope_magnitude, bed_term, surface_term in configurations:
             ],
             0.0,
         )
-        # The pool is the set of cells whose bed lies below the water surface
-        # at the closed end.  Cells above it hold only a thin draining film.
-        pool = bed < depth[0] - pool_margin
-        surface = (bed + depth)[pool]
+        # The ponded reach is the set of cells whose bed lies below the water
+        # surface at the no-flow boundary.  Cells above it hold only a thin
+        # draining film.
+        ponded = bed < depth[0] - ponded_margin
+        surface = (bed + depth)[ponded]
         level_range = surface.max() - surface.min()
         print(
-            f"Pool at rest covers {pool.sum()} cells, "
-            f"{(pool[n_flat:]).sum()} of them on the slope; "
+            f"Ponded reach covers {ponded.sum()} cells, "
+            f"{(ponded[n_flat:]).sum()} of them on the slope; "
             f"water-surface range {level_range:.3e} m"
         )
-        if pool[n_flat:].sum() < 2:
-            print("FAILED : the pool does not back up the slope")
+        if ponded[n_flat:].sum() < 2:
+            print("FAILED : the backwater does not extend up the slope")
             passed = False
         if level_range > level_tolerance:
-            print(f"FAILED : the pool at rest is not level ({level_range:.3e} m)")
+            print(
+                f"FAILED : the steady water surface is not horizontal ({level_range:.3e} m)"
+            )
             passed = False
 
         mass_error = abs(depth.sum() - rain_volume) / rain_volume

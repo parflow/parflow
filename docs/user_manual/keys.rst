@@ -4545,8 +4545,9 @@ run.
 This key sets :math:`A`, the magnitude that divides the bed-slope term,
 when **SlopeMagnitude** is ``FrictionSlope`` or ``Pythagorean``.
 ``BedSlope`` leaves :math:`|S_0|` there, as in the kinematic wave. The
-two terms then carry different magnitudes, and a pool at rest on a
-sloping bed is not held level once it covers more than one or two cells.
+two terms then carry different magnitudes and the scheme is not well
+balanced: where backwater extends over more than one or two cells, the
+steady state has a sloping water surface.
 ``Lagged`` (default) uses the selected slope magnitude computed from the
 pressure at the previous time step. ``Implicit`` uses it computed from
 the current pressure, and requires **SurfaceTermMagnitude** ``Implicit``.

@@ -327,8 +327,9 @@ void    OverlandFlowEvalKin(
    * the bed slope the flux is the kinematic flux plus a diffusive term.
    * Putting the slope magnitude under the bed term as well adds
    * S_0 h^{5/3}/n (1/|S_0|^{1/2} - 1/|S_denom|^{1/2}) to the flux, which is
-   * what makes a pool at rest on a slope level.  A lagged magnitude comes
-   * from the old-time pressure, so it is fixed within a time step.  With
+   * what makes the flux vanish under hydrostatic conditions.  A lagged
+   * magnitude comes from the old-time pressure, so it is fixed within a
+   * time step.  With
    * FrictionSlope and both terms lagged this is the diffusive wave with a
    * lagged friction-slope magnitude: the BedSlope flux times
    * (|S_0| / |S_f,old|)^{1/2}. */
