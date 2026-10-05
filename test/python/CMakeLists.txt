@@ -126,6 +126,7 @@ if(${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI)
             default_overland.pfmg_octree.fulljac
             LW_var_dz
             LW_var_dz_spinup
+            overland_FlatICP
             overland_pond_diffusion
             overland_slopingslab_KWE
             overland_tiltedV_DWE
@@ -163,7 +164,7 @@ endforeach()
 # OverlandDiffusive, and OverlandKinematic with a FrictionSlope or Pythagorean
 # slope magnitude, read corner ghost cells, which only a split in both
 # directions exercises.
-foreach(inputfile overland_tiltedV_DWE overland_pond_diffusion)
+foreach(inputfile overland_tiltedV_DWE overland_FlatICP overland_pond_diffusion)
     if(${inputfile} IN_LIST PARALLEL_2DTOPO_TESTS)
         pf_add_py_parallel_test(${inputfile} 2 2 1)
     endif()

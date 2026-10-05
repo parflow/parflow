@@ -184,7 +184,6 @@ void    OverlandFlowEvalDiff(
         Press_x = pfmax((pp[ip]), 0.0);
         Sf_x = sx_dat[io];
 
-        Pupox = pfmax(opp[ip], 0.0);
         Sf_xo = sx_dat[io];
 
         double Sf_mag = RPowerR(Sf_xo * Sf_xo + Sf_yo * Sf_yo, 0.5);
@@ -202,7 +201,6 @@ void    OverlandFlowEvalDiff(
         Press_y = pfmax((pp[ip]), 0.0);
         Sf_y = sy_dat[io];
 
-        Pupoy = pfmax(opp[ip], 0.0);
         Sf_yo = sy_dat[io];
 
         double Sf_mag = RPowerR(Sf_xo * Sf_xo + Sf_yo * Sf_yo, 0.5);
@@ -381,7 +379,6 @@ void    OverlandFlowEvalDiff(
         Pupx = pfmax((pp[ip]), 0.0);
         Sf_x = sx_dat[io];
 
-        Pupox = pfmax(opp[ip], 0.0);
         Sf_xo = sx_dat[io];
 
         double Sf_mag = RPowerR(Sf_xo * Sf_xo + Sf_yo * Sf_yo, 0.5);
@@ -411,7 +408,6 @@ void    OverlandFlowEvalDiff(
         Pupy = pfmax((pp[ip]), 0.0);
         Sf_y = sy_dat[io];
 
-        Pupoy = pfmax(opp[ip], 0.0);
         Sf_yo = sy_dat[io];
 
         double Sf_mag = RPowerR(Sf_xo * Sf_xo + Sf_yo * Sf_yo, 0.5);
