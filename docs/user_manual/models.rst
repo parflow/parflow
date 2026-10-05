@@ -463,8 +463,9 @@ flat ground that is the epsilon floor, so water spreads at a rate set by
 :math:`-\psi_s^{5/3}\,\nabla\psi_s / (n\,|\nabla\psi_s|^{1/2})` there,
 which is the diffusive wave.
 
-**A pool at rest on a slope.** Where water backs up against a slope, the
-surface of the pool at rest is level, so
+**A pool at rest on a slope.** Where water backs up against a slope
+(:numref:`overland_backwater_test`), the surface of the pool at rest is
+level, so
 :math:`\nabla\psi_s = -\mathbf{S}_0` and the true flux is zero. In
 Equation :eq:`diffcorr_eq` the two terms cancel at that gradient only if
 :math:`A = B`. Every scheme with one magnitude under both terms
@@ -473,6 +474,19 @@ therefore holds a level pool. With ``BedTermMagnitude`` set to
 surface, and a pool that extends over more than one or two cells does
 not come to rest level. The pool extends over more than one cell when
 its depth exceeds the bed slope times the cell size.
+
+.. figure:: overland_backwater_test.png
+   :name: overland_backwater_test
+   :width: 85%
+
+   A backwater test case, used in the ``overland_backwater`` test. (a) A
+   plane with a bed slope of 0.0005 drains into a flat reach with a
+   closed end. Rain falls for 60 min and the water collects in a pool
+   that backs up the slope. (b) The pool at rest. With one slope
+   magnitude under both terms of Equation :eq:`diffcorr_eq` the surface
+   is level. With ``FrictionSlope`` and ``BedTermMagnitude`` set to
+   ``BedSlope`` the two terms cancel at a surface tilted at 0.38 of the
+   bed slope.
 
 **Lagged or implicit.** With both terms ``Lagged`` the magnitude is fixed
 within a time step. The flux is then the ``BedSlope`` flux multiplied by
@@ -497,6 +511,31 @@ to flow.
 **Parallel runs.** ``FrictionSlope`` and ``Pythagorean`` read corner
 ghost cells through the gradient along a face. ParFlow exchanges them
 when one of these is selected.
+
+**Choosing an option.** These suggestions rest on a small set of
+tests: the backwater case above, a mound spreading on flat and tilted
+planes, and one mountain watershed at hourly time steps. They are a
+starting point and not a full evaluation.
+
+- On steep terrain where water neither ponds on flat ground nor backs
+  up, the kinematic wave (``Kinematic``, the default) is appropriate and
+  is the least expensive.
+- Where water crosses flat ground or pools behind an obstruction, start
+  with ``SlopeMagnitude`` set to ``FrictionSlope`` and the other two keys
+  at their defaults. This is the diffusive wave with a lagged magnitude.
+  It holds a level pool and is well defined on flat ground. In these
+  tests it took 9 to 24 percent more nonlinear iterations than the
+  kinematic wave on the two small cases, and less than 1 percent more on
+  the watershed.
+- To check whether the lag matters for a problem, for example at large
+  time steps, repeat a run with both ``BedTermMagnitude`` and
+  ``SurfaceTermMagnitude`` set to ``Implicit`` and compare.
+- Avoid ``BedSlope`` as the slope magnitude where the ground is flat,
+  and avoid ``BedTermMagnitude`` ``BedSlope`` where pools extend over
+  more than one or two cells.
+
+Basins with pools many cells long, run at large time steps, have not
+been tested.
 
 The Jacobian linearization of the water-surface term, written as
 :math:`-D\,\nabla\psi_s` with
