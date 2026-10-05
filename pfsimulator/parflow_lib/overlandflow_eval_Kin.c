@@ -137,9 +137,10 @@ typedef void InstanceXtra;
 /* Slope magnitude at an internal patch edge, where only the gradient normal to
  * the edge is known.  S_n and S_t are the bed slope normal to and along the
  * edge, grad_n the water-surface gradient across it. */
-static double DCEdgeDenominator(int diff_denom, double diff_alpha,
-                                double S_n, double S_t, double grad_n,
-                                double S0_mag, double ov_epsilon)
+__host__ __device__ static inline double
+DCEdgeDenominator(int diff_denom, double diff_alpha,
+                  double S_n, double S_t, double grad_n,
+                  double S0_mag, double ov_epsilon)
 {
   double denom;
 
