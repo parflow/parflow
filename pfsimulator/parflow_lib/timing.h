@@ -74,7 +74,7 @@
 #define VDotProductTimingIndex 18
 #define VectorUtilityRoutineIndex 19
 #define KINAtimesDQFusedReduceTimingIndex 20
-#define FluxFusedBaseAndCompressibleStorageTimingIndex 21
+#define FluxFusedAccumulationAndSourceTermsTimingIndex 21
 #ifdef VECTOR_UPDATE_TIMING
 #define VectorUpdateTimingIndex 22
 #endif

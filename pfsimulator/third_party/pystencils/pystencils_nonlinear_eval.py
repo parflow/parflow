@@ -153,9 +153,9 @@ with SourceFileGenerator() as sfg:
 
     # field declarations
 
-    z_mult_dat, dp, odp, sp, pp, opp, osp, fp, ss, et = [f_ff.create_new(name) for name in
-                                                         ["z_mult_dat", "dp", "odp", "sp", "pp", "opp", "osp", "fp",
-                                                          "ss", "et"]]
+    z_mult_dat, dp, odp, sp, pp, opp, osp, fp, ss, et, src = [f_ff.create_new(name) for name in
+                                                              ["z_mult_dat", "dp", "odp", "sp", "pp", "opp", "osp",
+                                                               "fp", "ss", "et", "src"]]
 
     pop = po_ff.create_new("pop")
 
@@ -203,7 +203,8 @@ with SourceFileGenerator() as sfg:
         timing_index=True,
     )
 
-    # flux: fused base + compressible storage
+    # flux: fused base + compressible storage + source terms
+    # src is the phase source vector, sp the saturation (both are sp in the unfused kernels)
 
     create_kernel_func_and_wrapper(
         sfg,
@@ -225,9 +226,17 @@ with SourceFileGenerator() as sfg:
                     pp.center() * sp.center() * dp.center()
                     - opp.center() * osp.center() * odp.center()
                 )
+            )
+            - (
+                vol
+                * del_x_slope
+                * del_y_slope
+                * z_mult_dat.center()
+                * dt
+                * (src.center() + et.center())
             ),
         ),
-        "Flux_FusedBaseAndCompressibleStorage",
+        "Flux_FusedAccumulationAndSourceTerms",
         timing_index=True,
     )
 

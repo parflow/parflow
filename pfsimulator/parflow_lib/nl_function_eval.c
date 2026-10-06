@@ -70,6 +70,11 @@ typedef struct {
   Vector       *KS;
   Vector       *qx;
   Vector       *qy;
+
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+  // Phase source values, kept apart from saturation so that both can be read by the fused flux kernel
+  Vector       *source;
+#endif
 } InstanceXtra;
 
 /*---------------------------------------------------------------------
@@ -207,7 +212,11 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
   /* Reuse saturation vector to save memory */
   Vector      *rel_perm = saturation;
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+  Vector      *source = (instance_xtra->source);
+#else
   Vector      *source = saturation;
+#endif
 
   /* Overland flow variables */  //sk
   Vector      *KW = (instance_xtra->KW);
@@ -328,6 +337,13 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   PFModuleInvokeType(SaturationInvoke, saturation_module, (saturation, pressure, density,
                                                            gravity, problem_data, CALCFCN));
 
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+  /* Phase source values only depend on problem data and time. Calculate
+   * them upfront into a separate vector so that the source terms can be
+   * added in the same kernel as the accumulation terms */
+  PFModuleInvokeType(PhaseSourceInvoke, phase_source, (source, 0, problem, problem_data,
+                                                       time));
+#endif
 
   /* Calculate accumulation terms for the function values */
   ForSubgridI(is, GridSubgrids(grid))
@@ -388,8 +404,11 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     vol = dx * dy * dz;
 
 #ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+    Subvector *src_sub = VectorSubvector(source, is);
 
-    PyCodegen_Flux_FusedBaseAndCompressibleStorage_wrapper(gr_domain, r, ix, iy, iz, nx, ny, nz, d_sub, f_sub, od_sub, op_sub, os_sub, po_sub, p_sub, s_sub, ss_sub, z_mult_sub, vol, FluxFusedBaseAndCompressibleStorageTimingIndex);
+    et_sub = VectorSubvector(evap_trans, is);
+
+    PyCodegen_Flux_FusedAccumulationAndSourceTerms_wrapper(gr_domain, r, ix, iy, iz, nx, ny, nz, d_sub, et_sub, f_sub, od_sub, op_sub, os_sub, po_sub, p_sub, s_sub, src_sub, ss_sub, z_mult_sub, dt, vol, FluxFusedAccumulationAndSourceTermsTimingIndex);
 #else
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
@@ -449,6 +468,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 #endif /* PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS */
   }
 
+#ifndef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
   /* Add in contributions from source terms - user specified sources and
    * flux wells.  Calculate phase source values overwriting current
    * saturation vector */
@@ -521,6 +541,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     });
 #endif
   }
+#endif /* PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS */
 
   bc_struct = PFModuleInvokeType(BCPressureInvoke, bc_pressure,
                                  (problem_data, grid, gr_domain, time));
@@ -2374,6 +2395,10 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem *problem,
       (instance_xtra->qx) = NULL;
       (instance_xtra->qy) = NULL;
     }
+
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+    (instance_xtra->source) = NewVectorType(grid, 1, 1, vector_cell_centered);
+#endif
   }
   else
   {
@@ -2419,6 +2444,10 @@ void  NlFunctionEvalFreeInstanceXtra()
       FreeVector(instance_xtra->KE);
       FreeVector(instance_xtra->KW);
     }
+
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+    FreeVector(instance_xtra->source);
+#endif
 
     PFModuleFreeInstance(instance_xtra->overlandflow_module_kin);
     PFModuleFreeInstance(instance_xtra->overlandflow_module_diff);      //@RMM
