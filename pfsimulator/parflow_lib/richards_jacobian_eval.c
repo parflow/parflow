@@ -64,6 +64,7 @@ typedef struct {
   double SpinupDampP2; // NBE
   int tfgupwind;  // RMM
   int using_MGSemi;  // RMM
+  int overland_only;
   SeepageLookup seepage;
 } PublicXtra;
 
@@ -1421,6 +1422,33 @@ void    RichardsJacobianEval(
   PFModuleInvokeType(RichardsBCInternalInvoke, bc_internal, (problem, problem_data, NULL, J, time,
                                                              pressure, CALCDER));
 
+  if (public_xtra->overland_only)
+  {
+    InitMatrix(J, 0.0);
+    InitMatrix(JC, 0.0);
+
+    ForSubgridI(is, GridSubgrids(grid))
+    {
+      subgrid = GridSubgrid(grid, is);
+      J_sub = MatrixSubmatrix(J, is);
+      cp = SubmatrixStencilData(J_sub, 0);
+
+      r = SubgridRX(subgrid);
+      ix = SubgridIX(subgrid);
+      iy = SubgridIY(subgrid);
+      iz = SubgridIZ(subgrid);
+      nx = SubgridNX(subgrid);
+      ny = SubgridNY(subgrid);
+      nz = SubgridNZ(subgrid);
+
+      GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+      {
+        int im = SubmatrixEltIndex(J_sub, i, j, k);
+        cp[im] = 1.0;
+      });
+    }
+  }
+
 
 
   if (public_xtra->type == overland_flow || public_xtra->using_MGSemi == 1)
@@ -1564,7 +1592,7 @@ void    RichardsJacobianEval(
           im = SubmatrixEltIndex(J_sub, i, j, k);
 
           /* First put contributions from subsurface diagonal onto diagonal of JC */
-          cp_c[io] = cp[im];
+          cp_c[io] = public_xtra->overland_only ? 0.0 : cp[im];
           cp[im] = 0.0;                              // update JB
           /* Now check off-diagonal nodes to see if any surface-surface connections exist */
           /* West */
@@ -1626,6 +1654,10 @@ void    RichardsJacobianEval(
                           + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
             }
           }
+          else if (public_xtra->overland_only)
+          {
+            cp_c[io] += (vol / dz);
+          }
 
           /*west term */
           wp_c[io] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
@@ -1664,7 +1696,7 @@ void    RichardsJacobianEval(
           im = SubmatrixEltIndex(J_sub, i, j, k);
 
           /* First put contributions from subsurface diagonal onto diagonal of JC */
-          cp_c[io] = cp[im];
+          cp_c[io] = public_xtra->overland_only ? 0.0 : cp[im];
           cp[im] = 0.0;                              // update JB
           /* Now check off-diagonal nodes to see if any surface-surface connections exist */
           /* West */
@@ -1716,6 +1748,10 @@ void    RichardsJacobianEval(
             cp_c[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
                         + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
           }
+          else if (public_xtra->overland_only)
+          {
+            cp_c[io] += (vol / dz);
+          }
           /*west term */
           wp_c[io] -= (vol / ffy) * dt * (kwns_der[io1]);
 
@@ -1753,7 +1789,7 @@ void    RichardsJacobianEval(
           im = SubmatrixEltIndex(J_sub, i, j, k);
 
           /* First put contributions from subsurface diagonal onto diagonal of JC */
-          cp_c[io] = cp[im];
+          cp_c[io] = public_xtra->overland_only ? 0.0 : cp[im];
           cp[im] = 0.0;                              // update JB
           /* Now check off-diagonal nodes to see if any surface-surface connections exist */
           /* West */
@@ -1809,6 +1845,10 @@ void    RichardsJacobianEval(
           {
             // Laura's version
             cp_c[io] += 0.0 + dt * (vol / dz) * (public_xtra->SpinupDampP1 * exp(pfmin(pp[ip], 0.0) * public_xtra->SpinupDampP1) * public_xtra->SpinupDampP2);                      //NBE
+            if (public_xtra->overland_only)
+            {
+              cp_c[io] += (vol / dz);
+            }
           }
 
           if (diffusive == 0)
@@ -2469,6 +2509,13 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
     }
   }
   NA_FreeNameArray(upwind_switch_na);
+
+  switch_na = NA_NewNameArray("False True");
+  sprintf(key, "Solver.OverlandOnly");
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->overland_only = switch_value;
+  NA_FreeNameArray(switch_na);
 
   switch_na = NA_NewNameArray("False True");
   sprintf(key, "Solver.Nonlinear.UseJacobian");

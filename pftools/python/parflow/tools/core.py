@@ -441,6 +441,105 @@ class Run(BaseRun):
         new_run.pfset(flat_map=self.to_dict())
         return new_run
 
+    def _validate_overland_only(self):
+        errors = []
+        data = self.to_dict()
+
+        def value(key, default=None):
+            return data.get(key, default)
+
+        def is_true(key):
+            return str(value(key, "False")).lower() in ("true", "1", "yes")
+
+        def non_empty_name_list(key):
+            names = str(value(key, "") or "").strip()
+            return bool(names)
+
+        if not is_true("Solver.OverlandOnly"):
+            return errors
+
+        solver = value("Solver", None)
+        if solver != "Richards":
+            errors.append("Solver.OverlandOnly requires Solver to be Richards")
+
+        if value("Solver.LSM", "none") == "CLM":
+            errors.append("Solver.OverlandOnly is incompatible with Solver.LSM = CLM")
+
+        if non_empty_name_list("Wells.Names"):
+            errors.append("Solver.OverlandOnly is incompatible with Wells.Names")
+
+        if non_empty_name_list("Reservoirs.Names"):
+            errors.append("Solver.OverlandOnly is incompatible with Reservoirs.Names")
+
+        incompatible_switches = [
+            "Solver.SurfacePredictor",
+            "Solver.Spinup",
+            "Solver.ResetSurfacePressure",
+        ]
+        for key in incompatible_switches:
+            if is_true(key):
+                errors.append(f"Solver.OverlandOnly is incompatible with {key}")
+
+        patch_names = str(value("BCPressure.PatchNames", "") or "").split()
+        supported_types = {
+            "OverlandFlow",
+            "OverlandFlowPFB",
+            "OverlandKinematic",
+            "OverlandDiffusive",
+        }
+        overland_patch_types = []
+        for patch_name in patch_names:
+            bc_type_key = f"Patch.{patch_name}.BCPressure.Type"
+            bc_type = value(bc_type_key)
+            if bc_type in supported_types:
+                overland_patch_types.append(bc_type)
+            elif bc_type == "FluxFile":
+                errors.append(
+                    "Solver.OverlandOnly does not support FluxFile as an "
+                    f"overland-routing forcing on {bc_type_key}"
+                )
+
+        if not overland_patch_types:
+            errors.append(
+                "Solver.OverlandOnly requires at least one BCPressure patch "
+                "of type OverlandFlow, OverlandFlowPFB, OverlandKinematic, "
+                "or OverlandDiffusive"
+            )
+
+        for bc_type in ("OverlandKinematic", "OverlandDiffusive"):
+            if bc_type in overland_patch_types:
+                for patch_name in patch_names:
+                    if value(f"Patch.{patch_name}.BCPressure.Type") == bc_type:
+                        cycle_name = value(f"Patch.{patch_name}.BCPressure.Cycle")
+                        cycle_names = str(
+                            value(f"Cycle.{cycle_name}.Names", "") or ""
+                        ).split()
+                        for interval_name in cycle_names:
+                            file_key = (
+                                f"Patch.{patch_name}.BCPressure."
+                                f"{interval_name}.FileName"
+                            )
+                            if file_key in data:
+                                errors.append(
+                                    "Solver.OverlandOnly does not support "
+                                    f"file-backed forcing for {bc_type}; use "
+                                    f"Value entries instead of {file_key}"
+                                )
+
+        return errors
+
+    def validate(self, *args, **kwargs):
+        error_count = super().validate(*args, **kwargs)
+        enable_print = kwargs.get("enable_print", True)
+        overland_only_errors = self._validate_overland_only()
+        if overland_only_errors:
+            error_count += len(overland_only_errors)
+            if enable_print:
+                print("  Solver.OverlandOnly:")
+                for message in overland_only_errors:
+                    print(f"    ERROR: {message}")
+        return error_count
+
     def run(self, working_directory=None, skip_validation=False, undist=False):
         """Method to run simulation
 

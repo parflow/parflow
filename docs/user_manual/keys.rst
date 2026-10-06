@@ -4465,6 +4465,31 @@ for the linear solve algorithm.
 
       <runname>.Solver.AbsTol = 1E-8   ## Python syntax
 
+*logical* **Solver.OverlandOnly** False When set to True with the
+Richards solver, ParFlow routes overland flow while treating the
+subsurface as inactive, impermeable, and zero-flux. The top pressure
+cells remain the surface water state used by overland boundary
+conditions; deeper subsurface cells are pinned and decoupled from
+storage and Darcy flux terms. Surface forcing may be supplied through
+supported overland pressure boundary conditions, including
+**OverlandFlow** constant values and **OverlandFlowPFB** files.
+**Solver.EvapTransFile** and **Solver.EvapTransFileTransient** are also
+applied as surface forcing in **OverlandOnly** mode using the existing
+EvapTrans sign convention and units. **OverlandOnly** is incompatible
+with CLM, wells, reservoirs, **FluxFile** overland forcing,
+**SurfacePredictor**, **Spinup**, and **ResetSurfacePressure**.
+**OverlandKinematic** and **OverlandDiffusive** support interval
+**Value** forcing only. The default False preserves the standard
+coupled surface-subsurface Richards behavior.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.OverlandOnly True          ## TCL syntax
+
+      <runname>.Solver.OverlandOnly = True    ## Python syntax
+
 *double* **Solver.Drop** 1E-8 This key gives a clipping value for data
 written to PFSB files. Data values greater than the negative of this
 value and less than the value itself are treated as zero and not written
