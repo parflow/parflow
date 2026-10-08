@@ -408,6 +408,7 @@ class Run(BaseRun):
         return full_file_path, full_file_path[: -(len(file_format) + 1)]
 
     def write_subsurface_table(self, file_name=None, working_directory=None):
+        """Write a table of subsurface properties assigned to each unit."""
         # overwrite current working directory
         prev_dir = settings.WORKING_DIRECTORY
         if working_directory:

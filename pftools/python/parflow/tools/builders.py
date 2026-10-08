@@ -1,5 +1,5 @@
-# builders.py
-# functions for helping build ParFlow scripts
+"""Helpers for constructing ParFlow inputs and auxiliary files."""
+
 import os
 from pathlib import Path
 import sys
@@ -21,6 +21,7 @@ from parflow.tools.helper import remove_prefix, with_absolute_path
 
 
 class NoAliasDumper(yaml.SafeDumper):
+    """YAML dumper that expands aliases instead of emitting references."""
 
     def ignore_aliases(self, data):
         """addressing alias printing when applying database properties
@@ -30,6 +31,13 @@ class NoAliasDumper(yaml.SafeDumper):
 
 
 class SolidFileBuilder:
+    """Build a ParFlow solid file from a two-dimensional domain mask.
+
+    Parameters
+    ----------
+    top, bottom, side : int
+        Default patch identifiers for the top, bottom, and side faces.
+    """
 
     def __init__(self, top=1, bottom=2, side=3):
         self.name = None
@@ -301,30 +309,42 @@ def _txt_line_tokenizer(line):
 
 
 class TableToProperties(ABC):
+    """Base class for loading tabular properties and applying them to a run.
+
+    Parameters
+    ----------
+    run : parflow.Run, optional
+        Run to which loaded properties will be applied.
+    """
 
     @property
     @abstractmethod
     def reference_file(self):
+        """Name of the YAML file defining supported table columns."""
         pass
 
     @property
     @abstractmethod
     def key_root(self):
+        """Root object below which loaded properties are assigned."""
         pass
 
     @property
     @abstractmethod
     def unit_string(self):
+        """ParFlow key identifying the type of table unit."""
         pass
 
     @property
     @abstractmethod
     def default_db(self):
+        """Name of the default bundled property database."""
         pass
 
     @property
     @abstractmethod
     def db_prefix(self):
+        """File-name prefix used by bundled property databases."""
         pass
 
     def __init__(self, run=None):
@@ -811,54 +831,66 @@ class TableToProperties(ABC):
 
 
 class SubsurfacePropertiesBuilder(TableToProperties):
+    """Load and apply tabular subsurface properties to a ParFlow run."""
 
     def __init__(self, run=None):
         super().__init__(run)
 
     @property
     def reference_file(self):
+        """Name of the subsurface table-column definition file."""
         return "ref/table_keys.yaml"
 
     @property
     def key_root(self):
+        """The run's geometry collection."""
         return self.run.Geom
 
     @property
     def unit_string(self):
+        """ParFlow key used for geometry units."""
         return "Geom"
 
     @property
     def default_db(self):
+        """Name of the default subsurface property database."""
         return "conus_1"
 
     @property
     def db_prefix(self):
+        """File-name prefix for bundled subsurface databases."""
         return "subsurface_"
 
 
 class ReservoirPropertiesBuilder(TableToProperties):
+    """Load and apply tabular reservoir properties to a ParFlow run."""
 
     def __init__(self, run=None):
         super().__init__(run)
 
     @property
     def reference_file(self):
+        """Name of the reservoir table-column definition file."""
         return "ref/reservoir_keys.yaml"
 
     @property
     def key_root(self):
+        """The run's reservoir collection."""
         return self.run.Reservoirs
 
     @property
     def unit_string(self):
+        """ParFlow key used for reservoir units."""
         return "Reservoirs"
 
     @property
     def default_db(self):
+        """Name of the default reservoir property database."""
         return "conus_1"
 
     @property
     def db_prefix(self):
+        """File-name prefix for bundled reservoir databases."""
         return "reservoirs_"
 
 
@@ -868,28 +900,34 @@ class ReservoirPropertiesBuilder(TableToProperties):
 
 
 class VegParamBuilder(TableToProperties):
+    """Load and apply tabular CLM vegetation parameters to a ParFlow run."""
 
     def __init__(self, run=None):
         super().__init__(run)
 
     @property
     def reference_file(self):
+        """Name of the vegetation table-column definition file."""
         return "ref/vegp_keys.yaml"
 
     @property
     def key_root(self):
+        """The run's CLM vegetation-parameter collection."""
         return self.run.Solver.CLM.Vegetation.Parameters
 
     @property
     def unit_string(self):
+        """Label used for vegetation parameter units."""
         return "VegParams"
 
     @property
     def default_db(self):
+        """Name of the default vegetation parameter database."""
         return "igbp"
 
     @property
     def db_prefix(self):
+        """File-name prefix for bundled vegetation databases."""
         return "vegp_"
 
 
@@ -899,6 +937,15 @@ class VegParamBuilder(TableToProperties):
 
 
 class DomainBuilder:
+    """Configure common domain, solver, boundary, and forcing settings.
+
+    Parameters
+    ----------
+    run : parflow.Run
+        Run object to configure.
+    name : str, default="domain"
+        Geometry name assigned to ``run.Domain.GeomName``.
+    """
 
     def __init__(self, run, name="domain"):
         self.run = run
@@ -1397,10 +1444,34 @@ class DomainBuilder:
 
 
 class CLMImporter:
+    """Import CLM driver data into a ParFlow run.
+
+    Parameters
+    ----------
+    run : parflow.Run
+        Run object that receives the imported CLM settings and data.
+    """
+
     def __init__(self, run):
         self.run = run
 
     def files(self, input="drv_clmin.dat", map=None, parameters=None):
+        """Import a CLM input file and its map and parameter files.
+
+        Parameters
+        ----------
+        input : path-like, default="drv_clmin.dat"
+            CLM driver input file.
+        map : path-like, optional
+            Vegetation map file. The name in ``input`` is used by default.
+        parameters : path-like, optional
+            Vegetation parameter file. The name in ``input`` is used by default.
+
+        Returns
+        -------
+        CLMImporter
+            This importer.
+        """
 
         def load_file(func_name, file_name):
             func = getattr(self, func_name)
@@ -1424,12 +1495,36 @@ class CLMImporter:
 
     @with_absolute_path
     def input_file(self, path="drv_clmin.dat"):
+        """Read a CLM driver input file and apply it to the run.
+
+        Parameters
+        ----------
+        path : path-like, default="drv_clmin.dat"
+            Path to the driver input file.
+
+        Returns
+        -------
+        CLMImporter
+            This importer.
+        """
         clm_key_dict = read_clm(path, type="clmin")
         self.input(clm_key_dict)
         self._import_paths["input"] = path
         return self
 
     def input(self, clm_key_dict):
+        """Apply parsed CLM driver-input values to the run.
+
+        Parameters
+        ----------
+        clm_key_dict : dict
+            Mapping of CLM variable names to values.
+
+        Returns
+        -------
+        CLMImporter
+            This importer.
+        """
         from .database.generated import CLM_KEY_DICT as ref_dict
 
         invalid_keys = []
@@ -1455,12 +1550,36 @@ class CLMImporter:
 
     @with_absolute_path
     def parameters_file(self, path="drv_vegp.dat"):
+        """Read a CLM vegetation parameter file and apply it to the run.
+
+        Parameters
+        ----------
+        path : path-like, default="drv_vegp.dat"
+            Path to the vegetation parameter file.
+
+        Returns
+        -------
+        CLMImporter
+            This importer.
+        """
         vegp_data = read_clm(path, type="vegp")
         self.parameters(vegp_data)
         self._import_paths["parameters"] = path
         return self
 
     def parameters(self, vegp_data):
+        """Apply parsed vegetation parameter data to the run.
+
+        Parameters
+        ----------
+        vegp_data : dict
+            CLM parameter names mapped to values for each land-cover type.
+
+        Returns
+        -------
+        CLMImporter
+            This importer.
+        """
         from .database.generated import CLM_KEY_DICT as ref_dict
 
         self._ensure_land_covers_set()
@@ -1481,12 +1600,39 @@ class CLMImporter:
 
     @with_absolute_path
     def map_file(self, path="drv_vegm.dat"):
+        """Read a CLM vegetation map file and apply it to the run.
+
+        Parameters
+        ----------
+        path : path-like, default="drv_vegm.dat"
+            Path to the vegetation map file.
+
+        Returns
+        -------
+        CLMImporter
+            This importer.
+        """
         vegm_data = read_clm(path, type="vegm")
         self.map(vegm_data)
         self._import_paths["map"] = path
         return self
 
     def map(self, vegm_data):
+        """Apply parsed vegetation map data to the run.
+
+        Spatially varying fields are written to PFB files; uniform fields are
+        represented as constants.
+
+        Parameters
+        ----------
+        vegm_data : numpy.ndarray
+            Vegetation map with shape ``(ny, nx, n_fields)``.
+
+        Returns
+        -------
+        CLMImporter
+            This importer.
+        """
         self._ensure_land_covers_set()
 
         land_names = self._land_names
@@ -1526,6 +1672,13 @@ class CLMImporter:
         return self
 
     def set_default_land_names(self):
+        """Set the run's land-cover names to the packaged defaults.
+
+        Returns
+        -------
+        CLMImporter
+            This importer.
+        """
         veg_params = self.run.Solver.CLM.Vegetation.Parameters
         veg_params.LandNames = self._default_land_names
         # Erase the history on the land names

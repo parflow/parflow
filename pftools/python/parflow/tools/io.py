@@ -1171,6 +1171,28 @@ def precalculate_subgrid_info(nx, ny, nz, p, q, r):
 
 
 def load_patch_matrix_from_image_file(file_name, color_to_patch=None, fall_back_id=0):
+    """Load patch identifiers from an image.
+
+    The image is flipped vertically so the returned matrix follows ParFlow's
+    lower-left origin convention. Without an explicit color map, every pixel
+    whose red channel is not 255 is assigned patch ID 1.
+
+    Parameters
+    ----------
+    file_name : path-like
+        Image file to read.
+    color_to_patch : dict, optional
+        Mapping from hexadecimal RGB colors, such as ``"#ff0000"``, to patch
+        identifiers. Colors may be distinguished by one, two, or three
+        channels when that produces a unique mapping.
+    fall_back_id : int, default=0
+        Patch identifier assigned to colors absent from ``color_to_patch``.
+
+    Returns
+    -------
+    numpy.ndarray
+        Two-dimensional patch matrix with integer values.
+    """
     import imageio
 
     im = imageio.imread(file_name)
@@ -1237,6 +1259,21 @@ def load_patch_matrix_from_image_file(file_name, color_to_patch=None, fall_back_
 
 
 def load_patch_matrix_from_asc_file(file_name):
+    """Load a patch matrix from an ESRI ASCII grid file.
+
+    The matrix is flipped vertically to convert the file's top-to-bottom row
+    order to ParFlow's lower-left origin convention.
+
+    Parameters
+    ----------
+    file_name : path-like
+        ASCII grid file containing ``ncols`` and ``nrows`` header entries.
+
+    Returns
+    -------
+    numpy.ndarray
+        Two-dimensional patch matrix with ``int16`` values.
+    """
     ncols = -1
     nrows = -1
     in_header = True
@@ -1265,6 +1302,19 @@ def load_patch_matrix_from_asc_file(file_name):
 
 
 def load_patch_matrix_from_sa_file(file_name):
+    """Load a two-dimensional patch matrix from a ParFlow simple ASCII file.
+
+    Parameters
+    ----------
+    file_name : path-like
+        Simple ASCII file whose first line contains the x, y, and z sizes.
+        The z size is read but the returned patch matrix is two-dimensional.
+
+    Returns
+    -------
+    numpy.ndarray
+        Patch matrix with shape ``(y_size, x_size)`` and ``int16`` values.
+    """
     i_size = -1
     j_size = -1
     k_size = -1
@@ -1540,6 +1590,29 @@ def _read_vegp(file_name):
 
 
 def read_clm(file_name, type="clmin"):
+    """Read one of the standard CLM driver files.
+
+    Parameters
+    ----------
+    file_name : path-like
+        CLM driver file to read. Relative paths are resolved against the
+        configured PFTools working directory.
+    type : {"clmin", "vegm", "vegp"}, default="clmin"
+        Driver file format: input settings (``clmin``), vegetation map
+        (``vegm``), or vegetation parameters (``vegp``).
+
+    Returns
+    -------
+    dict or numpy.ndarray
+        ``clmin`` returns a variable-to-value dictionary, ``vegp`` returns a
+        variable-to-land-cover-values dictionary, and ``vegm`` returns an
+        array with shape ``(ny, nx, n_fields)``.
+
+    Raises
+    ------
+    Exception
+        If ``type`` is not a supported CLM driver format.
+    """
     type_map = {"clmin": _read_clmin, "vegm": _read_vegm, "vegp": _read_vegp}
 
     if type not in type_map:
