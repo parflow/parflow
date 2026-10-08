@@ -128,7 +128,7 @@ extern int amps_write_size;
 /* Macros for all commands that have no function in sequential code.         */
 /*---------------------------------------------------------------------------*/
 
-#define VOID_FUNC(amps_name) 0, printf("AMPS Error: The %s function is not implemented\n", amps_name)
+#define VOID_FUNC(amps_name) (0, printf("AMPS Error: The %s function is not implemented\n", amps_name))
 
 #define amps_IRecv(comm, source, invoice) VOID_FUNC("amps_IRecv")
 
