@@ -59,17 +59,18 @@ For this case, the solver needs to be set to RICHARDS::
 
    pfset Solver		Richards
 
-ParFlow may also be coupled with the land surface model ``CLM`` :cite:p:`Dai03`. 
-This version of ``CLM`` has been extensively modified to be called 
-from within ParFlow as a subroutine, to support parallel infrastructure including I/O and most importantly with modified physics 
-to support coupled operation to best utilize the integrated hydrology in ParFlow :cite:p:`MM05, KM08a`. 
-To couple ``CLM`` into ParFlow first the ``–with-clm`` 
-option is needed in the ``./configure`` command as indicated in Installing ParFlow. Second, the ``CLM`` module needs 
+ParFlow may also be coupled with the land surface models ``CLM`` :cite:p:`Dai03` and ``CoLM`` :cite:p:`Yang2026`.
+The bundled land model code has been modified to be called
+from within ParFlow as a subroutine, to support parallel infrastructure including I/O and most importantly with modified physics
+to support coupled operation to best utilize the integrated hydrology in ParFlow :cite:p:`MM05, KM08a`.
+To couple ``CLM`` or ``CoLM`` into ParFlow first the ``–with-clm``
+option is needed in the ``./configure`` command as indicated in Installing ParFlow. Second, the ``CLM`` or ``CoLM`` module needs
 to be called from within ParFlow, this is done using the following solver key::
-   
-    pfset Solver.LSM CLM
 
-Note that this key is used to call ``CLM`` from within the nonlinear solver time loop and requires that the solver bet set to RICHARDS to work. 
-Note also that this key defaults to *not* call ``CLM`` so if this line is omitted ``CLM`` will not be called from within 
-ParFlow even if compiled and linked. Currently, ``CLM`` gets some of it’s information from ParFlow such as grid, 
+    pfset Solver.LSM CLM
+    pfset Solver.LSM CoLM
+
+Note that this key is used to call ``CLM`` or ``CoLM`` from within the nonlinear solver time loop and requires that the solver be set to RICHARDS to work.
+Note also that this key defaults to *not* call a land surface model so if this line is omitted neither ``CLM`` nor ``CoLM`` will be called from within
+ParFlow even if compiled and linked. Currently, ``CLM`` or ``CoLM`` gets some of it’s information from ParFlow such as grid,
 topology and discretization, but also has some of it’s own input files for land cover, land cover types and atmospheric forcing.
