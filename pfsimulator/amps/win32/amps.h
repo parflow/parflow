@@ -103,7 +103,7 @@ _declspec(thread) extern int amps_rank;
 #define amps_Exit(code) exit(code)
 
 /* In CE/RK we always send */
-#define amps_ISend(comm, dest, invoice) 0, amps_Send((comm), (dest), (invoice))
+#define amps_ISend(comm, dest, invoice) (0, amps_Send((comm), (dest), (invoice)))
 
 #define amps_Size(comm) amps_size
 
@@ -534,6 +534,5 @@ extern AMPS_ShMemBuffer **bcast_buffers_local_end;
 
 #include "amps_proto.h"
 #endif
-
 
 
