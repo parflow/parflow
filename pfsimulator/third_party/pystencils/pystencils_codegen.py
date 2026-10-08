@@ -4,10 +4,10 @@ import re
 from pystencilssfg import SourceFileGenerator, AugExpr
 from pystencilssfg.lang.gpu import cuda
 
-from pystencils.codegen.properties import FieldShape
+from pystencils.codegen.properties import FieldBasePtr, FieldStride, FieldShape
 
 from pystencils.types.quick import UInt, SInt
-from pystencils.types import deconstify
+from pystencils.types import deconstify, PsPointerType, PsCustomType
 
 # set up kernel config
 def get_kernel_cfg(
@@ -164,3 +164,98 @@ def create_kernel_func(
                    f"available for pystencils code generation.")
 
     return kernel
+
+
+# wrapper running a kernel on the interior boxes of a GrGeomSolid, i.e. a replacement for GrGeomInLoop
+def create_grgeom_in_loop_wrapper(sfg: SourceFileGenerator, kernel, timing_index: bool = False):
+    params = []
+
+    params += [sfg.var("gr_domain", PsPointerType(PsCustomType("GrGeomSolid")))]
+    params += [sfg.var("r", SInt(32))]
+    params += [sfg.var(f"i{d}", SInt(32)) for d in ["x", "y", "z"]]
+    params += [sfg.var(f"n{d}", SInt(32)) for d in ["x", "y", "z"]]
+
+    fetch_subvectors = []
+
+    # fields of the same FieldFactory share their stride symbols -> fetch them from the first such field
+    stride_subvectors = {}
+
+    for param in kernel.parameters:
+        if base_ptrs := param.wrapped.get_properties(FieldBasePtr):
+            fieldname = param.name
+            fieldname_sub = f"{fieldname}_sub"
+
+            params += [sfg.var(fieldname_sub, PsPointerType(PsCustomType("Subvector")))]
+
+            fetch_subvectors += [
+                f"double* {fieldname} = SubvectorElt({fieldname_sub}, PV_ixl, PV_iyl, PV_izl);\n"
+            ]
+
+            for base_ptr in base_ptrs:
+                for stride in base_ptr.field.strides:
+                    stride_subvectors.setdefault(stride.name, fieldname_sub)
+        elif not (
+            param.wrapped.get_properties(FieldStride)
+            or param.wrapped.get_properties(FieldShape)
+        ):
+            params += [param]
+
+    # kernel arguments in parameter order: field pointers, sizes and strides of the box, and the remaining symbols
+    args = []
+    for param in kernel.parameters:
+        if param.wrapped.get_properties(FieldBasePtr):
+            args += [param.name]
+        elif shapes := param.wrapped.get_properties(FieldShape):
+            d = "xyz"[next(iter(shapes)).coordinate]
+            args += [f"PV_i{d}u - PV_i{d}l + 1"]
+        elif strides := param.wrapped.get_properties(FieldStride):
+            sub = stride_subvectors[param.name]
+            args += [("1", f"SubvectorNX({sub})", f"SubvectorNX({sub}) * SubvectorNY({sub})")[next(iter(strides)).coordinate]]
+        else:
+            args += [param.name]
+
+    sfg.include("parflow.h")
+
+    timing_begin = ""
+    timing_end = ""
+    if timing_index:
+        params += [sfg.var("timing_index", SInt(32))]
+        timing_begin = "BeginTiming(timing_index);"
+        timing_end = "EndTiming(timing_index);"
+
+    code = sfg.branch("r == 0 && GrGeomSolidInteriorBoxes(gr_domain)")(
+        f"""
+int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;
+int *PV_visiting = NULL;
+PF_UNUSED(PV_visiting);
+BoxArray *boxes = GrGeomSolidInteriorBoxes(gr_domain);
+for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {{
+    Box box = BoxArrayGetBox(boxes, PV_box);
+    /* find octree and region intersection */
+    PV_ixl = pfmax(ix, box.lo[0]);
+    PV_iyl = pfmax(iy, box.lo[1]);
+    PV_izl = pfmax(iz, box.lo[2]);
+    PV_ixu = pfmin((ix + nx - 1), box.up[0]);
+    PV_iyu = pfmin((iy + ny - 1), box.up[1]);
+    PV_izu = pfmin((iz + nz - 1), box.up[2]);
+
+    {"    ".join(fetch_subvectors)}
+
+    if (PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu) {{
+        {timing_begin}
+        {kernel.name[:-4]}(
+            {", ".join(args)}
+        );
+        {timing_end}
+    }}
+}}
+    """
+    )(
+        """
+    printf(\"\\n\\nPystencils support unavailable for mesh refinement at file %s and line %d\\n\", __FILE__, __LINE__);
+    exit(1);"""
+    )
+
+    sfg.function(f"{kernel.name[:-4]}_wrapper").params(*params)(
+        code,
+    )
