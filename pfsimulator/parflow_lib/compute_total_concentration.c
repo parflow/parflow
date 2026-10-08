@@ -42,56 +42,100 @@
 double       ComputeTotalConcen(
                                 GrGeomSolid *gr_domain,
                                 Grid *       grid,
-                                Vector *     substance)
+                                Vector *     substance,
+                                Vector *     porsat_inv)
 {
   Subgrid        *subgrid;
   double cell_volume, field_sum;
   double dx, dy, dz;
 
-  Subvector      *s_sub;
+  Subvector      *s_sub, *ps_sub;
 
-  int i, j, k, r, ix, iy, iz, nx, ny, nz, is, ips;
+  int i, j, k, r, ix, iy, iz, nx, ny, nz, is, ips, i_ps;
   int            *fdir;
-  double         *data;
+  double         *data, *porsat_data;
   amps_Invoice result_invoice;
 
   field_sum = 0.0;
-  ForSubgridI(is, GridSubgrids(grid))
+  if (porsat_inv == NULL)
   {
-    subgrid = GridSubgrid(grid, is);
-
-    s_sub = VectorSubvector(substance, is);
-
-    ix = SubgridIX(subgrid);
-    iy = SubgridIY(subgrid);
-    iz = SubgridIZ(subgrid);
-
-    nx = SubgridNX(subgrid);
-    ny = SubgridNY(subgrid);
-    nz = SubgridNZ(subgrid);
-
-    dx = SubgridDX(subgrid);
-    dy = SubgridDY(subgrid);
-    dz = SubgridDZ(subgrid);
-
-    /* RDF: assume resolution is the same in all 3 directions */
-    r = SubgridRX(subgrid);
-
-    data = SubvectorData(s_sub);
-
-    cell_volume = dx * dy * dz;
-
-    GrGeomSurfLoop(i, j, k, fdir, gr_domain, r, ix, iy, iz, nx, ny, nz,
+    ForSubgridI(is, GridSubgrids(grid))
     {
-      ips = SubvectorEltIndex(s_sub, i, j, k);
-      data[ips] = 0.0;
-    });
+      subgrid = GridSubgrid(grid, is);
 
-    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+      s_sub = VectorSubvector(substance, is);
+
+      ix = SubgridIX(subgrid);
+      iy = SubgridIY(subgrid);
+      iz = SubgridIZ(subgrid);
+
+      nx = SubgridNX(subgrid);
+      ny = SubgridNY(subgrid);
+      nz = SubgridNZ(subgrid);
+
+      dx = SubgridDX(subgrid);
+      dy = SubgridDY(subgrid);
+      dz = SubgridDZ(subgrid);
+
+      /* RDF: assume resolution is the same in all 3 directions */
+      r = SubgridRX(subgrid);
+
+      data = SubvectorData(s_sub);
+
+      cell_volume = dx * dy * dz;
+
+      GrGeomSurfLoop(i, j, k, fdir, gr_domain, r, ix, iy, iz, nx, ny, nz,
+      {
+        ips = SubvectorEltIndex(s_sub, i, j, k);
+        data[ips] = 0.0;
+      });
+
+      GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+      {
+        ips = SubvectorEltIndex(s_sub, i, j, k);
+        field_sum += data[ips] * cell_volume;
+      });
+    }
+  }
+  else
+  {
+    /* Reactive-transport path (react_trans): concentrations are per pore
+     * volume, so weight each cell by porosity*saturation = 1/porsat_inv.
+     * No surface zeroing here; chemistry consumes the field afterwards. */
+    ForSubgridI(is, GridSubgrids(grid))
     {
-      ips = SubvectorEltIndex(s_sub, i, j, k);
-      field_sum += data[ips] * cell_volume;
-    });
+      subgrid = GridSubgrid(grid, is);
+
+      s_sub = VectorSubvector(substance, is);
+      ps_sub = VectorSubvector(porsat_inv, is);
+
+      ix = SubgridIX(subgrid);
+      iy = SubgridIY(subgrid);
+      iz = SubgridIZ(subgrid);
+
+      nx = SubgridNX(subgrid);
+      ny = SubgridNY(subgrid);
+      nz = SubgridNZ(subgrid);
+
+      dx = SubgridDX(subgrid);
+      dy = SubgridDY(subgrid);
+      dz = SubgridDZ(subgrid);
+
+      /* RDF: assume resolution is the same in all 3 directions */
+      r = SubgridRX(subgrid);
+
+      data = SubvectorData(s_sub);
+      porsat_data = SubvectorData(ps_sub);
+
+      cell_volume = dx * dy * dz;
+
+      GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+      {
+        ips = SubvectorEltIndex(s_sub, i, j, k);
+        i_ps = SubvectorEltIndex(ps_sub, i, j, k);
+        field_sum += data[ips] * cell_volume / porsat_data[i_ps];
+      });
+    }
   }
 
   result_invoice = amps_NewInvoice("%d", &field_sum);

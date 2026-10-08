@@ -141,6 +141,8 @@ void  CreateComputePkgs(
   Stencil  *update_all_stencil;
   Stencil  *update_all2_stencil;
   Stencil  *update_godunov_stencil;
+  Stencil  *update_velx_stencil;
+  Stencil  *update_vely_stencil;
   Stencil  *update_velz_stencil;
   Stencil  *update_pgs1_stencil;
   Stencil  *update_pgs2_stencil;
@@ -165,6 +167,24 @@ void  CreateComputePkgs(
                                  { 0, 0, 1 },
                                  { 0, 0, -2 },
                                  { 0, 0, 2 } };
+  int update_velx_shape[][3] = { { -1, 0, 0 },
+                                 { 1, 0, 0 },
+                                 { -2, 0, 0 },
+                                 { 2, 0, 0 },
+                                 { 0, -1, 0 },
+                                 { 0, 1, 0 },
+                                 { 0, 0, -1 },
+                                 { 0, 0, 1 } };
+
+  int update_vely_shape[][3] = { { -1, 0, 0 },
+                                 { 1, 0, 0 },
+                                 { 0, -1, 0 },
+                                 { 0, 1, 0 },
+                                 { 0, -2, 0 },
+                                 { 0, 2, 0 },
+                                 { 0, 0, -1 },
+                                 { 0, 0, 1 } };
+
   int update_velz_shape[][3] = { { -1, 0, 0 },
                                  { 1, 0, 0 },
                                  { 0, -1, 0 },
@@ -299,6 +319,8 @@ void  CreateComputePkgs(
   update_all_stencil = NewStencil(update_all_shape, 6);
   update_all2_stencil = NewStencil(update_all2_shape, 12);
   update_godunov_stencil = NewStencil(update_godunov_shape, 135);
+  update_velx_stencil = NewStencil(update_velx_shape, 8);
+  update_vely_stencil = NewStencil(update_vely_shape, 8);
   update_velz_stencil = NewStencil(update_velz_shape, 8);
   update_pgs1_stencil = NewStencil(update_pgs1_shape, 27);
   update_pgs2_stencil = NewStencil(update_pgs2_shape, 125);
@@ -380,6 +402,30 @@ void  CreateComputePkgs(
     NewComputePkg(send_reg, recv_reg, dep_reg, ind_reg);
 
   /*------------------------------------------------------
+   * Define VectorUpdateVelX mode (react_trans).
+   *------------------------------------------------------*/
+
+  CommRegFromStencil(&send_reg, &recv_reg, grid, update_velx_stencil);
+
+  ComputeRegFromStencil(&dep_reg, &ind_reg,
+                        subgrids, send_reg, recv_reg, update_velx_stencil);
+
+  GridComputePkg(grid, VectorUpdateVelX) =
+    NewComputePkg(send_reg, recv_reg, dep_reg, ind_reg);
+
+  /*------------------------------------------------------
+   * Define VectorUpdateVelY mode (react_trans).
+   *------------------------------------------------------*/
+
+  CommRegFromStencil(&send_reg, &recv_reg, grid, update_vely_stencil);
+
+  ComputeRegFromStencil(&dep_reg, &ind_reg,
+                        subgrids, send_reg, recv_reg, update_vely_stencil);
+
+  GridComputePkg(grid, VectorUpdateVelY) =
+    NewComputePkg(send_reg, recv_reg, dep_reg, ind_reg);
+
+  /*------------------------------------------------------
    * Define VectorUpdateVelZ mode.
    *------------------------------------------------------*/
 
@@ -437,6 +483,8 @@ void  CreateComputePkgs(
   FreeStencil(update_all_stencil);
   FreeStencil(update_all2_stencil);
   FreeStencil(update_godunov_stencil);
+  FreeStencil(update_velx_stencil);
+  FreeStencil(update_vely_stencil);
   FreeStencil(update_velz_stencil);
   FreeStencil(update_pgs1_stencil);
   FreeStencil(update_pgs2_stencil);

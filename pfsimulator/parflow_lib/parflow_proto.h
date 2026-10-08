@@ -2,11 +2,11 @@
 
 typedef PFModule * (*NewDefault)(void);
 
-typedef void (*AdvectionConcentrationInvoke) (ProblemData *problem_data, int phase, int concentration, Vector *old_concentration, Vector *new_concentration, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *solid_mass_factor, double time, double deltat, int order);
+typedef void (*AdvectionConcentrationInvoke) (ProblemData *problem_data, int phase, int concentration, Vector *old_concentration, Vector *new_concentration, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *old_porsat, Vector *new_porsat_inv, double time, double deltat);
 typedef PFModule *(*AdvectionConcentrationInitInstanceXtraType) (Problem *problem, Grid *grid, double *temp_data);
 
 /* advection_godunov.c */
-void Godunov(ProblemData *problem_data, int phase, int concentration, Vector *old_concentration, Vector *new_concentration, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *solid_mass_factor, double time, double deltat, int order);
+void Godunov(ProblemData *problem_data, int phase, int concentration, Vector *old_concentration, Vector *new_concentration, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *old_porsat, Vector *new_porsat_inv, double time, double deltat);
 PFModule *GodunovInitInstanceXtra(Problem *problem, Grid *grid, double *temp_data);
 void GodunovFreeInstanceXtra(void);
 PFModule *GodunovNewPublicXtra(void);
@@ -105,7 +105,16 @@ double ComputePhaseMaximum(double phase_u_max, double dx, double phase_v_max, do
 double ComputeTotalMaximum(Problem *problem, EvalStruct *eval_struct, double s_lower, double s_upper, double total_u_max, double dx, double total_v_max, double dy, double total_w_max, double beta_max, double dz);
 
 /* compute_total_concentration.c */
-double ComputeTotalConcen(GrGeomSolid *gr_domain, Grid *grid, Vector *substance);
+double ComputeTotalConcen(GrGeomSolid *gr_domain, Grid *grid, Vector *substance, Vector *porsat_inv);
+
+/* transport_utilities.c */
+double InterpolateTimeCycle(double total_cycle_length, double subcycle_dt);
+void TransportSaturation(Vector *sat_transport_start, Vector *delta_sat, Vector *old_sat, Vector *new_sat);
+void SelectReactTransTimeStep(double max_velocity, double CFL, double PF_dt, double *advect_react_dt, int *num_rt_iterations);
+void BCConcenPatchExtent(Subgrid *subgrid, int *ix, int *iy, int *iz, int *nx, int *ny, int *nz, int ipatch);
+void BCConcenCopyPatch(Problem *problem, Grid *grid, Vector **concentrations, int ipatch);
+void BCConcenCopyAdjacent(Problem *problem, Grid *grid, Vector **concentrations);
+int BoundaryCell(int ipatch, int i, int j, int k);
 
 typedef void (*ConstantRFInvoke) (GeomSolid *geounit, GrGeomSolid *gr_geounit, Vector *field, RFCondData *cdata);
 typedef PFModule *(*ConstantRFInitInstanceXtraInvoke) (Grid *grid, double *temp_data);
@@ -411,7 +420,7 @@ void            MatvecJacE(
 
 /* max_field_value.c */
 double MaxFieldValue(Vector *field, Vector *phi, int dir);
-double MaxPhaseFieldValue(Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *phi);
+double MaxPhaseFieldValue(Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *phi, Vector *sat);
 double MaxTotalFieldValue(Problem *problem, EvalStruct *eval_struct, Vector *saturation, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *beta, Vector *phi);
 
 
@@ -636,6 +645,7 @@ void PrintVector(char *filename, Vector *v);
 Problem *NewProblem(int solver);
 void FreeProblem(Problem *problem, int solver);
 ProblemData *NewProblemData(Grid *grid, Grid *grid2d);
+int ProblemChemistryFromInput(void);
 void FreeProblemData(ProblemData *problem_data);
 
 /* problem_bc.c */
@@ -1006,14 +1016,15 @@ PFModule *PorosityNewPublicXtra(void);
 void PorosityFreePublicXtra(void);
 int PorositySizeOfTempData(void);
 
-typedef void (*RetardationInvoke) (Vector *solidmassfactor, int contaminant, ProblemData *problem_data);
-typedef PFModule *(*RetardationInitInstanceXtraInvoke) (double *temp_data);
+typedef void (*RetardationInvoke) (Vector *retard_vector, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector **trans_x_velocity, Vector **trans_y_velocity, Vector **trans_z_velocity, int contaminant, ProblemData *problem_data);
+typedef PFModule *(*RetardationInitInstanceXtraInvoke) (Grid *grid, Grid *x_grid, Grid *y_grid, Grid *z_grid, double *temp_data);
 typedef PFModule *(*RetardationNewPublicXtraInvoke) (int num_contaminants);
 
 /* problem_retardation.c */
-void Retardation(Vector *solidmassfactor, int contaminant, ProblemData *problem_data);
+void Retardation(Vector *retard_vector, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector **trans_x_velocity, Vector **trans_y_velocity, Vector **trans_z_velocity, int contaminant, ProblemData *problem_data);
 
-PFModule *RetardationInitInstanceXtra(double *temp_data);
+PFModule *RetardationInitInstanceXtra(Grid *grid, Grid *x_grid, Grid *y_grid, Grid *z_grid, double *temp_data);
+void TransportVelocity(Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector **x_vel_trans, Vector **y_vel_trans, Vector **z_vel_trans, Vector *retard);
 void RetardationFreeInstanceXtra(void);
 PFModule *RetardationNewPublicXtra(int num_contaminants);
 void RetardationFreePublicXtra(void);
@@ -1363,6 +1374,8 @@ extern "C" {
 void PFVLinearSum(double a, Vector *x, double b, Vector *y, Vector *z);
 void PFVConstInit(double c, Vector *z);
 void PFVProd(Vector *x, Vector *y, Vector *z);
+void PFVInvProd(Vector *x, Vector *y, Vector *z);
+void PFVMinVector(Vector *x, Vector *y, Vector *z);
 void PFVDiv(Vector *x, Vector *y, Vector *z);
 void PFVScale(double c, Vector *x, Vector *z);
 void PFVAbs(Vector *x, Vector *z);

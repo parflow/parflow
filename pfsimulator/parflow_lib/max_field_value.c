@@ -152,22 +152,35 @@ double  MaxFieldValue(
  * MaxPhaseFieldValue
  *--------------------------------------------------------------------------*/
 
+/**
+ * @brief Maximum advective displacement rate for transport CFL selection.
+ *
+ * Returns max over faces of |v| / (phi * s * ds): the saturation-weighted
+ * Courant velocity the react_trans operator-split transport sub-steps
+ * against. Uses the MINIMUM of the two adjacent cells' porosity and
+ * saturation (branch b44bf5ed/intent doc max_field_value entry): the
+ * conservative choice at material interfaces and partially saturated
+ * cells, replacing the legacy porosity-only pfmax estimate.
+ */
 double  MaxPhaseFieldValue(
                            Vector *x_velocity,
                            Vector *y_velocity,
                            Vector *z_velocity,
-                           Vector *phi)
+                           Vector *phi,
+                           Vector *sat)
 {
   Grid         *grid;
   Subgrid      *subgrid;
 
   Subvector    *v_sub;
   Subvector    *p_sub;
+  Subvector    *s_sub;
 
   Vector       *velocity = NULL;
 
   double       *vp;
   double       *plp, *prp;
+  double       *slp, *srp;
 
   double max_field_value, psi_max, ds = 0.0;
   double max_xdir_value, max_ydir_value, max_zdir_value;
@@ -177,9 +190,10 @@ double  MaxPhaseFieldValue(
   int nx, ny, nz;
   int nx_v, ny_v, nz_v;
   int nx_p, ny_p, nz_p;
+  int nx_s, ny_s, nz_s;
   int stx = 0, sty = 0, stz = 0;
 
-  int i_s, dir, i, j, k, vi, pi;
+  int i_s, dir, i, j, k, vi, pi, si;
 
   amps_Invoice result_invoice;
 
@@ -243,6 +257,7 @@ double  MaxPhaseFieldValue(
 
       v_sub = VectorSubvector(velocity, i_s);
       p_sub = VectorSubvector(phi, i_s);
+      s_sub = VectorSubvector(sat, i_s);
 
       nx_v = SubvectorNX(v_sub);
       ny_v = SubvectorNY(v_sub);
@@ -252,17 +267,25 @@ double  MaxPhaseFieldValue(
       ny_p = SubvectorNY(p_sub);
       nz_p = SubvectorNZ(p_sub);
 
+      nx_s = SubvectorNX(s_sub);
+      ny_s = SubvectorNY(s_sub);
+      nz_s = SubvectorNZ(s_sub);
+
       vp = SubvectorElt(v_sub, ix, iy, iz);
       plp = SubvectorElt(p_sub, ix - stx, iy - sty, iz - stz);
       prp = SubvectorElt(p_sub, ix, iy, iz);
+      slp = SubvectorElt(s_sub, ix - stx, iy - sty, iz - stz);
+      srp = SubvectorElt(s_sub, ix, iy, iz);
 
       vi = 0;
       pi = 0;
-      BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
+      si = 0;
+      BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
                 vi, nx_v, ny_v, nz_v, 1, 1, 1,
                 pi, nx_p, ny_p, nz_p, 1, 1, 1,
+                si, nx_s, ny_s, nz_s, 1, 1, 1,
       {
-        psi_max = pfmax(fabs(plp[pi]), fabs(prp[pi])) * ds;
+        psi_max = pfmin(fabs(plp[pi]), fabs(prp[pi])) * pfmin(fabs(slp[si]), fabs(srp[si])) * ds;
         if (psi_max != 0.0)
         {
           tmp_max = fabs(vp[vi]) / psi_max;

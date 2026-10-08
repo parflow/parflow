@@ -309,6 +309,7 @@ pfset PhaseConcen.water.tce.Type                      Constant
 pfset PhaseConcen.water.tce.GeomNames                 concen_region
 pfset PhaseConcen.water.tce.Geom.concen_region.Value  0.8
 
+pfset Solver.PrintConcentration  True
 pfset Solver.PrintVelocities True
 
 #-----------------------------------------------------------------------------

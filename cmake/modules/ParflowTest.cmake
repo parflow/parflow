@@ -34,7 +34,8 @@ function(pf_add_parallel_test inputfile topology)
             "-DMPIEXEC_PREFLAGS=${MPIEXEC_PREFLAGS}"
             "-DMPIEXEC_POSTFLAGS=${MPIEXEC_POSTFLAGS}"
             -DPARFLOW_HAVE_OAS3={PARFLOW_HAVE_OAS3}
-            -DPARFLOW_HAVE_SILO=${PARFLOW_HAVE_SILO} -DTCL_TCLSH=${TCL_TCLSH} -P
+            -DPARFLOW_HAVE_SILO=${PARFLOW_HAVE_SILO} -DTCL_TCLSH=${TCL_TCLSH}
+            -DPARFLOW_INSTALL_DIR=${CMAKE_INSTALL_PREFIX} -P
             ${CMAKE_SOURCE_DIR}/cmake/modules/RunParallelTest.cmake
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
@@ -54,7 +55,8 @@ function(pf_add_parallel_test inputfile topology)
                 "-DMPIEXEC_POSTFLAGS=${MPIEXEC_POSTFLAGS}"
                 -DPARFLOW_HAVE_OAS3=${PARFLOW_HAVE_OAS3}
                 -DPARFLOW_HAVE_SILO=${PARFLOW_HAVE_SILO}
-                -DTCL_TCLSH=${TCL_TCLSH} -P
+                -DTCL_TCLSH=${TCL_TCLSH}
+                -DPARFLOW_INSTALL_DIR=${CMAKE_INSTALL_PREFIX} -P
                 ${CMAKE_SOURCE_DIR}/cmake/modules/RunParallelTest.cmake
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         )
@@ -81,7 +83,8 @@ function(pf_add_sequential_test inputfile)
         COMMAND
             ${CMAKE_COMMAND} "-DPARFLOW_TEST=${args}"
             -DPARFLOW_HAVE_OAS3=${PARFLOW_HAVE_OAS3}
-            -DPARFLOW_HAVE_SILO=${PARFLOW_HAVE_SILO} -DTCL_TCLSH=${TCL_TCLSH} -P
+            -DPARFLOW_HAVE_SILO=${PARFLOW_HAVE_SILO} -DTCL_TCLSH=${TCL_TCLSH}
+            -DPARFLOW_INSTALL_DIR=${CMAKE_INSTALL_PREFIX} -P
             ${CMAKE_SOURCE_DIR}/cmake/modules/RunParallelTest.cmake
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
@@ -101,7 +104,8 @@ function(pf_add_sequential_test inputfile)
                 "-DMPIEXEC_POSTFLAGS=${MPIEXEC_POSTFLAGS}"
                 -DPARFLOW_HAVE_OAS3=${PARFLOW_HAVE_OAS3}
                 -DPARFLOW_HAVE_SILO=${PARFLOW_HAVE_SILO}
-                -DTCL_TCLSH=${TCL_TCLSH} -P
+                -DTCL_TCLSH=${TCL_TCLSH}
+                -DPARFLOW_INSTALL_DIR=${CMAKE_INSTALL_PREFIX} -P
                 ${CMAKE_SOURCE_DIR}/cmake/modules/RunParallelTest.cmake
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         )
@@ -129,7 +133,8 @@ function(pf_add_amps_parallel_test test ranks loops)
             "-DMPIEXEC_PREFLAGS=${MPIEXEC_PREFLAGS}"
             "-DMPIEXEC_POSTFLAGS=${MPIEXEC_POSTFLAGS}"
             -DPARFLOW_HAVE_OAS3=${PARFLOW_HAVE_OAS3}
-            -DPARFLOW_HAVE_SILO=${PARFLOW_HAVE_SILO} -DTCL_TCLSH=${TCL_TCLSH} -P
+            -DPARFLOW_HAVE_SILO=${PARFLOW_HAVE_SILO} -DTCL_TCLSH=${TCL_TCLSH}
+            -DPARFLOW_INSTALL_DIR=${CMAKE_INSTALL_PREFIX} -P
             ${CMAKE_SOURCE_DIR}/cmake/modules/RunAmpsTest.cmake
     )
 

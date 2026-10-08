@@ -74,6 +74,10 @@ if(${PARFLOW_HAVE_SLURM})
     target_link_libraries(parflow ${SLURM_LIBRARIES})
 endif(${PARFLOW_HAVE_SLURM})
 
+if((${PARFLOW_HAVE_ALQUIMIA}))
+    target_link_libraries(parflow ${ALQUIMIA_LIBRARIES})
+endif((${PARFLOW_HAVE_ALQUIMIA}))
+
 # Link the math library if needed
 if(PARFLOW_MATH_LIBRARY)
     target_link_libraries(parflow ${MATH_LIBRARY})

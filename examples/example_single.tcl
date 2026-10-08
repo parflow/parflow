@@ -380,6 +380,8 @@ pfset TopoSlopesY.Geom.domain.Value 0.0
 
 pfset Mannings.Type "Constant"
 pfset Mannings.GeomNames "domain"
+
+pfset Solver.PrintConcentration  True
 pfset Mannings.Geom.domain.Value 2.3e-7
 
 
