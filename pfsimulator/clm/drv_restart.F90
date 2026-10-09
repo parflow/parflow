@@ -211,13 +211,30 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
         enddo
      enddo
 
-     ! Read coszen_avg from end of file (added for SZA frac_sno)
-     ! Use iostat for backward compat with old restarts that lack this field
+     ! Read the appended new fields from the END of file (order must match the
+     ! rw=2 write block). iostat gives backward compat: old restarts that lack
+     ! these fields keep the legacy defaults set above (vis/nir = snowage,
+     ! coszen_avg = 0). Fixed 2026-07-14: vis/nir were previously written
+     ! mid-record with no matching read, desyncing the stream by 2 records.
      read(40, iostat=ios) coszen_avg
      if (ios /= 0) then
         coszen_avg(:) = 0.0d0
         if (rank.eq.0) then
            write(*,*) 'CLM Restart: coszen_avg not found, defaulting to 0.0'
+        endif
+     endif
+     read(40, iostat=ios) snowage_vis
+     if (ios /= 0) then
+        snowage_vis = snowage
+        if (rank.eq.0) then
+           write(*,*) 'CLM Restart: snowage_vis not found, defaulting to snowage'
+        endif
+     endif
+     read(40, iostat=ios) snowage_nir
+     if (ios /= 0) then
+        snowage_nir = snowage
+        if (rank.eq.0) then
+           write(*,*) 'CLM Restart: snowage_nir not found, defaulting to snowage'
         endif
      endif
 
@@ -502,8 +519,6 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
         write(40) clm%t_veg                 !CLM Leaf Temperature [K]
         write(40) clm%h2osno                !CLM Snow Cover, Water Equivalent [mm]
         write(40) clm%snowage               !CLM Non-dimensional snow age [-]
-        write(40) clm%snowage_vis           !CLM VIS band snow age [-] @RMM 2025
-        write(40) clm%snowage_nir           !CLM NIR band snow age [-] @RMM 2025
         write(40) clm%snowdp                !CLM Snow Depth [m]
         write(40) clm%h2ocan                !CLM Depth of Water on Foliage [mm]
         write(40) clm%frac_sno              !CLM Fractional Snow Cover [-]
@@ -552,8 +567,14 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
            write(40) tmptileni     !CLM Average Ice Content [kg/m2]
         enddo
 
-        ! New fields appended at end for backward-compatible restarts
+        ! New fields appended at END for backward/forward-compatible restarts
+        ! (read back with iostat; old restarts lacking them fall back to legacy).
+        ! snowage_vis/nir MUST live here, NOT mid-record -- putting them after
+        ! snowage desynced the read by 2 records ("I/O past end of record"),
+        ! since the read re-derives them from legacy snowage (fixed 2026-07-14).
         write(40) clm%coszen_avg            !CLM Smoothed cos(SZA) for SZA frac_sno [-]
+        write(40) clm%snowage_vis           !CLM VIS band snow age [-] @RMM 2025
+        write(40) clm%snowage_nir           !CLM NIR band snow age [-] @RMM 2025
 
         close(40)
 

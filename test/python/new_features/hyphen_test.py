@@ -394,3 +394,7 @@ dover.Geom.domain.ICPressure.RefPatch = "z-upper"
 # -----------------------------------------------------------------------------
 
 dover.validate()
+
+# TODO ADD_CHECKS Yet another poorly written test that does not check much.
+
+print("PASSED")

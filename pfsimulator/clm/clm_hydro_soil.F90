@@ -116,18 +116,21 @@ subroutine clm_hydro_soil (clm)
 
   !write(20,*) s(:nlevsoi)
 
-  ! Determine water table 
-
-  wmean = 0.                                                  
-  fz    = 1.0                                                
-  do i  = 1, nlevsoi                                        
-     wmean = wmean + s(i)*clm%dz(i)                          
-  enddo
-  zwt = fz * (clm%zi(nlevsoi) - wmean)                   
+  ! Determine water table
+  ! fcov/zwt removed — surface runoff and fractional wetland area
+  ! are handled by ParFlow, not CLM's TOPMODEL parameterization.
+  ! The wtfact parameter (read from drv_clmin.dat) fed only this
+  ! calculation and is now a deprecated/dead parameter.
+  !
+  ! wmean = 0.
+  ! fz    = 1.0
+  ! do i  = 1, nlevsoi
+  !    wmean = wmean + s(i)*clm%dz(i)
+  ! enddo
+  ! zwt = fz * (clm%zi(nlevsoi) - wmean)
 
   ! Saturation fraction
-
-  fcov = clm%wtfact*min(dble(1.),exp(-zwt))
+  ! fcov = clm%wtfact*min(dble(1.),exp(-zwt))
 
   ! Currently no overland flow parameterization in code is considered
   ! qflx_surf = 0.   Zong-Liang Yang & G.-Y. Niu
@@ -184,24 +187,26 @@ subroutine clm_hydro_soil (clm)
   ! call clm_soilwater (vol_liq, clm%eff_porosity, clm%qflx_infl, sdamp, &
   !                     dwat   , hk              , dhkdw        , clm)
 
-  ! Set zero to hydraulic conductivity if effective porosity 5% in any of 
-  ! two neighbor layers or liquid content (theta) less than 0.001
-
-  do i = 1, nlevsoi
-     if (      (clm%eff_porosity(i) < clm%wimp) &
-          .OR. (clm%eff_porosity(min(nlevsoi,i+1)) < clm%wimp) &
-          .OR. (clm%pf_vol_liq(i) <= 1.e-3))then
-        hk(i) = 0.
-        dhkdw(i) = 0.
-     else
-        s1 = 0.5*(vol_liq(i)+vol_liq(min(nlevsoi,i+1))) / &
-             (0.5*(clm%watsat(i)+clm%watsat(min(nlevsoi,i+1))))
-        s2 = clm%hksat(i)*s1**(2.*clm%bsw(i)+2.)
-        hk(i) = s1*s2  
-        dhkdw(i) = (2.*clm%bsw(i)+3.)*s2*0.5/clm%watsat(i)
-        if(i == nlevsoi) dhkdw(i) = dhkdw(i) * 2.
-     endif
-  enddo
+  ! LEGACY: hk/dhkdw soil hydraulic conductivity — all downstream uses
+  ! commented out since ParFlow handles subsurface flow via pf_couple.
+  ! wimp check here was for soil layers only; wimp remains active for
+  ! snow layer percolation in clm_hydro_snow.F90.
+  !
+  ! do i = 1, nlevsoi
+  !    if (      (clm%eff_porosity(i) < clm%wimp) &
+  !         .OR. (clm%eff_porosity(min(nlevsoi,i+1)) < clm%wimp) &
+  !         .OR. (clm%pf_vol_liq(i) <= 1.e-3))then
+  !       hk(i) = 0.
+  !       dhkdw(i) = 0.
+  !    else
+  !       s1 = 0.5*(vol_liq(i)+vol_liq(min(nlevsoi,i+1))) / &
+  !            (0.5*(clm%watsat(i)+clm%watsat(min(nlevsoi,i+1))))
+  !       s2 = clm%hksat(i)*s1**(2.*clm%bsw(i)+2.)
+  !       hk(i) = s1*s2
+  !       dhkdw(i) = (2.*clm%bsw(i)+3.)*s2*0.5/clm%watsat(i)
+  !       if(i == nlevsoi) dhkdw(i) = dhkdw(i) * 2.
+  !    endif
+  ! enddo
 
 
   ! Renew the mass of liquid water
@@ -288,13 +293,17 @@ subroutine clm_hydro_soil (clm)
   ! clm%qflx_drain = clm%qflx_drain - xs/clm%dtime
 
   ! Determine water in excess of saturation
-
-  xs = max(dble(0.), clm%h2osoi_liq(1)-(clm%pondmx+clm%eff_porosity(1)*dzmm(1)))
-  !@ I implement a warning here because "pondmx" is a empirical factor we don't really know/use 
+  ! xs/pondmx removed — ponding and excess saturation are handled by
+  ! ParFlow's overland flow solver. The pondmx parameter is an empirical
+  ! factor that was never actively used (all downstream code was already
+  ! commented out by the original developer).
+  !
+  ! xs = max(dble(0.), clm%h2osoi_liq(1)-(clm%pondmx+clm%eff_porosity(1)*dzmm(1)))
+  !@ I implement a warning here because "pondmx" is a empirical factor we don't really know/use
   !@  if (xs > 0.) then
   !@   write(20,*)"TROUBLE: Ponding in individual cell"
   !@   clm%h2osoi_liq(1) = clm%pondmx+clm%eff_porosity(1)*dzmm(1)
-  !@  endif   
+  !@  endif
 
   !do i = 2,nlevsoi 
   !  xs = xs + max(clm%h2osoi_liq(i)-clm%eff_porosity(i)*dzmm(i), 0.)     ! [mm]
