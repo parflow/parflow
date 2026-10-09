@@ -551,10 +551,10 @@ SetupRichards(PFModule * this_module)
   PFModuleInvokeType(SetProblemDataInvoke, set_problem_data, (problem_data));
   ComputeTopAndBottom(problem, problem_data);
 
-  if (public_xtra->print_top || public_xtra->write_silo_top)
-  {
-    ComputePatchTop(problem, problem_data);
-  }
+  /* Needed by nl_function_eval.c / overlandflow_eval_Kin.c /
+   * richards_jacobian_eval.c for seepage-patch and mixed-surface-BC
+   * classification and when printing/writing top diagnostics. */
+  ComputePatchTop(problem, problem_data);
 
   /* @RMM set subsurface slopes to topographic slopes if we have terrain following grid
    * turned on.  We might later make this an geometry or input file option but for now
