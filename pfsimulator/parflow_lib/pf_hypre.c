@@ -1,6 +1,6 @@
 /*BHEADER**********************************************************************
 *
-*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  Copyright (c) 1995-2026, Lawrence Livermore National Security,
 *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
 *  by the Parflow Team (see the CONTRIBUTORS file)
 *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
@@ -28,23 +28,24 @@
 
 #include "parflow.h"
 
-/*--------------------------------------------------------------------------
- * Common functions for HYPRE
- *--------------------------------------------------------------------------*/
-
 #ifdef HAVE_HYPRE
 #include "hypre_dependences.h"
+
+/*
+ * Versions of Hypre > 2.10.x require a dimension argument for BoxCreate.
+ */
+#if PARFLOW_HYPRE_VERSION_MAJOR > 2 || \
+  (PARFLOW_HYPRE_VERSION_MAJOR >= 2 && PARFLOW_HYPRE_VERSION_MINOR >= 10)
+#define PARFLOW_HYPRE_DIM 3
+#else
+#define PARFLOW_HYPRE_DIM
+#endif
 
 void CopyParFlowVectorToHypreVector(Vector *            rhs,
                                     HYPRE_StructVector* hypre_b)
 {
   Grid* grid = VectorGrid(rhs);
   int sg;
-  int ix, iy, iz;
-  int nx, ny, nz;
-  int nx_v, ny_v, nz_v;
-  int i, j, k;
-  int index[3];
 
   ForSubgridI(sg, GridSubgrids(grid))
   {
@@ -53,34 +54,51 @@ void CopyParFlowVectorToHypreVector(Vector *            rhs,
 
     double* rhs_ptr = SubvectorData(rhs_sub);
 
-    ix = SubgridIX(subgrid);
-    iy = SubgridIY(subgrid);
-    iz = SubgridIZ(subgrid);
+    int ix = SubgridIX(subgrid);
+    int iy = SubgridIY(subgrid);
+    int iz = SubgridIZ(subgrid);
 
-    nx = SubgridNX(subgrid);
-    ny = SubgridNY(subgrid);
-    nz = SubgridNZ(subgrid);
+    int nx = SubgridNX(subgrid);
+    int ny = SubgridNY(subgrid);
+    int nz = SubgridNZ(subgrid);
 
-    nx_v = SubvectorNX(rhs_sub);
-    ny_v = SubvectorNY(rhs_sub);
-    nz_v = SubvectorNZ(rhs_sub);
+    int nx_v = SubvectorNX(rhs_sub);
+    int ny_v = SubvectorNY(rhs_sub);
+    int nz_v = SubvectorNZ(rhs_sub);
 
-    int iv = SubvectorEltIndex(rhs_sub, ix, iy, iz);
+    int ilo[3], ihi[3];
+    int vlo[3], vhi[3];
 
+    hypre_Box *set_box, *value_box;
 
-    BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-              iv, nx_v, ny_v, nz_v, 1, 1, 1,
-    {
-      index[0] = i;
-      index[1] = j;
-      index[2] = k;
+    /* Active subgrid extent. */
+    ilo[0] = ix;
+    ilo[1] = iy;
+    ilo[2] = iz;
+    ihi[0] = ix + nx - 1;
+    ihi[1] = iy + ny - 1;
+    ihi[2] = iz + nz - 1;
 
-#if HYPRE_RELEASE_NUMBER >= 30000
-      HYPRE_StructVectorSetValues(*hypre_b, index, &rhs_ptr[iv]);
-#else
-      HYPRE_StructVectorSetValues(*hypre_b, index, rhs_ptr[iv]);
-#endif
-    });
+    /* Full subvector extent, including ghosts. */
+    vlo[0] = SubvectorIX(rhs_sub);
+    vlo[1] = SubvectorIY(rhs_sub);
+    vlo[2] = SubvectorIZ(rhs_sub);
+    vhi[0] = vlo[0] + nx_v - 1;
+    vhi[1] = vlo[1] + ny_v - 1;
+    vhi[2] = vlo[2] + nz_v - 1;
+
+    set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
+    value_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
+
+    hypre_BoxSetExtents(set_box, ilo, ihi);
+    hypre_BoxSetExtents(value_box, vlo, vhi);
+
+    /* action = 0 : set values (one bulk call for the whole subgrid) */
+    hypre_StructVectorSetBoxValues(*hypre_b, set_box, value_box, rhs_ptr,
+                                   0, -1, 0);
+
+    hypre_BoxDestroy(set_box);
+    hypre_BoxDestroy(value_box);
   }
   HYPRE_StructVectorAssemble(*hypre_b);
 }
@@ -91,11 +109,6 @@ void CopyHypreVectorToParflowVector(HYPRE_StructVector* hypre_x,
 {
   Grid* grid = VectorGrid(soln);
   int sg;
-  int ix, iy, iz;
-  int nx, ny, nz;
-  int nx_v, ny_v, nz_v;
-  int i, j, k;
-  int index[3];
 
   ForSubgridI(sg, GridSubgrids(grid))
   {
@@ -104,31 +117,49 @@ void CopyHypreVectorToParflowVector(HYPRE_StructVector* hypre_x,
 
     double* soln_ptr = SubvectorData(soln_sub);
 
-    ix = SubgridIX(subgrid);
-    iy = SubgridIY(subgrid);
-    iz = SubgridIZ(subgrid);
+    int ix = SubgridIX(subgrid);
+    int iy = SubgridIY(subgrid);
+    int iz = SubgridIZ(subgrid);
 
-    nx = SubgridNX(subgrid);
-    ny = SubgridNY(subgrid);
-    nz = SubgridNZ(subgrid);
+    int nx = SubgridNX(subgrid);
+    int ny = SubgridNY(subgrid);
+    int nz = SubgridNZ(subgrid);
 
-    nx_v = SubvectorNX(soln_sub);
-    ny_v = SubvectorNY(soln_sub);
-    nz_v = SubvectorNZ(soln_sub);
+    int nx_v = SubvectorNX(soln_sub);
+    int ny_v = SubvectorNY(soln_sub);
+    int nz_v = SubvectorNZ(soln_sub);
 
-    int iv = SubvectorEltIndex(soln_sub, ix, iy, iz);
+    int ilo[3], ihi[3];
+    int vlo[3], vhi[3];
 
-    BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-              iv, nx_v, ny_v, nz_v, 1, 1, 1,
-    {
-      index[0] = i;
-      index[1] = j;
-      index[2] = k;
+    hypre_Box *set_box, *value_box;
 
-      double value;
-      HYPRE_StructVectorGetValues(*hypre_x, index, &value);
-      soln_ptr[iv] = value;
-    });
+    ilo[0] = ix;
+    ilo[1] = iy;
+    ilo[2] = iz;
+    ihi[0] = ix + nx - 1;
+    ihi[1] = iy + ny - 1;
+    ihi[2] = iz + nz - 1;
+
+    vlo[0] = SubvectorIX(soln_sub);
+    vlo[1] = SubvectorIY(soln_sub);
+    vlo[2] = SubvectorIZ(soln_sub);
+    vhi[0] = vlo[0] + nx_v - 1;
+    vhi[1] = vlo[1] + ny_v - 1;
+    vhi[2] = vlo[2] + nz_v - 1;
+
+    set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
+    value_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
+
+    hypre_BoxSetExtents(set_box, ilo, ihi);
+    hypre_BoxSetExtents(value_box, vlo, vhi);
+
+    /* action = -1 : get values (Bulk transfer for the subgrid) */
+    hypre_StructVectorSetBoxValues(*hypre_x, set_box, value_box, soln_ptr,
+                                   -1, -1, 0);
+
+    hypre_BoxDestroy(set_box);
+    hypre_BoxDestroy(value_box);
   }
 }
 
@@ -188,11 +219,10 @@ void HypreInitialize(Matrix*              pf_Bmat,
   int full_ghosts[6] = { 1, 1, 1, 1, 1, 1 };
   int no_ghosts[6] = { 0, 0, 0, 0, 0, 0 };
 
-  /* For remainder of routine, assume matrix is structured the same for
-   * entire nonlinear solve process */
-  /* Set stencil parameters */
+  /* Matrix structure is fixed for the nonlinear solve. */
   int stencil_size = MatrixDataStencilSize(pf_Bmat);
 
+  /* Set stencil parameters */
   if (!(*hypre_stencil))
   {
     HYPRE_StructStencilCreate(3, stencil_size, hypre_stencil);
@@ -239,6 +269,11 @@ void HypreInitialize(Matrix*              pf_Bmat,
   HYPRE_StructVectorAssemble(*hypre_x);
 }
 
+/*
+ * NOTE ON NAME: this function is still called HypreAssembleMatrixAsElements
+ * for API compatibility with pf_pfmg.c (no caller changes needed). However,
+ * Matrix values are inserted by box and stencil entry.
+ */
 void HypreAssembleMatrixAsElements(
                                    Matrix *            pf_Bmat,
                                    Matrix *            pf_Cmat,
@@ -247,278 +282,203 @@ void HypreAssembleMatrixAsElements(
                                    )
 {
   Grid *mat_grid = MatrixGrid(pf_Bmat);
-  double *cp, *wp = NULL, *ep, *sop = NULL, *np, *lp = NULL, *up = NULL;
-  double *cp_c, *wp_c = NULL, *ep_c = NULL, *sop_c = NULL, *np_c = NULL, *top_dat;
   int sg;
-  int ix, iy, iz;
-  int nx, ny, nz;
-  int nx_m, ny_m, nz_m, sy_v;
-  int i, j, k, itop, k1, ktop;
-  int im, io;
-
-  int stencil_indices[7] = { 0, 1, 2, 3, 4, 5, 6 };
-  int stencil_indices_symm[4] = { 0, 1, 2, 3 };
-  int index[3];
-
-  double coeffs[7];
-  double coeffs_symm[4];
 
   int stencil_size = MatrixDataStencilSize(pf_Bmat);
   int symmetric = MatrixSymmetric(pf_Bmat);
 
+  int stencil_indices[7] = { 0, 1, 2, 3, 4, 5, 6 };
+  int stencil_indices_symm[4] = { 0, 1, 2, 3 };
+
   Vector* top = ProblemDataIndexOfDomainTop(problem_data);
 
-  if (pf_Cmat == NULL) /* No overland flow */
+  ForSubgridI(sg, GridSubgrids(mat_grid))
   {
-    ForSubgridI(sg, GridSubgrids(mat_grid))
+    Subgrid* subgrid = GridSubgrid(mat_grid, sg);
+    Submatrix* pfB_sub = MatrixSubmatrix(pf_Bmat, sg);
+
+    int ix = SubgridIX(subgrid);
+    int iy = SubgridIY(subgrid);
+    int iz = SubgridIZ(subgrid);
+
+    int nx = SubgridNX(subgrid);
+    int ny = SubgridNY(subgrid);
+    int nz = SubgridNZ(subgrid);
+
+    int nx_m = SubmatrixNX(pfB_sub);
+    int ny_m = SubmatrixNY(pfB_sub);
+    int nz_m = SubmatrixNZ(pfB_sub);
+
+    int ilo[3], ihi[3], vlo[3], vhi[3];
+    hypre_Box *set_box, *value_box;
+
+    ilo[0] = ix;
+    ilo[1] = iy;
+    ilo[2] = iz;
+    ihi[0] = ix + nx - 1;
+    ihi[1] = iy + ny - 1;
+    ihi[2] = iz + nz - 1;
+
+    vlo[0] = SubmatrixIX(pfB_sub);
+    vlo[1] = SubmatrixIY(pfB_sub);
+    vlo[2] = SubmatrixIZ(pfB_sub);
+    vhi[0] = vlo[0] + nx_m - 1;
+    vhi[1] = vlo[1] + ny_m - 1;
+    vhi[2] = vlo[2] + nz_m - 1;
+
+    set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
+    value_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
+    hypre_BoxSetExtents(set_box, ilo, ihi);
+    hypre_BoxSetExtents(value_box, vlo, vhi);
+
+    /* Bulk copy by stencil entry. */
+    if (symmetric)
     {
-      Subgrid* subgrid = GridSubgrid(mat_grid, sg);
-
-      Submatrix* pfB_sub = MatrixSubmatrix(pf_Bmat, sg);
-
-
-      if (symmetric)
+      for (int stencil = 0; stencil < stencil_size; ++stencil)
       {
-        /* Pull off upper diagonal coeffs here for symmetric part */
-        cp = SubmatrixStencilData(pfB_sub, 0);
-        ep = SubmatrixStencilData(pfB_sub, 2);
-        np = SubmatrixStencilData(pfB_sub, 4);
-        up = SubmatrixStencilData(pfB_sub, 6);
+        /* symmetric stencil values are stored at 0, 2, 4, 6 */
+        double *values = SubmatrixStencilData(pfB_sub, stencil * 2);
+        hypre_StructMatrixSetBoxValues(*hypre_mat, set_box, value_box, 1,
+                                       &stencil_indices_symm[stencil], values,
+                                       0, -1, 0);
       }
-      else
-      {
-        cp = SubmatrixStencilData(pfB_sub, 0);
-        wp = SubmatrixStencilData(pfB_sub, 1);
-        ep = SubmatrixStencilData(pfB_sub, 2);
-        sop = SubmatrixStencilData(pfB_sub, 3);
-        np = SubmatrixStencilData(pfB_sub, 4);
-        lp = SubmatrixStencilData(pfB_sub, 5);
-        up = SubmatrixStencilData(pfB_sub, 6);
-      }
-
-      ix = SubgridIX(subgrid);
-      iy = SubgridIY(subgrid);
-      iz = SubgridIZ(subgrid);
-
-      nx = SubgridNX(subgrid);
-      ny = SubgridNY(subgrid);
-      nz = SubgridNZ(subgrid);
-
-      nx_m = SubmatrixNX(pfB_sub);
-      ny_m = SubmatrixNY(pfB_sub);
-      nz_m = SubmatrixNZ(pfB_sub);
-
-      im = SubmatrixEltIndex(pfB_sub, ix, iy, iz);
-
-      if (symmetric)
-      {
-        BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-                  im, nx_m, ny_m, nz_m, 1, 1, 1,
-        {
-          coeffs_symm[0] = cp[im];
-          coeffs_symm[1] = ep[im];
-          coeffs_symm[2] = np[im];
-          coeffs_symm[3] = up[im];
-          index[0] = i;
-          index[1] = j;
-          index[2] = k;
-          HYPRE_StructMatrixSetValues(*hypre_mat,
-                                      index,
-                                      stencil_size,
-                                      stencil_indices_symm,
-                                      coeffs_symm);
-        });
-      }
-      else
-      {
-        BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-                  im, nx_m, ny_m, nz_m, 1, 1, 1,
-        {
-          coeffs[0] = cp[im];
-          coeffs[1] = wp[im];
-          coeffs[2] = ep[im];
-          coeffs[3] = sop[im];
-          coeffs[4] = np[im];
-          coeffs[5] = lp[im];
-          coeffs[6] = up[im];
-          index[0] = i;
-          index[1] = j;
-          index[2] = k;
-          HYPRE_StructMatrixSetValues(*hypre_mat,
-                                      index,
-                                      stencil_size,
-                                      stencil_indices, coeffs);
-        });
-      }
-    }   /* End subgrid loop */
-  }
-  else  /* Overland flow is activated. Update preconditioning matrix */
-  {
-    ForSubgridI(sg, GridSubgrids(mat_grid))
+    }
+    else
     {
-      Subgrid* subgrid = GridSubgrid(mat_grid, sg);
+      for (int stencil = 0; stencil < stencil_size; ++stencil)
+      {
+        double *values = SubmatrixStencilData(pfB_sub, stencil);
+        hypre_StructMatrixSetBoxValues(*hypre_mat, set_box, value_box, 1,
+                                       &stencil_indices[stencil], values,
+                                       0, -1, 0);
+      }
+    }
 
-      Submatrix* pfB_sub = MatrixSubmatrix(pf_Bmat, sg);
+    hypre_BoxDestroy(set_box);
+    hypre_BoxDestroy(value_box);
+
+    /* Update the top surface from the C matrix. */
+    if (pf_Cmat != NULL)
+    {
       Submatrix* pfC_sub = MatrixSubmatrix(pf_Cmat, sg);
-
       Subvector* top_sub = VectorSubvector(top, sg);
+      double* top_dat = SubvectorData(top_sub);
+      int sy_v = SubvectorNX(top_sub);
+
+      int i, j, k;
+      int im = SubmatrixEltIndex(pfB_sub, ix, iy, iz);
 
       if (symmetric)
       {
-        /* Pull off upper diagonal coeffs here for symmetric part */
-        cp = SubmatrixStencilData(pfB_sub, 0);
-        ep = SubmatrixStencilData(pfB_sub, 2);
-        np = SubmatrixStencilData(pfB_sub, 4);
-        up = SubmatrixStencilData(pfB_sub, 6);
+        double *ep = SubmatrixStencilData(pfB_sub, 2);
+        double *np = SubmatrixStencilData(pfB_sub, 4);
+        double *up = SubmatrixStencilData(pfB_sub, 6);
+        double *cp_c = SubmatrixStencilData(pfC_sub, 0);
+        double coeffs_symm[4];
+        int index[3];
 
-        //          cp_c    = SubmatrixStencilData(pfC_sub, 0);
-        //          ep_c    = SubmatrixStencilData(pfC_sub, 2);
-        //          np_c    = SubmatrixStencilData(pfC_sub, 4);
-        cp_c = SubmatrixStencilData(pfC_sub, 0);
-        wp_c = SubmatrixStencilData(pfC_sub, 1);
-        ep_c = SubmatrixStencilData(pfC_sub, 2);
-        sop_c = SubmatrixStencilData(pfC_sub, 3);
-        np_c = SubmatrixStencilData(pfC_sub, 4);
-        top_dat = SubvectorData(top_sub);
-      }
-      else
-      {
-        cp = SubmatrixStencilData(pfB_sub, 0);
-        wp = SubmatrixStencilData(pfB_sub, 1);
-        ep = SubmatrixStencilData(pfB_sub, 2);
-        sop = SubmatrixStencilData(pfB_sub, 3);
-        np = SubmatrixStencilData(pfB_sub, 4);
-        lp = SubmatrixStencilData(pfB_sub, 5);
-        up = SubmatrixStencilData(pfB_sub, 6);
-
-        cp_c = SubmatrixStencilData(pfC_sub, 0);
-        wp_c = SubmatrixStencilData(pfC_sub, 1);
-        ep_c = SubmatrixStencilData(pfC_sub, 2);
-        sop_c = SubmatrixStencilData(pfC_sub, 3);
-        np_c = SubmatrixStencilData(pfC_sub, 4);
-        top_dat = SubvectorData(top_sub);
-      }
-
-      ix = SubgridIX(subgrid);
-      iy = SubgridIY(subgrid);
-      iz = SubgridIZ(subgrid);
-
-      nx = SubgridNX(subgrid);
-      ny = SubgridNY(subgrid);
-      nz = SubgridNZ(subgrid);
-
-      nx_m = SubmatrixNX(pfB_sub);
-      ny_m = SubmatrixNY(pfB_sub);
-      nz_m = SubmatrixNZ(pfB_sub);
-
-      sy_v = SubvectorNX(top_sub);
-
-      im = SubmatrixEltIndex(pfB_sub, ix, iy, iz);
-
-      if (symmetric)
-      {
-        BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+        BoxLoopI1(i, j, k, ix, iy, 0, nx, ny, 1,
                   im, nx_m, ny_m, nz_m, 1, 1, 1,
         {
-          itop = SubvectorEltIndex(top_sub, i, j, 0);
-          ktop = (int)top_dat[itop];
-          io = SubmatrixEltIndex(pfC_sub, i, j, iz);
-          /* Since we are using a boxloop, we need to check for top index
-           * to update with the surface contributions */
-          if (ktop == k)
-          {
-            /* update diagonal coeff */
-            coeffs_symm[0] = cp_c[io];               //cp[im] is zero
-            /* update east coeff */
-            coeffs_symm[1] = ep[im];
-            /* update north coeff */
-            coeffs_symm[2] = np[im];
-            /* update upper coeff */
-            coeffs_symm[3] = up[im];               // JB keeps upper term on surface. This should be zero
-          }
-          else
-          {
-            coeffs_symm[0] = cp[im];
-            coeffs_symm[1] = ep[im];
-            coeffs_symm[2] = np[im];
-            coeffs_symm[3] = up[im];
-          }
+          int itop = SubvectorEltIndex(top_sub, i, j, 0);
+          int ktop = (int)top_dat[itop];
 
-          index[0] = i;
-          index[1] = j;
-          index[2] = k;
-          HYPRE_StructMatrixSetValues(*hypre_mat,
-                                      index,
-                                      stencil_size,
-                                      stencil_indices_symm,
-                                      coeffs_symm);
+          if (ktop >= 0)
+          {
+            int io = SubmatrixEltIndex(pfC_sub, i, j, 0);
+            int ioB = SubmatrixEltIndex(pfB_sub, i, j, ktop);
+
+            /* update diagonal coeff */
+            coeffs_symm[0] = cp_c[io];                 //cp[ioB] is zero
+            /* update east coeff */
+            coeffs_symm[1] = ep[ioB];
+            /* update north coeff */
+            coeffs_symm[2] = np[ioB];
+            /* update upper coeff */
+            coeffs_symm[3] = up[ioB];                 // JB keeps upper term on surface. This should be zero
+
+            index[0] = i;
+            index[1] = j;
+            index[2] = ktop;
+            HYPRE_StructMatrixSetValues(*hypre_mat,
+                                        index,
+                                        stencil_size,
+                                        stencil_indices_symm,
+                                        coeffs_symm);
+          }
         });
       }
       else
       {
-        BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+        double *wp = SubmatrixStencilData(pfB_sub, 1);
+        double *ep = SubmatrixStencilData(pfB_sub, 2);
+        double *sop = SubmatrixStencilData(pfB_sub, 3);
+        double *np = SubmatrixStencilData(pfB_sub, 4);
+        double *lp = SubmatrixStencilData(pfB_sub, 5);
+        double *up = SubmatrixStencilData(pfB_sub, 6);
+        double *cp_c = SubmatrixStencilData(pfC_sub, 0);
+        double *wp_c = SubmatrixStencilData(pfC_sub, 1);
+        double *ep_c = SubmatrixStencilData(pfC_sub, 2);
+        double *sop_c = SubmatrixStencilData(pfC_sub, 3);
+        double *np_c = SubmatrixStencilData(pfC_sub, 4);
+        double coeffs[7];
+        int index[3];
+
+        BoxLoopI1(i, j, k, ix, iy, 0, nx, ny, 1,
                   im, nx_m, ny_m, nz_m, 1, 1, 1,
         {
-          itop = SubvectorEltIndex(top_sub, i, j, 0);
-          ktop = (int)top_dat[itop];
-          io = SubmatrixEltIndex(pfC_sub, i, j, iz);
-          /* Since we are using a boxloop, we need to check for top index
-           * to update with the surface contributions */
-          if (ktop == k)
+          int itop = SubvectorEltIndex(top_sub, i, j, 0);
+          int ktop = (int)top_dat[itop];
+
+          if (ktop >= 0)
           {
+            int io = SubmatrixEltIndex(pfC_sub, i, j, 0);
+            int ioB = SubmatrixEltIndex(pfB_sub, i, j, ktop);
+            int k1;
+
             /* update diagonal coeff */
-            coeffs[0] = cp_c[io];               //cp[im] is zero
+            coeffs[0] = cp_c[io];                 //cp[ioB] is zero
             /* update west coeff */
             k1 = (int)top_dat[itop - 1];
             if (k1 == ktop)
-              coeffs[1] = wp_c[io];                  //wp[im] is zero
+              coeffs[1] = wp_c[io];                    //wp[ioB] is zero
             else
-              coeffs[1] = wp[im];
+              coeffs[1] = wp[ioB];
             /* update east coeff */
             k1 = (int)top_dat[itop + 1];
             if (k1 == ktop)
-              coeffs[2] = ep_c[io];                  //ep[im] is zero
+              coeffs[2] = ep_c[io];                    //ep[ioB] is zero
             else
-              coeffs[2] = ep[im];
+              coeffs[2] = ep[ioB];
             /* update south coeff */
             k1 = (int)top_dat[itop - sy_v];
             if (k1 == ktop)
-              coeffs[3] = sop_c[io];                  //sop[im] is zero
+              coeffs[3] = sop_c[io];                    //sop[ioB] is zero
             else
-              coeffs[3] = sop[im];
+              coeffs[3] = sop[ioB];
             /* update north coeff */
             k1 = (int)top_dat[itop + sy_v];
             if (k1 == ktop)
-              coeffs[4] = np_c[io];                  //np[im] is zero
+              coeffs[4] = np_c[io];                    //np[ioB] is zero
             else
-              coeffs[4] = np[im];
+              coeffs[4] = np[ioB];
+            /* update lower coeff */
+            coeffs[5] = lp[ioB];                 // JB keeps lower term on surface.
             /* update upper coeff */
-            coeffs[5] = lp[im];               // JB keeps lower term on surface.
-            /* update upper coeff */
-            coeffs[6] = up[im];               // JB keeps upper term on surface. This should be zero
-          }
-          else
-          {
-            coeffs[0] = cp[im];
-            coeffs[1] = wp[im];
-            coeffs[2] = ep[im];
-            coeffs[3] = sop[im];
-            coeffs[4] = np[im];
-            coeffs[5] = lp[im];
-            coeffs[6] = up[im];
-          }
+            coeffs[6] = up[ioB];                 // JB keeps upper term on surface. This should be zero
 
-          index[0] = i;
-          index[1] = j;
-          index[2] = k;
-          HYPRE_StructMatrixSetValues(*hypre_mat,
-                                      index,
-                                      stencil_size,
-                                      stencil_indices, coeffs);
+            index[0] = i;
+            index[1] = j;
+            index[2] = ktop;
+            HYPRE_StructMatrixSetValues(*hypre_mat,
+                                        index,
+                                        stencil_size,
+                                        stencil_indices, coeffs);
+          }
         });
       }
-    }   /* End subgrid loop */
-  }  /* end if pf_Cmat==NULL */
+    }
+  }   /* End subgrid loop */
 
   HYPRE_StructMatrixAssemble(*hypre_mat);
 }
