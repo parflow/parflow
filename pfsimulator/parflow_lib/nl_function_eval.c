@@ -33,6 +33,10 @@
 //#include "math.h"
 #include "float.h"
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+#include "pystencils_nonlinear_eval.h"
+#endif
+
 /*---------------------------------------------------------------------
  * Define module structures
  *---------------------------------------------------------------------*/
@@ -66,6 +70,11 @@ typedef struct {
   Vector       *KS;
   Vector       *qx;
   Vector       *qy;
+
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+  // Phase source values, kept apart from saturation so that both can be read by the fused flux kernel
+  Vector       *source;
+#endif
 } InstanceXtra;
 
 /*---------------------------------------------------------------------
@@ -203,7 +212,11 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
   /* Reuse saturation vector to save memory */
   Vector      *rel_perm = saturation;
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+  Vector      *source = (instance_xtra->source);
+#else
   Vector      *source = saturation;
+#endif
 
   /* Overland flow variables */  //sk
   Vector      *KW = (instance_xtra->KW);
@@ -324,12 +337,20 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   PFModuleInvokeType(SaturationInvoke, saturation_module, (saturation, pressure, density,
                                                            gravity, problem_data, CALCFCN));
 
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+  /* Phase source values only depend on problem data and time. Calculate
+   * them upfront into a separate vector so that the source terms can be
+   * added in the same kernel as the accumulation terms */
+  PFModuleInvokeType(PhaseSourceInvoke, phase_source, (source, 0, problem, problem_data,
+                                                       time));
+#endif
 
   /* Calculate accumulation terms for the function values */
-
   ForSubgridI(is, GridSubgrids(grid))
   {
     subgrid = GridSubgrid(grid, is);
+
+    ss_sub = VectorSubvector(sstorage, is);
 
     d_sub = VectorSubvector(density, is);
     od_sub = VectorSubvector(old_density, is);
@@ -382,6 +403,18 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
     vol = dx * dy * dz;
 
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+    Subvector *src_sub = VectorSubvector(source, is);
+
+    et_sub = VectorSubvector(evap_trans, is);
+
+    PyCodegen_Flux_FusedAccumulationAndSourceTerms_wrapper(gr_domain, r, ix, iy, iz, nx, ny, nz, d_sub, et_sub, f_sub, od_sub, op_sub, os_sub, po_sub, p_sub, s_sub, src_sub, ss_sub, z_mult_sub, dt, vol, FluxFusedAccumulationAndSourceTermsTimingIndex);
+#else
+
+#ifdef PARFLOW_HAVE_PYSTENCILS
+
+    PyCodegen_Flux_Base_wrapper(gr_domain, r, ix, iy, iz, nx, ny, nz, d_sub, f_sub, od_sub, os_sub, po_sub, s_sub, z_mult_sub, vol, FluxBaseTimingIndex);
+#else
     dp = SubvectorData(d_sub);
     odp = SubvectorData(od_sub);
     sp = SubvectorData(s_sub);
@@ -391,7 +424,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     pop = SubvectorData(po_sub);
     fp = SubvectorData(f_sub);
 
-    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz, FluxBaseTimingIndex,
     {
       int ip = SubvectorEltIndex(f_sub, i, j, k);
       int ipo = SubvectorEltIndex(po_sub, i, j, k);
@@ -403,52 +436,12 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
       fp[ip] = (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol * del_x_slope * del_y_slope * z_mult_dat[ip];
     });
-  }
+#endif /* PARFLOW_HAVE_PYSTENCILS */
 
-  /*@ Add in contributions from compressible storage */
+#ifdef PARFLOW_HAVE_PYSTENCILS
 
-  ForSubgridI(is, GridSubgrids(grid))
-  {
-    subgrid = GridSubgrid(grid, is);
-
-    ss_sub = VectorSubvector(sstorage, is);
-
-    d_sub = VectorSubvector(density, is);
-    od_sub = VectorSubvector(old_density, is);
-    p_sub = VectorSubvector(pressure, is);
-    op_sub = VectorSubvector(old_pressure, is);
-    s_sub = VectorSubvector(saturation, is);
-    os_sub = VectorSubvector(old_saturation, is);
-    f_sub = VectorSubvector(fval, is);
-
-    /* @RMM added to provide access to zmult */
-    z_mult_sub = VectorSubvector(z_mult, is);
-    /* @RMM added to provide variable dz */
-    z_mult_dat = SubvectorData(z_mult_sub);
-    /* @RMM added to provide access to x/y slopes */
-    x_ssl_sub = VectorSubvector(x_ssl, is);
-    y_ssl_sub = VectorSubvector(y_ssl, is);
-    /* @RMM  added to provide slopes to terrain fns */
-    x_ssl_dat = SubvectorData(x_ssl_sub);
-    y_ssl_dat = SubvectorData(y_ssl_sub);
-
-    /* RDF: assumes resolutions are the same in all 3 directions */
-    r = SubgridRX(subgrid);
-
-    ix = SubgridIX(subgrid);
-    iy = SubgridIY(subgrid);
-    iz = SubgridIZ(subgrid);
-
-    nx = SubgridNX(subgrid);
-    ny = SubgridNY(subgrid);
-    nz = SubgridNZ(subgrid);
-
-    dx = SubgridDX(subgrid);
-    dy = SubgridDY(subgrid);
-    dz = SubgridDZ(subgrid);
-
-    vol = dx * dy * dz;
-
+    PyCodegen_Flux_AddCompressibleStorage_wrapper(gr_domain, r, ix, iy, iz, nx, ny, nz, d_sub, f_sub, od_sub, op_sub, os_sub, p_sub, s_sub, ss_sub, z_mult_sub, vol, FluxCompressibleStorageTimingIndex);
+#else
     ss = SubvectorData(ss_sub);
 
     dp = SubvectorData(d_sub);
@@ -459,7 +452,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     osp = SubvectorData(os_sub);
     fp = SubvectorData(f_sub);
 
-    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz, FluxCompressibleStorageTimingIndex,
     {
       int ip = SubvectorEltIndex(f_sub, i, j, k);
 
@@ -470,8 +463,12 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
       fp[ip] += ss[ip] * vol * del_x_slope * del_y_slope * z_mult_dat[ip] * (pp[ip] * sp[ip] * dp[ip] - opp[ip] * osp[ip] * odp[ip]);
     });
+#endif /* PARFLOW_HAVE_PYSTENCILS */
+
+#endif /* PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS */
   }
 
+#ifndef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
   /* Add in contributions from source terms - user specified sources and
    * flux wells.  Calculate phase source values overwriting current
    * saturation vector */
@@ -503,6 +500,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
     vol = dx * dy * dz;
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+
+    PyCodegen_Flux_AddSourceTerms_wrapper(gr_domain, r, ix, iy, iz, nx, ny, nz, et_sub, f_sub, s_sub, z_mult_sub, dt, vol, FluxSourceTermsTimingIndex);
+#else
     sp = SubvectorData(s_sub);
     fp = SubvectorData(f_sub);
     et = SubvectorData(et_sub);
@@ -527,7 +528,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     FBy_dat = SubvectorData(FBy_sub);
     FBz_dat = SubvectorData(FBz_sub);
 
-    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz, FluxSourceTermsTimingIndex,
     {
       int ip = SubvectorEltIndex(f_sub, i, j, k);
 
@@ -538,7 +539,9 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
       fp[ip] -= vol * del_x_slope * del_y_slope * z_mult_dat[ip] * dt * (sp[ip] + et[ip]);
     });
+#endif
   }
+#endif /* PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS */
 
   bc_struct = PFModuleInvokeType(BCPressureInvoke, bc_pressure,
                                  (problem_data, grid, gr_domain, time));
@@ -2392,6 +2395,10 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem *problem,
       (instance_xtra->qx) = NULL;
       (instance_xtra->qy) = NULL;
     }
+
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+    (instance_xtra->source) = NewVectorType(grid, 1, 1, vector_cell_centered);
+#endif
   }
   else
   {
@@ -2437,6 +2444,10 @@ void  NlFunctionEvalFreeInstanceXtra()
       FreeVector(instance_xtra->KE);
       FreeVector(instance_xtra->KW);
     }
+
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+    FreeVector(instance_xtra->source);
+#endif
 
     PFModuleFreeInstance(instance_xtra->overlandflow_module_kin);
     PFModuleFreeInstance(instance_xtra->overlandflow_module_diff);      //@RMM

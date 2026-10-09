@@ -33,7 +33,6 @@
 
 #include "parflow.h"
 
-
 void     Scale(
                double  alpha,
                Vector *y)
