@@ -2242,7 +2242,8 @@ Solver:
 
   OverlandKinematic:
     __doc__: >
-      Setting epsilon value for the diffusive kinematic flow formulation.
+      Settings for the kinematic wave overland flow formulation, including
+      the optional water-surface (diffusion) term.
 
     Epsilon:
       help: >
@@ -2251,6 +2252,98 @@ Solver:
       domains:
         DoubleValue:
           min_value: 0.0
+
+    Diffusion:
+      __doc__: >
+        Optional water-surface term for the kinematic wave overland flow. The
+        flux across a cell face is
+        q = -(h^{5/3} / n) * (S_0 / |A|^{1/2} + alpha * dh / |B|^{1/2}),
+        where h is the ponded depth, S_0 the bed slope, and dh the gradient of
+        the ponded depth. The keys choose the slope magnitudes A and B.
+
+      SlopeMagnitude:
+        help: >
+          [Type: string] Selects the slope magnitude used in the overland flux.
+          Kinematic (default) gives the kinematic wave, with no water-surface
+          term. BedSlope uses |S_0| under both terms; on flat terrain this is the
+          Solver.OverlandKinematic.Epsilon floor. FrictionSlope uses
+          |S_f| = |S_0 + alpha*grad(h)|, the slope of the water surface, which is
+          the diffusive wave when it is under both terms. Pythagorean uses
+          sqrt(|S_0|^2 + |alpha*grad(h)|^2), which never falls below the bed
+          slope. With FrictionSlope or Pythagorean, BedTermMagnitude and
+          SurfaceTermMagnitude say where the magnitude is applied and from which
+          time step it is computed.
+        default: Kinematic
+        domains:
+          EnumDomain:
+            enum_list:
+              - Kinematic
+              - BedSlope
+              - FrictionSlope
+              - Pythagorean
+
+      BedTermMagnitude:
+        help: >
+          [Type: string] What divides the bed-slope term of the flux, A, when
+          SlopeMagnitude is FrictionSlope or Pythagorean. BedSlope leaves |S_0|
+          there, as in the kinematic wave; the scheme is then not well balanced,
+          and the steady state in backwater has a sloping water surface.
+          Lagged (default) uses the selected slope magnitude computed from
+          the pressure at the previous time step. Implicit uses it computed from
+          the current pressure, and needs SurfaceTermMagnitude Implicit. Has no
+          effect with SlopeMagnitude Kinematic or BedSlope, or at domain
+          boundaries.
+        default: Lagged
+        domains:
+          EnumDomain:
+            enum_list:
+              - BedSlope
+              - Lagged
+              - Implicit
+
+      SurfaceTermMagnitude:
+        help: >
+          [Type: string] Time level of the slope magnitude that divides the
+          water-surface term of the flux, B, when SlopeMagnitude is FrictionSlope
+          or Pythagorean. Lagged (default) computes it from the pressure at the
+          previous time step, so the diffusion coefficient is fixed within a time
+          step. Implicit computes it from the current pressure. With SlopeMagnitude
+          FrictionSlope and both terms Lagged the flux is the diffusive wave with a
+          lagged friction-slope magnitude, which equals the BedSlope flux times
+          (|S_0| / |S_f,old|)^{1/2}. Has no effect with SlopeMagnitude Kinematic
+          or BedSlope.
+        default: Lagged
+        domains:
+          EnumDomain:
+            enum_list:
+              - Lagged
+              - Implicit
+
+      Jacobian:
+        help: >
+          [Type: string] Selects the Jacobian linearization for the water-surface
+          term. Picard treats the diffusion coefficient as constant in the
+          derivative. FullNewton (default) includes its depth derivative.
+          FullNewtonDdx adds the derivative with respect to the gradient normal to
+          each face (5-point stencil, no diagonal neighbors); it differs from
+          FullNewton only when the slope magnitude is FrictionSlope or Pythagorean
+          and computed from the current pressure.
+        default: FullNewton
+        domains:
+          EnumDomain:
+            enum_list:
+              - Picard
+              - FullNewton
+              - FullNewtonDdx
+
+      Alpha:
+        help: >
+          [Type: double] Multiplier on the water-surface term of the flux.
+          Range [0,1]: 0 removes the term, 1 (default) applies it in full.
+        default: 1.0
+        domains:
+          DoubleValue:
+            min_value: 0.0
 
   # missing from manual
   PolyDegree:

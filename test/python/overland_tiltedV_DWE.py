@@ -2,7 +2,7 @@
 # running different configurations of tilted V
 # -----------------------------------------------------------------------------
 
-import sys
+import sys, argparse
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
 from parflow.tools.compare import pf_test_file
@@ -13,9 +13,15 @@ overland = Run("overland_tiltedV_DWE", __file__)
 
 overland.FileVersion = 4
 
-overland.Process.Topology.P = 1
-overland.Process.Topology.Q = 1
-overland.Process.Topology.R = 1
+parser = argparse.ArgumentParser()
+parser.add_argument("-p", "--p", default=1)
+parser.add_argument("-q", "--q", default=1)
+parser.add_argument("-r", "--r", default=1)
+args = parser.parse_args()
+
+overland.Process.Topology.P = args.p
+overland.Process.Topology.Q = args.q
+overland.Process.Topology.R = args.r
 
 # ---------------------------------------------------------
 # Computational Grid

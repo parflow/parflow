@@ -313,7 +313,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   overlandspinup = GetIntDefault("OverlandFlowSpinUp", 0);
 
   /* Pass pressure values to neighbors.  */
-  handle = InitVectorUpdate(pressure, VectorUpdateAll);
+  /* Include corner ghost cells where the overland formulation reads them */
+  handle = InitVectorUpdate(pressure,
+                            OverlandFlowNeedsCornerGhosts() ?
+                            VectorUpdatePGS1 : VectorUpdateAll);
   FinalizeVectorUpdate(handle);
 
   /* Calculate pressure dependent properties: density and saturation */
@@ -1789,7 +1792,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 /*  @RMM this is modified to be kinematic wave routing, with a new module for diffusive wave
  * routing added */
         PFModuleInvokeType(OverlandFlowEvalKinInvoke, overlandflow_module_kin,
-                           (grid, is, bc_struct, ipatch, problem_data, pressure,
+                           (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                             ke_, kw_, kn_, ks_,
                             NULL, NULL, NULL, NULL,
                             qx_, qy_, CALCFCN));
