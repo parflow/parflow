@@ -241,6 +241,8 @@ void         ReservoirPackage(
 #ifdef PARFLOW_HAVE_MPI
       current_mpi_rank = amps_Rank(amps_CommWorld);
 #else
+      // SGS TODO This looks incorrect.  ranks start at 0 so with no mpi this should be 0?
+      // amps_Rank normally takes care of returning the correct value when MPI is not used.
       current_mpi_rank = 1;
 #endif
 
@@ -307,6 +309,10 @@ void         ReservoirPackage(
           StopOutletFlowAtCellOverlandKinematic(secondary_intake_ix, secondary_intake_iy, problem_data, grid);
         }
       }
+
+      // TODO SGS inserted this to fix memory leak BUT something is not correct here.   reservoir_data_physical
+      // is allocated above and referenced but was never set so two if statements above will never be true
+      tfree(reservoir_data_physical);
 
       reservoir_data_physical = ctalloc(ReservoirDataPhysical, 1);
       ReservoirDataPhysicalName(reservoir_data_physical) = ctalloc(char, strlen((dummy0->name)) + 1);
@@ -403,7 +409,7 @@ PFModule  *ReservoirPackageNewPublicXtra()
 
   char          *switch_name;
   int switch_value;
-  NameArray overland_flow_solver_na;
+
 
   public_xtra = ctalloc(PublicXtra, 1);
 
@@ -418,10 +424,11 @@ PFModule  *ReservoirPackageNewPublicXtra()
   {
     (public_xtra->type) = ctalloc(int, num_reservoirs);
     (public_xtra->data) = ctalloc(void *, num_reservoirs);
-    overland_flow_solver_na = NA_NewNameArray("OverlandFlow OverlandKinematic");
+    NameArray overland_flow_solver_na = NA_NewNameArray("OverlandFlow OverlandKinematic");
     sprintf(key, "Reservoirs.Overland_Flow_Solver");
     switch_name = GetString(key);
     switch_value = NA_NameToIndexExitOnError(overland_flow_solver_na, switch_name, key);
+    NA_FreeNameArray(overland_flow_solver_na);
     switch (switch_value)
     {
       case 0:
@@ -539,6 +546,9 @@ void  ReservoirPackageFreePublicXtra()
         }
       }
       tfree(public_xtra->data);
+      tfree(public_xtra->type);
+
+      tfree(dummy0);
     }
     tfree(public_xtra);
   }

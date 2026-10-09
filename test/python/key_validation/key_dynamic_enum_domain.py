@@ -233,4 +233,13 @@ class TestExtraValueCase(unittest.TestCase):
         self.assertEqual(result, 1)
 
 
-unittest.main()
+status = unittest.main(exit=False)
+
+
+# TODO ADD_CHECKS This test doesn't seem to check anything other than code not stopping.
+
+if status.result.wasSuccessful():
+    print("PASSED")
+else:
+    print("FAILED")
+    sys.exit(1)

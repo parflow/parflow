@@ -288,6 +288,18 @@ interception_schemepf,interception_tanh_alphapf)
            grid(c,r)%wtfact = u
            grid(c,r)%trsmx0 = u
            grid(c,r)%pondmx = u
+           grid(c,r)%capr = u
+           grid(c,r)%cnfac = u
+           grid(c,r)%smpmin = u
+           grid(c,r)%ssi = u
+           grid(c,r)%wimp = u
+           grid(c,r)%csoilc = u
+           grid(c,r)%dewmx = u
+           grid(c,r)%forc_hgt_q = u
+           grid(c,r)%forc_hgt_t = u
+           grid(c,r)%forc_hgt_u = u
+           grid(c,r)%zlnd = u
+           grid(c,r)%zsno = u
            allocate (grid(c,r)%fgrd(drv%nt))
            allocate (grid(c,r)%pveg(drv%nt))
         enddo                                   ! columns
@@ -412,23 +424,24 @@ interception_schemepf,interception_tanh_alphapf)
            clm(t)%topo_mask(1) = 1+top(l)
            clm(t)%topo_mask(3) = 1+bottom(l)
            clm(t)%planar_mask = 1
+
+           clm(t)%topo_mask(2) = clm(t)%topo_mask(1)-nlevsoi
+
+           ! set clm watsat, tksatu from PF porosity
+           do k = 1, nlevsoi ! loop over clm soil layers (1->nlevsoi)
+              ! convert clm space to parflow space, note that PF space has ghost nodes
+              l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
+              ! put ParFlow porosity in a temp variable passed to clm_ini
+              pf_porosity(k)       = porosity(l)
+              ! per-cell van Genuchten residual saturation for the wilting-point residual limit
+              clm(t)%s_res_cell(k) = sres(l)
+              !print*, 'k=',k,'l=',l,'porosity=',porosity(l),'pf_poro=',pf_porosity(k)
+
+              !clm(t)%tksatu(k)       = clm(t)%tkmg(k)*0.57**clm(t)%watsat(k)
+           end do !k
+
+           call drv_clmini (drv, grid, pf_porosity,tile(t), clm(t), istep_pf, clm_forc_veg) !Initialize CLM Variables
         endif
-        clm(t)%topo_mask(2) = clm(t)%topo_mask(1)-nlevsoi
-
-        ! set clm watsat, tksatu from PF porosity
-        do k = 1, nlevsoi ! loop over clm soil layers (1->nlevsoi)
-           ! convert clm space to parflow space, note that PF space has ghost nodes
-           l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
-           ! put ParFlow porosity in a temp variable passed to clm_ini
-           pf_porosity(k)       = porosity(l)
-           ! per-cell van Genuchten residual saturation for the wilting-point residual limit
-           clm(t)%s_res_cell(k) = sres(l)
-           !print*, 'k=',k,'l=',l,'porosity=',porosity(l),'pf_poro=',pf_porosity(k)
-
-           !clm(t)%tksatu(k)       = clm(t)%tkmg(k)*0.57**clm(t)%watsat(k)
-        end do !k
-
-        call drv_clmini (drv, grid, pf_porosity,tile(t), clm(t), istep_pf, clm_forc_veg) !Initialize CLM Variables
      enddo ! t
 
      !=== IMF:

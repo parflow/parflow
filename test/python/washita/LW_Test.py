@@ -581,3 +581,6 @@ LW_Test.Geom.indi_input.FileName = "IndicatorFile_Gleeson.50z.pfb"
 # Check NaNs for original inputs
 LW_Test.check_nans(working_directory=dir_name)
 LW_Test.run(working_directory=dir_name)
+
+# TODO ADD_CHECKS Yet another poorly written test that does not check much.
+print("PASSED")
