@@ -239,7 +239,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[0] = clmIDs[1];
     int timCLMVarID;
     int res = DefVarIfMissing(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &timCLMVarID);
+                              (*myVarNCData)->dimIDs, &timCLMVarID);
     if (res == NC_ENAMEINUSE)
     {
       res = nc_inq_varid(clmIDs[0], varName, &timCLMVarID);
@@ -264,7 +264,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[3] = clmIDs[4];
     int tsoilCLMVarID;
     int res = DefVarIfMissing(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &tsoilCLMVarID);
+                              (*myVarNCData)->dimIDs, &tsoilCLMVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -305,7 +305,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int lhTotVarID;
     int res = DefVarIfMissing(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &lhTotVarID);
+                              (*myVarNCData)->dimIDs, &lhTotVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -345,7 +345,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int lwradVarID;
     int res = DefVarIfMissing(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &lwradVarID);
+                              (*myVarNCData)->dimIDs, &lwradVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -385,7 +385,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int shTotVarID;
     int res = DefVarIfMissing(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &shTotVarID);
+                              (*myVarNCData)->dimIDs, &shTotVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -425,7 +425,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int soilGrndVarID;
     int res = DefVarIfMissing(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &soilGrndVarID);
+                              (*myVarNCData)->dimIDs, &soilGrndVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -465,7 +465,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int qEvapTotVarID;
     int res = DefVarIfMissing(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &qEvapTotVarID);
+                              (*myVarNCData)->dimIDs, &qEvapTotVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -505,7 +505,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int qEvapGrndVarID;
     int res = DefVarIfMissing(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &qEvapGrndVarID);
+                              (*myVarNCData)->dimIDs, &qEvapGrndVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -545,7 +545,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int qEvapSoiVarID;
     int res = DefVarIfMissing(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &qEvapSoiVarID);
+                              (*myVarNCData)->dimIDs, &qEvapSoiVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -585,7 +585,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int qEvapVegVarID;
     int res = DefVarIfMissing(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &qEvapVegVarID);
+                              (*myVarNCData)->dimIDs, &qEvapVegVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -625,7 +625,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int qTranVegVarID;
     int res = DefVarIfMissing(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &qTranVegVarID);
+                              (*myVarNCData)->dimIDs, &qTranVegVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -665,7 +665,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int qInflVarID;
     int res = DefVarIfMissing(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &qInflVarID);
+                              (*myVarNCData)->dimIDs, &qInflVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -705,7 +705,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int sweVarID;
     int res = DefVarIfMissing(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &sweVarID);
+                              (*myVarNCData)->dimIDs, &sweVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -745,7 +745,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int t_grndVarID;
     int res = DefVarIfMissing(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &t_grndVarID);
+                              (*myVarNCData)->dimIDs, &t_grndVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -785,7 +785,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int qQirrVarID;
     int res = DefVarIfMissing(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &qQirrVarID);
+                              (*myVarNCData)->dimIDs, &qQirrVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -826,7 +826,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[3] = clmIDs[4];
     int qQirrInstCLMVarID;
     int res = DefVarIfMissing(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &qQirrInstCLMVarID);
+                              (*myVarNCData)->dimIDs, &qQirrInstCLMVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;

@@ -432,7 +432,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[0] = netCDFIDs[1];
     int timVarID;
     int res = DefVarIfMissing(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &timVarID);
+                              (*myVarNCData)->dimIDs, &timVarID);
     if (res == NC_ENAMEINUSE)
     {
       res = nc_inq_varid(netCDFIDs[0], varName, &timVarID);
@@ -454,7 +454,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int pressVarID;
     int res = DefVarIfMissing(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &pressVarID);
+                              (*myVarNCData)->dimIDs, &pressVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -496,7 +496,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int satVarID;
     int res = DefVarIfMissing(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &satVarID);
+                              (*myVarNCData)->dimIDs, &satVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -538,7 +538,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int maskVarID;
     int res = DefVarIfMissing(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &maskVarID);
+                              (*myVarNCData)->dimIDs, &maskVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -579,7 +579,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[2] = netCDFIDs[4];
     int manningsVarID;
     int res = DefVarIfMissing(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &manningsVarID);
+                              (*myVarNCData)->dimIDs, &manningsVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -620,7 +620,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int perm_xVarID;
     int res = DefVarIfMissing(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &perm_xVarID);
+                              (*myVarNCData)->dimIDs, &perm_xVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -662,7 +662,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int perm_yVarID;
     int res = DefVarIfMissing(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &perm_yVarID);
+                              (*myVarNCData)->dimIDs, &perm_yVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -704,7 +704,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int perm_zVarID;
     int res = DefVarIfMissing(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &perm_zVarID);
+                              (*myVarNCData)->dimIDs, &perm_zVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -746,7 +746,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int porosityVarID;
     int res = DefVarIfMissing(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &porosityVarID);
+                              (*myVarNCData)->dimIDs, &porosityVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -788,7 +788,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int specStorageVarID;
     int res = DefVarIfMissing(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &specStorageVarID);
+                              (*myVarNCData)->dimIDs, &specStorageVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -829,7 +829,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[2] = netCDFIDs[4];
     int slopexVarID;
     int res = DefVarIfMissing(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &slopexVarID);
+                              (*myVarNCData)->dimIDs, &slopexVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -868,7 +868,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[2] = netCDFIDs[4];
     int slopeyVarID;
     int res = DefVarIfMissing(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &slopeyVarID);
+                              (*myVarNCData)->dimIDs, &slopeyVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -908,7 +908,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int dzmultVarID;
     int res = DefVarIfMissing(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &dzmultVarID);
+                              (*myVarNCData)->dimIDs, &dzmultVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -950,7 +950,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int evaptransVarID;
     int res = DefVarIfMissing(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &evaptransVarID);
+                              (*myVarNCData)->dimIDs, &evaptransVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -992,7 +992,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int evaptrans_sumVarID;
     int res = DefVarIfMissing(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &evaptrans_sumVarID);
+                              (*myVarNCData)->dimIDs, &evaptrans_sumVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -1032,7 +1032,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[2] = netCDFIDs[4];
     int overland_sumVarID;
     int res = DefVarIfMissing(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &overland_sumVarID);
+                              (*myVarNCData)->dimIDs, &overland_sumVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -1072,7 +1072,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[2] = netCDFIDs[4];
     int overland_bc_fluxVarID;
     int res = DefVarIfMissing(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &overland_bc_fluxVarID);
+                              (*myVarNCData)->dimIDs, &overland_bc_fluxVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
