@@ -264,13 +264,23 @@ def indent(code: str, spaces: int):
     return textwrap.indent(code, " " * spaces).lstrip()
 
 
+def grgeom_boxes_branch(sfg: SourceFileGenerator, code: str):
+    """Runs code if the loops of gr_domain are given by its interior boxes, aborts for mesh refinement"""
+    return sfg.branch("r == 0 && GrGeomSolidInteriorBoxes(gr_domain)")(code)(
+        """
+    printf(\"\\n\\nPystencils support unavailable for mesh refinement at file %s and line %d\\n\", __FILE__, __LINE__);
+    exit(1);"""
+    )
+
+
 # wrapper running a kernel on the interior boxes of a GrGeomSolid, i.e. a replacement for GrGeomInLoop
 def create_grgeom_in_loop_wrapper(sfg: SourceFileGenerator, kernel, timing_index: bool = False):
     sfg.include("parflow.h")
 
     sizes = [f"PV_i{d}u - PV_i{d}l + 1" for d in "xyz"]
 
-    code = sfg.branch("r == 0 && GrGeomSolidInteriorBoxes(gr_domain)")(
+    code = grgeom_boxes_branch(
+        sfg,
         f"""
 int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;
 int *PV_visiting = NULL;
@@ -292,11 +302,7 @@ for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {{
         {indent(kernel_call(kernel, sizes, timing_index=timing_index), 8)}
     }}
 }}
-    """
-    )(
-        """
-    printf(\"\\n\\nPystencils support unavailable for mesh refinement at file %s and line %d\\n\", __FILE__, __LINE__);
-    exit(1);"""
+    """,
     )
 
     sfg.function(f"{kernel_func_name(kernel)}_wrapper").params(*grgeom_wrapper_params(sfg, kernel, timing_index=timing_index))(

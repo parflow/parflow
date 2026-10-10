@@ -58,44 +58,48 @@ with SourceFileGenerator() as sfg:
 
     # kernels
 
+    # terms of the accumulation and source kernels, shared by the fused and the unfused kernels
+
+    # (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol * del_x_slope * del_y_slope * z_mult_dat[ip]
+    base = (
+        (sp.center() * dp.center() - osp.center() * odp.center())
+        * pop.center()
+        * vol
+        * del_x_slope
+        * del_y_slope
+        * z_mult_dat.center()
+    )
+
+    # ss[ip] * vol * del_x_slope * del_y_slope * z_mult_dat[ip] * (pp[ip] * sp[ip] * dp[ip] - opp[ip] * osp[ip] * odp[ip])
+    storage = (
+        ss.center()
+        * vol
+        * del_x_slope
+        * del_y_slope
+        * z_mult_dat.center()
+        * (pp.center() * sp.center() * dp.center() - opp.center() * osp.center() * odp.center())
+    )
+
+    # vol * del_x_slope * del_y_slope * z_mult_dat[ip] * dt * (phase_source[ip] + et[ip])
+    def source(phase_source):
+        return vol * del_x_slope * del_y_slope * z_mult_dat.center() * dt * (phase_source.center() + et.center())
+
     # flux: base
-    # fp[ip] = (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol * del_x_slope * del_y_slope * z_mult_dat[ip]
+    # fp[ip] = base
 
     create_kernel_func_and_wrapper(
         sfg,
-        ps.Assignment(
-            fp.center(),
-            (sp.center() * dp.center() - osp.center() * odp.center())
-            * pop.center()
-            * vol
-            * del_x_slope
-            * del_y_slope
-            * z_mult_dat.center(),
-        ),
+        ps.Assignment(fp.center(), base),
         "Flux_Base",
         timing_index=True,
     )
 
     # flux: add compressible storage
-    # fp[ip] += ss[ip] * vol * del_x_slope * del_y_slope * z_mult_dat[ip] * (pp[ip] * sp[ip] * dp[ip] - opp[ip] * osp[ip] * odp[ip])
+    # fp[ip] += storage
 
     create_kernel_func_and_wrapper(
         sfg,
-        ps.Assignment(
-            fp.center(),
-            fp.center()
-            + (
-                ss.center()
-                * vol
-                * del_x_slope
-                * del_y_slope
-                * z_mult_dat.center()
-                * (
-                    pp.center() * sp.center() * dp.center()
-                    - opp.center() * osp.center() * odp.center()
-                )
-            ),
-        ),
+        ps.Assignment(fp.center(), fp.center() + storage),
         "Flux_AddCompressibleStorage",
         timing_index=True,
     )
@@ -105,55 +109,17 @@ with SourceFileGenerator() as sfg:
 
     create_kernel_func_and_wrapper(
         sfg,
-        ps.Assignment(
-            fp.center(),
-            (sp.center() * dp.center() - osp.center() * odp.center())
-            * pop.center()
-            * vol
-            * del_x_slope
-            * del_y_slope
-            * z_mult_dat.center()
-            + (
-                ss.center()
-                * vol
-                * del_x_slope
-                * del_y_slope
-                * z_mult_dat.center()
-                * (
-                    pp.center() * sp.center() * dp.center()
-                    - opp.center() * osp.center() * odp.center()
-                )
-            )
-            - (
-                vol
-                * del_x_slope
-                * del_y_slope
-                * z_mult_dat.center()
-                * dt
-                * (src.center() + et.center())
-            ),
-        ),
+        ps.Assignment(fp.center(), base + storage - source(src)),
         "Flux_FusedAccumulationAndSourceTerms",
         timing_index=True,
     )
 
-    # flux: add source terms
-    # fp[ip] -= vol * del_x_slope * del_y_slope * z_mult_dat[ip] * dt * (sp[ip] + et[ip])
+    # flux: add source terms (sp is the phase source here)
+    # fp[ip] -= source
 
     create_kernel_func_and_wrapper(
         sfg,
-        ps.Assignment(
-            fp.center(),
-            fp.center()
-            - (
-                vol
-                * del_x_slope
-                * del_y_slope
-                * z_mult_dat.center()
-                * dt
-                * (sp.center() + et.center())
-            ),
-        ),
+        ps.Assignment(fp.center(), fp.center() - source(sp)),
         "Flux_AddSourceTerms",
         timing_index=True,
     )
