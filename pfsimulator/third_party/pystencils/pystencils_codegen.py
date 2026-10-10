@@ -1,5 +1,6 @@
 import pystencils as ps
 import re
+import textwrap
 
 from pystencilssfg import SourceFileGenerator, AugExpr
 from pystencilssfg.lang.gpu import cuda
@@ -78,6 +79,18 @@ def get_kernel_cfg(
         raise ValueError("Target not specified in platform file.")
 
 
+# vectorized cpu kernels assume a unit inner stride and drop the parameter _stride_X_0
+def dropped_inner_strides(kernel):
+    """Maps _stride_X_1 to _stride_X_0 for the inner strides missing from the kernel parameters.
+    create_kernel_func adds them back to the generated function, so its signature does not depend on vectorization."""
+    names = {p.name for p in kernel.parameters}
+    dropped = {}
+    for p in kernel.parameters:
+        if (m := re.fullmatch("_stride_(.*)_1", p.name)) and f"_stride_{m[1]}_0" not in names:
+            dropped[p.name] = f"_stride_{m[1]}_0"
+    return dropped
+
+
 def create_kernel_func(
         sfg: SourceFileGenerator,
         assign,
@@ -105,16 +118,11 @@ def create_kernel_func(
     if target.is_cpu():
         if optimize and target.is_vector_cpu() and allow_vect:
             # extend parameter list with missing _stride_XYZ_0 parameters
+            dropped = dropped_inner_strides(kernel)
             params = []
-            missing_strides = []
-            for i, param in enumerate(kernel.parameters):
-                pattern = re.compile("_stride_(.*)_1")
-                match = pattern.findall(param.name)
-
-                if match:
-                    stride = sfg.var(f"_stride_{match[0]}_0", SInt(64, const=True))
-                    params += [stride]
-                    missing_strides += [stride]
+            for param in kernel.parameters:
+                if param.name in dropped:
+                    params += [sfg.var(dropped[param.name], SInt(64, const=True))]
                 params += [param]
 
             if timing_var is not None:
@@ -166,62 +174,101 @@ def create_kernel_func(
     return kernel
 
 
-# wrapper running a kernel on the interior boxes of a GrGeomSolid, i.e. a replacement for GrGeomInLoop
-def create_grgeom_in_loop_wrapper(sfg: SourceFileGenerator, kernel, timing_index: bool = False):
-    params = []
+# Wrappers replacing the GrGeom loops of ParFlow.
+#
+# A wrapper takes a Subvector for every field of the kernel, named after the field pointer with a
+# "_sub" suffix, and the remaining scalar parameters of the kernel. It fetches the field pointers at
+# the start of the iteration space and derives the strides of the fields from their subvectors.
 
-    params += [sfg.var("gr_domain", PsPointerType(PsCustomType("GrGeomSolid")))]
-    params += [sfg.var("r", SInt(32))]
-    params += [sfg.var(f"i{d}", SInt(32)) for d in ["x", "y", "z"]]
-    params += [sfg.var(f"n{d}", SInt(32)) for d in ["x", "y", "z"]]
+SUBVECTOR_PTR = PsPointerType(PsCustomType("Subvector"))
 
-    fetch_subvectors = []
 
-    # fields of the same FieldFactory share their stride symbols -> fetch them from the first such field
-    stride_subvectors = {}
+def kernel_func_name(kernel):
+    """Name of the function that create_kernel_func generated for the kernel"""
+    return kernel.name.removesuffix("_gen")
 
-    for param in kernel.parameters:
-        if base_ptrs := param.wrapped.get_properties(FieldBasePtr):
-            fieldname = param.name
-            fieldname_sub = f"{fieldname}_sub"
 
-            params += [sfg.var(fieldname_sub, PsPointerType(PsCustomType("Subvector")))]
+def field_ptr_params(kernel):
+    return [p for p in kernel.parameters if p.wrapped.get_properties(FieldBasePtr)]
 
-            fetch_subvectors += [
-                f"double* {fieldname} = SubvectorElt({fieldname_sub}, PV_ixl, PV_iyl, PV_izl);\n"
-            ]
 
-            for base_ptr in base_ptrs:
-                for stride in base_ptr.field.strides:
-                    stride_subvectors.setdefault(stride.name, fieldname_sub)
-        elif not (
-            param.wrapped.get_properties(FieldStride)
-            or param.wrapped.get_properties(FieldShape)
-        ):
-            params += [param]
+def scalar_params(kernel):
+    """Kernel parameters that are neither field pointers nor field shapes or strides"""
+    return [
+        p for p in kernel.parameters
+        if not (
+            p.wrapped.get_properties(FieldBasePtr)
+            or p.wrapped.get_properties(FieldStride)
+            or p.wrapped.get_properties(FieldShape)
+        )
+    ]
 
-    # kernel arguments in parameter order: field pointers, sizes and strides of the box, and the remaining symbols
-    args = []
-    for param in kernel.parameters:
-        if param.wrapped.get_properties(FieldBasePtr):
-            args += [param.name]
-        elif shapes := param.wrapped.get_properties(FieldShape):
-            d = "xyz"[next(iter(shapes)).coordinate]
-            args += [f"PV_i{d}u - PV_i{d}l + 1"]
-        elif strides := param.wrapped.get_properties(FieldStride):
-            sub = stride_subvectors[param.name]
-            args += [("1", f"SubvectorNX({sub})", f"SubvectorNX({sub}) * SubvectorNY({sub})")[next(iter(strides)).coordinate]]
-        else:
-            args += [param.name]
 
-    sfg.include("parflow.h")
-
-    timing_begin = ""
-    timing_end = ""
+def grgeom_wrapper_params(sfg: SourceFileGenerator, kernel, extra=(), exclude=(), timing_index: bool = False):
+    """Parameters of a wrapper: the GrGeom loop parameters (gr_domain, r, ix, iy, iz, nx, ny, nz), the extra
+    parameters, a Subvector per field, the scalar kernel parameters not in exclude and the timing index"""
+    params = [sfg.var("gr_domain", PsPointerType(PsCustomType("GrGeomSolid"))), sfg.var("r", SInt(32))]
+    params += [sfg.var(f"i{d}", SInt(32)) for d in "xyz"]
+    params += [sfg.var(f"n{d}", SInt(32)) for d in "xyz"]
+    params += list(extra)
+    params += [sfg.var(f"{p.name}_sub", SUBVECTOR_PTR) for p in field_ptr_params(kernel)]
+    params += [p for p in scalar_params(kernel) if p.name not in exclude]
     if timing_index:
         params += [sfg.var("timing_index", SInt(32))]
-        timing_begin = "BeginTiming(timing_index);"
-        timing_end = "EndTiming(timing_index);"
+    return params
+
+
+def fetch_field_ptrs(kernel, start, starts=None):
+    """C code declaring the field pointers of the kernel at the element start = (x, y, z) of their subvectors.
+    starts maps field pointer names to a different start of that field."""
+    starts = starts or {}
+    return "\n".join(
+        f"double* {p.name} = SubvectorElt({p.name}_sub, {', '.join(starts.get(p.name, start))});"
+        for p in field_ptr_params(kernel)
+    )
+
+
+def kernel_call(kernel, sizes, strides=None, timing_index: bool = False):
+    """C call of the kernel on an iteration space of the given sizes = (x, y, z).
+
+    Fields of the same FieldFactory share their stride symbols, these are computed from the subvector of the
+    first field using them. strides maps stride symbol names to a different C expression."""
+    strides = dict(strides or {})
+    for p in field_ptr_params(kernel):
+        sub = f"{p.name}_sub"
+        for base_ptr in p.wrapped.get_properties(FieldBasePtr):
+            for d, stride in enumerate(base_ptr.field.strides):
+                strides.setdefault(stride.name, ("1", f"SubvectorNX({sub})", f"SubvectorNX({sub}) * SubvectorNY({sub})")[d])
+
+    # arguments in the parameter order of the function generated by create_kernel_func
+    dropped = dropped_inner_strides(kernel)
+    args = []
+    for p in kernel.parameters:
+        if p.name in dropped:
+            args += [strides[dropped[p.name]]]
+        if shapes := p.wrapped.get_properties(FieldShape):
+            args += [sizes[next(iter(shapes)).coordinate]]
+        elif p.wrapped.get_properties(FieldStride):
+            args += [strides[p.name]]
+        else:
+            args += [p.name]
+
+    call = f"{kernel_func_name(kernel)}({', '.join(args)});"
+    if timing_index:
+        call = f"BeginTiming(timing_index);\n{call}\nEndTiming(timing_index);"
+    return call
+
+
+def indent(code: str, spaces: int):
+    """Indents all but the first line of code, which is placed inside an indented f-string"""
+    return textwrap.indent(code, " " * spaces).lstrip()
+
+
+# wrapper running a kernel on the interior boxes of a GrGeomSolid, i.e. a replacement for GrGeomInLoop
+def create_grgeom_in_loop_wrapper(sfg: SourceFileGenerator, kernel, timing_index: bool = False):
+    sfg.include("parflow.h")
+
+    sizes = [f"PV_i{d}u - PV_i{d}l + 1" for d in "xyz"]
 
     code = sfg.branch("r == 0 && GrGeomSolidInteriorBoxes(gr_domain)")(
         f"""
@@ -239,14 +286,10 @@ for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {{
     PV_iyu = pfmin((iy + ny - 1), box.up[1]);
     PV_izu = pfmin((iz + nz - 1), box.up[2]);
 
-    {"    ".join(fetch_subvectors)}
+    {indent(fetch_field_ptrs(kernel, ("PV_ixl", "PV_iyl", "PV_izl")), 4)}
 
     if (PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu) {{
-        {timing_begin}
-        {kernel.name[:-4]}(
-            {", ".join(args)}
-        );
-        {timing_end}
+        {indent(kernel_call(kernel, sizes, timing_index=timing_index), 8)}
     }}
 }}
     """
@@ -256,6 +299,6 @@ for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {{
     exit(1);"""
     )
 
-    sfg.function(f"{kernel.name[:-4]}_wrapper").params(*params)(
+    sfg.function(f"{kernel_func_name(kernel)}_wrapper").params(*grgeom_wrapper_params(sfg, kernel, timing_index=timing_index))(
         code,
     )

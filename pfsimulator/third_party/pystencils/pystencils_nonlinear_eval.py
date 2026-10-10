@@ -1,10 +1,17 @@
-import sympy as sp
+import sympy
 
 from pystencils import TypedSymbol
 from pystencils import DynamicType
 
 from field_factory import FieldFactory
 from pystencils_codegen import *
+
+# sympy is not imported as sp here, since the saturation field below is called sp
+
+
+def stride_symbols(name: str):
+    """Stride symbols shared by the fields of one FieldFactory"""
+    return tuple(TypedSymbol(f"_stride_{name}_{d}", DynamicType.INDEX_TYPE) for d in range(3))
 
 
 def create_kernel_func_and_wrapper(
@@ -23,7 +30,7 @@ with SourceFileGenerator() as sfg:
 
     # symbols
 
-    vol, dt = sp.symbols("vol, dt")
+    vol, dt = sympy.symbols("vol, dt")
 
     # constants
 
@@ -38,16 +45,8 @@ with SourceFileGenerator() as sfg:
 
     # field strides
 
-    f_sx = TypedSymbol("_stride_f_0", DynamicType.INDEX_TYPE)
-    f_sy = TypedSymbol("_stride_f_1", DynamicType.INDEX_TYPE)
-    f_sz = TypedSymbol("_stride_f_2", DynamicType.INDEX_TYPE)
-
-    po_sx = TypedSymbol("_stride_po_0", DynamicType.INDEX_TYPE)
-    po_sy = TypedSymbol("_stride_po_1", DynamicType.INDEX_TYPE)
-    po_sz = TypedSymbol("_stride_po_2", DynamicType.INDEX_TYPE)
-
-    f_ff = FieldFactory((nx, ny, nz), (f_sx, f_sy, f_sz))
-    po_ff = FieldFactory((nx, ny, nz), (po_sx, po_sy, po_sz))
+    f_ff = FieldFactory((nx, ny, nz), stride_symbols("f"))
+    po_ff = FieldFactory((nx, ny, nz), stride_symbols("po"))
 
     # field declarations
 
