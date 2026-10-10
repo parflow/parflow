@@ -3085,6 +3085,49 @@ Note that if both a Van Genuchten saturation and relative permeability
 are specified, then the soil parameters should be the same for each in
 order to have a consistent problem.
 
+*string* **Phase.Saturation.VanGenuchten.AirEntryMode** [``None``]
+Selects how the Ippisch air-entry pressure head :math:`h_s` is
+determined :cite:p:`Ippisch2006`. ``None`` disables the modification
+(standard Van Genuchten, default). ``Constant`` uses a single air-entry
+head for all regions. ``InverseAlpha`` computes :math:`h_s = 1/\alpha`
+per region. ``PerRegion`` reads per-geometry values from
+``Geom.geom_name.Saturation.AirEntryHead``. When active, the
+modification eliminates the relative permeability derivative singularity
+at saturation for :math:`n < 2`, enabling use of measured Van Genuchten
+parameters for fine-textured soils.
+
+.. container:: list
+
+   ::
+
+      pfset Phase.Saturation.VanGenuchten.AirEntryMode   None         ## TCL syntax
+
+      <runname>.Phase.Saturation.VanGenuchten.AirEntryMode = "None"   ## Python syntax
+
+*double* **Phase.Saturation.VanGenuchten.AirEntryHead** [0.0]
+Global air-entry pressure head in meters (positive value). Used when
+``AirEntryMode`` is ``Constant``. Typical value: 0.02 (2 cm).
+
+.. container:: list
+
+   ::
+
+      pfset Phase.Saturation.VanGenuchten.AirEntryHead   0.0         ## TCL syntax
+
+      <runname>.Phase.Saturation.VanGenuchten.AirEntryHead = 0.0     ## Python syntax
+
+*double* **Geom.\ *geom_name*.Saturation.AirEntryHead** no default
+Per-region air-entry pressure head in meters (positive value). Used when
+``Phase.Saturation.VanGenuchten.AirEntryMode`` is ``PerRegion``.
+
+.. container:: list
+
+   ::
+
+      pfset Geom.domain.Saturation.AirEntryHead   0.02         ## TCL syntax
+
+      <runname>.Geom.domain.Saturation.AirEntryHead = 0.02     ## Python syntax
+
 *double* **Geom.\ *geom_name*.Saturation.SRes** no default This key
 specifies the residual saturation on *geom_name*.
 
@@ -3106,6 +3149,46 @@ specifies the saturation at saturated conditions on *geom_name*.
       pfset Geom.domain.Saturation.SSat   1.0         ## TCL syntax
 
       <runname>.Geom.domain.Saturation.SSat = 1.0     ## Python syntax
+
+*int* **Geom.\ *geom_name*.Saturation.NumSamplePoints** [0] This key
+specifies the number of sample points for a spline-based interpolation
+table for the Van Genuchten saturation function on *geom_name*. If 0
+(the default), the function is evaluated directly. Using the
+interpolation table is faster but introduces interpolation error.
+
+.. container:: list
+
+   ::
+
+      pfset Geom.domain.Saturation.NumSamplePoints   0         ## TCL syntax
+
+      <runname>.Geom.domain.Saturation.NumSamplePoints = 0     ## Python syntax
+
+*double* **Geom.\ *geom_name*.Saturation.MinPressureHead** no default
+Lower bound (negative value) for the saturation lookup table pressure
+head range. Used only when ``NumSamplePoints`` is greater than 0.
+Should match or exceed the ``RelPerm.MinPressureHead`` value.
+
+.. container:: list
+
+   ::
+
+      pfset Geom.domain.Saturation.MinPressureHead   -300         ## TCL syntax
+
+      <runname>.Geom.domain.Saturation.MinPressureHead = -300     ## Python syntax
+
+*string* **Geom.\ *geom_name*.Saturation.InterpolationMethod** [``Spline``]
+Interpolation method for the saturation lookup table. ``Spline`` uses
+monotonic Hermite cubic interpolation (Fritsch and Carlson, 1980).
+``Linear`` uses piecewise linear interpolation.
+
+.. container:: list
+
+   ::
+
+      pfset Geom.domain.Saturation.InterpolationMethod   Spline         ## TCL syntax
+
+      <runname>.Geom.domain.Saturation.InterpolationMethod = "Spline"   ## Python syntax
 
 *double* **Geom.\ *geom_name*.Saturation.A** no default This key
 specifies the :math:`A` parameter for the Haverkamp saturation on
