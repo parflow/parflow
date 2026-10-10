@@ -46,7 +46,6 @@ static bool isCLM2Ddefined = false;
 static bool isCLM3Ddefined = false;
 static bool isCLMTdefined = false;
 
-#ifdef PARFLOW_HAVE_NETCDF
 /* Look a variable up before defining it.  On a netCDF-4 file nc_def_var
  * switches the file into define mode before it checks whether the name
  * already exists, and the next nc_put_vara then leaves define mode with an
@@ -62,7 +61,6 @@ static int DefVarIfMissing(int ncid, const char *name, nc_type xtype,
     return NC_ENAMEINUSE;
   return nc_def_var(ncid, name, xtype, ndims, dimidsp, varidp);
 }
-#endif
 #endif
 
 void WriteCLMNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int numVarTimeVariant,
