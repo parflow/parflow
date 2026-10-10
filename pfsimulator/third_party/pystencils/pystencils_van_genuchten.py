@@ -8,7 +8,8 @@ from pystencils_codegen import *
 
 
 def create_kernel_func_and_wrapper(sfg: SourceFileGenerator, assignments, func_name: str):
-    kernel = create_kernel_func(sfg, assignments, func_name)
+    # TODO: no vectorization on cpus
+    kernel = create_kernel_func(sfg, assignments, func_name, allow_vect=False)
     create_grgeom_in_loop_wrapper(sfg, kernel)
 
 
