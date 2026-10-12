@@ -644,9 +644,9 @@ extern amps_Buffer *amps_BufferFreeList;
  * @param comm Communication context [IN]
  * @param dest Destination rank [IN]
  * @param invoice Data to send [IN]
- * @return Error code
+ * @return amps_Handle
  */
-#define amps_ISend(comm, dest, invoice) (0, amps_Send((comm), (dest), (invoice)))
+#define amps_ISend(comm, dest, invoice) (amps_Send((comm), (dest), (invoice)), NULL)
 
 #define amps_new(comm, size) malloc((size_t)(size))
 #define amps_free(comm, buf) free((char*)buf)
