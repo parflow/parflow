@@ -75,6 +75,14 @@ typedef struct {
   // Phase source values, kept apart from saturation so that both can be read by the fused flux kernel
   Vector       *source;
 #endif
+
+#ifdef PARFLOW_HAVE_PYSTENCILS
+  // Fluxes through the right, front and upper face of the cells, input of the flux divergence kernel.
+  // Zero where the face flux kernel does not compute fluxes, which only depends on the domain.
+  Vector       *x_face_flux;
+  Vector       *y_face_flux;
+  Vector       *z_face_flux;
+#endif
 } InstanceXtra;
 
 /*---------------------------------------------------------------------
@@ -216,6 +224,12 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   Vector      *source = (instance_xtra->source);
 #else
   Vector      *source = saturation;
+#endif
+
+#ifdef PARFLOW_HAVE_PYSTENCILS
+  Vector      *x_face_flux = (instance_xtra->x_face_flux);
+  Vector      *y_face_flux = (instance_xtra->y_face_flux);
+  Vector      *z_face_flux = (instance_xtra->z_face_flux);
 #endif
 
   /* Overland flow variables */  //sk
@@ -696,6 +710,28 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     /* @RMM added to provide variable dz */
     z_mult_dat = SubvectorData(z_mult_sub);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    /* face fluxes on the loop bounds below and their divergence instead of the scatter with atomics,
+     * for the default slope formulation */
+    if (public_xtra->tfgupwind == 0)
+    {
+      Subvector *x_face_flux_sub = VectorSubvector(x_face_flux, is);
+      Subvector *y_face_flux_sub = VectorSubvector(y_face_flux, is);
+      Subvector *z_face_flux_sub = VectorSubvector(z_face_flux, is);
+
+      PyCodegen_Flux_FaceFluxes_wrapper(gr_domain, r, ix, iy, iz, nx, ny, nz, grid2d_iz,
+                                        d_sub, VectorSubvector(FBx, is), VectorSubvector(FBy, is),
+                                        VectorSubvector(FBz, is), x_face_flux_sub, y_face_flux_sub, z_face_flux_sub,
+                                        permx_sub, permy_sub, permz_sub, p_sub, rp_sub,
+                                        vx_sub, vy_sub, vz_sub, x_ssl_sub, y_ssl_sub, z_mult_sub,
+                                        dx, dy, dz, gravity, viscosity);
+
+      PyCodegen_Flux_FaceFluxDivergence_wrapper(SubgridIX(subgrid), SubgridIY(subgrid), SubgridIZ(subgrid),
+                                                SubgridNX(subgrid), SubgridNY(subgrid), SubgridNZ(subgrid),
+                                                x_face_flux_sub, y_face_flux_sub, z_face_flux_sub, f_sub, dt);
+    }
+    else
+#endif
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
       int ip = SubvectorEltIndex(p_sub, i, j, k);
@@ -2399,6 +2435,15 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem *problem,
 #ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
     (instance_xtra->source) = NewVectorType(grid, 1, 1, vector_cell_centered);
 #endif
+
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    (instance_xtra->x_face_flux) = NewVectorType(grid, 1, 1, vector_cell_centered);
+    (instance_xtra->y_face_flux) = NewVectorType(grid, 1, 1, vector_cell_centered);
+    (instance_xtra->z_face_flux) = NewVectorType(grid, 1, 1, vector_cell_centered);
+    InitVectorAll(instance_xtra->x_face_flux, 0.0);
+    InitVectorAll(instance_xtra->y_face_flux, 0.0);
+    InitVectorAll(instance_xtra->z_face_flux, 0.0);
+#endif
   }
   else
   {
@@ -2447,6 +2492,12 @@ void  NlFunctionEvalFreeInstanceXtra()
 
 #ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
     FreeVector(instance_xtra->source);
+#endif
+
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    FreeVector(instance_xtra->z_face_flux);
+    FreeVector(instance_xtra->y_face_flux);
+    FreeVector(instance_xtra->x_face_flux);
 #endif
 
     PFModuleFreeInstance(instance_xtra->overlandflow_module_kin);

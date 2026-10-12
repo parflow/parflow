@@ -16,6 +16,7 @@ def get_kernel_cfg(
     optimize: bool,
     allow_vect: bool,
     reduction: bool,
+    ghost_layers: int | None = None,
 ):
     if target := sfg.context.project_info["target"]:
         # gpus often lack hardware support for int64
@@ -25,6 +26,11 @@ def get_kernel_cfg(
             target=target,
             index_dtype=index_dtype
         )
+
+        # kernels with neighbor accesses iterate the full given extent instead of shrinking it by
+        # the stencil radius, the caller guarantees that the accessed ghost layers exist
+        if ghost_layers is not None:
+            kernel_cfg.ghost_layers = ghost_layers
 
         if optimize:
             # cpu optimizations
@@ -98,12 +104,13 @@ def create_kernel_func(
         optimize: bool = True,
         allow_vect: bool = True,
         reduction: bool = False,
-        timing_index: bool = False
+        timing_index: bool = False,
+        ghost_layers: int | None = None,
 ):
     target = sfg.context.project_info["target"]
     func_name = f"PyCodegen_{func_name}"
     kernel_name = f"{func_name}_gen"
-    kernel = sfg.kernels.create(assign, kernel_name, get_kernel_cfg(sfg, optimize, allow_vect, reduction))
+    kernel = sfg.kernels.create(assign, kernel_name, get_kernel_cfg(sfg, optimize, allow_vect, reduction, ghost_layers))
 
     timing_var = None
     if timing_index:
@@ -204,18 +211,28 @@ def scalar_params(kernel):
     ]
 
 
-def grgeom_wrapper_params(sfg: SourceFileGenerator, kernel, extra=(), exclude=(), timing_index: bool = False):
-    """Parameters of a wrapper: the GrGeom loop parameters (gr_domain, r, ix, iy, iz, nx, ny, nz), the extra
-    parameters, a Subvector per field, the scalar kernel parameters not in exclude and the timing index"""
-    params = [sfg.var("gr_domain", PsPointerType(PsCustomType("GrGeomSolid"))), sfg.var("r", SInt(32))]
-    params += [sfg.var(f"i{d}", SInt(32)) for d in "xyz"]
-    params += [sfg.var(f"n{d}", SInt(32)) for d in "xyz"]
-    params += list(extra)
+def box_params(sfg: SourceFileGenerator):
+    """Loop bounds (ix, iy, iz) + (nx, ny, nz)"""
+    return [sfg.var(f"i{d}", SInt(32)) for d in "xyz"] + [sfg.var(f"n{d}", SInt(32)) for d in "xyz"]
+
+
+def wrapper_params(sfg: SourceFileGenerator, kernel, leading, exclude=(), timing_index: bool = False):
+    """Parameters of a wrapper: the leading parameters, a Subvector per field, the scalar kernel parameters not in
+    exclude and the timing index"""
+    params = list(leading)
     params += [sfg.var(f"{p.name}_sub", SUBVECTOR_PTR) for p in field_ptr_params(kernel)]
     params += [p for p in scalar_params(kernel) if p.name not in exclude]
     if timing_index:
         params += [sfg.var("timing_index", SInt(32))]
     return params
+
+
+def grgeom_wrapper_params(sfg: SourceFileGenerator, kernel, extra=(), exclude=(), timing_index: bool = False):
+    """Parameters of a wrapper: the GrGeom loop parameters (gr_domain, r, ix, iy, iz, nx, ny, nz), the extra
+    parameters, a Subvector per field, the scalar kernel parameters not in exclude and the timing index"""
+    leading = [sfg.var("gr_domain", PsPointerType(PsCustomType("GrGeomSolid"))), sfg.var("r", SInt(32))]
+    leading += box_params(sfg) + list(extra)
+    return wrapper_params(sfg, kernel, leading, exclude, timing_index)
 
 
 def fetch_field_ptrs(kernel, start, starts=None):
@@ -274,7 +291,11 @@ def grgeom_boxes_branch(sfg: SourceFileGenerator, code: str):
 
 
 # wrapper running a kernel on the interior boxes of a GrGeomSolid, i.e. a replacement for GrGeomInLoop
-def create_grgeom_in_loop_wrapper(sfg: SourceFileGenerator, kernel, timing_index: bool = False):
+def create_grgeom_in_loop_wrapper(
+    sfg: SourceFileGenerator, kernel, timing_index: bool = False, starts=None, strides=None, extra=()
+):
+    """starts and strides are passed to fetch_field_ptrs and kernel_call, extra are additional wrapper parameters
+    following the loop bounds, e.g. used in starts"""
     sfg.include("parflow.h")
 
     sizes = [f"PV_i{d}u - PV_i{d}l + 1" for d in "xyz"]
@@ -296,15 +317,34 @@ for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++) {{
     PV_iyu = pfmin((iy + ny - 1), box.up[1]);
     PV_izu = pfmin((iz + nz - 1), box.up[2]);
 
-    {indent(fetch_field_ptrs(kernel, ("PV_ixl", "PV_iyl", "PV_izl")), 4)}
+    {indent(fetch_field_ptrs(kernel, ("PV_ixl", "PV_iyl", "PV_izl"), starts), 4)}
 
     if (PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu) {{
-        {indent(kernel_call(kernel, sizes, timing_index=timing_index), 8)}
+        {indent(kernel_call(kernel, sizes, strides, timing_index=timing_index), 8)}
     }}
 }}
     """,
     )
 
-    sfg.function(f"{kernel_func_name(kernel)}_wrapper").params(*grgeom_wrapper_params(sfg, kernel, timing_index=timing_index))(
+    sfg.function(f"{kernel_func_name(kernel)}_wrapper").params(
+        *grgeom_wrapper_params(sfg, kernel, extra=extra, timing_index=timing_index)
+    )(
         code,
     )
+
+
+# wrapper running a kernel on the box (ix, iy, iz) + (nx, ny, nz) of all cells, regardless of any geometry
+def create_box_loop_wrapper(sfg: SourceFileGenerator, kernel, timing_index: bool = False):
+    sfg.include("parflow.h")
+
+    code = f"""
+if (nx > 0 && ny > 0 && nz > 0) {{
+    {indent(fetch_field_ptrs(kernel, ("ix", "iy", "iz")), 4)}
+
+    {indent(kernel_call(kernel, ("nx", "ny", "nz"), timing_index=timing_index), 4)}
+}}
+"""
+
+    sfg.function(f"{kernel_func_name(kernel)}_wrapper").params(
+        *wrapper_params(sfg, kernel, box_params(sfg), timing_index=timing_index)
+    )(code)
