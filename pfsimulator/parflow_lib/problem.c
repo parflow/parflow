@@ -244,6 +244,9 @@ Problem   *NewProblem(
   ProblemOverlandFlowEvalKin(problem) =
     PFModuleNewModule(OverlandFlowEvalKin, ());
 
+  ProblemOverlandFlowEvalKin_wc(problem) =
+    PFModuleNewModule(OverlandFlowEvalKin_wc, ());
+
   if (solver != RichardsSolve)
   {
     ProblemCapillaryPressure(problem) =
@@ -402,6 +405,7 @@ void      FreeProblem(
   PFModuleFreeModule(ProblemOverlandFlowEval(problem));  //DOK
   PFModuleFreeModule(ProblemOverlandFlowEvalDiff(problem));   //@RMM
   PFModuleFreeModule(ProblemOverlandFlowEvalKin(problem));
+  PFModuleFreeModule(ProblemOverlandFlowEvalKin_wc(problem));
 
   PFModuleFreeModule(ProblemDomain(problem));
 
