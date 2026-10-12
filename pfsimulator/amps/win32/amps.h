@@ -493,10 +493,10 @@ void amps_ReadDouble();
 #else
 
 #define amps_TAlloc(type, count) \
-        ((count) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
+        ((count) ? (type*)malloc((size_t)(sizeof(type) * (count))) : NULL)
 
 #define amps_CTAlloc(type, count) \
-        ((count) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
+        ((count) ? (type*)calloc((size_t)(count), (size_t)sizeof(type)) : NULL)
 
 /* note: the `else' is required to guarantee termination of the `if' */
 #define amps_TFree(ptr) if (ptr) free(ptr, amps_arena); else

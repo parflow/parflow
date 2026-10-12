@@ -1,0 +1,212 @@
+name: Release Linux binaries
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-linux-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-upload:
+    name: Build and package (self-hosted HPC)
+    runs-on: self-hosted
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Load modules and verify tools
+        run: |
+          module purge
+          module load openmpi/gcc/4.1.6
+          module load hdf5/gcc/openmpi-4.1.6/1.14.4
+          module load netcdf/gcc/hdf5-1.14.4/openmpi-4.1.6/4.9.2
+          module list
+          for cmd in cmake mpicc mpicxx mpifort mpif90 make wget patchelf file; do
+            if ! command -v "$cmd" >/dev/null 2>&1; then
+              echo "ERROR: required command not found: $cmd" >&2
+              exit 1
+            fi
+          done
+          # Prefixes from module setenv (see: module show openmpi|hdf5|netcdf)
+          MPI_PREFIX="${OPENMPI_HOME:-${MPI_HOME:-${MPIHOME}}}"
+          HDF5_PREFIX="${HDF5_ROOT:-${HDF5DIR}}"
+          NETCDF_PREFIX="${NETCDFDIR:-${NETCDF_DIR:-}}"
+          echo "MPI_PREFIX=${MPI_PREFIX}"
+          echo "HDF5_PREFIX=${HDF5_PREFIX}"
+          echo "NETCDF_PREFIX=${NETCDF_PREFIX}"
+          for name in MPI HDF5 NETCDF; do
+            var="${name}_PREFIX"
+            val="${!var}"
+            if [[ -z "$val" || ! -d "$val" ]]; then
+              echo "ERROR: invalid ${var}=${val:-<empty>}" >&2
+              exit 1
+            fi
+            echo "PARFLOW_${name}_PREFIX=${val}" >> "$GITHUB_ENV"
+          done
+          echo "NETCDF_FLAGS=-DNETCDF_DIR=${NETCDF_PREFIX} -DNETCDF_Fortran_ROOT=${NETCDF_PREFIX} -DPARFLOW_ENABLE_HDF5=TRUE -DHDF5_ROOT=${HDF5_PREFIX}" >> "$GITHUB_ENV"
+
+      - name: Cache HYPRE build
+        uses: actions/cache@v4
+        id: cache-hypre
+        with:
+          path: ${{ github.workspace }}/release-depend
+          key: release-linux-hypre-${{ hashFiles('**/.github/workflows/release-linux-binaries.yml') }}
+
+      - name: Directory Setup
+        run: |
+          mkdir -p "${{ github.workspace }}/release-install"/{bin,lib}
+          mkdir -p "${{ github.workspace }}/release-depend"/{include,lib,lib64,bin}
+
+          echo "PARFLOW_DIR=${{ github.workspace }}/release-install" >> "$GITHUB_ENV"
+          echo "PARFLOW_DEP_DIR=${{ github.workspace }}/release-depend" >> "$GITHUB_ENV"
+          echo "${{ github.workspace }}/release-depend/bin" >> "$GITHUB_PATH"
+          echo "${{ github.workspace }}/release-install/bin" >> "$GITHUB_PATH"
+
+      - name: HYPRE Install
+        env:
+          CACHE_HIT: ${{ steps.cache-hypre.outputs.cache-hit }}
+        run: |
+          module purge
+          module load openmpi/gcc/4.1.6
+          if [[ "$CACHE_HIT" != 'true' ]]; then
+            cd "$PARFLOW_DEP_DIR"
+            wget -q https://github.com/hypre-space/hypre/archive/v2.33.0.tar.gz
+            tar xf v2.33.0.tar.gz && cd hypre-2.33.0
+            cmake -S src -B build \
+              -DCMAKE_C_COMPILER=mpicc \
+              -DCMAKE_CXX_COMPILER=mpicxx \
+              -DCMAKE_INSTALL_PREFIX="${PARFLOW_DEP_DIR}" \
+              -DHYPRE_ENABLE_MPI=ON \
+              -DHYPRE_ENABLE_CUDA=OFF
+            cmake --build build --parallel "$(nproc)"
+            cmake --install build
+          fi
+
+      - name: ParFlow CMake Configure
+        run: |
+          module purge
+          module load openmpi/gcc/4.1.6
+          module load hdf5/gcc/openmpi-4.1.6/1.14.4
+          module load netcdf/gcc/hdf5-1.14.4/openmpi-4.1.6/4.9.2
+          cd "$GITHUB_WORKSPACE"
+          # shellcheck disable=SC2086
+          cmake -Bbuild \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DPARFLOW_ENABLE_TIMING=TRUE \
+            -DPARFLOW_AMPS_LAYER=mpi1 \
+            -DPARFLOW_AMPS_SEQUENTIAL_IO=true \
+            -DPARFLOW_HAVE_CLM=ON \
+            -DHYPRE_ROOT="$PARFLOW_DEP_DIR" \
+            -DCMAKE_INSTALL_PREFIX="$PARFLOW_DIR" \
+            $NETCDF_FLAGS
+
+      - name: ParFlow CMake Build
+        run: |
+          module purge
+          module load openmpi/gcc/4.1.6
+          module load hdf5/gcc/openmpi-4.1.6/1.14.4
+          module load netcdf/gcc/hdf5-1.14.4/openmpi-4.1.6/4.9.2
+          cd "$GITHUB_WORKSPACE"
+          cmake --build build --parallel "$(nproc)" --target install
+
+      - name: Merge dependencies and MPI into install tree
+        run: |
+          set -euo pipefail
+          mkdir -p "$PARFLOW_DIR"/{bin,lib}
+
+          copy_prefix_libs() {
+            local root="$1"
+            for libdir in lib lib64; do
+              if [[ -d "$root/$libdir" ]]; then
+                cp -an "$root/$libdir/." "$PARFLOW_DIR/lib/"
+              fi
+            done
+          }
+
+          # HYPRE (built into release-depend)
+          copy_prefix_libs "$PARFLOW_DEP_DIR"
+
+          # HDF5, NetCDF, OpenMPI (HPC modules)
+          copy_prefix_libs "$PARFLOW_HDF5_PREFIX"
+          copy_prefix_libs "$PARFLOW_NETCDF_PREFIX"
+          copy_prefix_libs "$PARFLOW_MPI_PREFIX"
+
+          MPI_PREFIX="${PARFLOW_MPI_PREFIX}"
+          for bin in mpiexec mpirun ompi_info orted orterun prte prted; do
+            for bindir in "$MPI_PREFIX/bin" "$PARFLOW_DEP_DIR/bin"; do
+              if [[ -f "$bindir/$bin" ]]; then
+                cp -a "$bindir/$bin" "$PARFLOW_DIR/bin/"
+              fi
+            done
+          done
+
+          for dir in libexec/openmpi libexec/prte share/openmpi share/prte share/pmix etc/openmpi etc/prte etc/pmix lib/openmpi lib/prte lib/pmix; do
+            for root in "$MPI_PREFIX" "$PARFLOW_DEP_DIR"; do
+              if [[ -d "$root/$dir" ]]; then
+                mkdir -p "$PARFLOW_DIR/$(dirname "$dir")"
+                cp -a "$root/$dir" "$PARFLOW_DIR/$(dirname "$dir")/"
+              fi
+            done
+          done
+
+      - name: Bundle shared libraries
+        run: |
+          chmod +x scripts/linux-bundle-deps.sh
+          ./scripts/linux-bundle-deps.sh \
+            "$PARFLOW_DIR" \
+            "$PARFLOW_DEP_DIR" \
+            "$PARFLOW_MPI_PREFIX" \
+            "$PARFLOW_HDF5_PREFIX" \
+            "$PARFLOW_NETCDF_PREFIX" \
+            /lib64 \
+            /usr/lib64
+
+      - name: Patch config for relocatable install
+        run: |
+          CFG="$PARFLOW_DIR/config/pf-cmake-env.sh"
+          sed -i 's|^MPIEXEC=.*|MPIEXEC="${PARFLOW_DIR}/bin/mpiexec"|' "$CFG"
+          {
+            echo ''
+            echo '# Relocatable MPI stack (OpenMPI / PMIx / PRTE)'
+            echo 'export OPAL_PREFIX="${PARFLOW_DIR}"'
+            echo 'export OMPI_HOME="${PARFLOW_DIR}"'
+            echo 'export PMIX_INSTALL_PREFIX="${PARFLOW_DIR}"'
+            echo 'export PMIX_MCA_pcompress_base_silence_warning=1'
+          } >> "$CFG"
+
+      - name: Install parflow-env.sh
+        run: |
+          install -m 0644 "$GITHUB_WORKSPACE/misc/release/parflow-env.sh" "$PARFLOW_DIR/parflow-env.sh"
+
+      - name: Smoke test
+        run: |
+          CLEAN_PATH="/usr/bin:/bin:/usr/sbin:/sbin:${PARFLOW_DIR}/bin"
+          env -i HOME="$HOME" PATH="$CLEAN_PATH" TMPDIR="${TMPDIR:-/tmp}" \
+            PARFLOW_DIR="$PARFLOW_DIR" \
+            LD_LIBRARY_PATH="${PARFLOW_DIR}/lib" \
+            OPAL_PREFIX="$PARFLOW_DIR" OMPI_HOME="$PARFLOW_DIR" \
+            PMIX_INSTALL_PREFIX="$PARFLOW_DIR" \
+            PMIX_MCA_pcompress_base_silence_warning=1 \
+            "$PARFLOW_DIR/bin/parflow" -v
+
+      - name: Package bundle
+        run: |
+          set -euo pipefail
+          cp README-LINUX-BINARY.md "$PARFLOW_DIR/" || true
+          TAG="${{ github.event.release.tag_name }}"
+          OUT="parflow-${TAG}-linux-x86_64.tar.gz"
+          tar -czf "$GITHUB_WORKSPACE/${OUT}" -C "$(dirname "$PARFLOW_DIR")" "$(basename "$PARFLOW_DIR")"
+          echo "ASSET_NAME=${OUT}" >> "$GITHUB_ENV"
+          ls -lh "$GITHUB_WORKSPACE/${OUT}"
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.ASSET_NAME }}

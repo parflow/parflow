@@ -240,6 +240,7 @@ module clmtype
      real(r8) :: field_capacity ! field capacity from PF in m or [-] depending @RMM
      integer  :: vegwaterstresstype ! water stress formution type from PF @RMM
      integer  :: rzwaterstress  ! water stress averaged over RZ (default=0) or variable @RMM
+     real(r8) :: omega_max      ! max compensation factor for compensatory RWU (Li et al 2001) @RMM
 
      integer  :: beta_type      ! evap/beta formution type from PF @RMM
      real(r8) :: res_sat        ! residual saturation from PF [-] for use in beta @RMM

@@ -386,11 +386,22 @@ Solver:
 
     RZWaterStress:
       help: >
-        [Type: int] This key sets the distribution of transpiration over the root zone and changes the behavior of plant water limitations.
-        Water stress approaches result in different cut-offs for transpiration.  Two options are currently
-        implemented both use the beta-type water stress defined above.  Option 0 (default) will limit transpiration when the top soil
-        layer drops below wilting point, option 1 limits each layer independently.
+        [Type: int] This key sets the distribution of transpiration over the root zone and changes
+        the behavior of plant water limitations. All options use the beta-type water stress defined
+        by Solver.CLM.VegWaterStress. Option 0 (default) distributes transpiration by root fraction
+        only and limits all transpiration when the top soil layer drops below wilting point. Option 1
+        distributes transpiration weighted by both root fraction and per-layer water stress, with no
+        top-layer cutoff (Ferguson, Jefferson et al. 2016 EES). Option 2 adds compensatory root
+        water uptake (Li et al. 2001 J. Hydrology): wet layers compensate for dry layers by boosting
+        the aggregate transpiration factor btran up to a PFT-dependent maximum (omega_max, set in
+        drv_vegp.dat). The redistribution is the same as option 1 but the total transpiration is
+        higher when only part of the root zone is stressed. omega_max=1.0 (default) recovers option
+        1 behavior; values of 2-3 are recommended for deep-rooted trees.
+      default: 0
       domains:
+        IntValue:
+          min_value: 0
+          max_value: 2
         RequiresModule: CLM
 
     SingleFile:
