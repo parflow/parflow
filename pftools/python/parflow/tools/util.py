@@ -49,11 +49,10 @@ def _key_to_explicit_accessor(key: Union[slice, int, Iterable]) -> dict:
             "squeeze": True,
         }
     elif isinstance(key, Iterable):
-        sl = int(key - np.min(key))
         accessor = {
             "start": int(np.min(key)),
             "stop": int(np.max(key) + 1),
-            "indices": slice(sl, sl + 1),
+            "indices": np.array(key) - np.min(key),
             "squeeze": False,
         }
     return accessor
