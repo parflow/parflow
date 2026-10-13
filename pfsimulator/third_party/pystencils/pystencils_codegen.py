@@ -98,8 +98,10 @@ def create_kernel_func(
         optimize: bool = True,
         allow_vect: bool = True,
         reduction: bool = False,
-        timing_index: bool = False
+        timing_index: bool = False,
+        sync: bool = False
 ):
+    """Generates the kernel and the function PyCodegen_<func_name> launching it."""
     target = sfg.context.project_info["target"]
     func_name = f"PyCodegen_{func_name}"
     kernel_name = f"{func_name}_gen"
@@ -147,25 +149,22 @@ def create_kernel_func(
         # automatically extend kernel call with error handling
         sfg.include("<stdio.h>")
 
+        error_check = [
+            "cudaError_t err = cudaPeekAtLastError();",
+            sfg.branch("err != cudaSuccess")(
+                'printf("\\n\\n%s in %s at line %d\\n", cudaGetErrorString(err), __FILE__, __LINE__);\n'
+                "exit(1);"
+            ),
+        ]
+        synchronize = ["cudaStreamSynchronize(0);"] if sync else []
+
         if timing_var is not None:
             sfg.function(func_name).params(*kernel.parameters, timing_var)(
-                *(bracket_timing(*kernel_call) + [
-                    "cudaError_t err = cudaPeekAtLastError();",
-                    sfg.branch("err != cudaSuccess")(
-                        'printf("\\n\\n%s in %s at line %d\\n", cudaGetErrorString(err), __FILE__, __LINE__);\n'
-                        "exit(1);"
-                    ),
-                ])
+                *(bracket_timing(*kernel_call) + error_check + synchronize)
             )
         else:
             sfg.function(func_name)(
-                *(kernel_call + [
-                    "cudaError_t err = cudaPeekAtLastError();",
-                    sfg.branch("err != cudaSuccess")(
-                        'printf("\\n\\n%s in %s at line %d\\n", cudaGetErrorString(err), __FILE__, __LINE__);\n'
-                        "exit(1);"
-                    ),
-                ])
+                *(kernel_call + error_check + synchronize)
             )
     else:
         ValueError(f"Invalid target {target}. Only (vector) CPU and CUDA targets are "

@@ -143,7 +143,8 @@ with SourceFileGenerator() as sfg:
     )
 
     # z = c (PFVConstInit)
-    create_kernel_func(sfg, ps.Assignment(z.center(), c), "VConstInit")
+    # synchronized: host code accesses vectors right after
+    create_kernel_func(sfg, ps.Assignment(z.center(), c), "VConstInit", sync=True)
 
     # z_i = x_i * y_i (PFVProd)
     create_kernel_func(sfg, ps.Assignment(z.center(), x.center() * y.center()), "VProd")
