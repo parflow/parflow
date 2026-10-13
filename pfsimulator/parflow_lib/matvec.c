@@ -33,6 +33,10 @@
 
 #include "parflow.h"
 
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+#include "pystencils_mg_semi.h"
+#endif
+
 /*--------------------------------------------------------------------------
  * Matvec
  *--------------------------------------------------------------------------*/
@@ -366,6 +370,190 @@ void            Matvec(
   EventTiming[NumEvents++][MatvecEnd] = amps_Clock();
 #endif
 }
+
+
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+/*--------------------------------------------------------------------------
+ * FusedCopyAndMatvec - fused kernel for the residual r = b - A x
+ *
+ * Requires a 7pt stencil and unit strides of the compute regions,
+ * otherwise falls back to the unfused Copy and Matvec.
+ *--------------------------------------------------------------------------*/
+
+void            FusedCopyAndMatvec(
+                                   Matrix *A,
+                                   Vector *x,
+                                   Vector *b,
+                                   Vector *r)
+{
+  VectorUpdateCommHandle *handle = NULL;
+
+  Grid           *grid = MatrixGrid(A);
+
+  SubregionArray *subregion_array;
+  Subregion      *subregion;
+
+  ComputePkg     *compute_pkg;
+
+  Region         *compute_reg = NULL;
+
+  Subvector      *r_sub = NULL;
+  Subvector      *x_sub = NULL;
+  Subvector      *b_sub = NULL;
+  Submatrix      *A_sub = NULL;
+
+  Stencil        *stencil = MatrixStencil(A);
+  StencilElt     *s = StencilShape(stencil);
+
+  int compute_i, sra, sr;
+
+  double         *rp, *bp;
+  double         *ap0, *ap1, *ap2, *ap3, *ap4, *ap5, *ap6;
+  double         *xp0, *xp1, *xp2, *xp3, *xp4, *xp5, *xp6;
+
+  int ix, iy, iz;
+  int nx, ny, nz;
+  int sx, sy, sz;
+
+  int nx_v = 0, ny_v = 0;
+  int nx_b = 0, ny_b = 0;
+  int nx_m = 0, ny_m = 0;
+
+  int feasible = (StencilSize(stencil) == 7);
+
+  compute_pkg = GridComputePkg(grid, VectorUpdateAll);
+
+  /* the vectorized kernel assumes unit strides */
+  for (compute_i = 0; compute_i < 2 && feasible; compute_i++)
+  {
+    compute_reg = compute_i ? ComputePkgDepRegion(compute_pkg) : ComputePkgIndRegion(compute_pkg);
+
+    ForSubregionArrayI(sra, compute_reg)
+    {
+      subregion_array = RegionSubregionArray(compute_reg, sra);
+
+      ForSubregionI(sr, subregion_array)
+      {
+        subregion = SubregionArraySubregion(subregion_array, sr);
+
+        if (SubregionSX(subregion) != 1 || SubregionSY(subregion) != 1 || SubregionSZ(subregion) != 1)
+          feasible = 0;
+      }
+    }
+  }
+
+  if (!feasible)
+  {
+    /* unfused fallback */
+    Copy(b, r);
+    Matvec(-1.0, A, x, 1.0, r);
+    return;
+  }
+
+  /*-----------------------------------------------------------------------
+   * Begin timing
+   *-----------------------------------------------------------------------*/
+
+  BeginTiming(FusedCopyAndMatvecTimingIndex);
+
+  for (compute_i = 0; compute_i < 2; compute_i++)
+  {
+    switch (compute_i)
+    {
+      case 0:
+        handle = InitVectorUpdate(x, VectorUpdateAll);
+        compute_reg = ComputePkgIndRegion(compute_pkg);
+        break;
+
+      case 1:
+        FinalizeVectorUpdate(handle);
+        compute_reg = ComputePkgDepRegion(compute_pkg);
+        break;
+    }
+
+    ForSubregionArrayI(sra, compute_reg)
+    {
+      subregion_array = RegionSubregionArray(compute_reg, sra);
+
+      if (SubregionArraySize(subregion_array))
+      {
+        r_sub = VectorSubvector(r, sra);
+        x_sub = VectorSubvector(x, sra);
+        b_sub = VectorSubvector(b, sra);
+
+        A_sub = MatrixSubmatrix(A, sra);
+
+        nx_v = SubvectorNX(r_sub);
+        ny_v = SubvectorNY(r_sub);
+
+        nx_b = SubvectorNX(b_sub);
+        ny_b = SubvectorNY(b_sub);
+
+        nx_m = SubmatrixNX(A_sub);
+        ny_m = SubmatrixNY(A_sub);
+      }
+
+      /*-----------------------------------------------------------------
+       * r = b - A*x (fused kernel)
+       *-----------------------------------------------------------------*/
+
+      ForSubregionI(sr, subregion_array)
+      {
+        subregion = SubregionArraySubregion(subregion_array, sr);
+
+        ix = SubregionIX(subregion);
+        iy = SubregionIY(subregion);
+        iz = SubregionIZ(subregion);
+
+        nx = SubregionNX(subregion);
+        ny = SubregionNY(subregion);
+        nz = SubregionNZ(subregion);
+
+        sx = SubregionSX(subregion);
+        sy = SubregionSY(subregion);
+        sz = SubregionSZ(subregion);
+
+        if (nx && ny && nz)
+        {
+          rp = SubvectorElt(r_sub, ix, iy, iz);
+          bp = SubvectorElt(b_sub, ix, iy, iz);
+
+          xp0 = SubvectorElt(x_sub, ix + s[0][0], iy + s[0][1], iz + s[0][2]);
+          xp1 = SubvectorElt(x_sub, ix + s[1][0], iy + s[1][1], iz + s[1][2]);
+          xp2 = SubvectorElt(x_sub, ix + s[2][0], iy + s[2][1], iz + s[2][2]);
+          xp3 = SubvectorElt(x_sub, ix + s[3][0], iy + s[3][1], iz + s[3][2]);
+          xp4 = SubvectorElt(x_sub, ix + s[4][0], iy + s[4][1], iz + s[4][2]);
+          xp5 = SubvectorElt(x_sub, ix + s[5][0], iy + s[5][1], iz + s[5][2]);
+          xp6 = SubvectorElt(x_sub, ix + s[6][0], iy + s[6][1], iz + s[6][2]);
+
+          ap0 = SubmatrixElt(A_sub, 0, ix, iy, iz);
+          ap1 = SubmatrixElt(A_sub, 1, ix, iy, iz);
+          ap2 = SubmatrixElt(A_sub, 2, ix, iy, iz);
+          ap3 = SubmatrixElt(A_sub, 3, ix, iy, iz);
+          ap4 = SubmatrixElt(A_sub, 4, ix, iy, iz);
+          ap5 = SubmatrixElt(A_sub, 5, ix, iy, iz);
+          ap6 = SubmatrixElt(A_sub, 6, ix, iy, iz);
+
+          PyCodegen_MGSemi_FusedCopyAndMatvec7Pt(ap0, ap1, ap2, ap3, ap4, ap5, ap6,
+                                                 bp, rp,
+                                                 xp0, xp1, xp2, xp3, xp4, xp5, xp6,
+                                                 nx, ny, nz,
+                                                 sx, sy * nx_b, sz * nx_b * ny_b,
+                                                 1, nx_m, nx_m * ny_m,
+                                                 sx, sy * nx_v, sz * nx_v * ny_v);
+        }
+      }
+    }
+  }
+
+  /*-----------------------------------------------------------------------
+   * End timing
+   *-----------------------------------------------------------------------*/
+
+  IncFLOPCount(2 * (MatrixSize(A) + VectorSize(x)));
+  EndTiming(FusedCopyAndMatvecTimingIndex);
+}
+#endif
 
 
 /*--------------------------------------------------------------------------

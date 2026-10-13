@@ -222,8 +222,13 @@ void     MGSemi(
     /* first smoothing is already done */
 
     /* compute residual (b - Ax) */
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+    /* fused kernel: Copy and Matvec in a single pass */
+    FusedCopyAndMatvec(A, x, b, temp_vec_l[0]);
+#else
     Copy(b, temp_vec_l[0]);
     Matvec(-1.0, A, x, 1.0, temp_vec_l[0]);
+#endif
 
     /* do preliminary convergence check */
     if (tol > 0.0)
@@ -258,8 +263,13 @@ void     MGSemi(
       PFModuleInvokeType(LinearSolverInvoke, smooth_l[l], (x_l[l], b_l[l], 0.0, 1));
 
       /* compute residual (b - Ax) */
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+      /* fused kernel: Copy and Matvec in a single pass */
+      FusedCopyAndMatvec(A_l[l], x_l[l], b_l[l], temp_vec_l[l]);
+#else
       Copy(b_l[l], temp_vec_l[l]);
       Matvec(-1.0, A_l[l], x_l[l], 1.0, temp_vec_l[l]);
+#endif
 
       /* restrict residual */
       MGSemiRestrict(A_l[l], temp_vec_l[l], b_l[l + 1], P_l[l],
@@ -289,6 +299,12 @@ void     MGSemi(
 
     for (l = (num_levels - 2); l >= 1; l--)
     {
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+      /* fused kernels: prolong error and update solution (x = x + e) in the same pass */
+      MGSemiFusedProlongAndAxpy(A_l[l], temp_vec_l[l], x_l[l + 1], x_l[l], P_l[l],
+                                f_sra_l[l], c_sra_l[l],
+                                prolong_compute_pkg_l[l], prolong_comm_pkg_l[l]);
+#else
       /* prolong error */
       MGSemiProlong(A_l[l], temp_vec_l[l], x_l[l + 1], P_l[l],
                     f_sra_l[l], c_sra_l[l],
@@ -305,11 +321,18 @@ void     MGSemi(
 
       /* update solution (x = x + e) */
       Axpy(1.0, temp_vec_l[l], x_l[l]);
+#endif
 
       /* smooth (non-zero initial x) */
       PFModuleInvokeType(LinearSolverInvoke, smooth_l[l], (x_l[l], b_l[l], 0.0, 0));
     }
 
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+    /* fused kernels: prolong error and update solution (x = x + e) in the same pass */
+    MGSemiFusedProlongAndAxpy(A, temp_vec_l[0], x_l[1], x, P_l[0],
+                              f_sra_l[0], c_sra_l[0],
+                              prolong_compute_pkg_l[0], prolong_comm_pkg_l[0]);
+#else
     /* prolong error */
     MGSemiProlong(A, temp_vec_l[0], x_l[1], P_l[0],
                   f_sra_l[0], c_sra_l[0],
@@ -321,6 +344,7 @@ void     MGSemi(
 
     /* update solution (x = x + e) */
     Axpy(1.0, temp_vec_l[0], x);
+#endif
 
     /* smooth (non-zero initial x) */
     PFModuleInvokeType(LinearSolverInvoke, smooth_l[0], (x, b, 0.0, 0));
@@ -333,8 +357,13 @@ void     MGSemi(
     {
       if (almost_converged)
       {
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+        /* fused kernel: Copy and Matvec in a single pass */
+        FusedCopyAndMatvec(A, x, b, temp_vec_l[0]);
+#else
         Copy(b, temp_vec_l[0]);
         Matvec(-1.0, A, x, 1.0, temp_vec_l[0]);
+#endif
         r_dot_r = InnerProd(temp_vec_l[0], temp_vec_l[0]);
 
 #if 0

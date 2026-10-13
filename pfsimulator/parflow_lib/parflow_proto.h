@@ -381,6 +381,7 @@ void InitMatrix(Matrix *A, double value);
 
 /* matvec.c */
 void Matvec(double alpha, Matrix *A, Vector *x, double beta, Vector *y);
+void FusedCopyAndMatvec(Matrix *A, Vector *x, Vector *b, Vector *r);
 
 /* matvecSubMat.c */
 void MatvecSubMat(void *  current_state,
@@ -430,6 +431,7 @@ int MGSemiSizeOfTempData(void);
 
 /* mg_semi_prolong.c */
 void MGSemiProlong(Matrix *A_f, Vector *e_f, Vector *e_c, Matrix *P, SubregionArray *f_sr_array, SubregionArray *c_sr_array, ComputePkg *compute_pkg, CommPkg *e_f_comm_pkg);
+void MGSemiFusedProlongAndAxpy(Matrix *A_f, Vector *e_f, Vector *e_c, Vector *x_f, Matrix *P, SubregionArray *f_sr_array, SubregionArray *c_sr_array, ComputePkg *compute_pkg, CommPkg *e_f_comm_pkg);
 ComputePkg *NewMGSemiProlongComputePkg(Grid *grid, Stencil *stencil, int sx, int sy, int sz, int c_index, int f_index);
 
 /* mg_semi_restrict.c */

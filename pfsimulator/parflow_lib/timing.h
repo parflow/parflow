@@ -75,8 +75,10 @@
 #define VectorUtilityRoutineIndex 19
 #define KINAtimesDQFusedReduceTimingIndex 20
 #define FluxFusedAccumulationAndSourceTermsTimingIndex 21
+#define FusedCopyAndMatvecTimingIndex 22
+#define MGSemiFusedProlongAndAxpyTimingIndex 23
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex 22
+#define VectorUpdateTimingIndex 24
 #endif
 
 /*--------------------------------------------------------------------------

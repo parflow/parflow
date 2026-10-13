@@ -32,6 +32,10 @@
 *****************************************************************************/
 #include "parflow.h"
 
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+#include "pystencils_mg_semi.h"
+#endif
+
 /*--------------------------------------------------------------------------
  * MGSemiProlong
  *--------------------------------------------------------------------------*/
@@ -205,6 +209,195 @@ void             MGSemiProlong(
 
   IncFLOPCount(3 * VectorSize(e_c));
 }
+
+
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+/*--------------------------------------------------------------------------
+ * MGSemiFusedProlongAndAxpy - fused kernels for MGSemiProlong and the
+ *   update of the fine solution, Axpy(1.0, e_f, x_f): each of the two loops
+ *   of the prolongation (coarse points and remaining fine points, which
+ *   together cover the fine subgrids) also adds e_f to x_f, so the separate
+ *   Axpy pass is dropped
+ *--------------------------------------------------------------------------*/
+
+void             MGSemiFusedProlongAndAxpy(
+                                           Matrix *        A_f,
+                                           Vector *        e_f,
+                                           Vector *        e_c,
+                                           Vector *        x_f,
+                                           Matrix *        P,
+                                           SubregionArray *f_sr_array,
+                                           SubregionArray *c_sr_array,
+                                           ComputePkg *    compute_pkg,
+                                           CommPkg *       e_f_comm_pkg)
+{
+  SubregionArray *subregion_array;
+
+  Subregion      *subregion;
+
+  Region         *compute_reg = NULL;
+
+  Subvector      *e_f_sub = NULL;
+  Subvector      *e_c_sub;
+  Subvector      *x_f_sub = NULL;
+
+  Submatrix      *P_sub = NULL;
+
+  double         *e_fp, *e_cp, *x_fp;
+
+  double         *p1, *p2;
+
+  int ix, iy, iz;
+  int nx, ny, nz;
+  int nx_f = 0, ny_f = 0;
+  int nx_c = 0, ny_c = 0;
+  int nx_x = 0, ny_x = 0;
+
+  int sx, sy, sz;
+
+  int compute_i, i, j;
+  int stride;
+
+  CommHandle     *handle = NULL;
+
+  (void)A_f;
+  (void)f_sr_array;
+
+  BeginTiming(MGSemiFusedProlongAndAxpyTimingIndex);
+
+  /*--------------------------------------------------------------------
+   * Compute e_f and update x_f in c_sr_array (fused kernel)
+   *--------------------------------------------------------------------*/
+
+  ForSubregionI(i, c_sr_array)
+  {
+    subregion = SubregionArraySubregion(c_sr_array, i);
+
+    ix = SubregionIX(subregion);
+    iy = SubregionIY(subregion);
+    iz = SubregionIZ(subregion);
+
+    nx = SubregionNX(subregion);
+    ny = SubregionNY(subregion);
+    nz = SubregionNZ(subregion);
+
+    if (nx && ny && nz)
+    {
+      sx = SubregionSX(subregion);
+      sy = SubregionSY(subregion);
+      sz = SubregionSZ(subregion);
+
+      e_c_sub = VectorSubvector(e_c, i);
+      e_f_sub = VectorSubvector(e_f, i);
+      x_f_sub = VectorSubvector(x_f, i);
+
+      nx_c = SubvectorNX(e_c_sub);
+      ny_c = SubvectorNY(e_c_sub);
+
+      nx_f = SubvectorNX(e_f_sub);
+      ny_f = SubvectorNY(e_f_sub);
+
+      nx_x = SubvectorNX(x_f_sub);
+      ny_x = SubvectorNY(x_f_sub);
+
+      e_cp = SubvectorElt(e_c_sub, ix / sx, iy / sy, iz / sz);
+      e_fp = SubvectorElt(e_f_sub, ix, iy, iz);
+      x_fp = SubvectorElt(x_f_sub, ix, iy, iz);
+
+      PyCodegen_MGSemi_FusedProlongInjectionAndAxpy(e_cp, e_fp, x_fp,
+                                                    nx, ny, nz,
+                                                    1, nx_c, nx_c * ny_c,
+                                                    sx, sy * nx_f, sz * nx_f * ny_f,
+                                                    sx, sy * nx_x, sz * nx_x * ny_x);
+    }
+  }
+
+  /*--------------------------------------------------------------------
+   * Compute e_f and update x_f in f_sr_array (fused kernel)
+   *--------------------------------------------------------------------*/
+
+  for (compute_i = 0; compute_i < 2; compute_i++)
+  {
+    switch (compute_i)
+    {
+      case 0:
+        handle = InitCommunication(e_f_comm_pkg);
+        compute_reg = ComputePkgIndRegion(compute_pkg);
+        break;
+
+      case 1:
+        FinalizeCommunication(handle);
+        compute_reg = ComputePkgDepRegion(compute_pkg);
+        break;
+    }
+
+    ForSubregionArrayI(i, compute_reg)
+    {
+      subregion_array = RegionSubregionArray(compute_reg, i);
+
+      if (SubregionArraySize(subregion_array))
+      {
+        e_f_sub = VectorSubvector(e_f, i);
+        x_f_sub = VectorSubvector(x_f, i);
+
+        P_sub = MatrixSubmatrix(P, i);
+
+        nx_f = SubvectorNX(e_f_sub);
+        ny_f = SubvectorNY(e_f_sub);
+
+        nx_x = SubvectorNX(x_f_sub);
+        ny_x = SubvectorNY(x_f_sub);
+
+        nx_c = SubmatrixNX(P_sub);
+        ny_c = SubmatrixNY(P_sub);
+      }
+
+      ForSubregionI(j, subregion_array)
+      {
+        subregion = SubregionArraySubregion(subregion_array, j);
+
+        ix = SubregionIX(subregion);
+        iy = SubregionIY(subregion);
+        iz = SubregionIZ(subregion);
+
+        nx = SubregionNX(subregion);
+        ny = SubregionNY(subregion);
+        nz = SubregionNZ(subregion);
+
+        if (nx && ny && nz)
+        {
+          sx = SubregionSX(subregion);
+          sy = SubregionSY(subregion);
+          sz = SubregionSZ(subregion);
+
+          stride = (sx - 1) + ((sy - 1) + (sz - 1) * ny_f) * nx_f;
+
+          e_fp = SubvectorElt(e_f_sub, ix, iy, iz);
+          x_fp = SubvectorElt(x_f_sub, ix, iy, iz);
+
+          p1 = SubmatrixElt(P_sub, 0, ix, iy, iz);
+          p2 = SubmatrixElt(P_sub, 1, ix, iy, iz);
+
+          PyCodegen_MGSemi_FusedProlongInterpolationAndAxpy(e_fp, e_fp - stride, e_fp + stride,
+                                                            p1, p2, x_fp,
+                                                            nx, ny, nz,
+                                                            sx, sy * nx_f, sz * nx_f * ny_f,
+                                                            1, nx_c, nx_c * ny_c,
+                                                            sx, sy * nx_x, sz * nx_x * ny_x);
+        }
+      }
+    }
+  }
+
+  /*-----------------------------------------------------------------------
+   * Increment the flop counter
+   *-----------------------------------------------------------------------*/
+
+  IncFLOPCount(3 * VectorSize(e_c) + 2 * VectorSize(x_f));
+
+  EndTiming(MGSemiFusedProlongAndAxpyTimingIndex);
+}
+#endif
 
 
 /*--------------------------------------------------------------------------

@@ -72,6 +72,8 @@ void  NewTiming()
   RegisterTiming("Vector Utility Routines");
   RegisterTiming("KINAtimesDQ Fused Reduction");
   RegisterTiming("Flux FusedAccumulationAndSource Terms");
+  RegisterTiming("Fused Copy And Matvec");
+  RegisterTiming("MGSemi Fused Prolong And Axpy");
 #ifdef VECTOR_UPDATE_TIMING
   RegisterTiming("VectorUpdate");
 #endif

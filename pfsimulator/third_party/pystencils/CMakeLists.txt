@@ -15,7 +15,7 @@ endif ()
 set ( PystencilsSfg_SCRIPTS pystencils_vector_utilities.py pystencils_nonlinear_eval.py pystencils_rbgs.py pystencils_van_genuchten.py )
 
 if ( ${PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS} )
-        list ( APPEND PystencilsSfg_SCRIPTS pystencils_kinsol_atimesdq.py )
+        list ( APPEND PystencilsSfg_SCRIPTS pystencils_kinsol_atimesdq.py pystencils_mg_semi.py )
 endif ()
 
 # time codegen and compilation of each kernel
