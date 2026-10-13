@@ -511,20 +511,21 @@ For this case, the solver needs to be set to RICHARDS:
 pfset Solver		Richards
 \end{verbatim}
 
-\parflow{} may also be coupled with the land surface model \code{CLM} \cite{Dai03}.  
-This version of \code{CLM} has been extensively modified to be called from within \parflow{} 
-as a subroutine, to support parallel infrastructure including I/O and most importantly with modified 
+\parflow{} may also be coupled with the land surface models \code{CLM} \cite{Dai03} and \code{CoLM} \cite{Yang2026}.
+The bundled land model code has been modified to be called from within \parflow{}
+as a subroutine, to support parallel infrastructure including I/O and most importantly with modified
 physics to support coupled operation to best utilize the integrated hydrology
- in \parflow{} \cite{MM05, KM08a}.  To couple \code{CLM} into \parflow{} first the
- \code{--with-clm} option is needed in the \code{./configure} command as indicated in \S~\ref{Installing ParFlow}. 
- Second, the \code{CLM} module needs to be called from within \parflow{}, this is done using the following 
+ in \parflow{} \cite{MM05, KM08a}.  To couple \code{CLM} or \code{CoLM} into \parflow{} first the
+ \code{--with-clm} option is needed in the \code{./configure} command as indicated in \S~\ref{Installing ParFlow}.
+ Second, the \code{CLM} or \code{CoLM} needs to be called from within \parflow{}, this is done using the following
  solver key:
 \begin{verbatim}
 pfset Solver.LSM CLM
+pfset Solver.LSM CoLM
 \end{verbatim}
-Note that this key is used to call \code{CLM} from within the nonlinear solver time loop 
-and requires that the solver bet set to RICHARDS to work.  Note also that this key defaults to 
-\emph{not} call \code{CLM} so if this line is omitted \code{CLM} will not be called from within 
-\parflow{} even if compiled and linked.  Currently, \code{CLM} gets some of it's information from \parflow{} 
+Note that this key is used to call \code{CLM} or \code{CoLM} from within the nonlinear solver time loop
+and requires that the solver be set to RICHARDS to work.  Note also that this key defaults to
+\emph{not} call a land surface model so if this line is omitted neither \code{CLM} nor \code{CoLM} will be called from within
+\parflow{} even if compiled and linked.  Currently, \code{CLM} or \code{CoLM} gets some of it's information from \parflow{}
 such as grid, topology and discretization, but also has some of it's own input files for land cover, land cover
 types and atmospheric forcing.

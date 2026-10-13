@@ -124,7 +124,7 @@ function main() {
 
    failed=false
 
-   for i in $(find . -name \*.[ch] | grep -v './build\|third_party\|./py-env')
+   for i in $(find . -name \*.[ch] | grep -v './build\|third_party\|./py-env\|./pfsimulator/colm/include/define.h')
    do
       if $check
       then
