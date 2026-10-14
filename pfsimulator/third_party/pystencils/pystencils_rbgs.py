@@ -1,5 +1,8 @@
+import sympy as sp
+
 from pystencils import TypedSymbol
 from pystencils import DynamicType
+from pystencils.sympyextensions.integer_functions import int_rem
 
 from field_factory import FieldFactory
 from pystencils_codegen import *
@@ -54,6 +57,36 @@ with SourceFileGenerator() as sfg:
         sfg,
         ps.Assignment(x[0].center(), (b.center() - stencil_convolution) / A[0].center()),
         "RBGS_7PtKernel",
+        allow_vect=False,
+        timing_index=True,
+    )
+
+    # checkerboard kernels: one launch per colour sweep instead of one per stride-2 sub-lattice
+
+    ctr = ps.DEFAULTS.spatial_counters
+    colour_parity = TypedSymbol("colour_parity", DynamicType.INDEX_TYPE)
+    is_colour = sp.Eq(int_rem(ctr[0] + ctr[1] + ctr[2] + colour_parity, 2), 0)
+
+    ## zero-optimization kernel
+    create_kernel_func(
+        sfg,
+        ps.Assignment(
+            x[0].center(),
+            sp.Piecewise((b.center() / A[0].center(), is_colour), (x[0].center(), True)),
+        ),
+        "RBGS_ZeroOptimizationCheckerboardKernel",
+        allow_vect=False,
+        timing_index=True,
+    )
+
+    ## regular 7pt kernel
+    create_kernel_func(
+        sfg,
+        ps.Assignment(
+            x[0].center(),
+            sp.Piecewise(((b.center() - stencil_convolution) / A[0].center(), is_colour), (x[0].center(), True)),
+        ),
+        "RBGS_7PtCheckerboardKernel",
         allow_vect=False,
         timing_index=True,
     )

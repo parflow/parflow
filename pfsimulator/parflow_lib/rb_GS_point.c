@@ -156,7 +156,12 @@ void     RedBlackGSPoint(
         break;
     }
 
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+    // unprojected box: insert conditional into kernel instead of launching multiple ones with strides of two
+    compute_pkg = GridComputePkg(VectorGrid(x), VectorUpdateAll);
+#else
     compute_pkg = GridComputePkg(VectorGrid(x), vector_update_mode);
+#endif
 
     for (compute_i = 0; compute_i < 2; compute_i++)
     {
@@ -211,7 +216,14 @@ void     RedBlackGSPoint(
           x0 = SubvectorElt(x_sub, ix, iy, iz);
           bp = SubvectorElt(b_sub, ix, iy, iz);
 
-#ifdef PARFLOW_HAVE_PYSTENCILS
+#if defined(PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS)
+          PyCodegen_RBGS_ZeroOptimizationCheckerboardKernel(a0, bp, x0,
+                                                            nx, ny, nz,
+                                                            sx, sy * nx_m, sz * nx_m * ny_m,
+                                                            sx, sy * nx_v, sz * nx_v * ny_v,
+                                                            (ix + iy + iz + (rb == 0)) & 1,
+                                                            RbgsZeroOptiTimingIndex);
+#elif defined(PARFLOW_HAVE_PYSTENCILS)
           PyCodegen_RBGS_ZeroOptimizationKernel(a0, bp, x0,
                                                 nx, ny, nz,
                                                 sx, sy * nx_m, sz * nx_m * ny_m,
@@ -260,7 +272,12 @@ void     RedBlackGSPoint(
         break;
     }
 
+#ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
+    // unprojected box again
+    compute_pkg = GridComputePkg(VectorGrid(x), VectorUpdateAll);
+#else
     compute_pkg = GridComputePkg(VectorGrid(x), vector_update_mode);
+#endif
 
     for (compute_i = 0; compute_i < 2; compute_i++)
     {
@@ -352,7 +369,16 @@ void     RedBlackGSPoint(
 
           bp = SubvectorElt(b_sub, ix, iy, iz);
 
-#ifdef PARFLOW_HAVE_PYSTENCILS
+#if defined(PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS)
+          PyCodegen_RBGS_7PtCheckerboardKernel(a0, a1, a2, a3, a4, a5, a6,
+                                               bp,
+                                               x0, x1, x2, x3, x4, x5, x6,
+                                               nx, ny, nz,
+                                               sx, sy * nx_m, sz * nx_m * ny_m,
+                                               sx, sy * nx_v, sz * nx_v * ny_v,
+                                               (ix + iy + iz + (rb == 0)) & 1,
+                                               RbgsSevenPointTimingIndex);
+#elif defined(PARFLOW_HAVE_PYSTENCILS)
           PyCodegen_RBGS_7PtKernel(a0, a1, a2, a3, a4, a5, a6,
                                    bp,
                                    x0, x1, x2, x3, x4, x5, x6,
