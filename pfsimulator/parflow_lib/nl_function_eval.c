@@ -337,6 +337,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   PFModuleInvokeType(SaturationInvoke, saturation_module, (saturation, pressure, density,
                                                            gravity, problem_data, CALCFCN));
 
+  BeginTiming(NlFunctionEvalAccumulationAndSourcesTimingIndex);
 #ifdef PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS
   /* Phase source values only depend on problem data and time. Calculate
    * them upfront into a separate vector so that the source terms can be
@@ -542,6 +543,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 #endif
   }
 #endif /* PARFLOW_HAVE_PYSTENCILS_FUSED_KERNELS */
+  EndTiming(NlFunctionEvalAccumulationAndSourcesTimingIndex);
 
   bc_struct = PFModuleInvokeType(BCPressureInvoke, bc_pressure,
                                  (problem_data, grid, gr_domain, time));

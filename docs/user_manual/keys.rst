@@ -4532,6 +4532,20 @@ only once during the run. The data is written as a ParFlow binary file.
 
       <runname>.Solver.PrintSubsurf = False     ## Python syntax
 
+*integer* **Solver.TimingDetail** 0 This key sets the detail of the
+timing file: 
+   - 0 for solver phases and modules, 
+   - 1 to add algorithmic steps,
+   - 2 to add single kernels
+
+.. container:: list
+
+   ::
+
+      pfset Solver.TimingDetail 1           ## TCL syntax
+
+      <runname>.Solver.TimingDetail = 1     ## Python syntax
+
 *string* **Solver.PrintChannelWidth** True This key is used to turn on
 printing of the channelwidth data, ChannelWidthX and ChannelWidthY. The data
 is printed before the main time stepping loop - only once during the run.

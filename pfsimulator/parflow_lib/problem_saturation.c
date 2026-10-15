@@ -167,6 +167,8 @@ void     Saturation(
 #undef max
   InitVectorAll(phase_saturation, -FLT_MAX);
 
+  BeginTiming(SaturationTimingIndex);
+
   switch ((public_xtra->type))
   {
     case 0: /* Constant saturation */
@@ -668,6 +670,8 @@ void     Saturation(
       break;
     }        /* End case 5 */
   }          /* End switch */
+
+  EndTiming(SaturationTimingIndex);
 }
 
 /*--------------------------------------------------------------------------

@@ -46,6 +46,15 @@ void  NewTiming()
 {
   timing = ctalloc(TimingType, 1);
 
+  /* get timing detail config */
+  timing->detail = GetIntDefault("Solver.TimingDetail", 0);
+  if (timing->detail < 0 || timing->detail > 2)
+  {
+    char value[32];
+    sprintf(value, "%d", timing->detail);
+    InputError("Error: Invalid value <%s> for key <%s>, must be 0, 1 or 2\n", value, "Solver.TimingDetail");
+  }
+
   /* The order of these registers need to be in sync with the defines
    * found in timing.h
    */
@@ -72,8 +81,13 @@ void  NewTiming()
   RegisterTiming("Vector Utility Routines");
   RegisterTiming("KINAtimesDQ Fused Reduction");
   RegisterTiming("Flux FusedAccumulationAndSource Terms");
-  RegisterTiming("Fused Copy And Matvec");
-  RegisterTiming("MGSemi Fused Prolong And Axpy");
+  RegisterTiming("MGSemi Smoothing");
+  RegisterTiming("MGSemi Restriction");
+  RegisterTiming("MGSemi Coarse Solve");
+  RegisterTiming("MGSemi Prolongation");
+  RegisterTiming("KINAtimesDQ Reductions");
+  RegisterTiming("NlFunctionEval Accumulation And Sources");
+  RegisterTiming("Saturation");
 #ifdef VECTOR_UPDATE_TIMING
   RegisterTiming("VectorUpdate");
 #endif

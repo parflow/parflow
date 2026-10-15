@@ -735,6 +735,7 @@ void    InitVector(
                    Vector *v,
                    double  value)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(v);
 
   Subvector  *v_sub;
@@ -784,6 +785,7 @@ void    InitVector(
     });
 #endif
   }
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 /*--------------------------------------------------------------------------
@@ -794,6 +796,7 @@ void    InitVectorAll(
                       Vector *v,
                       double  value)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(v);
 
   Subvector  *v_sub;
@@ -840,6 +843,7 @@ void    InitVectorAll(
 #ifdef SHMEM_OBJECTS
   amps_Sync(amps_CommWorld);
 #endif
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 

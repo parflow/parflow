@@ -450,12 +450,6 @@ void            FusedCopyAndMatvec(
     return;
   }
 
-  /*-----------------------------------------------------------------------
-   * Begin timing
-   *-----------------------------------------------------------------------*/
-
-  BeginTiming(FusedCopyAndMatvecTimingIndex);
-
   for (compute_i = 0; compute_i < 2; compute_i++)
   {
     switch (compute_i)
@@ -546,12 +540,7 @@ void            FusedCopyAndMatvec(
     }
   }
 
-  /*-----------------------------------------------------------------------
-   * End timing
-   *-----------------------------------------------------------------------*/
-
   IncFLOPCount(2 * (MatrixSize(A) + VectorSize(x)));
-  EndTiming(FusedCopyAndMatvecTimingIndex);
 }
 #endif
 

@@ -263,8 +263,6 @@ void             MGSemiFusedProlongAndAxpy(
   (void)A_f;
   (void)f_sr_array;
 
-  BeginTiming(MGSemiFusedProlongAndAxpyTimingIndex);
-
   /*--------------------------------------------------------------------
    * Compute e_f and update x_f in c_sr_array (fused kernel)
    *--------------------------------------------------------------------*/
@@ -394,8 +392,6 @@ void             MGSemiFusedProlongAndAxpy(
    *-----------------------------------------------------------------------*/
 
   IncFLOPCount(3 * VectorSize(e_c) + 2 * VectorSize(x_f));
-
-  EndTiming(MGSemiFusedProlongAndAxpyTimingIndex);
 }
 #endif
 

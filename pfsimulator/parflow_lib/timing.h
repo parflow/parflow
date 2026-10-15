@@ -50,6 +50,23 @@
 #endif
 
 /*--------------------------------------------------------------------------
+ * Timing detail (input key Solver.TimingDetail, default 0)
+ *
+ * 0: ParFlow timers only (solver phases, I/O, Matvec, modules)
+ * 1: + region timers: algorithmic steps and vector operations
+ * 2: + fine timers: single kernel launches
+ *
+ * Timers above the detail are NoTimingIndex.
+ *--------------------------------------------------------------------------*/
+#ifdef PF_TIMING
+#define RegionTimingIndex(i) ((timing->detail >= 1) ? (i) : NoTimingIndex)
+#define FineTimingIndex(i)   ((timing->detail >= 2) ? (i) : NoTimingIndex)
+#else
+#define RegionTimingIndex(i) (i)
+#define FineTimingIndex(i)   (i)
+#endif
+
+/*--------------------------------------------------------------------------
  * With timing on
  * These values need to be in sync with the register statements in timing.c
  *--------------------------------------------------------------------------*/
@@ -65,20 +82,25 @@
 #define ClusteringTimingIndex 9
 #define NetcdfTimingIndex 10
 #define PDITimingIndex  11
-#define FluxBaseTimingIndex 12
-#define FluxCompressibleStorageTimingIndex 13
-#define FluxSourceTermsTimingIndex 14
-#define RbgsTimingIndex 15
-#define RbgsZeroOptiTimingIndex 16
-#define RbgsSevenPointTimingIndex 17
-#define VDotProductTimingIndex 18
-#define VectorUtilityRoutineIndex 19
-#define KINAtimesDQFusedReduceTimingIndex 20
-#define FluxFusedAccumulationAndSourceTermsTimingIndex 21
-#define FusedCopyAndMatvecTimingIndex 22
-#define MGSemiFusedProlongAndAxpyTimingIndex 23
+#define FluxBaseTimingIndex FineTimingIndex(12)
+#define FluxCompressibleStorageTimingIndex FineTimingIndex(13)
+#define FluxSourceTermsTimingIndex FineTimingIndex(14)
+#define RbgsTimingIndex FineTimingIndex(15)
+#define RbgsZeroOptiTimingIndex FineTimingIndex(16)
+#define RbgsSevenPointTimingIndex FineTimingIndex(17)
+#define VDotProductTimingIndex FineTimingIndex(18)
+#define VectorUtilityRoutineIndex RegionTimingIndex(19)
+#define KINAtimesDQFusedReduceTimingIndex FineTimingIndex(20)
+#define FluxFusedAccumulationAndSourceTermsTimingIndex FineTimingIndex(21)
+#define MGSemiSmoothingTimingIndex RegionTimingIndex(22)
+#define MGSemiRestrictionTimingIndex RegionTimingIndex(23)
+#define MGSemiCoarseSolveTimingIndex RegionTimingIndex(24)
+#define MGSemiProlongationTimingIndex RegionTimingIndex(25)
+#define KINAtimesDQReductionsTimingIndex RegionTimingIndex(26)
+#define NlFunctionEvalAccumulationAndSourcesTimingIndex RegionTimingIndex(27)
+#define SaturationTimingIndex RegionTimingIndex(28)
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex 24
+#define VectorUpdateTimingIndex 29
 #endif
 
 /*--------------------------------------------------------------------------
@@ -104,6 +126,8 @@ typedef struct {
   char            **name;
 
   int size;
+
+  int detail; // timing detail level
 
   amps_Clock_t time_count;
   amps_CPUClock_t CPU_count;
