@@ -296,6 +296,16 @@ if(${PARFLOW_BUILD_WITH_CPP})
     )
 endif()
 
+if(${PARFLOW_HAVE_PYSTENCILS})
+    target_link_libraries(pfsimulator PystencilsGeneratedKernels)
+    target_include_directories(pfsimulator PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../third_party/pystencils/generated_kernels")
+endif(${PARFLOW_HAVE_PYSTENCILS})
+
+if (${PARFLOW_HAVE_LIKWID})
+    target_link_libraries (pfsimulator ${LIKWID_LIBRARIES} )
+    target_include_directories (pfsimulator PUBLIC "${LIKWID_INCLUDE_DIRS}")
+endif (${PARFLOW_HAVE_LIKWID})
+
 if(${PARFLOW_HAVE_SUNDIALS})
     target_include_directories(pfsimulator PUBLIC ${SUNDIALS_INCLUDE_DIR})
     target_link_libraries(pfsimulator ${SUNDIALS_LIBRARIES})
