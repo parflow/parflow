@@ -480,7 +480,6 @@ void PFVScale(
               Vector *x,
               Vector *z)
 {
-  BeginTiming(VectorUtilityRoutineIndex);
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
 
@@ -500,7 +499,6 @@ void PFVScale(
   if (z == x)
   {       /* BLAS usage: scale x <- cx */
     PFVScaleBy(c, x);
-    EndTiming(VectorUtilityRoutineIndex);
     return;
   }
 
@@ -514,6 +512,8 @@ void PFVScale(
   }
   else
   {
+    BeginTiming(VectorUtilityRoutineIndex);
+
     ForSubgridI(sg, GridSubgrids(grid))
     {
       subgrid = GridSubgrid(grid, sg);
@@ -557,9 +557,10 @@ void PFVScale(
       });
 #endif
     }
+
+    IncFLOPCount(VectorSize(x));
+    EndTiming(VectorUtilityRoutineIndex);
   }
-  IncFLOPCount(VectorSize(x));
-  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVAbs(
@@ -1651,6 +1652,7 @@ int PFVInvTest(
 void PFVCopy(Vector *x,
              Vector *y)
 {
+  BeginTiming(VectorUtilityRoutineIndex);
   Grid *grid = VectorGrid(x);
   int sg;
 
@@ -1661,6 +1663,7 @@ void PFVCopy(Vector *x,
 
     tmemcpy(SubvectorData(y_sub), SubvectorData(x_sub), SubvectorDataSize(y_sub) * sizeof(double));
   }
+  EndTiming(VectorUtilityRoutineIndex);
 }
 
 void PFVSum(
