@@ -4890,6 +4890,11 @@ TeardownRichards(PFModule * this_module)
 
   FinalizeMetadata(this_module, GlobalsOutFileName);
 
+  /* Close the NetCDF files still open when the run ended between
+   * roll-overs; until now they were closed by HDF5 at MPI_Finalize. */
+  NCFinalize();
+  CLMNCFinalize();
+
   FreeVector(instance_xtra->saturation);
   FreeVector(instance_xtra->density);
   FreeVector(instance_xtra->old_saturation);
