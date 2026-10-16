@@ -46,6 +46,29 @@ static bool is2Ddefined = false;
 static bool is3Ddefined = false;
 static bool isTdefined = false;
 
+/* The time-variant file that is open between roll-overs, so that it can be
+ * flushed at the end of every output step and closed when the run ends. */
+static bool ncFileOpen = false;
+static int ncOpenID = -1;
+
+/* Flush the open file to disk every NetCDF.SyncInterval output steps, after
+* the last variable of the step has been written, so that a crash loses at
+* most that many steps of the file.  The default of 0 flushes only when the
+* file closes, i.e. a crash loses at most NetCDF.NumStepsPerFile steps.
+* Before DefVarIfMissing every variable write left define mode with an
+* H5Fflush, which bounded the loss to one step at one flush per variable. */
+static void SyncNCAtStepEnd(int ncID, int numStepsInFile, int numVarTimeVariant)
+{
+  int syncInterval = GetIntDefault("NetCDF.SyncInterval", 0);
+
+  if (syncInterval > 0 && numVarTimeVariant > 0
+      && numStepsInFile % numVarTimeVariant == 0
+      && (numStepsInFile / numVarTimeVariant) % syncInterval == 0)
+  {
+    nc_sync(ncID);
+  }
+}
+
 /* Look a variable up before defining it.  On a netCDF-4 file nc_def_var
  * switches the file into define mode before it checks whether the name
  * already exists, and the next nc_put_vara then leaves define mode with an
@@ -186,6 +209,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
         PutDataInNCNode(myVarID, data_nc_node, nodeXIndices, nodeYIndices, nodeZIndices,
                         nodeXCount, nodeYCount, nodeZCount, t, myVarNCData, netCDFIDs);
         numStepsInFile = 1;
+        SyncNCAtStepEnd(netCDFIDs[0], numStepsInFile, numVarTimeVariant);
       }
       else
       {
@@ -197,6 +221,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
           PutDataInNCNode(myVarID, data_nc_node, nodeXIndices, nodeYIndices, nodeZIndices,
                           nodeXCount, nodeYCount, nodeZCount, t, myVarNCData, netCDFIDs);
           numStepsInFile++;
+          SyncNCAtStepEnd(netCDFIDs[0], numStepsInFile, numVarTimeVariant);
         }
         else
         {
@@ -207,6 +232,10 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
           if (numStepsInFile == userSpecSteps * numVarTimeVariant)
           {
             CloseNC(netCDFIDs[0]);
+          }
+          else
+          {
+            SyncNCAtStepEnd(netCDFIDs[0], numStepsInFile, numVarTimeVariant);
           }
         }
       }
@@ -257,6 +286,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
         PutDataInNC(myVarID, v, t, myVarNCData, dimensionality, netCDFIDs);
         numStepsInFile = 1;
         numOfDefVars = 1;
+        SyncNCAtStepEnd(netCDFIDs[0], numStepsInFile, numVarTimeVariant);
       }
       else
       {
@@ -269,6 +299,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
           PutDataInNC(myVarID, v, t, myVarNCData, dimensionality, netCDFIDs);
           numOfDefVars++;
           numStepsInFile++;
+          SyncNCAtStepEnd(netCDFIDs[0], numStepsInFile, numVarTimeVariant);
         }
         else
         {
@@ -282,6 +313,10 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
             is2Ddefined = false;
             is3Ddefined = false;
             isTdefined = false;
+          }
+          else
+          {
+            SyncNCAtStepEnd(netCDFIDs[0], numStepsInFile, numVarTimeVariant);
           }
         }
       }
@@ -334,6 +369,8 @@ void CreateNCFile(char *file_name, int *netCDFIDs)
       printf("Error: nc_create_par failed for file <%s>, error code=%d\n", file_name, res);
     }
   }
+  ncFileOpen = true;
+  ncOpenID = netCDFIDs[0];
 #else
   amps_Printf("Parflow not compiled with NetCDF, can't create NetCDF file\n");
 #endif
@@ -389,6 +426,8 @@ void CreateNCFileNode(char *file_name, Vector *v, int *netCDFIDs)
   nc_def_dim(netCDFIDs[0], "y", nY, &netCDFIDs[3]);
   nc_def_dim(netCDFIDs[0], "z", nZ, &netCDFIDs[2]);
   nc_def_dim(netCDFIDs[0], "time", NC_UNLIMITED, &netCDFIDs[1]);
+  ncFileOpen = true;
+  ncOpenID = netCDFIDs[0];
 #else
   amps_Printf("Parflow not compiled with NetCDF, can't create NetCDF file\n");
 #endif
@@ -398,6 +437,23 @@ void CloseNC(int ncID)
 {
 #ifdef PARFLOW_HAVE_NETCDF
   nc_close(ncID);
+  if (ncFileOpen && ncID == ncOpenID)
+  {
+    ncFileOpen = false;
+  }
+#endif
+}
+
+/* Close the file left open when the run ends between roll-overs, i.e. when
+ * the number of output steps is not a multiple of NetCDF.NumStepsPerFile.
+ * Called from TeardownRichards on every rank. */
+void NCFinalize(void)
+{
+#ifdef PARFLOW_HAVE_NETCDF
+  if (ncFileOpen)
+  {
+    CloseNC(ncOpenID);
+  }
 #endif
 }
 
