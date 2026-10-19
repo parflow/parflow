@@ -3802,13 +3802,10 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       int ix, iy, iz;
       int nx, ny, nz;
       int ip, itop;
-      int grid2d_iz;
       int top_k;
 
       Subgrid *subgrid;
-      Subgrid *grid2d_subgrid;
       Grid *grid = VectorGrid(instance_xtra->pressure);
-      Grid *grid2d = VectorGrid(top);
 
       Subvector *p_sub;
       Subvector *op_sub;
@@ -3820,8 +3817,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       ForSubgridI(is, GridSubgrids(grid))
       {
         subgrid = GridSubgrid(grid, is);
-        grid2d_subgrid = GridSubgrid(grid2d, is);
-        grid2d_iz = SubgridIZ(grid2d_subgrid);
 
         p_sub = VectorSubvector(instance_xtra->pressure, is);
         op_sub = VectorSubvector(instance_xtra->overland_only_pressure, is);
@@ -3842,7 +3837,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
         {
           ip = SubvectorEltIndex(p_sub, i, j, k);
-          itop = SubvectorEltIndex(top_sub, i, j, grid2d_iz);
+          itop = SubvectorEltIndex(top_sub, i, j, 0);
           top_k = (int)top_dat[itop];
 
           if (k != top_k)

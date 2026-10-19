@@ -449,7 +449,7 @@ class Run(BaseRun):
             return data.get(key, default)
 
         def is_true(key):
-            return str(value(key, "False")).lower() in ("true", "1", "yes")
+            return str(value(key, "False")).lower() == "true"
 
         def non_empty_name_list(key):
             names = str(value(key, "") or "").strip()

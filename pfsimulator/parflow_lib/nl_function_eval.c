@@ -2758,7 +2758,7 @@ PFModule   *NlFunctionEvalNewPublicXtra(char *name)
   NA_FreeNameArray(upwind_switch_na);
 
   switch_na = NA_NewNameArray("False True");
-  sprintf(key, "Solver.OverlandOnly");
+  sprintf(key, "%s.OverlandOnly", name);
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->overland_only = switch_value;

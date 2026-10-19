@@ -223,8 +223,8 @@ def validate_outputs(run_name, output_dir, mode_name):
         passed = False
 
     surface = np.maximum(surface_pressure(final_pressure, top), 0.0)
-    if not np.all(np.isfinite(surface)) or np.any(surface < 0.0):
-        print(f"{run_name}: final surface storage is not finite and nonnegative")
+    if not np.all(np.isfinite(surface)):
+        print(f"{run_name}: final surface storage is not finite")
         passed = False
 
     storage = np.sum(surface) * DX * DY

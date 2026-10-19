@@ -947,7 +947,7 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
   }
   NA_FreeNameArray(precond_switch_na);
 
-  public_xtra->nl_function_eval = PFModuleNewModule(NlFunctionEval, ());
+  public_xtra->nl_function_eval = PFModuleNewModule(NlFunctionEval, ("Solver"));
   public_xtra->neq = ((public_xtra->max_restarts) + 1)
                      * (public_xtra->krylov_dimension);
 
