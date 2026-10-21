@@ -996,6 +996,7 @@ bool SubgridIntersectsCurrentRank(Subgrid* subgrid, Grid *grid)
     rank_subgrid = SubgridArraySubgrid(GridSubgrids(grid), subgrid_index);
     if ((tmp_subgrid = IntersectSubgrids(rank_subgrid, subgrid)))
     {
+      FreeSubgrid(tmp_subgrid);
       return true;
     }
   }
@@ -1046,6 +1047,8 @@ double CalculateLocalSubgridVolume(Subgrid *subgrid, ProblemData* problem_data)
         double dz_mult = dz_mult_data[index];
         volume += dz_mult * dx * dy * dz;
       });
+
+      FreeSubgrid(intersection);
     }
     return volume;
   };

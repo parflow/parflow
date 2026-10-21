@@ -96,3 +96,5 @@ if Path(path).exists():
     Path(path).unlink()
 
 CLMExporter(clm).write_map()
+
+print("PASSED")
