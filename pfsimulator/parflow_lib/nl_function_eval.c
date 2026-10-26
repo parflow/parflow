@@ -587,6 +587,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
         op_sub = VectorSubvector(old_pressure, is);
         f_sub = VectorSubvector(fval, is);
         et_sub = VectorSubvector(evap_trans, is);
+        z_mult_sub = VectorSubvector(z_mult, is);
         x_sl_sub = VectorSubvector(x_sl, is);
         vz_sub = VectorSubvector(z_velocity, is);
 
@@ -631,6 +632,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
         opp = SubvectorData(op_sub);
         fp = SubvectorData(f_sub);
         et = SubvectorData(et_sub);
+        z_mult_dat = SubvectorData(z_mult_sub);
         vz = SubvectorData(vz_sub);
 
         ForBCStructNumPatches(ipatch, bc_struct)
@@ -689,7 +691,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                              * public_xtra->SpinupDampP2);
             }
 
-            surface_source = bc_patch_values[ival] - dz * et[ip];
+            surface_source = bc_patch_values[ival] - dz * z_mult_dat[ip] * et[ip];
             fp[ip] = q_overlnd + dt * ffz * surface_source;
             vz[vz_l + sz_v] = surface_source + q_overlnd / (dt * ffz);
           }),
@@ -729,7 +731,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
             q_overlnd = vol * (pfmax(pp[ip], 0.0) - pfmax(opp[ip], 0.0)) / dz
                         + dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy) / dz;
 
-            surface_source = bc_patch_values[ival] - dz * et[ip];
+            surface_source = bc_patch_values[ival] - dz * z_mult_dat[ip] * et[ip];
             fp[ip] = q_overlnd + dt * ffz * surface_source;
             vz[vz_l + sz_v] = surface_source + q_overlnd / (dt * ffz);
           }),
@@ -770,7 +772,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
             q_overlnd = vol * (pfmax(pp[ip], 0.0) - pfmax(opp[ip], 0.0)) / dz
                         + dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy) / dz;
 
-            surface_source = bc_patch_values[ival] - dz * et[ip];
+            surface_source = bc_patch_values[ival] - dz * z_mult_dat[ip] * et[ip];
             fp[ip] = q_overlnd + dt * ffz * surface_source;
             vz[vz_l + sz_v] = surface_source + q_overlnd / (dt * ffz);
           }),

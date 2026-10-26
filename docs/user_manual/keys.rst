@@ -4475,7 +4475,14 @@ supported overland pressure boundary conditions, including
 **OverlandFlow** constant values and **OverlandFlowPFB** files.
 **Solver.EvapTransFile** and **Solver.EvapTransFileTransient** are also
 applied as surface forcing in **OverlandOnly** mode using the existing
-EvapTrans sign convention and units. **OverlandOnly** is incompatible
+EvapTrans sign convention and units. For variable dz, volumetric EvapTrans
+forcing is converted using the actual top-cell thickness, including its dz
+multiplier. Surface storage and lateral routing use horizontal cell area
+and do not scale with subsurface layer thickness.
+**Solver.Nonlinear.UseJacobian** must be True, and
+**Solver.Linear.Preconditioner** must not be **MGSemi**. **PFMG** and
+**PFMGOctree** are tested preconditioners for this mode.
+**OverlandOnly** is incompatible
 with CLM, wells, reservoirs, **FluxFile** overland forcing,
 **SurfacePredictor**, **Spinup**, and **ResetSurfacePressure**.
 **OverlandKinematic** and **OverlandDiffusive** support interval
