@@ -1237,10 +1237,10 @@ static inline void _amps_tfree_cuda(void *ptr)
  * @return Pointer to the allocated dataspace
  */
 
-#define amps_TAlloc(type, count) ((count > 0) ? (type*)_amps_talloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
+#define amps_TAlloc(type, count) ((count > 0) ? (type*)_amps_talloc_cuda((size_t)(sizeof(type) * (count))) : NULL)
 
 /** Same as \ref amps_TAlloc for amps cuda layer */
-#define amps_TAlloc_managed(type, count) ((count > 0) ? (type*)_amps_talloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
+#define amps_TAlloc_managed(type, count) ((count > 0) ? (type*)_amps_talloc_cuda((size_t)(sizeof(type) * (count))) : NULL)
 
 /*===========================================================================*/
 /**
@@ -1263,10 +1263,10 @@ static inline void _amps_tfree_cuda(void *ptr)
  * @return Pointer to the allocated dataspace
  */
 
-#define amps_CTAlloc(type, count) ((count) ? (type*)_amps_ctalloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
+#define amps_CTAlloc(type, count) ((count) ? (type*)_amps_ctalloc_cuda((size_t)(sizeof(type) * (count))) : NULL)
 
 /** Same as \ref amps_CTAlloc for amps cuda layer */
-#define amps_CTAlloc_managed(type, count) ((count) ? (type*)_amps_ctalloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
+#define amps_CTAlloc_managed(type, count) ((count) ? (type*)_amps_ctalloc_cuda((size_t)(sizeof(type) * (count))) : NULL)
 
 /**
  *
