@@ -1993,6 +1993,12 @@ void    RichardsJacobianEval(
           ip = SubvectorEltIndex(p_sub, i, j, k);
           im = SubmatrixEltIndex(J_sub, i, j, k);
 
+          if (public_xtra->overland_only)
+          {
+            /* Replace the pinned-cell equation with the surface equation. */
+            cp[im] = 0.0;
+          }
+
           iitmp = (int)patch_dat[itop];
           /* Now add overland contributions to J similar to JC above */
           if ((pp[ip]) > 0.0)
@@ -2008,6 +2014,10 @@ void    RichardsJacobianEval(
               cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
                         + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
             }
+          }
+          else if (public_xtra->overland_only)
+          {
+            cp[im] += (vol / dz);
           }
 
           /*west term */
@@ -2042,12 +2052,22 @@ void    RichardsJacobianEval(
           ip = SubvectorEltIndex(p_sub, i, j, k);
           im = SubmatrixEltIndex(J_sub, i, j, k);
 
+          if (public_xtra->overland_only)
+          {
+            /* Replace the pinned-cell equation with the surface equation. */
+            cp[im] = 0.0;
+          }
+
           /* Now add overland contributions */
           if ((pp[ip]) > 0.0)
           {
             /*diagonal term */
             cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
                       + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+          }
+          else if (public_xtra->overland_only)
+          {
+            cp[im] += (vol / dz);
           }
           /*west term */
           wp[im] -= (vol / ffy) * dt * (kwns_der[io1]);
@@ -2081,6 +2101,12 @@ void    RichardsJacobianEval(
           ip = SubvectorEltIndex(p_sub, i, j, k);
           im = SubmatrixEltIndex(J_sub, i, j, k);
 
+          if (public_xtra->overland_only)
+          {
+            /* Replace the pinned-cell equation with the surface equation. */
+            cp[im] = 0.0;
+          }
+
           /* Now add overland contributions to the jacobian */
           if ((pp[ip]) > 0.0)
           {
@@ -2094,6 +2120,10 @@ void    RichardsJacobianEval(
           {
             // Laura's version; old diffusive wave formulation which is now replaced by DWE
             cp[im] += 0.0 + dt * (vol / dz) * (public_xtra->SpinupDampP1 * exp(pfmin(pp[ip], 0.0) * public_xtra->SpinupDampP1) * public_xtra->SpinupDampP2);                      //NBE
+            if (public_xtra->overland_only)
+            {
+              cp[im] += (vol / dz);
+            }
           }
 
           if (diffusive == 0)

@@ -317,12 +317,6 @@ static void ValidateOverlandOnlyInput(PublicXtra *public_xtra)
     InputError("Solver.OverlandOnly requires Solver.Nonlinear.UseJacobian = True%s%s\n", "", "");
   }
 
-  switch_name = GetStringDefault("Solver.Linear.Preconditioner", "MGSemi");
-  if (!strcmp(switch_name, "MGSemi"))
-  {
-    InputError("Solver.OverlandOnly is incompatible with Solver.Linear.Preconditioner = MGSemi%s%s\n", "", "");
-  }
-
   if (public_xtra->lsm != 0)
   {
     InputError("Solver.OverlandOnly is incompatible with Solver.LSM = CLM%s%s\n", "", "");

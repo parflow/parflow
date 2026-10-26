@@ -285,6 +285,7 @@ def validate_case(case):
         case["rainfall_value"],
         evap_trans_file=case.get("evap_trans_file", False),
     )
+    run.Solver.Linear.Preconditioner = case.get("preconditioner", "PFMGOctree")
 
     if case["bc_type"] == "OverlandFlowPFB":
         write_uniform_overland_pfb(output_dir, "rainfall.pfb", -RAINFALL_RATE)
@@ -462,6 +463,13 @@ def validate_pulse_case():
 
 
 cases = [
+    {
+        "name": "overland_flow_mgsemi",
+        "bc_type": "OverlandFlow",
+        "rainfall_value": -RAINFALL_RATE,
+        "preconditioner": "MGSemi",
+        "check_profile": True,
+    },
     {
         "name": "overland_flow",
         "bc_type": "OverlandFlow",

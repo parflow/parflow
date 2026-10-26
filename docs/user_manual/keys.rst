@@ -4479,9 +4479,9 @@ EvapTrans sign convention and units. For variable dz, volumetric EvapTrans
 forcing is converted using the actual top-cell thickness, including its dz
 multiplier. Surface storage and lateral routing use horizontal cell area
 and do not scale with subsurface layer thickness.
-**Solver.Nonlinear.UseJacobian** must be True, and
-**Solver.Linear.Preconditioner** must not be **MGSemi**. **PFMG** and
-**PFMGOctree** are tested preconditioners for this mode.
+**Solver.Nonlinear.UseJacobian** must be True. **MGSemi**, **PFMG**, and
+**PFMGOctree** are tested choices for **Solver.Linear.Preconditioner**
+in this mode.
 **OverlandOnly** is incompatible
 with CLM, wells, reservoirs, **FluxFile** overland forcing,
 **SurfacePredictor**, **Spinup**, and **ResetSurfacePressure**.

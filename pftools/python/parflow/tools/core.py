@@ -467,12 +467,6 @@ class Run(BaseRun):
                 "Solver.OverlandOnly requires Solver.Nonlinear.UseJacobian = True"
             )
 
-        if value("Solver.Linear.Preconditioner", "MGSemi") == "MGSemi":
-            errors.append(
-                "Solver.OverlandOnly is incompatible with "
-                "Solver.Linear.Preconditioner = MGSemi"
-            )
-
         if value("Solver.LSM", "none") == "CLM":
             errors.append("Solver.OverlandOnly is incompatible with Solver.LSM = CLM")
 
