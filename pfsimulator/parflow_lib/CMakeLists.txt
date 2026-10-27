@@ -146,6 +146,7 @@ if((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}))
         overlandflow_eval.cpp
         overlandflow_eval_diffusive.cpp
         overlandflow_eval_Kin.cpp
+        overlandflow_eval_Kin_wc.cpp
         phase_velocity_face.cpp
         problem_phase_density.cpp
         problem_phase_rel_perm.cpp
@@ -265,6 +266,7 @@ else(
         overlandflow_eval.c
         overlandflow_eval_diffusive.c
         overlandflow_eval_Kin.c
+        overlandflow_eval_Kin_wc.c
         phase_velocity_face.c
         pf_module.c
         problem_bc.c
