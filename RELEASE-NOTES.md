@@ -145,6 +145,9 @@ Enhanced documentation on code formatting requirements and Black version specifi
 
 ## Bug Fixes
 
+### CLM Canopy Hydrology
+- Fixed CLM canopy hydrology so dry vegetated canopies continue to transpire when canopy water is zero, improving consistency and reducing round-off/layout-dependent behavior in CLM regression results.
+
 ### CUDA 13+ Compatibility
 Updated CUDA memory prefetch API calls to use `cudaMemPrefetchAsync` with new `cudaMemLocation` struct for compatibility with CUDA 13.0 and later.
 
