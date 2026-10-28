@@ -69,8 +69,6 @@ void CopyParFlowVectorToHypreVector(Vector *            rhs,
     int ilo[3], ihi[3];
     int vlo[3], vhi[3];
 
-    hypre_Box *set_box, *value_box;
-
     /* Active subgrid extent. */
     ilo[0] = ix;
     ilo[1] = iy;
@@ -87,18 +85,9 @@ void CopyParFlowVectorToHypreVector(Vector *            rhs,
     vhi[1] = vlo[1] + ny_v - 1;
     vhi[2] = vlo[2] + nz_v - 1;
 
-    set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
-    value_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
-
-    hypre_BoxSetExtents(set_box, ilo, ihi);
-    hypre_BoxSetExtents(value_box, vlo, vhi);
-
-    /* action = 0 : set values (one bulk call for the whole subgrid) */
-    hypre_StructVectorSetBoxValues(*hypre_b, set_box, value_box, rhs_ptr,
-                                   0, -1, 0);
-
-    hypre_BoxDestroy(set_box);
-    hypre_BoxDestroy(value_box);
+    /* One bulk call for the whole subgrid, instead of nx*ny*nz
+     * individual HYPRE_StructVectorSetValues calls. */
+    HYPRE_StructVectorSetBoxValues2(*hypre_b, ilo, ihi, vlo, vhi, rhs_ptr);
   }
   HYPRE_StructVectorAssemble(*hypre_b);
 }
@@ -132,8 +121,6 @@ void CopyHypreVectorToParflowVector(HYPRE_StructVector* hypre_x,
     int ilo[3], ihi[3];
     int vlo[3], vhi[3];
 
-    hypre_Box *set_box, *value_box;
-
     ilo[0] = ix;
     ilo[1] = iy;
     ilo[2] = iz;
@@ -148,18 +135,9 @@ void CopyHypreVectorToParflowVector(HYPRE_StructVector* hypre_x,
     vhi[1] = vlo[1] + ny_v - 1;
     vhi[2] = vlo[2] + nz_v - 1;
 
-    set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
-    value_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
-
-    hypre_BoxSetExtents(set_box, ilo, ihi);
-    hypre_BoxSetExtents(value_box, vlo, vhi);
-
-    /* action = -1 : get values (Bulk transfer for the subgrid) */
-    hypre_StructVectorSetBoxValues(*hypre_x, set_box, value_box, soln_ptr,
-                                   -1, -1, 0);
-
-    hypre_BoxDestroy(set_box);
-    hypre_BoxDestroy(value_box);
+    /* One bulk call instead of nx*ny*nz individual
+     * HYPRE_StructVectorGetValues calls. */
+    HYPRE_StructVectorGetBoxValues2(*hypre_x, ilo, ihi, vlo, vhi, soln_ptr);
   }
 }
 
@@ -269,12 +247,7 @@ void HypreInitialize(Matrix*              pf_Bmat,
   HYPRE_StructVectorAssemble(*hypre_x);
 }
 
-/*
- * NOTE ON NAME: this function is still called HypreAssembleMatrixAsElements
- * for API compatibility with pf_pfmg.c (no caller changes needed). However,
- * Matrix values are inserted by box and stencil entry.
- */
-void HypreAssembleMatrixAsElements(
+void HypreAssembleMatrix(
                                    Matrix *            pf_Bmat,
                                    Matrix *            pf_Cmat,
                                    HYPRE_StructMatrix* hypre_mat,
@@ -310,7 +283,6 @@ void HypreAssembleMatrixAsElements(
     int nz_m = SubmatrixNZ(pfB_sub);
 
     int ilo[3], ihi[3], vlo[3], vhi[3];
-    hypre_Box *set_box, *value_box;
 
     ilo[0] = ix;
     ilo[1] = iy;
@@ -326,11 +298,6 @@ void HypreAssembleMatrixAsElements(
     vhi[1] = vlo[1] + ny_m - 1;
     vhi[2] = vlo[2] + nz_m - 1;
 
-    set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
-    value_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
-    hypre_BoxSetExtents(set_box, ilo, ihi);
-    hypre_BoxSetExtents(value_box, vlo, vhi);
-
     /* Bulk copy by stencil entry. */
     if (symmetric)
     {
@@ -338,9 +305,9 @@ void HypreAssembleMatrixAsElements(
       {
         /* symmetric stencil values are stored at 0, 2, 4, 6 */
         double *values = SubmatrixStencilData(pfB_sub, stencil * 2);
-        hypre_StructMatrixSetBoxValues(*hypre_mat, set_box, value_box, 1,
-                                       &stencil_indices_symm[stencil], values,
-                                       0, -1, 0);
+        HYPRE_StructMatrixSetBoxValues2(*hypre_mat, ilo, ihi, 1,
+                                        &stencil_indices_symm[stencil],
+                                        vlo, vhi, values);
       }
     }
     else
@@ -348,16 +315,13 @@ void HypreAssembleMatrixAsElements(
       for (int stencil = 0; stencil < stencil_size; ++stencil)
       {
         double *values = SubmatrixStencilData(pfB_sub, stencil);
-        hypre_StructMatrixSetBoxValues(*hypre_mat, set_box, value_box, 1,
-                                       &stencil_indices[stencil], values,
-                                       0, -1, 0);
+        HYPRE_StructMatrixSetBoxValues2(*hypre_mat, ilo, ihi, 1,
+                                        &stencil_indices[stencil],
+                                        vlo, vhi, values);
       }
     }
 
-    hypre_BoxDestroy(set_box);
-    hypre_BoxDestroy(value_box);
-
-    /* Update the top surface from the C matrix. */
+    /* Overland flow: update the top surface from the C matrix. */
     if (pf_Cmat != NULL)
     {
       Submatrix* pfC_sub = MatrixSubmatrix(pf_Cmat, sg);
