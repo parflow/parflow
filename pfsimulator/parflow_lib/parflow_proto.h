@@ -895,6 +895,7 @@ void OverlandFlowEvalDiffFreeInstanceXtra(void);
 PFModule *OverlandFlowEvalDiffNewPublicXtra(void);
 void OverlandFlowEvalDiffFreePublicXtra(void);
 int OverlandFlowEvalDiffSizeOfTempData(void);
+int OverlandFlowNeedsCornerGhosts(void);
 
 
 /* overlandflow_eval_kin.c */
