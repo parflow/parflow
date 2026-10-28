@@ -894,6 +894,7 @@ void OverlandFlowEvalDiffFreeInstanceXtra(void);
 PFModule *OverlandFlowEvalDiffNewPublicXtra(void);
 void OverlandFlowEvalDiffFreePublicXtra(void);
 int OverlandFlowEvalDiffSizeOfTempData(void);
+int OverlandFlowNeedsCornerGhosts(void);
 
 
 /* overlandflow_eval_kin.c */
@@ -903,6 +904,7 @@ typedef void (*OverlandFlowEvalKinInvoke) (Grid *       grid,
                                            int          ipatch,
                                            ProblemData *problem_data,
                                            Vector *     pressure,
+                                           Vector *     old_pressure,
                                            double *     ke_v,
                                            double *     kw_v,
                                            double *     kn_v,
@@ -915,12 +917,14 @@ typedef void (*OverlandFlowEvalKinInvoke) (Grid *       grid,
                                            double *     qy_v,
                                            int          fcn);
 
+void OverlandKinDiffusionOptions(int *slope_magnitude, int *bed_term, int *surface_term, int *jacobian, double *alpha);
 void OverlandFlowEvalKin(Grid *       grid,
                          int          sg,
                          BCStruct *   bc_struct,
                          int          ipatch,
                          ProblemData *problem_data,
                          Vector *     pressure,
+                         Vector *     old_pressure,
                          double *     ke_v,
                          double *     kw_v,
                          double *     kn_v,

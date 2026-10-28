@@ -393,6 +393,183 @@ def _overland_flow_kinematic(
 # -----------------------------------------------------------------------------
 
 
+def _overland_flow_kinematic_diffusive(
+    mask,
+    pressure_top,
+    slopex,
+    slopey,
+    mannings,
+    dx,
+    dy,
+    epsilon,
+    alpha=1.0,
+    slope_magnitude="BedSlope",
+    bed_term_magnitude="Lagged",
+    pressure_top_old=None,
+    surface_term_magnitude="Lagged",
+):
+    """Kinematic wave flux with a water-surface term.
+
+    Mirrors OverlandFlowEvalKin with Solver.OverlandKinematic.Diffusion.SlopeMagnitude
+    set to BedSlope, FrictionSlope, or Pythagorean.  The flux across the east face
+    of a cell is
+
+        q = -(h^5/3 / n) (S0 / |A|^1/2 + alpha dh/dx / |B|^1/2)
+
+    where h is the ponded depth upwinded by the sign of Sf* = S0 + alpha dh/dx.
+    ``slope_magnitude`` picks the magnitude: |S0| for 'BedSlope', |Sf*| for
+    'FrictionSlope', and (|S0|^2 + |alpha grad(h)|^2)^1/2 for 'Pythagorean'.  In
+    it the gradient normal to a face is the two-point difference across it, and
+    the gradient along the face is the average of the centered differences in the
+    two cells that share it.  The water-surface term applies only on faces with an
+    active cell on both sides; all other faces keep the kinematic flux.
+
+    ``surface_term_magnitude`` mirrors the SurfaceTermMagnitude key.  It is the
+    time level of B: 'Lagged' computes the magnitude from ``pressure_top_old``,
+    the ponded depth at the previous time step, and 'Implicit' from
+    ``pressure_top``.
+
+    ``bed_term_magnitude`` mirrors the BedTermMagnitude key.  It sets A: 'BedSlope'
+    leaves |S0| there, 'Lagged' uses the magnitude from ``pressure_top_old``, and
+    'Implicit' uses it from ``pressure_top``.  'Implicit' needs an 'Implicit'
+    surface term.  Neither argument has an effect with 'BedSlope'.
+    """
+    assert slope_magnitude in (
+        "BedSlope",
+        "FrictionSlope",
+        "Pythagorean",
+    ), "Unknown slope magnitude"
+    assert bed_term_magnitude in (
+        "BedSlope",
+        "Lagged",
+        "Implicit",
+    ), "Unknown bed term magnitude"
+    assert surface_term_magnitude in (
+        "Lagged",
+        "Implicit",
+    ), "Unknown surface term magnitude"
+    uses_gradient = slope_magnitude != "BedSlope"
+    use_old = surface_term_magnitude == "Lagged" and uses_gradient
+    if uses_gradient:
+        assert not (
+            bed_term_magnitude == "Implicit" and use_old
+        ), "An Implicit bed term needs an Implicit surface term"
+        if use_old or bed_term_magnitude == "Lagged":
+            assert (
+                pressure_top_old is not None
+            ), "The pressure at the previous time step is needed"
+
+    # Faces without an active cell on both sides keep the kinematic flux
+    qeast, qnorth = _overland_flow_kinematic(
+        mask, pressure_top, slopex, slopey, mannings, dx, dy, epsilon
+    )
+
+    surface_mask = mask[-1, ...]
+    pdown = pressure_top
+
+    # Depth and activity of the east (i+1) and north (j+1) neighbors
+    pup_x = np.pad(pressure_top[:, 1:], ((0, 0), (0, 1)))
+    pup_y = np.pad(pressure_top[1:, :], ((0, 1), (0, 0)))
+    has_x = (surface_mask == 1) & (np.pad(surface_mask[:, 1:], ((0, 0), (0, 1))) == 1)
+    has_y = (surface_mask == 1) & (np.pad(surface_mask[1:, :], ((0, 1), (0, 0))) == 1)
+
+    # Gradient normal to each face, zero where there is no neighbor
+    dhdx = np.where(has_x, alpha * (pup_x - pdown) / dx, 0.0)
+    dhdy = np.where(has_y, alpha * (pup_y - pdown) / dy, 0.0)
+
+    sf_star_x = slopex + dhdx
+    sf_star_y = slopey + dhdy
+
+    # Depth upwinded by the friction slope
+    press_x = np.where(sf_star_x < 0, pdown, pup_x)
+    press_y = np.where(sf_star_y < 0, pdown, pup_y)
+
+    slope = np.maximum(epsilon, np.hypot(slopex, slopey))
+    active = surface_mask == 1
+
+    def face_denominators(depth):
+        """Slope magnitude in D at the east and north faces, for a depth field."""
+        if slope_magnitude == "BedSlope":
+            return slope, slope
+
+        g_e = np.where(
+            has_x,
+            alpha * (np.pad(depth[:, 1:], ((0, 0), (0, 1))) - depth) / dx,
+            0.0,
+        )
+        g_n = np.where(
+            has_y,
+            alpha * (np.pad(depth[1:, :], ((0, 1), (0, 0))) - depth) / dy,
+            0.0,
+        )
+
+        # Gradient along each face: the average of the centered differences in
+        # the two cells that share the face.  A centered difference becomes
+        # one-sided where only one neighbor is active, and zero where neither is.
+        def centered(axis, d):
+            h_m = np.roll(depth, 1, axis=axis)
+            h_p = np.roll(depth, -1, axis=axis)
+            has_m = active & np.roll(active, 1, axis=axis)
+            has_p = active & np.roll(active, -1, axis=axis)
+            edge = [slice(None), slice(None)]
+            edge[axis] = 0
+            has_m[tuple(edge)] = False
+            edge[axis] = -1
+            has_p[tuple(edge)] = False
+            return np.where(
+                has_m & has_p,
+                (h_p - h_m) / (2.0 * d),
+                np.where(
+                    has_p,
+                    (h_p - depth) / d,
+                    np.where(has_m, (depth - h_m) / d, 0.0),
+                ),
+            )
+
+        gx_c = centered(1, dx)
+        gy_c = centered(0, dy)
+        gy_e = alpha * np.where(
+            has_x, 0.5 * (gy_c + np.pad(gy_c[:, 1:], ((0, 0), (0, 1)))), gy_c
+        )
+        gx_n = alpha * np.where(
+            has_y, 0.5 * (gx_c + np.pad(gx_c[1:, :], ((0, 1), (0, 0)))), gx_c
+        )
+        if slope_magnitude == "FrictionSlope":
+            d_x = np.hypot(slopex + g_e, slopey + gy_e)
+            d_y = np.hypot(slopex + gx_n, slopey + g_n)
+        else:
+            d_x = np.sqrt(slopex**2 + slopey**2 + g_e**2 + gy_e**2)
+            d_y = np.sqrt(slopex**2 + slopey**2 + gx_n**2 + g_n**2)
+        return np.maximum(epsilon, d_x), np.maximum(epsilon, d_y)
+
+    d_denom_x, d_denom_y = face_denominators(pressure_top_old if use_old else pdown)
+
+    # Slope magnitude under the bed term
+    if not uses_gradient or bed_term_magnitude == "BedSlope":
+        k_denom_x, k_denom_y = slope, slope
+    elif bed_term_magnitude == "Lagged" and not use_old:
+        k_denom_x, k_denom_y = face_denominators(pressure_top_old)
+    else:
+        k_denom_x, k_denom_y = d_denom_x, d_denom_y
+
+    q_x = (
+        -slopex / (np.sqrt(k_denom_x) * mannings) * press_x ** (5 / 3)
+        - press_x ** (5 / 3) / (np.sqrt(d_denom_x) * mannings) * dhdx
+    ) * dy
+    q_y = (
+        -slopey / (np.sqrt(k_denom_y) * mannings) * press_y ** (5 / 3)
+        - press_y ** (5 / 3) / (np.sqrt(d_denom_y) * mannings) * dhdy
+    ) * dx
+
+    qeast[:, 1:] = np.where(has_x, q_x, qeast[:, 1:])
+    qnorth[1:, :] = np.where(has_y, q_y, qnorth[1:, :])
+
+    return qeast, qnorth
+
+
+# -----------------------------------------------------------------------------
+
+
 def calculate_overland_fluxes(
     pressure,
     slopex,
@@ -403,6 +580,11 @@ def calculate_overland_fluxes(
     flow_method="OverlandKinematic",
     epsilon=1e-5,
     mask=None,
+    alpha=1.0,
+    slope_magnitude="BedSlope",
+    bed_term_magnitude="Lagged",
+    pressure_old=None,
+    surface_term_magnitude="Lagged",
 ):
     """
     Calculate overland fluxes across grid faces
@@ -413,12 +595,27 @@ def calculate_overland_fluxes(
     :param mannings: a scalar value, or a ny-by-nx ndarray
     :param dx: Length of a grid element in the x direction
     :param dy: Length of a grid element in the y direction
-    :param flow_method: Either 'OverlandFlow' or 'OverlandKinematic'
-        'OverlandKinematic' by default.
-    :param epsilon: Minimum slope magnitude for solver. Only applicable if flow_method='OverlandKinematic'.
-        This is set using the Solver.OverlandKinematic.Epsilon key in Parflow.
+    :param flow_method: 'OverlandFlow', 'OverlandKinematic', or 'OverlandKinematicDiffusive'
+        'OverlandKinematic' by default. 'OverlandKinematicDiffusive' adds the
+        water-surface term to the kinematic wave flux.
+    :param epsilon: Minimum slope magnitude for solver. Only applicable if flow_method='OverlandKinematic'
+        or 'OverlandKinematicDiffusive'. Set using the Solver.OverlandKinematic.Epsilon key in Parflow.
     :param mask: A nz-by-ny-by-nx ndarray of mask values (bottom layer to top layer)
         If None, assumed to be an nz-by-ny-by-nx ndarray of 1s.
+    :param alpha: Multiplier on the water-surface term. Only applicable if
+        flow_method='OverlandKinematicDiffusive'. Default 1.0.
+    :param slope_magnitude: 'BedSlope', 'FrictionSlope', or 'Pythagorean'. Matches the
+        Solver.OverlandKinematic.Diffusion.SlopeMagnitude key. Only applicable if
+        flow_method='OverlandKinematicDiffusive'. 'BedSlope' by default.
+    :param bed_term_magnitude: 'BedSlope', 'Lagged', or 'Implicit' (default 'Lagged'). Matches
+        Solver.OverlandKinematic.Diffusion.BedTermMagnitude. Only applicable if
+        flow_method='OverlandKinematicDiffusive'.
+    :param pressure_old: Pressure at the previous time step, same shape as ``pressure``.
+        Needed for a 'Lagged' bed term or surface term with a 'FrictionSlope' or
+        'Pythagorean' slope magnitude.
+    :param surface_term_magnitude: 'Lagged' or 'Implicit' (default 'Lagged'). Matches
+        Solver.OverlandKinematic.Diffusion.SurfaceTermMagnitude. Only applicable if
+        flow_method='OverlandKinematicDiffusive'.
     :return: A 2-tuple:
         qeast - A ny-by-(nx+1) ndarray of overland flux values
         qnorth - A (ny+1)-by-nx ndarray of overland flux values
@@ -466,15 +663,39 @@ def calculate_overland_fluxes(
     pressure_top = pressure[-1, ...].copy()
     pressure_top = np.nan_to_num(pressure_top)
     pressure_top[pressure_top < 0] = 0
+    if pressure_old is not None:
+        old_top = np.nan_to_num(pressure_old[-1, ...].copy())
+        old_top[old_top < 0] = 0
 
-    assert flow_method in ("OverlandFlow", "OverlandKinematic"), "Unknown flow method"
-    if flow_method == "OverlandKinematic":
+    assert flow_method in (
+        "OverlandFlow",
+        "OverlandKinematic",
+        "OverlandKinematicDiffusive",
+    ), "Unknown flow method"
+    if flow_method in ("OverlandKinematic", "OverlandKinematicDiffusive"):
         if mask is None:
             mask = np.ones_like(pressure)
         mask = np.where(mask > 0, 1, 0)
-        qeast, qnorth = _overland_flow_kinematic(
-            mask, pressure_top, slopex, slopey, mannings, dx, dy, epsilon
-        )
+        if flow_method == "OverlandKinematicDiffusive":
+            qeast, qnorth = _overland_flow_kinematic_diffusive(
+                mask,
+                pressure_top,
+                slopex,
+                slopey,
+                mannings,
+                dx,
+                dy,
+                epsilon,
+                alpha,
+                slope_magnitude,
+                bed_term_magnitude,
+                None if pressure_old is None else old_top,
+                surface_term_magnitude,
+            )
+        else:
+            qeast, qnorth = _overland_flow_kinematic(
+                mask, pressure_top, slopex, slopey, mannings, dx, dy, epsilon
+            )
     else:
         qeast, qnorth = _overland_flow(pressure_top, slopex, slopey, mannings, dx, dy)
 
@@ -494,6 +715,11 @@ def calculate_overland_flow_grid(
     flow_method="OverlandKinematic",
     epsilon=1e-5,
     mask=None,
+    alpha=1.0,
+    slope_magnitude="BedSlope",
+    bed_term_magnitude="Lagged",
+    pressure_old=None,
+    surface_term_magnitude="Lagged",
 ):
     """
     Calculate overland outflow per grid cell of a domain
@@ -504,12 +730,25 @@ def calculate_overland_flow_grid(
     :param mannings: a scalar value, or a ny-by-nx ndarray
     :param dx: Length of a grid element in the x direction
     :param dy: Length of a grid element in the y direction
-    :param flow_method: Either 'OverlandFlow' or 'OverlandKinematic'
+    :param flow_method: 'OverlandFlow', 'OverlandKinematic', or 'OverlandKinematicDiffusive'
         'OverlandKinematic' by default.
-    :param epsilon: Minimum slope magnitude for solver. Only applicable if kinematic=True.
-        This is set using the Solver.OverlandKinematic.Epsilon key in Parflow.
+    :param epsilon: Minimum slope magnitude for solver. Only applicable if
+        flow_method='OverlandKinematic' or 'OverlandKinematicDiffusive'.
     :param mask: A nz-by-ny-by-nx ndarray of mask values (bottom layer to top layer)
         If None, assumed to be an nz-by-ny-by-nx ndarray of 1s.
+    :param alpha: Multiplier on the water-surface term (default 1.0).
+        Only applicable if flow_method='OverlandKinematicDiffusive'.
+    :param slope_magnitude: 'BedSlope', 'FrictionSlope', or 'Pythagorean' (default 'BedSlope').
+        Only applicable if flow_method='OverlandKinematicDiffusive'.
+    :param bed_term_magnitude: 'BedSlope', 'Lagged', or 'Implicit' (default 'Lagged'). Matches
+        Solver.OverlandKinematic.Diffusion.BedTermMagnitude. Only applicable if
+        flow_method='OverlandKinematicDiffusive'.
+    :param pressure_old: Pressure at the previous time step, same shape as ``pressure``.
+        Needed for a 'Lagged' bed term or surface term with a 'FrictionSlope' or
+        'Pythagorean' slope magnitude.
+    :param surface_term_magnitude: 'Lagged' or 'Implicit' (default 'Lagged'). Matches
+        Solver.OverlandKinematic.Diffusion.SurfaceTermMagnitude. Only applicable if
+        flow_method='OverlandKinematicDiffusive'.
     :return: A ny-by-nx ndarray of overland flow values
     """
     mask = np.where(mask > 0, 1, 0)
@@ -523,6 +762,11 @@ def calculate_overland_flow_grid(
         flow_method=flow_method,
         epsilon=epsilon,
         mask=mask,
+        alpha=alpha,
+        slope_magnitude=slope_magnitude,
+        bed_term_magnitude=bed_term_magnitude,
+        pressure_old=pressure_old,
+        surface_term_magnitude=surface_term_magnitude,
     )
 
     # Outflow is a positive qeast[i,j+1] or qnorth[i+1,j] or a negative qeast[i,j], qnorth[i,j]
@@ -552,6 +796,11 @@ def calculate_overland_flow(
     flow_method="OverlandKinematic",
     epsilon=1e-5,
     mask=None,
+    alpha=1.0,
+    slope_magnitude="BedSlope",
+    bed_term_magnitude="Lagged",
+    pressure_old=None,
+    surface_term_magnitude="Lagged",
 ):
     """
     Calculate overland outflow out of a domain
@@ -562,12 +811,25 @@ def calculate_overland_flow(
     :param mannings: a scalar value, or a ny-by-nx ndarray
     :param dx: Length of a grid element in the x direction
     :param dy: Length of a grid element in the y direction
-    :param flow_method: Either 'OverlandFlow' or 'OverlandKinematic'
+    :param flow_method: 'OverlandFlow', 'OverlandKinematic', or 'OverlandKinematicDiffusive'
         'OverlandKinematic' by default.
-    :param epsilon: Minimum slope magnitude for solver. Only applicable if flow_method='OverlandKinematic'.
-        This is set using the Solver.OverlandKinematic.Epsilon key in Parflow.
+    :param epsilon: Minimum slope magnitude for solver. Only applicable if
+        flow_method='OverlandKinematic' or 'OverlandKinematicDiffusive'.
     :param mask: A nz-by-ny-by-nx ndarray of mask values (bottom layer to top layer)
         If None, assumed to be an nz-by-ny-by-nx ndarray of 1s.
+    :param alpha: Multiplier on the water-surface term (default 1.0).
+        Only applicable if flow_method='OverlandKinematicDiffusive'.
+    :param slope_magnitude: 'BedSlope', 'FrictionSlope', or 'Pythagorean' (default 'BedSlope').
+        Only applicable if flow_method='OverlandKinematicDiffusive'.
+    :param bed_term_magnitude: 'BedSlope', 'Lagged', or 'Implicit' (default 'Lagged'). Matches
+        Solver.OverlandKinematic.Diffusion.BedTermMagnitude. Only applicable if
+        flow_method='OverlandKinematicDiffusive'.
+    :param pressure_old: Pressure at the previous time step, same shape as ``pressure``.
+        Needed for a 'Lagged' bed term or surface term with a 'FrictionSlope' or
+        'Pythagorean' slope magnitude.
+    :param surface_term_magnitude: 'Lagged' or 'Implicit' (default 'Lagged'). Matches
+        Solver.OverlandKinematic.Diffusion.SurfaceTermMagnitude. Only applicable if
+        flow_method='OverlandKinematicDiffusive'.
     :return: A float value representing the total overland flow over the domain.
     """
     qeast, qnorth = calculate_overland_fluxes(
@@ -580,6 +842,11 @@ def calculate_overland_flow(
         flow_method=flow_method,
         epsilon=epsilon,
         mask=mask,
+        alpha=alpha,
+        slope_magnitude=slope_magnitude,
+        bed_term_magnitude=bed_term_magnitude,
+        pressure_old=pressure_old,
+        surface_term_magnitude=surface_term_magnitude,
     )
 
     if mask is not None:
