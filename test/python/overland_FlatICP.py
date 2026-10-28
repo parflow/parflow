@@ -14,9 +14,9 @@ overland = Run("overland_FlatICP", __file__)
 overland.FileVersion = 4
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-p", "--p", default=1)
-parser.add_argument("-q", "--q", default=1)
-parser.add_argument("-r", "--r", default=1)
+parser.add_argument("-p", "--p", type=int, default=1)
+parser.add_argument("-q", "--q", type=int, default=1)
+parser.add_argument("-r", "--r", type=int, default=1)
 args = parser.parse_args()
 
 overland.Process.Topology.P = args.p
