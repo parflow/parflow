@@ -100,11 +100,11 @@ void HypreInitialize(Matrix*              pf_matrix,
  * @param problem_data ParFlow problem data
  */
 void HypreAssembleMatrix(
-                                   Matrix *            pf_Bmat,
-                                   Matrix *            pf_Cmat,
-                                   HYPRE_StructMatrix* hypre_mat,
-                                   ProblemData *       problem_data
-                                   );
+                         Matrix *            pf_Bmat,
+                         Matrix *            pf_Cmat,
+                         HYPRE_StructMatrix* hypre_mat,
+                         ProblemData *       problem_data
+                         );
 
 #endif
 

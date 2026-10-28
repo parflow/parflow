@@ -248,11 +248,11 @@ void HypreInitialize(Matrix*              pf_Bmat,
 }
 
 void HypreAssembleMatrix(
-                                   Matrix *            pf_Bmat,
-                                   Matrix *            pf_Cmat,
-                                   HYPRE_StructMatrix* hypre_mat,
-                                   ProblemData *       problem_data
-                                   )
+                         Matrix *            pf_Bmat,
+                         Matrix *            pf_Cmat,
+                         HYPRE_StructMatrix* hypre_mat,
+                         ProblemData *       problem_data
+                         )
 {
   Grid *mat_grid = MatrixGrid(pf_Bmat);
   int sg;
