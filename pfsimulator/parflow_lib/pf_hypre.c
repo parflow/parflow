@@ -332,6 +332,8 @@ void HypreAssembleMatrix(
       int i, j, k;
       int im = SubmatrixEltIndex(pfB_sub, ix, iy, iz);
 
+      PF_UNUSED(im);
+
       if (symmetric)
       {
         double *ep = SubmatrixStencilData(pfB_sub, 2);
