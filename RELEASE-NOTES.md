@@ -1,7 +1,7 @@
-# ParFlow Release Notes 3.15.0
+# ParFlow Release Notes (pending)
 ------------------------------
 
-This release contains several significant feature additions, bug fixes, and infrastructure improvements. Notable enhancements include expanded CLM snow physics options, improved overland flow output capabilities, KINSOL solver flexibility, and enhanced CI/CD infrastructure.
+This release contains several significant feature additions, bug fixes, and infrastructure improvements.
 
 ParFlow development and bug-fixes would not be possible without contributions of the ParFlow community. Thank you for all the great contributions.
 
@@ -54,6 +54,32 @@ We have automated scripts that can convert substational parts of a ParFlow TCL i
 The ParFlow documentation includes a short tutorial on TCL to Python conversion, see [From TCL to Python](https://parflow.readthedocs.io/en/latest/python/tutorials/tcl2py.html).
 
 If you have concerns about this change feel free to post to [ParFlow User Group](https://groups.google.com/g/parflow).   We will try to help with this conversion as much as we can.
+
+## Overview of Changes
+
+Version <TBD> introduces major enhancements <TBD>
+
+## User Visible Changes
+
+## Bug Fixes
+
+### CLM Canopy Hydrology
+- Fixed CLM canopy hydrology so dry vegetated canopies continue to transpire when canopy water is zero, improving consistency and reducing round-off/layout-dependent behavior in CLM regression results.
+
+### OverlandDiffusive Stability and Parallel Reliability
+Improved the robustness of OverlandDiffusive runs by fixing flow behavior at domain edges and resolving inconsistencies that could appear in parallel runs. Added regression coverage for the affected overland Python tests and updated the test inputs so parallel processor settings are applied correctly.
+
+### OverlandKinematic CALCDER Boundary Handling
+Fixed OverlandKinematic `CALCDER` and flux evaluation logic at domain and internal patch boundaries to avoid invalid neighbor indexing when adjacent top cells are missing and to use the correct west/south neighbor indices for internal patch-edge calculations. (#776)
+
+## Internal/Developer Changes
+
+***
+
+# ParFlow Release Notes 3.15.0
+------------------------------
+
+This release contains several significant feature additions, bug fixes, and infrastructure improvements. Notable enhancements include expanded CLM snow physics options, improved overland flow output capabilities, KINSOL solver flexibility, and enhanced CI/CD infrastructure.
 
 ***
 
@@ -145,9 +171,6 @@ Enhanced documentation on code formatting requirements and Black version specifi
 
 ## Bug Fixes
 
-### CLM Canopy Hydrology
-- Fixed CLM canopy hydrology so dry vegetated canopies continue to transpire when canopy water is zero, improving consistency and reducing round-off/layout-dependent behavior in CLM regression results.
-
 ### CUDA 13+ Compatibility
 Updated CUDA memory prefetch API calls to use `cudaMemPrefetchAsync` with new `cudaMemLocation` struct for compatibility with CUDA 13.0 and later.
 
@@ -177,9 +200,6 @@ Improved AMPS CMakeLists.txt organization with better dependency handling for RM
 - Enhanced TCL deprecation testing with configuration option
 - Improved self-hosted GPU runner support for CUDA testing
 - Fixed Docker container architecture detection for multi-platform builds
-
-### OverlandDiffusive Stability and Parallel Reliability
-Improved the robustness of OverlandDiffusive runs by fixing flow behavior at domain edges and resolving inconsistencies that could appear in parallel runs. Added regression coverage for the affected overland Python tests and updated the test inputs so parallel processor settings are applied correctly.
 
 ### Valgrind Suppressions
 Added suppressions for Intel MPI and libmlx4/libibverbs memory leak reports to reduce false positives in valgrind analysis.
