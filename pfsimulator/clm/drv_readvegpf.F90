@@ -1,6 +1,7 @@
 !#include <misc.h>
 
-subroutine drv_readvegpf (drv,grid,tile,clm)
+subroutine drv_readvegpf (drv,grid,tile,clm,veg_water_stress_typepf,per_pft_water_stresspf, &
+                          wilting_pointpf,field_capacitypf)
 
   !=========================================================================
   !
@@ -42,11 +43,20 @@ subroutine drv_readvegpf (drv,grid,tile,clm)
   type (griddec) :: grid(drv%nc,drv%nr)
   type (tiledec) :: tile(drv%nch)
   type (clm1d)   :: clm (drv%nch)
+  integer        :: veg_water_stress_typepf   ! CLM veg water stress mode (1=pressure, 2=saturation)
+  integer        :: per_pft_water_stresspf    ! 1 = apply per-PFT wilting point / field capacity from this file
+  real(r8)       :: wilting_pointpf           ! scalar Solver.CLM.WiltingPoint default
+  real(r8)       :: field_capacitypf          ! scalar Solver.CLM.FieldCapacity default
 
   !=== Local Variables =====================================================
 
   character(15) :: vname   ! variable name read from clm_in.dat
   integer :: ioval,t       ! Read error code; tile space counter
+  ! Per-PFT wilting point / field capacity, one pair per VegWaterStress mode,
+  ! with a presence flag per row (a row absent from drv_vegp.dat is never read).
+  real(r8) :: wp_press_v(drv%nch), fc_press_v(drv%nch)
+  real(r8) :: wp_sat_v(drv%nch),   fc_sat_v(drv%nch)
+  logical  :: wp_press_present, fc_press_present, wp_sat_present, fc_sat_present
 
   !=== End Variable List ===================================================
 
@@ -55,9 +65,15 @@ subroutine drv_readvegpf (drv,grid,tile,clm)
 
 
   ! Setup defaults; this prevents use of unitialized state
-  do t=1,drv%nch 
+  do t=1,drv%nch
      clm(t)%irrig = 0  !default - no irrigation
   end do
+
+  ! No per-PFT row seen yet; each flag flips true when its row is read below.
+  wp_press_present = .false.
+  fc_press_present = .false.
+  wp_sat_present   = .false.
+  fc_sat_present   = .false.
 
   ioval=0
   do while (ioval == 0)
@@ -100,6 +116,21 @@ subroutine drv_readvegpf (drv,grid,tile,clm)
      if (vname == 'g1_medlyn')  call drv_vpr(drv,tile,clm%g1_medlyn) ! @RMM 2026 Medlyn stomata
      if (vname == 'clump')      call drv_vpr(drv,tile,clm%clump_index) ! @RMM 2026 canopy clumping
      if (vname == 'omega_max')  call drv_vpr(drv,tile,clm%omega_max)   ! @RMM 2026 compensatory RWU
+     ! Per-PFT wilting point / field capacity, one pair per VegWaterStress mode.
+     ! Read into locals; the pair matching the active mode is applied after the
+     ! loop, only when Solver.CLM.PerPFTWaterStress is on.  @RMM 2026
+     if (vname == 'wp_press') then
+        call drv_vpr(drv,tile,wp_press_v) ; wp_press_present = .true.
+     end if
+     if (vname == 'fc_press') then
+        call drv_vpr(drv,tile,fc_press_v) ; fc_press_present = .true.
+     end if
+     if (vname == 'wp_sat') then
+        call drv_vpr(drv,tile,wp_sat_v) ; wp_sat_present = .true.
+     end if
+     if (vname == 'fc_sat') then
+        call drv_vpr(drv,tile,fc_sat_v) ; fc_sat_present = .true.
+     end if
      ! initialize lakpoi from itypwat variable
 
      do t=1,drv%nch 
@@ -124,7 +155,32 @@ subroutine drv_readvegpf (drv,grid,tile,clm)
      end do
 
   enddo
-  close(9) 
+  close(9)
+
+  !=== Wilting point / field capacity onto tile space ======================
+  ! Every tile takes the scalar Solver.CLM.WiltingPoint / FieldCapacity by
+  ! default.  This is the sole owner of these fields (clm.F90 no longer sets
+  ! them), so behavior is independent of any NaN initialization.
+  do t = 1, drv%nch
+     clm(t)%wilting_point  = wilting_pointpf
+     clm(t)%field_capacity = field_capacitypf
+  end do
+
+  ! Per-PFT override (Solver.CLM.PerPFTWaterStress): where the row for the active
+  ! VegWaterStress mode was present in drv_vegp.dat, use it instead of the
+  ! scalar.  Rows absent from the file are never read, so their tiles keep the
+  ! scalar.  When the switch is off the rows are ignored entirely.
+  if (per_pft_water_stresspf == 1) then
+     do t = 1, drv%nch
+        if (veg_water_stress_typepf == 1) then        ! pressure formulation
+           if (wp_press_present) clm(t)%wilting_point  = wp_press_v(t)
+           if (fc_press_present) clm(t)%field_capacity = fc_press_v(t)
+        else if (veg_water_stress_typepf == 2) then   ! saturation formulation
+           if (wp_sat_present) clm(t)%wilting_point  = wp_sat_v(t)
+           if (fc_sat_present) clm(t)%field_capacity = fc_sat_v(t)
+        end if
+     end do
+  end if
 
 end subroutine drv_readvegpf
 

@@ -105,6 +105,48 @@ New options for improving evapotranspiration calculations:
 - **InterceptionScheme**: CLM3 exponential or CLM5 tanh-based canopy interception
 - Enhanced interception and wet canopy fraction parameters
 
+### Residual-Saturation Guards for ET Sinks
+
+Two related, individually opt-in guards keep evapotranspiration sinks from
+driving cells to the van Genuchten residual-saturation cliff, where the
+Richards Jacobian degenerates:
+
+- **`Solver.CLM.SoilMoistureStress`** (coupled runs): the effective wilting
+  point of CLM's Saturation-type water-stress ramp is limited on the dry side
+  against each cell's residual saturation (`.ResidualLimit.Margin`, default
+  0.02), and a minimum ramp width keeps the btran denominator conditioned, so
+  transpiration shuts off with mass to spare.
+- **`Solver.EvapTransGuard`** (prescribed-flux runs, e.g. P-ET spin-up):
+  cells with negative `evap_trans` are scaled by a C1 smoothstep beta(S) that
+  ramps the sink to zero at `S_res + Margin` (default 0.02, ramp width 0.05),
+  applied consistently in the nonlinear residual and the analytic Jacobian.
+  Positive (source) cells are never modified. An opt-in per-timestep CSV
+  (`.PrintLog`) reports guarded-cell counts and the prescribed / applied /
+  withheld sink volumes (the mass-balance closure term). Spin-ups can then
+  use the full signed P-ET field instead of zero-clipping ET-demand cells,
+  which otherwise drive thin surface cells to unphysical suction (observed
+  to -1e10 m) and destabilize subsequent coupled runs.
+
+Both default to off and are byte-identical to previous behavior when
+disabled. Foundation: per-cell residual saturation exposed via
+`ProblemSaturationGetSres` (van Genuchten saturation required).
+
+### Per-PFT Wilting Point and Field Capacity
+
+- **`Solver.CLM.PerPFTWaterStress`** (default off): CLM can read wilting point
+  and field capacity per IGBP/PFT class from `drv_vegp.dat` instead of the single
+  `Solver.CLM.WiltingPoint` / `Solver.CLM.FieldCapacity` scalars. Four new rows
+  supply the values (`wp_press`/`fc_press` for the Pressure formulation,
+  `wp_sat`/`fc_sat` for the Saturation formulation); only the pair matching the
+  active `Solver.CLM.VegWaterStress` mode is used, and any absent row falls back
+  to the scalar. When off, the scalars are used for every PFT exactly as before,
+  even if the rows are present, so the option is byte-identical when disabled.
+  CLM aborts at startup if any vegetated class has field capacity that is not
+  wetter than its wilting point. Composes with `Solver.CLM.SoilMoistureStress`:
+  the effective wilting point is the larger of the per-PFT value and the
+  residual-saturation limit. `SoilMoistureStress` now also guards the Pressure
+  formulation, per soil layer in saturation units.
+
 ### Overland Flow Output Enhancements
 
 New output capabilities for overland flow analysis:

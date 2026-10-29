@@ -5635,6 +5635,46 @@ keys should be set to ``True`` at a time, not both.
 
       <runname>.Solver.EvapTransFileTransient = True     ## Python syntax
 
+*string* **Solver.EvapTransGuard** False Master switch for the
+moisture-limited guard on prescribed ``evap_trans`` sink cells. When
+**False** (default) behavior is exactly as before. When **True**, cells with
+negative ``evap_trans`` (ET demand) have the sink scaled by a :math:`C^1`
+smoothstep factor :math:`\beta(S)` that ramps from 1 to 0 as the cell
+saturation approaches its van Genuchten residual: the sink is fully shut off
+at :math:`S_{res} + \mathrm{Margin}` and untouched above
+:math:`S_{res} + \mathrm{Margin} + \mathrm{RampWidth}`. This prevents
+prescribed P−ET spin-up forcing from extracting water without moisture
+limitation and driving cells into unphysical suction. Positive (source)
+cells are never modified; the guard term enters both the nonlinear residual
+and the analytic Jacobian. Requires Type-1 (**VanGenuchten**) saturation.
+Ignored, with a warning, when *Solver.LSM* = **CLM** (CLM fluxes are already
+moisture-limited and pass through unchanged).
+
+*double* **Solver.EvapTransGuard.Margin** 0.02 Saturation-unit margin above
+the per-cell residual saturation at which the guarded sink is fully shut
+off: :math:`S_{stop} = S_{res} + \mathrm{Margin}`.
+
+*double* **Solver.EvapTransGuard.RampWidth** 0.05 Saturation-unit width of
+the smoothstep ramp above :math:`S_{stop}` over which the sink scales from 0
+back to its full prescribed value. Must be positive.
+
+*logical* **Solver.EvapTransGuard.PrintLog** False When the guard is active,
+write one CSV row per accepted timestep to ``<run_name>.out.etguard.csv``: cell
+counts (negative / limited / shut), prescribed vs applied sink volume,
+per-step and cumulative withheld volume (the mass-balance closure term:
+prescribed = applied + withheld), and the minimum :math:`\beta` and
+saturation over guarded cells.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.EvapTransGuard    True                ## TCL syntax
+      pfset Solver.EvapTransGuard.PrintLog  True         ## TCL syntax
+
+      <runname>.Solver.EvapTransGuard = True             ## Python syntax
+      <runname>.Solver.EvapTransGuard.PrintLog = True    ## Python syntax
+
 *string* **Solver.EvapTrans.FileName** no default This key specifies
 specifies filename for the distributed ParFlow 3D binary file that contains the 
 flux values for Richards’ equation. This file has :math:`[T^-1]` units 
@@ -6119,11 +6159,34 @@ The valid types for this key are **None**, **Saturation**, **Pressure**.
    :math:`\beta_t=\frac{P - P_{wp}}{P_{fc}-P_{wp}}`
 
 Note that the wilting point, :math:`S_{wp}` or :math:`p_{wp}`, is
-specified by the key ``Solver.CLM.WiltingPoint`` below, that the 
-field capacity, :math:`S_{fc}` or :math:`p_{fc}`, is specified by the 
-key ``Solver.CLM.FieldCapacity`` below, that :math:`\beta_t` is limited 
-between zero and one and also that ``CLM`` must be compiled and 
-linked at runtime for this option to be active.
+specified by the key ``Solver.CLM.WiltingPoint`` below, that the
+field capacity, :math:`S_{fc}` or :math:`p_{fc}`, is specified by the
+key ``Solver.CLM.FieldCapacity`` below, that :math:`\beta_t` is limited
+between zero and one and also that ``CLM`` must be compiled and
+linked at runtime for this option to be active. The root-zone
+transpiration factor passed to the stomatal-resistance calculation is the
+root-fraction-weighted sum over soil layers,
+:math:`\beta_t = \sum_i r_i\, \beta_{t,i}`, where :math:`r_i` is the root
+fraction in layer :math:`i`.
+
+When ``Solver.CLM.PerPFTWaterStress`` is **True**, the wilting point and field
+capacity in these expressions are taken per vegetation class from
+``drv_vegp.dat`` rather than from the single scalar keys (see
+``Solver.CLM.PerPFTWaterStress`` below). When ``Solver.CLM.SoilMoistureStress``
+is **True**, the wilting point is limited on the dry side against each cell's van
+Genuchten residual saturation :math:`S_{res}`, so the effective values used by
+the **Saturation** ramp are
+
+.. math::
+
+   S_{wp}^{\mathrm{eff}} = \max\!\left(S_{wp},\; S_{res} + \mathrm{Margin}\right),
+   \qquad
+   S_{fc}^{\mathrm{eff}} = \max\!\left(S_{fc},\; S_{wp}^{\mathrm{eff}} + \mathrm{MinRampWidth}\right)
+
+For the **Pressure** formulation the same residual limit is applied per soil
+layer in saturation units, since :math:`S_{res}` has no finite head: layer
+:math:`i` contributes :math:`\beta_{t,i} = 0` once its saturation falls to
+:math:`S_{res} + \mathrm{Margin}`.
 
 .. container:: list
 
@@ -6146,6 +6209,36 @@ to be active.
       pfset Solver.CLM.WiltingPoint  0.15       ## TCL syntax
       <runname>.Solver.CLM.WiltingPoint = 0.15  ## Python syntax
 
+*string* **Solver.CLM.SoilMoistureStress** False Master switch for the per-cell
+soil-moisture-stress wilting-point treatment. When **False** (default) ``CLM``
+behavior is exactly as before. When **True**, the effective wilting point used by
+the **Saturation** :math:`\beta_t` ramp and its cutoff is limited on the dry side
+against each cell's van Genuchten residual saturation :math:`S_{res}`, so
+transpiration shuts off with mass to spare and never drives a cell to the
+residual-saturation cliff where the Richards Jacobian degenerates. For the
+**Pressure** formulation the same dry-side limit is applied per soil layer in
+saturation units (residual saturation has no finite head), zeroing a layer's
+uptake once it falls within **Margin** of :math:`S_{res}`.
+
+*string* **Solver.CLM.SoilMoistureStress.ResidualLimit** True When the master switch
+is **True**, raise the effective wilting point to at least
+:math:`S_{res} + \mathrm{Margin}` per cell. When **False**, only the minimum ramp
+width is enforced (no residual limit).
+
+*double* **Solver.CLM.SoilMoistureStress.ResidualLimit.Margin** 0.02 Saturation-unit
+margin the effective wilting point is kept above the per-cell residual saturation.
+
+*double* **Solver.CLM.SoilMoistureStress.MinRampWidth** 0.05 Minimum span between the
+effective field capacity and effective wilting point, keeping the :math:`\beta_t`
+ramp denominator well conditioned when the wilting point is raised.
+
+.. container:: list
+
+   ::
+
+      <runname>.Solver.CLM.SoilMoistureStress = True                    ## Python syntax
+      <runname>.Solver.CLM.SoilMoistureStress.ResidualLimit.Margin = 0.02
+
 *double* **Solver.CLM.FieldCapacity** 1.0 This key specifies the field
 capacity for the :math:`\beta_t` function in ``CLM`` specified above. 
 Note that the units for this function are pressure :math:`[m]` for a **Pressure** 
@@ -6159,6 +6252,26 @@ to be active.
 
       pfset Solver.CLM.FieldCapacity  0.95         ## TCL syntax
       <runname>.Solver.CLM.FieldCapacity = 0.95    ## Python syntax
+
+*string* **Solver.CLM.PerPFTWaterStress** False When **True**, ``CLM`` reads
+per-PFT wilting point and field capacity from ``drv_vegp.dat`` instead of the
+single ``Solver.CLM.WiltingPoint`` / ``Solver.CLM.FieldCapacity`` scalars. Four
+rows supply the values, one per IGBP/PFT class: ``wp_press`` and ``fc_press`` for
+the **Pressure** formulation, ``wp_sat`` and ``fc_sat`` for the **Saturation**
+formulation. Only the pair matching the active ``Solver.CLM.VegWaterStress``
+formulation is used. Any row absent from ``drv_vegp.dat`` falls back to the
+corresponding scalar key for every PFT. When **False** (default) the scalar
+values are used for every PFT, exactly as before, even if the rows are present in
+the file. ``CLM`` aborts at startup if any vegetated class has field capacity that
+is not wetter than its wilting point. Note that ``CLM`` must be compiled and
+linked at runtime for this option to be active.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.PerPFTWaterStress  True         ## TCL syntax
+      <runname>.Solver.CLM.PerPFTWaterStress = True    ## Python syntax
 
 *string* **Solver.CLM.IrrigationType** none This key specifies the form
 of the irrigation in ``CLM``. The valid types for this key are **none**, 
