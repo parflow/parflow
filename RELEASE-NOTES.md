@@ -61,18 +61,75 @@ Version <TBD> introduces major enhancements <TBD>
 
 ## User Visible Changes
 
+#### Compensatory Root Water Uptake (#718)
+ParFlow now supports compensatory root water uptake in CLM with `Solver.CLM.RZWaterStress = 2`, based on Li et al. (2001). This gives users an additional root-zone stress formulation that can better represent plant water uptake compensation across soil layers.
+
+#### Hydraulic Conductivity Equation Update (#734)
+The model equation used for hydraulic conductivity has been updated. Users may see changes in results for simulations that are sensitive to conductivity behavior, so this update is worth noting when comparing against older runs.
+
+#### Linux Binary Packaging (#742)
+Linux binary packaging has been improved to make prebuilt ParFlow distributions easier to provide and use on supported systems.
+
+#### macOS Binary Packaging (#744)
+macOS binary packaging has been added and improved, helping users access prebuilt ParFlow binaries more easily on Apple systems.
+
 ## Bug Fixes
 
-### CLM Canopy Hydrology
-- Fixed CLM canopy hydrology so dry vegetated canopies continue to transpire when canopy water is zero, improving consistency and reducing round-off/layout-dependent behavior in CLM regression results.
+#### CLM Driver Documentation and Cleanup (#714)
+The CLM driver inputs and related files have been documented more clearly, and unused parameters have been removed. This helps reduce confusion for users configuring CLM runs.
 
-### OverlandDiffusive Stability and Parallel Reliability
-Improved the robustness of OverlandDiffusive runs by fixing flow behavior at domain edges and resolving inconsistencies that could appear in parallel runs. Added regression coverage for the affected overland Python tests and updated the test inputs so parallel processor settings are applied correctly.
+#### CLM Canopy Hydrology Fix
+Dry vegetated canopies now continue to transpire when canopy water is zero, improving CLM physical behavior and reducing round-off or layout-dependent differences in regression results.
 
-### OverlandKinematic CALCDER Boundary Handling
-Fixed OverlandKinematic `CALCDER` and flux evaluation logic at domain and internal patch boundaries to avoid invalid neighbor indexing when adjacent top cells are missing and to use the correct west/south neighbor indices for internal patch-edge calculations. (#776)
+#### CLM Restart Snow-Age Fix (#751)
+Fixed a restart inconsistency for `snowage_vis` and `snowage_nir` so CLM restart files more faithfully preserve snow aging state across stop/restart workflows.
+
+#### Inactive-Column CLM Segmentation Fault Fix (#752)
+Fixed a segmentation fault that could occur in CLM when inactive ParFlow columns were present, improving stability for simulations with masked or irregular domains.
+
+#### CUDA/Kokkos Allocation Integer Truncation Fix (#757)
+Fixed integer truncation in CUDA/Kokkos memory allocation macros. This improves correctness and robustness for accelerator-enabled runs, especially for larger allocations.
+
+#### SurfacePredictor Surface Flow Fix (#761)
+Fixed a bug in `SurfacePredictor` surface flow calculations. Users relying on predictor-based surface flow behavior should now see more consistent results.
+
+#### OpenMP Min Reduction Fix (#766)
+Fixed incorrect min reductions in the OpenMP backend loop macros, improving correctness for threaded runs that depend on those reductions.
+
+#### Sequential Build Test Selection Fix (#770)
+Fixed AMPS test selection for sequential builds so the correct tests are run in non-MPI configurations.
+
+#### 7-Point `Matvec` Optimization (#772)
+Optimized `Matvec` for 7-point stencils, improving performance for common structured-grid solve patterns without changing user workflows.
+
+#### OverlandDiffusive Boundary and Parallel Fixes (#774)
+Improved OverlandDiffusive behavior at domain edges and fixed inconsistencies that could appear in parallel runs. This makes overland diffusive simulations more robust and more consistent across processor layouts.
+
+#### OverlandKinematic Boundary Handling Fix (#776)
+Fixed OverlandKinematic `CALCDER` and flux evaluation logic at domain and internal patch boundaries. This avoids invalid neighbor indexing when adjacent top cells are missing and corrects west/south neighbor selection for internal patch-edge calculations.
+
+#### AMPS Macro Parentheses Fix (#778)
+Parenthesized AMPS comma-expression macros to avoid precedence-related issues and improve macro safety in compiled code.
 
 ## Internal/Developer Changes
+
+#### Release Process Updates (#732)
+Updated the release process documentation to make project release steps clearer for maintainers.
+
+#### CMake Style Checker (#733)
+Added a CMake style checker to improve consistency in CMake files and help catch formatting issues earlier in development.
+
+#### Test `.gitignore` Cleanup (#736)
+Cleaned up test `.gitignore` handling to keep generated test artifacts organized and reduce accidental repository noise.
+
+#### Python Valgrind Memcheck Coverage (#759)
+Added valgrind memcheck coverage for Python test cases, improving memory-checking coverage in test and CI workflows.
+
+#### macOS CI Maintenance (#760)
+Updated macOS CI configuration for GitHub Actions runner changes and current Homebrew behavior.
+
+#### Python `black` Version Update (#781)
+Updated `black` in `pftools/python` from `26.3.1` to `26.10.1` to keep formatting tooling current.
 
 ***
 
