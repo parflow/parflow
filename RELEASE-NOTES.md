@@ -145,6 +145,9 @@ Enhanced documentation on code formatting requirements and Black version specifi
 
 ## Bug Fixes
 
+### CLM Canopy Hydrology
+- Fixed CLM canopy hydrology so dry vegetated canopies continue to transpire when canopy water is zero, improving consistency and reducing round-off/layout-dependent behavior in CLM regression results.
+
 ### CUDA 13+ Compatibility
 Updated CUDA memory prefetch API calls to use `cudaMemPrefetchAsync` with new `cudaMemLocation` struct for compatibility with CUDA 13.0 and later.
 
@@ -174,6 +177,9 @@ Improved AMPS CMakeLists.txt organization with better dependency handling for RM
 - Enhanced TCL deprecation testing with configuration option
 - Improved self-hosted GPU runner support for CUDA testing
 - Fixed Docker container architecture detection for multi-platform builds
+
+### OverlandDiffusive Stability and Parallel Reliability
+Improved the robustness of OverlandDiffusive runs by fixing flow behavior at domain edges and resolving inconsistencies that could appear in parallel runs. Added regression coverage for the affected overland Python tests and updated the test inputs so parallel processor settings are applied correctly.
 
 ### Valgrind Suppressions
 Added suppressions for Intel MPI and libmlx4/libibverbs memory leak reports to reduce false positives in valgrind analysis.
