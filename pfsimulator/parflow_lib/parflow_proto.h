@@ -497,6 +497,7 @@ void NewEndpts(double *alpha, double *beta, double *pp, int *size_ptr, int n, do
 
 typedef void (*NlFunctionEvalInvoke) (Vector *pressure, Vector *fval, ProblemData *problem_data, Vector *saturation, Vector *old_saturation, Vector *density, Vector *old_density, double dt, double time, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *q_overlnd_x, Vector *q_overlnd_y);
 typedef PFModule *(*NlFunctionEvalInitInstanceXtraInvoke) (Problem *problem, Grid *grid, Grid *grid2d, double *temp_data);
+typedef PFModule *(*NlFunctionEvalNewPublicXtraInvoke) (char *name);
 
 /* nl_function_eval.c */
 #if defined (PARFLOW_HAVE_SUNDIALS)
