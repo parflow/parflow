@@ -1064,6 +1064,22 @@ Solver:
           max_value: 1.0
         RequiresModule: CLM
 
+    VonKarman:
+      help: >
+        [Type: double] von Karman constant used in the CLM surface-layer similarity
+        calculations. Default 0.378 preserves historical PF-CLM behavior. This value
+        originates in BATS1e and was prescribed in the PILPS Phase 2 experiments
+        (Chen et al., 1997, Table A4); PF-CLM adopted it during initial development
+        against the PILPS 2(d) Valdai data (Maxwell and Miller, 2005). The original
+        Common Land Model and other current land surface models use 0.4, which is
+        the recommended value. ET sensitivity to this parameter is small.
+      default: 0.378
+      domains:
+        DoubleValue:
+          min_value: 0.3
+          max_value: 0.45
+        RequiresModule: CLM
+
     # -----------------------------------------------------------------------------
     # CLM input variables to write drv_clmin.dat (Input) and drv_vegp.dat (VegParams) files
     # -----------------------------------------------------------------------------

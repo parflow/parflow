@@ -22,7 +22,7 @@ frac_sno_gamma_szapf,frac_sno_tau_szapf,                                        
 snowage_tau0_vispf,snowage_tau0_nirpf,snowage_grain_growth_vispf,snowage_grain_growth_nirpf,        &
 snowage_dirt_soot_vispf,snowage_dirt_soot_nirpf,snowage_reset_factorpf,                                    &
 interception_fpi_maxpf,fwet_exponentpf,stomata_schemepf,                                     &
-interception_schemepf,interception_tanh_alphapf)
+interception_schemepf,interception_tanh_alphapf,vkcpf)
 
   !=========================================================================
   !
@@ -40,6 +40,7 @@ interception_schemepf,interception_tanh_alphapf)
   use drv_gridmodule      ! Grid-space variables
   use clmtype             ! CLM tile variables
   use clm_varpar
+  use clm_varcon, only : vkc
 
   implicit none
 
@@ -214,6 +215,7 @@ interception_schemepf,interception_tanh_alphapf)
   integer  :: stomata_schemepf                   ! stomatal model: 0=BallBerry, 1=Medlyn
   integer  :: interception_schemepf              ! interception: 0=CLM3, 1=CLM5Tanh
   real(r8) :: interception_tanh_alphapf          ! CLM5 tanh scaling coeff [-]
+  real(r8) :: vkcpf                              ! von Karman constant [-], default 0.378 (Solver.CLM.VonKarman)
 
   ! local indices & counters
   integer  :: i,j,k,k1,j1,l1                     ! indices for local looping
@@ -552,6 +554,10 @@ interception_schemepf,interception_tanh_alphapf)
       clm(t)%slope_y = 0.0d0
       end if
       end do ! t
+
+     !=== von Karman constant from PF key (module variable in clm_varcon, used by
+     !    clm_obult, clm_thermal, clm_leaftem, clm_lake). Set every call so restarts are safe.
+     vkc = vkcpf
 
      !=== Loop over CLM tile space to set keys/constants from PF
      !    (watsat, residual sat, irrigation keys)
