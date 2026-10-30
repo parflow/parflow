@@ -2420,6 +2420,18 @@ Solver:
     domains:
       BoolDomain:
 
+  TimingDetail:
+    help: >
+      [Type: int] This key sets the detail of the timing file: 
+        - 0 for solver phases and modules, 
+        - 1 to add algorithmic steps,
+        - 2 to add single kernels
+    default: 0
+    domains:
+      IntValue:
+        min_value: 0
+        max_value: 2
+
   PrintSubsurf:
     help: >
       [Type: boolean/string] This key is used to turn on printing of the subsurface data, Permeability and Porosity. The data is printed after
