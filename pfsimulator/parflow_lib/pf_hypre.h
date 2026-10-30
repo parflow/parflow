@@ -85,28 +85,26 @@ void HypreInitialize(Matrix*              pf_matrix,
                      );
 
 /**
- * Assemble the Hypre matrix from B and C ParFlow matrices using an
- * element by element filling.
+ * Assemble the Hypre matrix from B and C ParFlow matrices.Matrix values are
+ * inserted by box and stencil entry.
  *
- * Copies coefficients from the B and C matrices into the supplied
- * Hypre matrix.  This version loops over all indices individually and
- * inserts one at a time into the Hypre matrix.
- *
- * Possibly this is faster for some domains that are highly irregular.
- * Most of the time the block insertion will be faster since it
- * operations on blocks of indices.
+ * It issues one HYPRE_StructMatrixSetBoxValues2 call per stencil entry
+ * per subgrid (stencil_size calls total per subgrid, instead of one
+ * HYPRE_StructMatrixSetValues call per grid cell). The overland-flow
+ * top-surface correction is still done cell-wise, but only over the
+ * 2-D top layer (nx*ny cells).
  *
  * @param pf_Bmat The B matrix
  * @param pf_Cmat The C matrix
  * @param hyre_mat The filled in Hypre matrix
  * @param problem_data ParFlow problem data
  */
-void HypreAssembleMatrixAsElements(
-                                   Matrix *            pf_Bmat,
-                                   Matrix *            pf_Cmat,
-                                   HYPRE_StructMatrix* hypre_mat,
-                                   ProblemData *       problem_data
-                                   );
+void HypreAssembleMatrix(
+                         Matrix *            pf_Bmat,
+                         Matrix *            pf_Cmat,
+                         HYPRE_StructMatrix* hypre_mat,
+                         ProblemData *       problem_data
+                         );
 
 #endif
 
