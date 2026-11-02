@@ -23,6 +23,13 @@ TYPE_INFO_RE = re.compile(r"(^\[\w+: \w+\] )")
 
 
 class SubsurfacePropertiesExporter:
+    """Export non-default geometry properties from a ParFlow run as a table.
+
+    Parameters
+    ----------
+    run : parflow.Run
+        Run containing the subsurface properties to export.
+    """
 
     def __init__(self, run):
         self.run = run
@@ -64,6 +71,20 @@ class SubsurfacePropertiesExporter:
                 self.entries.append(entry)
 
     def get_table_as_txt(self, column_separator="  ", columns_justify=True):
+        """Serialize the run's subsurface properties as a text table.
+
+        Parameters
+        ----------
+        column_separator : str, default="  "
+            Text inserted between columns.
+        columns_justify : bool, default=True
+            Pad each column to the width of its longest value.
+
+        Returns
+        -------
+        str
+            Table containing one row per geometry with non-default properties.
+        """
         header = ["key"] + list(self.props_found)
         header.sort(key=lambda alias: self.alias_to_priority[alias])
         lines = []
@@ -96,15 +117,36 @@ class SubsurfacePropertiesExporter:
         return "\n".join(lines)
 
     def write_csv(self, file_path):
+        """Write subsurface properties as a comma-separated table.
+
+        Parameters
+        ----------
+        file_path : path-like
+            Destination CSV file.
+        """
         data = self.get_table_as_txt(column_separator=",", columns_justify=False)
         Path(file_path).write_text(data, encoding="utf-8")
 
     def write_txt(self, file_path):
+        """Write subsurface properties as an aligned text table.
+
+        Parameters
+        ----------
+        file_path : path-like
+            Destination text file.
+        """
         data = self.get_table_as_txt()
         Path(file_path).write_text(data, encoding="utf-8")
 
 
 class CLMExporter:
+    """Export CLM driver files from settings stored in a ParFlow run.
+
+    Parameters
+    ----------
+    run : parflow.Run
+        Run containing the CLM input, vegetation map, and parameter data.
+    """
 
     def __init__(self, run):
         self.run = run
@@ -590,6 +632,7 @@ class CLMExporter:
 
     @property
     def can_export(self):
+        """Whether the run contains the data required to export CLM files."""
         if self._using_clm:
             land_param_items = self._veg_params.select("{LandCoverParamItem}")
             land_map_items = self._veg_map.select("LandFrac/{LandFracCoverMapItem}")
@@ -628,4 +671,4 @@ class CLMExporter:
 
 
 class NotOverwritableException(Exception):
-    pass
+    """Raised when a CLM exporter is not allowed to overwrite a file."""

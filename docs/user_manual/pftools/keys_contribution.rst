@@ -1,31 +1,39 @@
-.. _keys_contribution:
+.. _pftools_keys_contribution:
 
-******************
-Contributing keys
-******************
+*********************
+Contributing New Keys
+*********************
 
-.. _keys_contribution_def:
+.. _pftools_keys_contribution_def:
 
 YAML definitions
 =================
 
-The files in this directory are split up into groups to limit their length. Each ParFlow key comprises one or more
-tokens, separated by periods. In the YAML files, tokens are set up in a tabbed hierarchical structure, where each
-token is nested within the preceding token. Tokens are either static (starting with a capital letter) or dynamic
-(denoted by ``.{dynamic_name}``, e.g. ``geom_name`` in ``Geom.geom_name.Lower.X``). Leaf tokens are the tokens where
-the value is stored (e.g. ``R`` in ``Process.Topology.R``). All other tokens are referred to as intermediate tokens.
+ParFlow key definitions live in ``pf-keys/definitions/`` in the ParFlow source tree.
+The YAML files there are split by topic to limit their length (for example
+``solver.yaml``, ``phase.yaml``, ``geom.yaml``, ``bconditions.yaml``,
+``wells.yaml``, ``timing.yaml``, ``run.yaml``, ``netcdf.yaml``,
+``reservoirs.yaml``, ``core.yaml``, and ``metadata.yaml``).
+
+Each ParFlow key comprises one or more tokens, separated by periods. In the YAML
+files, tokens are set up in a tabbed hierarchical structure, where each token is
+nested within the preceding token. Tokens are either static (starting with a
+capital letter) or dynamic (denoted by ``.{dynamic_name}``, e.g. ``geom_name`` in
+``Geom.geom_name.Lower.X``). Leaf tokens are the tokens where the value is
+stored (e.g. ``R`` in ``Process.Topology.R``). All other tokens are referred to
+as intermediate tokens.
 
 Each token has one or more annotations associated with it, which fall into one of three categories, which are described
 below:
 
-.. _keys_contribution_generator_annotations:
+.. _pftools_keys_contribution_generator_annotations:
 
 1. Generator annotations
 -------------------------
 
 The generator uses these annotations to generate the Python library and documentation
 
-.. _keys_contribution_class:
+.. _pftools_keys_contribution_class:
 
 ``__class__``
 ^^^^^^^^^^^^^^
@@ -34,7 +42,7 @@ This is for adding dynamically defined tokens. The generator uses the `__class__
 location of a dynamically defined token. The `__class__` names usually end in `Item` to denote a dynamic token,
 e.g. `CycleItem` for the `.{cycle_name}` token in the key `Cycle.cycle_name.Names`.
 
-.. _keys_contribution_from:
+.. _pftools_keys_contribution_from:
 
 ``__from__``
 ^^^^^^^^^^^^^
@@ -53,7 +61,7 @@ Here, ``BCPressureIntervalItem`` is the dynamically defined ``.{interval_name}``
 ``Cycle.cycle_name.Names`` key generate these ``.{interval_name}`` tokens. The path to the ``Cycle.cycle_name.Names``
 key is ``/Cycle/{CycleItem}/Names``.
 
-.. _keys_contribution_rst:
+.. _pftools_keys_contribution_rst:
 
 ``__rst__``
 ^^^^^^^^^^^^
@@ -64,7 +72,7 @@ This contains details to support the documentation. Arguments for this include:
 - ``skip:`` {no arguments}: This will cause the key to not print in the documentation. This does not affect nested tokens.
 - ``warning:`` {string}: This argument will add a special warning message to the documentation. This should be used for special cases, such as when a key must be set differently in Python as opposed to a TCL script.
 
-.. _keys_contribution_prefix:
+.. _pftools_keys_contribution_prefix:
 
 ``__prefix__``
 ^^^^^^^^^^^^^^^
@@ -74,14 +82,14 @@ recognize integers as a valid variable name, the user must specify a prefix to t
 character (upper or lower case) or an underscore. The specified prefix must be used to set the token within the key. For
 example, the prefix for ``Cell.0.dzScale.Value`` is an underscore, so you must define the key as ``Cell._0.dzScale.Value``.
 
-.. _keys_contribution_key_annotations:
+.. _pftools_keys_contribution_key_annotations:
 
 2. Key annotations
 -------------------
 
 These annotations apply to the key itself, assisting documentation
 
-.. _keys_contribution_help_doc:
+.. _pftools_keys_contribution_help_doc:
 
 ``help``, ``__doc__``
 ^^^^^^^^^^^^^^^^^^^^^
@@ -89,7 +97,7 @@ These annotations apply to the key itself, assisting documentation
 This contains the documentation for the key. ``help`` is used for leaf tokens, and ``__doc__`` is used for intermediate
 tokens.
 
-.. _keys_contribution_value:
+.. _pftools_keys_contribution_value:
 
 ``__value__``
 ^^^^^^^^^^^^^^
@@ -97,14 +105,37 @@ tokens.
 This annotation applies to intermediate tokens that contain a value, but are not a leaf token (e.g. ``Solver``). This will
 be treated as if it were a leaf token, including the value annotations that apply to the intermediate token.
 
-.. _keys_contribution_value_annotations:
+.. _pftools_keys_contribution_value_annotations:
 
 3. Value annotations
 ---------------------
 
 These annotations apply to the value set to the key.
 
-.. _keys_contribution_domains:
+.. _pftools_keys_contribution_default:
+
+``default``
+^^^^^^^^^^^^
+
+Sets the default value of the key when the user does not provide one. This is
+used widely in the definition files. For example, in *solver.yaml*:
+
+.. code-block:: yaml
+
+    Solver:
+      AbsTol:
+        help: >
+          [Type: double] This value gives the absolute tolerance for the linear
+          solve algorithm.
+        default: 1e-9
+        domains:
+          DoubleValue:
+            min_value: 0.0
+
+The default must be compatible with the key's domains (for example a numeric
+default for ``DoubleValue`` / ``IntValue``, or a member of an ``EnumDomain``).
+
+.. _pftools_keys_contribution_domains:
 
 ``domains``
 ^^^^^^^^^^^^
@@ -134,7 +165,7 @@ This defines the domains that constrain the value of the key. The domains must i
 - ``ValidFile``: This is for keys which reference file names to make sure that the file exists. It can take two arguments: ``working_directory``, for which you can specify the absolute path of the directory where your file is stored, ``path_prefix_source``, for which you can specify the path to a key that defines the path
     to the file (e.g. ``Solver.CLM.MetFile``). If no arguments are provided, it will check your current working directory for the file.
 
-.. _keys_contribution_handlers:
+.. _pftools_keys_contribution_handlers:
 
 ``handlers``
 ^^^^^^^^^^^^^
@@ -159,7 +190,7 @@ dynamic token. In this example, ``PhaseNameItem`` is the ``__class__`` of the dy
 the location of the token referenced in ``class_name``. In this example, the Names token in ``Phase.Names`` is on the same
 level as the ``.{phase_name}`` in ``Phase.phase_name``. This can also be an absolute path. See ``handlers.py`` for more on the other handlers.
 
-.. _keys_contribution_ignore:
+.. _pftools_keys_contribution_ignore:
 
 ``ignore``
 ^^^^^^^^^^^
@@ -186,14 +217,15 @@ Skip field exportation but allow to set other keys from it in a more convenient 
                             - StartMonth
                             - StartDay
 
-.. _keys_contribution_steps:
+.. _pftools_keys_contribution_steps:
 
 Steps to add a new key
 =======================
 
-1. Select the yaml file that most closely matches the key that you want to add. If your key is a token nested within an
-existing key, be sure to find which yaml file includes the parent token(s). For example, if you wanted to add the key
-``Solver.Linear.NewKey``, you would add it within the file *solver.yaml*.
+1. In ``pf-keys/definitions/``, select the YAML file that most closely matches
+the key that you want to add. If your key is a token nested within an
+existing key, find which file includes the parent token(s). For example, to
+add ``Solver.Linear.NewKey``, edit *solver.yaml*.
 
 2. Open the yaml file and navigate to the level within the hierarchy where you want to put your key. The structure of
 the yaml files is designed to be easy to follow, so it should be easy to find the level where you'd like to add your
@@ -204,10 +236,19 @@ and pasting an existing key from the same level to make sure it's correct.
 3. Fill in the details of your key. Again, this format is designed to be readable, so please refer to examples in the
 yaml files to guide you. The details you can include are listed in the section above.
 
-4. Regenerate the Python keys using ``make GeneratePythonKeys``.
+4. Regenerate the Python keys using the CMake target ``GeneratePythonKeys``.
+This is **not** a Makefile rule in the source tree; it must be run from a
+configured ParFlow **build directory** (the same tree where you ran
+``cmake``), for example:
 
-You should see a longer message indicating an update that lists the overlapping classes, including the line ``Defined ##
-fields were found``.
+.. code-block:: bash
+
+    cd /path/to/parflow-build
+    make GeneratePythonKeys
+
+The generator reads the YAML under ``pf-keys/definitions/`` and writes
+``generated.py`` into the build tree under
+``pftools/python/parflow/tools/database/``.
 
 5. Test your new key. If you have an input script with the new key, you can run that to check whether it's working.
 

@@ -75,6 +75,7 @@ def mkdir(dir_name):
 
 
 def get_text_file_content(file_path):
+    """Read a text file and return its contents as a string."""
     full_path = Path(get_absolute_path(file_path))
     if not full_path.exists():
         raise Exception(f"{str(full_path)} does not exist!")
@@ -86,6 +87,7 @@ def get_text_file_content(file_path):
 
 
 def exists(file_path):
+    """Return True if the given path exists."""
     return Path(get_absolute_path(file_path)).exists()
 
 
@@ -93,5 +95,6 @@ def exists(file_path):
 
 
 def chdir(directory_path):
+    """Change the current working directory."""
     full_path = get_absolute_path(directory_path)
     os.chdir(full_path)

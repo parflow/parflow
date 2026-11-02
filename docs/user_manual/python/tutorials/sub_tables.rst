@@ -103,7 +103,7 @@ These tables can be formatted in a number of different ways. Here are several co
 - Delimiters can be either commas or spaces.
 - Table orientation does not matter (i.e., whether the field names are across the first row or down the first column). The only requirement is for that the top-left entry be ``key`` or one of its aliases.
 - The table does not have to be completely filled. As shown here, blank property values must be designated by a hyphen.
-- To properly process the table and map to the correct keys, the field names (including ``key``) must be one of several possible aliases. The aliases are listed in `this yaml file <https://github.com/grapp1/parflow/blob/py-input/pftools/python/parflow/tools/ref/table_keys.yaml>`_ that is included in the Python PFTools. These aliases include the exact end of the key name (e.g., ``Perm.Value`` as opposed to the alias ``Perm``), so when in doubt, you can use the exact name.
+- To properly process the table and map to the correct keys, the field names (including ``key``) must be one of several possible aliases. The aliases are listed in `this yaml file <https://github.com/parflow/parflow/blob/master/pftools/python/parflow/tools/ref/table_keys.yaml>`_ that is included in the Python PFTools. These aliases include the exact end of the key name (e.g., ``Perm.Value`` as opposed to the alias ``Perm``), so when in doubt, you can use the exact name.
 
 .. _sub_tables_default_db:
 
@@ -155,83 +155,13 @@ This will print the following:
     s2      0.0436   0.39      1.26   3.47          2.74
 
 
-.. _sub_tables_api:
-
-Full API for ``SubsurfacePropertiesBuilder``
---------------------------------------------
-
-1. ``SubsurfacePropertiesBuilder(run=None)``
-    Instantiates a ``SubsurfacePropertiesBuilder`` object.
-
-    :param ``run``: An optional ``Run`` object. If provided, it will use the subsurface units in ``run`` for later applications.
-        ``run`` must be provided as an argument either here or when calling the ``apply()`` method (see below).
-
-2. ``load_csv_file(tableFile, encoding='utf-8-sig')``
-    Loads a comma-separated (csv) file to your ``SubsurfacePropertiesBuilder`` object. 
-
-    :param ``tableFile``: String path to the input .csv file.
-    :param ``encoding``: The text encoding format of your file. Defaults to ``utf-8-sig``, which should translate files generated from Microsoft Excel.
-
-3. ``load_txt_file(tableFile, encoding='utf-8-sig')``
-    Loads a text file to your ``SubsurfacePropertiesBuilder`` object.
-
-    :param ``tableFile``: String path to the input .txt file.
-    :param ``encoding``: The text encoding format of your file. Defaults to ``utf-8-sig``.
-
-4. ``load_txt_content(txt_content)``
-    Loads in-line text to your ``SubsurfacePropertiesBuilder`` object.
-
-    :param ``txt_content``: In-line text string.
-
-5. ``load_default_properties(database='conus_1')``
-    Loads one of several databases of subsurface properties. 
-
-    :param ``database``: Default database. Options are: 
-
-        ``'conus_1'``: Soil/rock properties from `Maxwell and Condon (2016). <https://science.sciencemag.org/content/353/6297/377>`_
-
-        ``'washita'``: Soil/rock properties from Little Washita script.
-
-        ``'freeze_cherry'``: Soil/rock properties from Freeze and Cherry (1979). Note: Freeze and Cherry only has permeability and porosity.
-
-6. ``assign(old=None, new=None, mapping=None)``
-    Assigns properties to the ``new`` subsurface unit using the properties from the ``old`` subsurface unit. 
-    Alternatively, a dictionary (``mapping``) can be passed in as an argument, which should have the keys as the 
-    ``old`` units, and the values as the ``new`` units. If an ``old`` unit will apply to multiple ``new`` units, 
-    the ``new`` units need to be passed in as a list.
-
-    :param `old`: String source unit with existing parameters
-    :param `new`: String target unit to which the parameters from old will be mapped.
-    :param `mapping``: Dictionary that includes the old units as keys and new units as values.
-
-7. ``apply(run=None, name_registration=True)``
-    Applies the loaded subsurface properties to the subsurface units in the ``Run`` object ``run``. 
-    If ``run`` is not provided here, the user must provide the ``run`` argument when instantiating the 
-    ``SubsurfacePropertiesBuilder``object. If ``name_registration`` is set to ``True``, it will add the 
-    subsurface unit names (e.g., *s1*, *s2* from the example above) to the list of unit names for each 
-    property (e.g., setting  ``Geom.Perm.Names = 's1 s2 s3 s4'``), and set the ``addon`` keys not associated 
-    with a specific unit (e.g., ``Phase.RelPerm.Type``).
-
-    :param ``run``: Run object to which the loaded subsurface parameters will be applied. If run=None, then the run object
-        must be passed in as an argument when the ``TableToProperties`` is instantiated.
-    :param ``name_registration``: Boolean value. If ``True``, sets the auxiliary keys (e.g., ``GeomNames``) related to the loaded subsurface properties.
-
-
-8. ``print()``
-    Prints out the subsurface parameters for all subsurface units in a hierarchical format.
-
-9. ``print_as_table(props_in_header=True, column_separator='  ')``
-    Prints out the subsurface parameters for all subsurface units in a table format. 
-    
-    :param ``props_in_header``: will print the table with the property names as column headings if set to ``True``, or as row headings if set to ``False``.
-
 .. _export_subsurface:
 
 Exporting subsurface properties
 -------------------------------
 
-It is often useful to have a table of the subsurface properties assigned to various subsurface units during a run. As mentioned in the `run script API <https://grapp1parflow.readthedocs.io/en/latest/python/run_script.html#full-api>`_,
-you can write out a table of the subsurface properties by calling the ``write_subsurface_table`` method on your ``Run`` object.
+It is often useful to have a table of the subsurface properties assigned to various subsurface units during a run.
+You can write out a table of the subsurface properties by calling the ``write_subsurface_table`` method on your ``Run`` object.
 
 ----
 
