@@ -189,10 +189,10 @@ PFModule  *PFMGInitInstanceXtra(
     /* Copy the matrix entries */
     BeginTiming(public_xtra->time_index_copy_hypre);
 
-    HypreAssembleMatrixAsElements(pf_Bmat,
-                                  pf_Cmat,
-                                  &(instance_xtra->hypre_mat),
-                                  problem_data);
+    HypreAssembleMatrix(pf_Bmat,
+                        pf_Cmat,
+                        &(instance_xtra->hypre_mat),
+                        problem_data);
 
     EndTiming(public_xtra->time_index_copy_hypre);
 
