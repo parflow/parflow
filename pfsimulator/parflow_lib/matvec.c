@@ -70,6 +70,8 @@ void            Matvec(
 
   double         *ap;
   double         *xp;
+  double         *ap0, *ap1, *ap2, *ap3, *ap4, *ap5, *ap6;
+  double         *xp0, *xp1, *xp2, *xp3, *xp4, *xp5, *xp6;
   double         *yp;
 
   int vi, mi;
@@ -283,13 +285,23 @@ void            Matvec(
 
         yp = SubvectorElt(y_sub, ix, iy, iz);
 
-        for (si = 0; si < stencil_size; si++)
+        if (stencil_size == 7)
         {
-          xp = SubvectorElt(x_sub,
-                            (ix + s[si][0]),
-                            (iy + s[si][1]),
-                            (iz + s[si][2]));
-          ap = SubmatrixElt(A_sub, si, ix, iy, iz);
+          xp0 = SubvectorElt(x_sub, ix + s[0][0], iy + s[0][1], iz + s[0][2]);
+          xp1 = SubvectorElt(x_sub, ix + s[1][0], iy + s[1][1], iz + s[1][2]);
+          xp2 = SubvectorElt(x_sub, ix + s[2][0], iy + s[2][1], iz + s[2][2]);
+          xp3 = SubvectorElt(x_sub, ix + s[3][0], iy + s[3][1], iz + s[3][2]);
+          xp4 = SubvectorElt(x_sub, ix + s[4][0], iy + s[4][1], iz + s[4][2]);
+          xp5 = SubvectorElt(x_sub, ix + s[5][0], iy + s[5][1], iz + s[5][2]);
+          xp6 = SubvectorElt(x_sub, ix + s[6][0], iy + s[6][1], iz + s[6][2]);
+
+          ap0 = SubmatrixElt(A_sub, 0, ix, iy, iz);
+          ap1 = SubmatrixElt(A_sub, 1, ix, iy, iz);
+          ap2 = SubmatrixElt(A_sub, 2, ix, iy, iz);
+          ap3 = SubmatrixElt(A_sub, 3, ix, iy, iz);
+          ap4 = SubmatrixElt(A_sub, 4, ix, iy, iz);
+          ap5 = SubmatrixElt(A_sub, 5, ix, iy, iz);
+          ap6 = SubmatrixElt(A_sub, 6, ix, iy, iz);
 
           vi = 0; mi = 0;
           BoxLoopI2(i, j, k,
@@ -297,8 +309,34 @@ void            Matvec(
                     vi, nx_v, ny_v, nz_v, sx, sy, sz,
                     mi, nx_m, ny_m, nz_m, 1, 1, 1,
           {
-            yp[vi] += ap[mi] * xp[vi];
+            yp[vi] += ap0[mi] * xp0[vi] +
+                      ap1[mi] * xp1[vi] +
+                      ap2[mi] * xp2[vi] +
+                      ap3[mi] * xp3[vi] +
+                      ap4[mi] * xp4[vi] +
+                      ap5[mi] * xp5[vi] +
+                      ap6[mi] * xp6[vi];
           });
+        }
+        else
+        {
+          for (si = 0; si < stencil_size; si++)
+          {
+            xp = SubvectorElt(x_sub,
+                              (ix + s[si][0]),
+                              (iy + s[si][1]),
+                              (iz + s[si][2]));
+            ap = SubmatrixElt(A_sub, si, ix, iy, iz);
+
+            vi = 0; mi = 0;
+            BoxLoopI2(i, j, k,
+                      ix, iy, iz, nx, ny, nz,
+                      vi, nx_v, ny_v, nz_v, sx, sy, sz,
+                      mi, nx_m, ny_m, nz_m, 1, 1, 1,
+            {
+              yp[vi] += ap[mi] * xp[vi];
+            });
+          }
         }
 
         if (alpha != 1.0)

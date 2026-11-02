@@ -402,3 +402,7 @@ dover_2.TopoSlopesX.Geom.right.Value = 0.002
 dover_2.TopoSlopesX.Geom.channel.Value = 0.00
 
 dover_2.run()
+
+# TODO ADD_CHECKS Yet another poorly written test that does not check much.
+
+print("PASSED")

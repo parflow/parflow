@@ -111,7 +111,17 @@ subroutine clm_hydro_canopy (clm)
 
         ! Direct throughfall
 
-        fpi = 0.25d0*(1. - exp(-0.5*(clm%elai + clm%esai)))
+        if (clm%interception_scheme == 1) then
+           ! CLM5 tanh interception (Lawrence et al. 2019)
+           fpi = clm%interception_tanh_alpha                             &
+                 * tanh(clm%elai + clm%esai)
+        else if (clm%interception_fpi_max /= 0.25d0) then
+           fpi = clm%interception_fpi_max                                &
+                 * (1.d0 - exp(-0.5d0*(clm%elai + clm%esai)))
+        else
+           ! Original CLM3 expression for bit-for-bit backward compat
+           fpi = 0.25d0*(1. - exp(-0.5*(clm%elai + clm%esai)))
+        endif
         qflx_through  = prcp*(1.-fpi)*clm%frac_veg_nosno
 
         ! Water storage of intercepted precipitation and dew
@@ -291,9 +301,11 @@ subroutine clm_hydro_canopy (clm)
      clm%h2osno = clm%h2osno + clm%qflx_snow_grnd*clm%dtime      ! snow water equivalent (mm)
 
      if (clm%itypwat==istwet .AND. clm%t_grnd>=tfrz) then
-        clm%h2osno=0. 
-        clm%snowdp=0. 
+        clm%h2osno=0.
+        clm%snowdp=0.
         clm%snowage=0.
+        clm%snowage_vis=0.   ! @RMM 2025
+        clm%snowage_nir=0.   ! @RMM 2025
      endif
 
   endif
@@ -308,11 +320,19 @@ subroutine clm_hydro_canopy (clm)
   ! fdry is the fraction of elai (***now in LSM***) which is dry because only leaves
   ! can transpire.  Adjusted for stem area which does not transpire.
 
-  if (clm%h2ocan > 0. .and. clm%frac_veg_nosno == 1) then
-     vegt     = clm%frac_veg_nosno*(clm%elai + clm%esai)
-     dewmxi   = 1.0/clm%dewmx
-     clm%fwet = ((dewmxi/vegt)*clm%h2ocan)**.666666666666
-     clm%fwet = min(clm%fwet,dble(1.0))     ! Check for maximum limit of fwet
+  if (clm%frac_veg_nosno == 1) then
+     if (clm%h2ocan > 0.) then
+        vegt     = clm%frac_veg_nosno*(clm%elai + clm%esai)
+        dewmxi   = 1.0/clm%dewmx
+        if (clm%fwet_exponent /= 0.6667d0) then
+           clm%fwet = ((dewmxi/vegt)*clm%h2ocan)**clm%fwet_exponent
+        else
+           clm%fwet = ((dewmxi/vegt)*clm%h2ocan)**.666666666666
+        endif
+        clm%fwet = min(clm%fwet,dble(1.0))     ! Check for maximum limit of fwet
+     else
+        clm%fwet = 0.
+     endif
      clm%fdry = (1.-clm%fwet)*clm%elai/(clm%elai+clm%esai)
   else
      clm%fwet = 0.
@@ -334,6 +354,8 @@ subroutine clm_hydro_canopy (clm)
      clm%z(0) = -0.5*clm%dz(0)
      clm%zi(-1) = -clm%dz(0)
      clm%snowage = 0.                             ! snow age
+     clm%snowage_vis = 0.                         ! VIS band snow age @RMM 2025
+     clm%snowage_nir = 0.                         ! NIR band snow age @RMM 2025
      clm%t_soisno (0) = min(tfrz, clm%forc_t)     ! K
      clm%h2osoi_ice(0) = clm%h2osno               ! kg/m2
      clm%h2osoi_liq(0) = 0.                       ! kg/m2

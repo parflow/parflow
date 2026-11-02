@@ -340,3 +340,7 @@ db_test.Solver.Linear.KrylovDimension = 70
 db_test.Solver.Linear.MaxRestarts = 2
 
 db_test.Solver.Linear.Preconditioner = "PFMG"
+
+# TODO ADD_CHECKS Yet another poorly written test that does not check much.
+
+print("PASSED")

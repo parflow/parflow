@@ -6,7 +6,8 @@ import sys
 from parflow import Run
 from parflow.tools.fs import get_absolute_path
 
-pfset_test = Run("pfset_test", __file__)
+run_name = "pfset_test"
+pfset_test = Run(run_name, __file__)
 
 # -----------------------------------------------------------------------------
 # Domain
@@ -97,8 +98,7 @@ pfset_test.Geom.pfset(yaml_file="$PF_SRC/test/input/GeomChildren.yaml")
 # pfset: yaml_content
 # ---------------------------------------------------------
 
-pfset_test.Geom.source_region.pfset(
-    yaml_content="""
+pfset_test.Geom.source_region.pfset(yaml_content="""
 Lower:
   X: 65.56
   Y: 79.34
@@ -107,12 +107,10 @@ Upper:
   X: 74.44
   Y: 89.99
   Z: 5.5
-"""
-)
+""")
 
 
-pfset_test.Geom.concen_region.pfset(
-    yaml_content="""
+pfset_test.Geom.concen_region.pfset(yaml_content="""
 Lower:
   X: 60.0
   Y: 80.0
@@ -121,8 +119,7 @@ Upper:
   X: 80.0
   Y: 100.0
   Z: 6.0
-"""
-)
+""")
 
 # -----------------------------------------------------------------------------
 # pfset: flat_map
@@ -148,12 +145,20 @@ pfset_test.Phase.pfset(
 pfset_test.validate()
 generatedFile, runFile = pfset_test.write(file_format="yaml")
 
+passed = True
+
 # Prevent regression
 with open(generatedFile) as new, open(
     get_absolute_path("$PF_SRC/test/correct_output/pfset_test.yaml.ref")
 ) as ref:
     if new.read() == ref.read():
-        print("Success we have the same file")
+        print("Files are the same")
     else:
         print("Files are different")
-        sys.exit(1)
+        passed = False
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)

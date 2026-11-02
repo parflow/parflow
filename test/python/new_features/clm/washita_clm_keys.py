@@ -7,7 +7,6 @@ from parflow import Run
 from parflow.tools.fs import cp, get_absolute_path, rm
 from parflow.tools.builders import CLMImporter
 
-
 washita = Run("washita_clm_keys", __file__)
 
 # -----------------------------------------------------------------------------
@@ -590,3 +589,6 @@ washita.dist("press.init.pfb")
 washita.write("washita_clm_keys", file_format="yaml")
 
 washita.run()
+
+# TODO ADD_CHECKS Yet another poorly written test that does not check much.
+print("PASSED")

@@ -251,19 +251,32 @@ subroutine drv_clmini (drv, grid,pf_porosity, tile, clm, istep_pf, clm_forc_veg)
 ! to be consistent with hybrid code
 ! ========================================================================
 
-  clm%qe25   =  0.06     ! quantum efficiency at 25c (umol co2 / umol photon)      
-  clm%ko25   =  30000.   ! o2 michaelis-menten constant at 25c (pa)                
-  clm%kc25   =  30.      ! co2 michaelis-menten constant at 25c (pa)               
-  clm%vcmx25 =  33.      ! maximum rate of carboxylation at 25c (umol co2/m**2/s)  
-  clm%ako    =  1.2      ! q10 for ko25                                            
-  clm%akc    =  2.1      ! q10 for kc25                                            
-  clm%avcmx  =  2.4      ! q10 for vcmx25                                          
-  clm%bp     =  2000.    ! minimum leaf conductance (umol/m**2/s)                  
-  clm%mp     =  9.       ! slope for conductance-to-photosynthesis relationship    
-  clm%folnmx =  1.5      ! foliage nitrogen concentration when f(n)=1 (%)          
-  clm%folnvt =  2.       ! foliage nitrogen concentration (%)                      
-  clm%c3psn  =  1.       ! photosynthetic pathway: 0. = c4, 1. = c3                
-  
+  ! Apply CLM3 defaults only when drv_vegp.dat did not provide PFT params.
+  ! photosyn_custom is set by drv_readvegpf when vcmx25 is found in vegp.
+  if (.not. clm%photosyn_custom) then
+     clm%qe25   =  0.06     ! quantum efficiency at 25c (umol co2 / umol photon)
+     clm%vcmx25 =  33.      ! maximum rate of carboxylation at 25c (umol co2/m**2/s)
+     clm%bp     =  2000.    ! minimum leaf conductance (umol/m**2/s)
+     clm%mp     =  9.       ! slope for conductance-to-photosynthesis relationship
+     clm%folnmx =  1.5      ! foliage nitrogen concentration when f(n)=1 (%)
+     clm%folnvt =  2.       ! foliage nitrogen concentration (%)
+     clm%c3psn  =  1.       ! photosynthetic pathway: 0. = c4, 1. = c3
+     clm%g1_medlyn = 4.0    ! Medlyn default slope (kPa^0.5) @RMM 2026
+  endif
+  ! folnvt must always be set — CLM3 defaults set it above, but the
+  ! custom path skips that block. Always set to ensure fnf=1. @RMM 2026-03
+  clm%folnvt = max(clm%folnmx, 1.5d0) * 1.33d0
+  ! Michaelis-Menten constants & Q10s — truly universal, always set
+  clm%ko25   =  30000.   ! o2 michaelis-menten constant at 25c (pa)
+  clm%kc25   =  30.      ! co2 michaelis-menten constant at 25c (pa)
+  clm%ako    =  1.2      ! q10 for ko25
+  clm%akc    =  2.1      ! q10 for kc25
+  clm%avcmx  =  2.4      ! q10 for vcmx25
+
+  ! Compensatory RWU: default omega_max=1.0 if not set via drv_vegp.dat @RMM 2026
+  ! omega_max=1.0 gives no compensation (identical to rzwaterstress=1)
+  if (clm%omega_max /= clm%omega_max) clm%omega_max = 1.0d0
+
 ! ========================================================================
 ! TIME VARIANT [1]
 ! Temperatures and snow cover fraction are initialized in CLM
@@ -273,7 +286,9 @@ subroutine drv_clmini (drv, grid,pf_porosity, tile, clm, istep_pf, clm_forc_veg)
 ! set water and temperatures to constant values: all points
 
   clm%h2ocan  = 0.
-  clm%snowage = 0. 
+  clm%snowage = 0.
+  clm%snowage_vis = 0.   ! VIS band snow age @RMM 2025
+  clm%snowage_nir = 0.   ! NIR band snow age @RMM 2025
   clm%h2osno  = drv%h2osno_ini
   clm%snowdp  = drv%h2osno_ini/250.  !the arbitary snow density = 250 kg/m3
   clm%t_veg   = drv%t_ini

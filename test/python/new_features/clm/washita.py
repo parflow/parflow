@@ -7,7 +7,6 @@ from parflow import Run
 from parflow.tools.fs import cp, get_absolute_path, rm
 from parflow.tools.builders import CLMImporter
 
-
 washita = Run("washita", __file__)
 
 # -----------------------------------------------------------------------------
@@ -568,3 +567,6 @@ washita.dist("press.init.pfb")
 # -----------------------------------------------------------------------------
 
 washita.run(working_directory=dir_name)
+
+# TODO ADD_CHECKS Yet another poorly written test that does not check much.
+print("PASSED")

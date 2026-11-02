@@ -28,3 +28,5 @@ no_op_strings = [
 
 for s in no_op_strings:
     assert new_path(s) == s
+
+print("PASSED")

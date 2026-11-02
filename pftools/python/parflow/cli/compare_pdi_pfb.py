@@ -234,15 +234,15 @@ def compare_files(name):
 
         for igrid in range(numgrids_per_file):
             pfd_d = {}
-            (pfd_d["ix"], pfd_d["iy"], pfd_d["iz"]) = struct.unpack(
+            pfd_d["ix"], pfd_d["iy"], pfd_d["iz"] = struct.unpack(
                 ">iii", content[position : position + 4 * 3]
             )
             position += 4 * 3
-            (pfd_d["nx"], pfd_d["ny"], pfd_d["nz"]) = struct.unpack(
+            pfd_d["nx"], pfd_d["ny"], pfd_d["nz"] = struct.unpack(
                 ">iii", content[position : position + 4 * 3]
             )
             position += 4 * 3
-            (pfd_d["rx"], pfd_d["ry"], pfd_d["rz"]) = struct.unpack(
+            pfd_d["rx"], pfd_d["ry"], pfd_d["rz"] = struct.unpack(
                 ">iii", content[position : position + 4 * 3]
             )
             position += 4 * 3

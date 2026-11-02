@@ -1,6 +1,6 @@
 /*BHEADER**********************************************************************
 *
-*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  Copyright (c) 1995-2026, Lawrence Livermore National Security,
 *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
 *  by the Parflow Team (see the CONTRIBUTORS file)
 *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
@@ -30,9 +30,13 @@
 *****************************************************************************/
 
 #include "parflow.h"
+#include "parflow_netcdf.h"
 
 #include <string.h>
 #include <assert.h>
+
+#define PFBFile 0
+#define NCFile  1
 
 /*--------------------------------------------------------------------------
  * Structures
@@ -43,6 +47,8 @@ typedef struct indicator_data {
   int                     *indicators;  //pointer to dynamic object
   char                    *filename;
   struct  indicator_data  *next_indicator_data;
+
+  int file_type;
 
   NameArray indicator_na;
 } IndicatorData;
@@ -206,7 +212,24 @@ void           Geometries(
   while (current_indicator_data != NULL)
   {
     InitVectorAll(tmp_indicator_field, -1.0);
-    ReadPFBinary((current_indicator_data->filename), tmp_indicator_field);
+
+    switch (current_indicator_data->file_type)
+    {
+      case PFBFile:
+      {
+        ReadPFBinary((current_indicator_data->filename), tmp_indicator_field);
+        break;
+      }
+
+      case NCFile:
+      {
+        int time_step = 0;
+        int dimensionality = 3;
+        ReadPFNC((current_indicator_data->filename), tmp_indicator_field, "indicator", time_step, dimensionality);
+        break;
+      }
+    }
+
     handle = InitVectorUpdate(tmp_indicator_field, VectorUpdateAll);
     FinalizeVectorUpdate(handle);
 
@@ -331,7 +354,7 @@ PFModule   *GeometriesNewPublicXtra()
   /*----------------------------------------------------------
    * The name array to map names to switch values
    *----------------------------------------------------------*/
-  switch_na = NA_NewNameArray("IndicatorField SolidFile Box");
+  switch_na = NA_NewNameArray("IndicatorField IndicatorFieldNC SolidFile Box");
 
 
   public_xtra = ctalloc(PublicXtra, 1);
@@ -366,6 +389,7 @@ PFModule   *GeometriesNewPublicXtra()
     switch (intype)
     {
       case 0:    /* indicator field */
+      case 1:    /* indicator field nc */
       {
         char *indicator_names;
         int solids_index;
@@ -402,6 +426,9 @@ PFModule   *GeometriesNewPublicXtra()
           new_indicator_data->indicators[solids_index] = GetInt(key);
         }
 
+        /* 0 for PFBFile or 1 for NCFile */
+        (new_indicator_data->file_type) = intype;
+
         /* read in the number of characters in the filename for the indicator field */
 
         sprintf(key, "Geom.%s.FileName", NA_IndexToName(geom_input_na, i));
@@ -427,7 +454,7 @@ PFModule   *GeometriesNewPublicXtra()
         break;
       }
 
-      case 1:    /* `.pfsol' file */
+      case 2:    /* `.pfsol' file */
       {
         BeginTiming(PFSOLReadTimingIndex);
         num_new_solids = GeomReadSolids(&new_solids,
@@ -468,7 +495,7 @@ PFModule   *GeometriesNewPublicXtra()
         break;
       }
 
-      case 2:    /* box */
+      case 3:    /* box */
       {
         double xl, yl, zl, xu, yu, zu;
 

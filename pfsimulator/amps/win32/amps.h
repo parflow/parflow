@@ -103,7 +103,7 @@ _declspec(thread) extern int amps_rank;
 #define amps_Exit(code) exit(code)
 
 /* In CE/RK we always send */
-#define amps_ISend(comm, dest, invoice) 0, amps_Send((comm), (dest), (invoice))
+#define amps_ISend(comm, dest, invoice) (amps_Send((comm), (dest), (invoice)), NULL)
 
 #define amps_Size(comm) amps_size
 
@@ -493,10 +493,10 @@ void amps_ReadDouble();
 #else
 
 #define amps_TAlloc(type, count) \
-        ((count) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
+        ((count) ? (type*)malloc((size_t)(sizeof(type) * (count))) : NULL)
 
 #define amps_CTAlloc(type, count) \
-        ((count) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
+        ((count) ? (type*)calloc((size_t)(count), (size_t)sizeof(type)) : NULL)
 
 /* note: the `else' is required to guarantee termination of the `if' */
 #define amps_TFree(ptr) if (ptr) free(ptr, amps_arena); else
@@ -534,6 +534,5 @@ extern AMPS_ShMemBuffer **bcast_buffers_local_end;
 
 #include "amps_proto.h"
 #endif
-
 
 

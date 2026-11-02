@@ -220,7 +220,7 @@ subroutine clm_thermal (clm)
      fac  = min(dble(1.), wx/clm%watsat(1))
      fac  = max( fac, dble(0.01) )
      psit = -clm%sucsat(1) * fac ** (- clm%bsw(1))
-     psit = max(clm%smpmin, psit)
+     ! psit = max(clm%smpmin, psit)  ! dead: ParFlow overwrites psit below
      !@ Stefan: replace original psit with values from Parflow
      !    do i=1,nlevsoi
      !@ RMM this need no-longer be a loop, since psit is just set to the top soil layer
@@ -460,13 +460,21 @@ subroutine clm_thermal (clm)
      enddo
 
 !@RMM
-! transpiration cutoff depending on soil moisture, the default is only the top soil layer
-! if this is distributed (rzwaterstress=1) then clm%soil_resistance(i) set above is used to limit
-!  T in each soil layer individually
-! option set from a user input via PF
+! transpiration cutoff / compensation depending on rzwaterstress option
+! rzwaterstress=0: top-layer hard cutoff (CLM3 default)
+! rzwaterstress=1: distributed stress, no cutoff (Ferguson et al 2016 EES)
+! rzwaterstress=2: compensatory RWU, wet layers compensate for dry (Li et al 2001)
      if (clm%rzwaterstress == 0) then
-     if ( (clm%vegwaterstresstype == 1).and.(clm%pf_press(1)<=(clm%wilting_point*1000.d0)) ) clm%btran = 0.0d0
-     if ( (clm%vegwaterstresstype == 2).and.(clm%pf_vol_liq(1)<=clm%wilting_point*clm%watsat(1)) ) clm%btran = 0.0d0
+        if ( (clm%vegwaterstresstype == 1) .and.  &
+             (clm%pf_press(1)<=(clm%wilting_point*1000.d0)) ) clm%btran = 0.0d0
+        if ( (clm%vegwaterstresstype == 2) .and.  &
+             (clm%pf_vol_liq(1)<=clm%wilting_point*clm%watsat(1)) ) clm%btran = 0.0d0
+     else if (clm%rzwaterstress == 2) then
+        ! Compensatory uptake: btran = min(1, omega_max * btran)
+        ! omega_max is PFT-dependent via drv_vegp.dat (Li et al 2001 J Hydrol)
+        if (clm%btran > 0.0d0) then
+           clm%btran = min(1.0d0, clm%omega_max * clm%btran)
+        end if
      end if
 
      call clm_leaftem(z0mv,z0hv,z0qv,thm,th,thv,tg,qg,dqgdT,htvp,sfacx,     &

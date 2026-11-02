@@ -33,6 +33,7 @@
 *****************************************************************************/
 
 #include "databox.h"
+#include "general.h"
 #include <stdlib.h>
 
 /*-----------------------------------------------------------------------
@@ -40,9 +41,9 @@
  *-----------------------------------------------------------------------*/
 
 Databox         *NewDatabox(
-                            int    nx,
-                            int    ny,
-                            int    nz,
+                            size_t nx,
+                            size_t ny,
+                            size_t nz,
                             double x,
                             double y,
                             double z,
@@ -59,9 +60,9 @@ Databox         *NewDatabox(
 
 
 Databox         *NewDataboxDefault(
-                                   int    nx,
-                                   int    ny,
-                                   int    nz,
+                                   size_t nx,
+                                   size_t ny,
+                                   size_t nz,
                                    double x,
                                    double y,
                                    double z,
@@ -75,10 +76,10 @@ Databox         *NewDataboxDefault(
   int j;
   int k;
 
-  if ((new_databox = (Databox*)calloc(1, sizeof(Databox))) == NULL)
+  if ((new_databox = ctalloc(Databox, 1)) == NULL)
     return((Databox*)NULL);
 
-  if ((DataboxCoeffs(new_databox) = (double*)calloc((nx * ny * nz), sizeof(double))) == NULL)
+  if ((DataboxCoeffs(new_databox) = ctalloc(double, (nx * ny * nz))) == NULL)
   {
     free(new_databox);
     return((Databox*)NULL);
@@ -114,6 +115,8 @@ Databox         *NewDataboxDefault(
 /*-----------------------------------------------------------------------
  * print Databox grid info
  *-----------------------------------------------------------------------*/
+
+#ifdef PARFLOW_HAVE_TCL
 
 void            GetDataboxGrid(
                                Tcl_Interp *interp,
@@ -161,6 +164,8 @@ void            GetDataboxGrid(
 
   Tcl_ListObjAppendElement(interp, result, list_obj);
 }
+
+#endif // PARFLOW_HAVE_TCL
 
 
 // IMF

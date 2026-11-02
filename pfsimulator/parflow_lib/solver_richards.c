@@ -234,8 +234,28 @@ typedef struct {
   double clm_albedo_thaw_a;     /* VIC melt-phase decay base */
 
   /* Fractional snow covered area (frac_sno) options @RMM 2025 */
-  int clm_frac_sno_type;        /* frac_sno scheme: 0=CLM (default), others TBD */
-  double clm_frac_sno_roughness; /* roughness length for frac_sno [m], default=0.01 (zlnd) */
+  int clm_frac_sno_type;            /* frac_sno scheme: 0=CLM (default), 1=SZA-modulated */
+  double clm_frac_sno_roughness;    /* roughness length for frac_sno [m], default=0.01 (case 0) */
+  double clm_frac_sno_roughness_min; /* min roughness for SZA interp [m], default=1e-8 (case 1) */
+  double clm_frac_sno_roughness_max; /* max roughness for SZA interp [m], default=0.2 (case 1) */
+  double clm_frac_sno_gamma_sza;    /* SZA power-law exponent [-], default=4.0 (case 1) */
+  double clm_frac_sno_tau_sza;      /* EMA smoothing window [hours], default 72.0 */
+
+  /* Snow age parameterization - VIS/NIR separation @RMM 2025 */
+  double clm_snowage_tau0_vis;        /* VIS e-folding time [s] */
+  double clm_snowage_tau0_nir;        /* NIR e-folding time [s] */
+  double clm_snowage_grain_growth_vis; /* VIS grain growth factor [K] */
+  double clm_snowage_grain_growth_nir; /* NIR grain growth factor [K] */
+  double clm_snowage_dirt_soot_vis;   /* VIS dirt/soot factor [-] */
+  double clm_snowage_dirt_soot_nir;   /* NIR dirt/soot factor [-] */
+  double clm_snowage_reset_factor;    /* fresh snow reset factor [-] */
+
+  /* ET formulation improvements @RMM 2026 */
+  double clm_interception_fpi_max; /* Max interception fraction coefficient [-] */
+  double clm_fwet_exponent;        /* Power-law exponent for wet canopy fraction [-] */
+  int clm_stomata_scheme;          /* Stomatal model: 0=BallBerry, 1=Medlyn */
+  int clm_interception_scheme;     /* Interception scheme: 0=CLM3, 1=CLM5Tanh */
+  double clm_interception_tanh_alpha; /* CLM5 tanh scaling coefficient [-] */
 
   int clm_reuse_count;          /* NBE: Number of times to use each CLM input */
   int clm_write_logs;           /* NBE: Write the processor logs for CLM or not */
@@ -2924,7 +2944,23 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          public_xtra->clm_albedo_accum_a,
                          public_xtra->clm_albedo_thaw_a,
                          public_xtra->clm_frac_sno_type,
-                         public_xtra->clm_frac_sno_roughness);
+                         public_xtra->clm_frac_sno_roughness,
+                         public_xtra->clm_frac_sno_roughness_min,
+                         public_xtra->clm_frac_sno_roughness_max,
+                         public_xtra->clm_frac_sno_gamma_sza,
+                         public_xtra->clm_frac_sno_tau_sza,
+                         public_xtra->clm_snowage_tau0_vis,
+                         public_xtra->clm_snowage_tau0_nir,
+                         public_xtra->clm_snowage_grain_growth_vis,
+                         public_xtra->clm_snowage_grain_growth_nir,
+                         public_xtra->clm_snowage_dirt_soot_vis,
+                         public_xtra->clm_snowage_dirt_soot_nir,
+                         public_xtra->clm_snowage_reset_factor,
+                         public_xtra->clm_interception_fpi_max,
+                         public_xtra->clm_fwet_exponent,
+                         public_xtra->clm_stomata_scheme,
+                         public_xtra->clm_interception_scheme,
+                         public_xtra->clm_interception_tanh_alpha);
 
             break;
           }
@@ -3054,6 +3090,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         PFVCopy(instance_xtra->saturation,
                 instance_xtra->old_saturation);
         PFVCopy(instance_xtra->pressure, instance_xtra->old_pressure);
+
+        /* OverlandDiffusive reads the old pressure in corner ghost cells,
+         * which the pressure updates in this file do not exchange. */
+        if (OverlandFlowNeedsCornerGhosts())
+        {
+          handle = InitVectorUpdate(instance_xtra->old_pressure, VectorUpdatePGS1);
+          FinalizeVectorUpdate(handle);
+        }
       }
       else                      /* Not converged, so decrease time step */
       {
@@ -3419,7 +3463,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                 double qy_south = (j > 0) ? qy_dat[io_q_south] : 0.0;
 
                 flux_surface_lateral = dt * ((qx_current - qx_west) * dy + (qy_current - qy_south) * dx);
-                flux_total = flux_in + flux_darcy + flux_surface_lateral;
+                /* flux_surface_lateral is the cell's net overland OUTFLOW, the same
+                 * expression the residual charges against storage, so it is subtracted
+                 * from the inflow.  Adding it credited draining cells with inflow and
+                 * debited receiving cells. */
+                flux_total = flux_in + flux_darcy - flux_surface_lateral;
               }
               else
               {
@@ -3674,6 +3722,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
               }
             }
                          );
+
+            FreeSubgrid(tmp_subgrid);
           }
         }
         if (ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical))
@@ -5945,7 +5995,7 @@ SolverRichardsNewPublicXtra(char *name)
 
   /* @RMM 2025 Fractional snow covered area (frac_sno) options */
   NameArray frac_sno_switch_na;
-  frac_sno_switch_na = NA_NewNameArray("CLM");
+  frac_sno_switch_na = NA_NewNameArray("CLM SZA");
   sprintf(key, "%s.CLM.FracSnoScheme", name);
   switch_name = GetStringDefault(key, "CLM");
   switch_value = NA_NameToIndexExitOnError(frac_sno_switch_na, switch_name, key);
@@ -5954,6 +6004,12 @@ SolverRichardsNewPublicXtra(char *name)
     case 0:
     {
       public_xtra->clm_frac_sno_type = 0;
+      break;
+    }
+
+    case 1:
+    {
+      public_xtra->clm_frac_sno_type = 1;
       break;
     }
 
@@ -5966,6 +6022,104 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "%s.CLM.FracSnoRoughness", name);
   public_xtra->clm_frac_sno_roughness = GetDoubleDefault(key, 0.01);
+
+  sprintf(key, "%s.CLM.FracSnoRoughnessMin", name);
+  public_xtra->clm_frac_sno_roughness_min = GetDoubleDefault(key, 1e-8);
+
+  sprintf(key, "%s.CLM.FracSnoRoughnessMax", name);
+  public_xtra->clm_frac_sno_roughness_max = GetDoubleDefault(key, 0.2);
+
+  sprintf(key, "%s.CLM.FracSnoGammaSZA", name);
+  public_xtra->clm_frac_sno_gamma_sza = GetDoubleDefault(key, 4.0);
+
+  sprintf(key, "%s.CLM.FracSnoAvgWindow", name);
+  public_xtra->clm_frac_sno_tau_sza = GetDoubleDefault(key, 72.0);
+
+  /* @RMM 2025 Snow age VIS/NIR separation parameters */
+  sprintf(key, "%s.CLM.SnowAgeTau0Vis", name);
+  public_xtra->clm_snowage_tau0_vis = GetDoubleDefault(key, 1.0e6);
+
+  sprintf(key, "%s.CLM.SnowAgeTau0Nir", name);
+  public_xtra->clm_snowage_tau0_nir = GetDoubleDefault(key, 1.0e6);
+
+  sprintf(key, "%s.CLM.SnowAgeGrainGrowthVis", name);
+  public_xtra->clm_snowage_grain_growth_vis = GetDoubleDefault(key, 5000.0);
+
+  sprintf(key, "%s.CLM.SnowAgeGrainGrowthNir", name);
+  public_xtra->clm_snowage_grain_growth_nir = GetDoubleDefault(key, 5000.0);
+
+  sprintf(key, "%s.CLM.SnowAgeDirtSootVis", name);
+  public_xtra->clm_snowage_dirt_soot_vis = GetDoubleDefault(key, 0.3);
+
+  sprintf(key, "%s.CLM.SnowAgeDirtSootNir", name);
+  public_xtra->clm_snowage_dirt_soot_nir = GetDoubleDefault(key, 0.3);
+
+  sprintf(key, "%s.CLM.SnowAgeResetFactor", name);
+  public_xtra->clm_snowage_reset_factor = GetDoubleDefault(key, 0.1);
+
+  /* @RMM 2026 ET formulation improvements */
+  sprintf(key, "%s.CLM.InterceptionFpiMax", name);
+  public_xtra->clm_interception_fpi_max = GetDoubleDefault(key, 0.25);
+
+  sprintf(key, "%s.CLM.FwetExponent", name);
+  public_xtra->clm_fwet_exponent = GetDoubleDefault(key, 0.6667);
+
+  NameArray stomata_switch_na;
+  stomata_switch_na = NA_NewNameArray("BallBerry Medlyn");
+  sprintf(key, "%s.CLM.StomataScheme", name);
+  switch_name = GetStringDefault(key, "BallBerry");
+  switch_value = NA_NameToIndexExitOnError(stomata_switch_na, switch_name, key);
+  switch (switch_value)
+  {
+    case 0:
+    {
+      public_xtra->clm_stomata_scheme = 0;
+      break;
+    }
+
+    case 1:
+    {
+      public_xtra->clm_stomata_scheme = 1;
+      break;
+    }
+
+    default:
+    {
+      InputError("Error: Invalid value <%s> for key <%s>. Expected BallBerry or Medlyn.\n",
+                 switch_name, key);
+    }
+  }
+  NA_FreeNameArray(stomata_switch_na);
+
+  NameArray intercep_scheme_na;
+  intercep_scheme_na = NA_NewNameArray("CLM3 CLM5Tanh");
+  sprintf(key, "%s.CLM.InterceptionScheme", name);
+  switch_name = GetStringDefault(key, "CLM3");
+  switch_value = NA_NameToIndexExitOnError(intercep_scheme_na, switch_name, key);
+  switch (switch_value)
+  {
+    case 0:
+    {
+      public_xtra->clm_interception_scheme = 0;
+      break;
+    }
+
+    case 1:
+    {
+      public_xtra->clm_interception_scheme = 1;
+      break;
+    }
+
+    default:
+    {
+      InputError("Error: Invalid value <%s> for key <%s>. Expected CLM3 or CLM5Tanh.\n",
+                 switch_name, key);
+    }
+  }
+  NA_FreeNameArray(intercep_scheme_na);
+
+  sprintf(key, "%s.CLM.InterceptionTanhAlpha", name);
+  public_xtra->clm_interception_tanh_alpha = GetDoubleDefault(key, 1.0);
 
   /* IMF Write CLM as Silo (default=False) */
   sprintf(key, "%s.WriteSiloCLM", name);

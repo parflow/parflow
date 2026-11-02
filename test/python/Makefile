@@ -51,4 +51,4 @@ testclean:
 	@rm -f *.etrace
 	@rm -f Flow_Barrier_X.sa Flow_Barrier_Y.sa
 	@rm -f stats4.txt
-	@rm -fr test_output
+	@rm -fr test_output dconf

@@ -7,7 +7,8 @@ import os
 from parflow import Run
 from parflow.tools.fs import get_absolute_path
 
-test = Run("full_clone", __file__)
+run_name = "full_clone"
+test = Run(run_name, __file__)
 
 test.pfset(
     yaml_file="$PF_SRC/test/correct_output/full_clone.yaml.ref", exit_if_undefined=True
@@ -18,12 +19,20 @@ test.pfset(
 test.validate()
 generatedFile, runFile = test.write(file_format="yaml")
 
+passed = True
+
 # Prevent regression
 with open(generatedFile) as new, open(
     get_absolute_path("$PF_SRC/test/correct_output/full_clone.yaml.ref")
 ) as ref:
     if new.read() == ref.read():
-        print("Success we have the same file")
+        print("Files are the same")
     else:
         print("Files are different")
-        sys.exit(1)
+        passed = False
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)

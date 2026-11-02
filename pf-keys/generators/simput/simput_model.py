@@ -6,7 +6,6 @@ from pathlib import Path
 from yaml import load, Loader
 from collections import defaultdict
 
-
 exts = [".yaml"]
 
 lookup_tables_by_class = dict()

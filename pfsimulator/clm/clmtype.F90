@@ -130,7 +130,9 @@ module clmtype
      real(r8) :: frac_sno        ! fractional snow cover
      real(r8) :: t_veg           ! leaf temperature [K]
      real(r8) :: h2ocan          ! depth of water on foliage [kg/m2/s]
-     real(r8) :: snowage         ! non dimensional snow age [-]
+     real(r8) :: snowage         ! non dimensional snow age [-] (legacy: average of VIS/NIR)
+     real(r8) :: snowage_vis     ! VIS band snow age [-] @RMM 2025
+     real(r8) :: snowage_nir     ! NIR band snow age [-] @RMM 2025
      real(r8) :: h2osno          ! snow mass (kg/m2)
      real(r8) :: h2osno_old      ! snow mass for previous time step (kg/m2)
      real(r8) :: snowdp          ! snow depth (m)
@@ -238,6 +240,7 @@ module clmtype
      real(r8) :: field_capacity ! field capacity from PF in m or [-] depending @RMM
      integer  :: vegwaterstresstype ! water stress formution type from PF @RMM
      integer  :: rzwaterstress  ! water stress averaged over RZ (default=0) or variable @RMM
+     real(r8) :: omega_max      ! max compensation factor for compensatory RWU (Li et al 2001) @RMM
 
      integer  :: beta_type      ! evap/beta formution type from PF @RMM
      real(r8) :: res_sat        ! residual saturation from PF [-] for use in beta @RMM
@@ -285,8 +288,22 @@ module clmtype
      real(r8) :: albedo_thaw_a         ! VIC melt-phase decay base, default 0.82
 
 ! Fractional snow covered area (frac_sno) options @RMM 2025
-     integer  :: frac_sno_type         ! frac_sno scheme: 0=CLM (default), others TBD
-     real(r8) :: frac_sno_roughness    ! roughness length for frac_sno [m], default=zlnd
+     integer  :: frac_sno_type         ! frac_sno scheme: 0=CLM (default), 1=SZA-modulated
+     real(r8) :: frac_sno_roughness    ! roughness length for frac_sno [m], default=zlnd (case 0)
+     real(r8) :: frac_sno_roughness_min ! min roughness for SZA interp [m], default 1e-8 (case 1)
+     real(r8) :: frac_sno_roughness_max ! max roughness for SZA interp [m], default 0.2 (case 1)
+     real(r8) :: frac_sno_gamma_sza    ! SZA power-law exponent [-], default 4.0
+     real(r8) :: frac_sno_tau_sza      ! EMA smoothing window [hours], default 72.0
+     real(r8) :: coszen_avg            ! exponentially smoothed cos(SZA) for frac_sno [-]
+
+! Snow age configurable parameters - VIS/NIR separation @RMM 2025
+     real(r8) :: snowage_tau0_vis        ! VIS e-folding time [s], default 1e6
+     real(r8) :: snowage_tau0_nir        ! NIR e-folding time [s], default 1e6
+     real(r8) :: snowage_grain_growth_vis ! VIS grain growth factor [K], default 5000
+     real(r8) :: snowage_grain_growth_nir ! NIR grain growth factor [K], default 5000
+     real(r8) :: snowage_dirt_soot_vis   ! VIS dirt/soot factor [-], default 0.3
+     real(r8) :: snowage_dirt_soot_nir   ! NIR dirt/soot factor [-], default 0.3
+     real(r8) :: snowage_reset_factor    ! fresh snow reset factor [-], default 0.1
 
      real(r8) :: eflx_snomelt   ! added to be consistent with lsm hybrid code
      real(r8) :: eflx_impsoil   ! implicit evaporation for soil temperature equation (W/m**2)
@@ -367,6 +384,16 @@ module clmtype
 
      integer :: soi_z ! NBE added
 
+! ET formulation improvements @RMM 2026
+! (placed at end of struct to preserve existing field offsets)
+     logical  :: photosyn_custom ! true when drv_vegp.dat provides PFT photosynthesis params
+     integer  :: stomata_scheme  ! stomatal model: 0=BallBerry (default), 1=Medlyn
+     real(r8) :: g1_medlyn       ! Medlyn stomatal slope parameter (kPa^0.5)
+     real(r8) :: interception_fpi_max ! max interception fraction coefficient [-]
+     real(r8) :: fwet_exponent        ! power-law exponent for wet canopy fraction [-]
+     integer  :: interception_scheme  ! interception scheme: 0=CLM3, 1=CLM5Tanh @RMM 2026
+     real(r8) :: interception_tanh_alpha ! CLM5 tanh scaling coeff [-], default 1.0 @RMM 2026
+     real(r8) :: clump_index         ! vegetation clumping index [0-1], 1=no clumping @RMM 2026
 
 !=== End Variable List ===================================================
 

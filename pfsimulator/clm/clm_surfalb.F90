@@ -43,6 +43,7 @@ subroutine clm_surfalb (clm, coszen)
   real(r8) :: ws              !fraction of LAI+SAI that is SAI
   real(r8) :: mpe = 1.e-06    !prevents overflow for division by zero 
   real(r8) :: vai             !elai+esai
+  real(r8) :: vai_clump       !clumping-adjusted vai for radiation
   real(r8) :: rho(numrad)     !leaf/stem refl weighted by fraction LAI and SAI
   real(r8) :: tau(numrad)     !leaf/stem tran weighted by fraction LAI and SAI
   real(r8) :: ftdi(numrad)    !down direct flux below veg per unit dif flux = 0
@@ -115,25 +116,34 @@ subroutine clm_surfalb (clm, coszen)
 
   if (vai /= 0.) then  ! vegetated patch
 
-! loop over nband wavebands to calculate surface albedos and solar 
-! fluxes for vegetated patch for unit incoming direct 
+! Apply vegetation clumping index to effective LAI for radiation @RMM 2026
+! Clumping (omega < 1) accounts for non-random leaf distribution;
+! only radiation uses clumped vai — interception/capacity use real vai.
+     vai_clump = clm%clump_index * vai
+
+! loop over nband wavebands to calculate surface albedos and solar
+! fluxes for vegetated patch for unit incoming direct
 ! (ic=0) and diffuse flux (ic=1) only if coszen > 0
 
      do ib = 1, nband
         ic = 0
-        call clm_twostream (clm     , ib , ic      , coszen  , vai     , &
+        call clm_twostream (clm     , ib , ic      , coszen  ,           &
+                            vai_clump,                                    &
                             rho     , tau, clm%fabd, clm%albd, clm%ftdd, &
                             clm%ftid, gdir)
         ic = 1
-        call clm_twostream (clm     , ib , ic      , coszen  , vai     , &
+        call clm_twostream (clm     , ib , ic      , coszen  ,           &
+                            vai_clump,                                    &
                             rho     , tau, clm%fabi, clm%albi, ftdi    , &
                             clm%ftii, gdir)
      end do
-     
+
 ! sunlit fraction of canopy. set fsun = 0 if fsun < 0.01.
-     
+! Uses clumped vai for extinction (more sunlit leaves due to gaps).
+
      ext = gdir/coszen * sqrt(1.-rho(1)-tau(1))
-     clm%fsun = (1.-exp(-ext*vai)) / max(ext*vai,mpe)
+     clm%fsun = (1.-exp(-ext*vai_clump))                                &
+                / max(ext*vai_clump,mpe)
      ext = clm%fsun                                       !temporary fsun
      if (ext < 0.01) then 
         wl = 0._r8                                        !temporary fsun

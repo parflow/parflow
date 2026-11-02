@@ -10,7 +10,6 @@ from parflow import Run
 from parflow.tools.fs import mkdir, cp, chdir, get_absolute_path
 from parflow.tools.io import read_pfb, write_pfb
 
-
 LW_Test = Run("LW_Test", __file__)
 
 # -----------------------------------------------------------------------------
@@ -582,3 +581,6 @@ LW_Test.Geom.indi_input.FileName = "IndicatorFile_Gleeson.50z.pfb"
 # Check NaNs for original inputs
 LW_Test.check_nans(working_directory=dir_name)
 LW_Test.run(working_directory=dir_name)
+
+# TODO ADD_CHECKS Yet another poorly written test that does not check much.
+print("PASSED")

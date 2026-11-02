@@ -771,3 +771,93 @@
    ...
 }
 
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   ...
+   fun:cuInit
+   ...
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   ...
+   fun:cuInit
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   ...
+   fun:hwloc_topology_load
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   ...
+   fun:PMIx_Init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   ...
+   fun:hwloc_discover_by_phase.isra.0
+}
+
+########################################################################
+#
+# HYPRE 
+#
+##############################################################################
+
+# Hypre logging references uninitialized values
+{
+   hypre_pfmg_logging_uninitialized_cond
+   Memcheck:Cond
+   ...
+   fun:hypre_printf
+   fun:hypre_PFMGPrintLogging
+   fun:hypre_PFMGSolve
+   fun:PFMGOctree
+   ...
+}
+
+{
+   hypre_pfmg_logging_uninitialized_value8
+   Memcheck:Value8
+   ...
+   fun:hypre_printf
+   fun:hypre_PFMGPrintLogging
+   fun:hypre_PFMGSolve
+   fun:PFMGOctree
+   ...
+}
+
+
+{
+   hypre_pfmg_logging_write_uninit_buf
+   Memcheck:Param
+   write(buf)
+   ...
+   fun:hypre_printf
+   fun:hypre_PFMGPrintLogging
+   fun:hypre_PFMGSolve
+   fun:PFMGOctree
+   fun:KinsolPC
+   ...
+}

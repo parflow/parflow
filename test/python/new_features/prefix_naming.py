@@ -355,3 +355,7 @@ prefix.Solver.Spinup = False
 # -----------------------------------------------------------------------------
 
 prefix.run()
+
+# TODO ADD_CHECKS Yet another poorly written test that does not check much.
+
+print("PASSED")

@@ -335,7 +335,7 @@ defined for this problem.
 
 *string* **GeomInput.\ *geom_input_name*.InputType** no default This
 defines the input type for the geometry input with *geom_input_name*.
-This key must be one of: **SolidFile, IndicatorField**, **Box**.
+This key must be one of: **SolidFile, IndicatorField, IndicatorFieldNC**, **Box**.
 
 .. container:: list
 
@@ -350,9 +350,9 @@ list of the names of the geometries defined by the geometry input. For a
 geometry input type of Box, the list should contain a single geometry
 name. For the SolidFile geometry type this should contain a list with
 the same number of gemetries as were defined using GMS. The order of
-geometries in the SolidFile should match the names. For IndicatorField
-types you need to specify the value in the input field which matches the
-name using GeomInput.\ *geom_input_name*.Value.
+geometries in the SolidFile should match the names. For IndicatorField and
+IndicatorFieldNC types you need to specify the value in the input field
+which matches the name using GeomInput.\ *geom_input_name*.Value.
 
 .. container:: list
 
@@ -364,8 +364,8 @@ name using GeomInput.\ *geom_input_name*.Value.
       <runname>.GeomInput.solidinput.GeomNames = "domain bottomlayer middlelayer toplayer"  ## Python syntax
 
 *string* **GeomInput.\ *geom_input_name*.Filename** no default For
-IndicatorField and SolidFile geometry inputs this key specifies the
-input filename which contains the field or solid information.
+IndicatorField, IndicatorFieldNC and SolidFile geometry inputs this key
+specifies the input filename which contains the field or solid information.
 
 .. container:: list
 
@@ -376,9 +376,10 @@ input filename which contains the field or solid information.
       <runname>.GeomInput.solidinput.FileName = "ocwd.pfsol"   ## Python syntax
 
 *integer* **GeomInput.\ *geometry_input_name*.Value** no default For
-IndicatorField geometry inputs you need to specify the mapping between
-values in the input file and the geometry names. The named geometry will
-be defined wherever the input file is equal to the specified value.
+IndicatorField, IndicatorFieldNC geometry inputs you need to specify the
+mapping between values in the input file and the geometry names. The named
+geometry will be defined wherever the input file is equal to the specified
+value.
 
 .. container:: list
 
@@ -3989,6 +3990,21 @@ wells for which input data will be given.
 
       Wells.Names "test_well inj_well ext_well"
 
+*bool* **Wells.CorrectForVarDz** False This key specifies whether well
+fluxes be adjusted for variable dz spacing.  For backwards
+compatability the default value is **False** and the well volume used
+to calculate well fluxes is incorrectly set using the single **dz**
+value (:math:`nx * ny * nz * dx * dy * dz`).  When set to **True** the
+volume will be computed by the user specified variable dz values.  It is
+recommended to set the flag to **True** rather than do the correction
+manually.
+
+.. container:: list
+
+   ::
+
+      Wells.CorrectForVarDz "True"
+
 *string* **Wells.\ *well_name*.InputType** no default This key specifies
 the type of well to be defined for the given well, *well_name*. This key
 can be either **Vertical** or **Recirc**. The value **Vertical**
@@ -6301,19 +6317,34 @@ described below, will also need to be changed.
       <runname>.Solver.CLM.RootZoneNZ = 4    ## Python syntax
 
 *integer* **Solver.CLM.RZWaterStress** 0 This key sets the distribution
-of transpiration over the root zone and changes the behavior of plant water limitations.
-As discussed in :cite:p:`Ferguson2016` water stress approaches result in
-different cut-offs for transpiration ().  Two options are currently
-implemented both use the beta-type water stress defined above.  Option 0
-(default) will limit transpiration when the top soil layer drops below
-wilting point, option 1 limits each layer independently.
+of transpiration over the root zone and changes the behavior of plant water
+limitations. All options use the beta-type water stress defined by
+``Solver.CLM.VegWaterStress``. Three options are available:
+
+- **Option 0** (default): Transpiration is distributed by root fraction only.
+  All transpiration is shut off when the top soil layer drops below the wilting
+  point. This is the original CLM3 behavior.
+
+- **Option 1**: Transpiration is distributed weighted by both root fraction and
+  per-layer water stress (soil resistance). There is no top-layer cutoff, so
+  plants can transpire from deep wet roots even when the surface is dry. The
+  total transpiration is still limited by the aggregate stress factor ``btran``.
+  See :cite:p:`Ferguson2016`.
+
+- **Option 2**: Compensatory root water uptake. Uses the same weighted
+  distribution as option 1, but additionally boosts the aggregate stress factor
+  ``btran`` so that wet layers can compensate for dry layers. The compensation
+  is controlled by a PFT-dependent parameter ``omega_max`` (set via
+  ``drv_vegp.dat``): ``btran = min(1.0, omega_max * btran_raw)``. When
+  ``omega_max = 1.0`` (default), this recovers option 1 behavior. Values of 2-3
+  are recommended for deep-rooted trees. See :cite:p:`Li2001`.
 
 .. container:: list
 
    ::
 
-      pfset Solver.CLM.RZWaterStress 1          ## TCL syntax
-      <runname>.Solver.CLM.RZWaterStress = 1    ## Python syntax
+      pfset Solver.CLM.RZWaterStress 2          ## TCL syntax
+      <runname>.Solver.CLM.RZWaterStress = 2    ## Python syntax
       
 *integer* **Solver.CLM.SoiLayer** 7 This key sets the soil layer, and
 thus the soil depth, that ``CLM`` uses for the seasonal temperature 
@@ -6654,6 +6685,104 @@ snow faster.
       pfset Solver.CLM.AlbedoThawA 0.82         ## TCL syntax
       <runname>.Solver.CLM.AlbedoThawA = 0.82   ## Python syntax
 
+**Snow Age VIS/NIR Parameters**
+
+The BATS snow aging scheme uses three physical processes (grain growth,
+dirt/soot accumulation, and fresh snow reset) to evolve a dimensionless
+snow age variable that controls albedo decay. By default, VIS and NIR
+bands share the same aging parameters. These keys allow independent
+calibration of VIS and NIR aging rates, following :cite:p:`AbolafiaRosenzweig2022`
+who found that VIS and NIR bands require different aging parameters for
+Western US snowpacks.
+
+*double* **Solver.CLM.SnowAgeTau0Vis** 1.0e6 VIS band snow age e-folding
+time [s]. Controls the rate of snow aging for visible albedo decay.
+Larger values produce slower aging. Default matches original CLM
+hardcoded value. AR2022 optimal for WUS: 3.05e6 s.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeTau0Vis 3.05e6         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeTau0Vis = 3.05e6   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeTau0Nir** 1.0e6 NIR band snow age e-folding
+time [s]. Controls the rate of snow aging for near-infrared albedo decay.
+Larger values produce slower aging. Default matches original CLM
+hardcoded value. AR2022 optimal for WUS: 5.29e5 s (faster aging than VIS).
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeTau0Nir 5.29e5         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeTau0Nir = 5.29e5   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeGrainGrowthVis** 5000.0 VIS band grain growth
+activation energy factor [K]. Controls temperature dependence of snow
+aging for visible albedo. Larger values produce stronger temperature
+sensitivity. Default matches original CLM hardcoded value.
+AR2022 optimal for WUS: 9287 K.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeGrainGrowthVis 9287.0         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeGrainGrowthVis = 9287.0   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeGrainGrowthNir** 5000.0 NIR band grain growth
+activation energy factor [K]. Controls temperature dependence of snow
+aging for NIR albedo. Larger values produce stronger temperature
+sensitivity. Default matches original CLM hardcoded value.
+AR2022 optimal for WUS: 7715 K.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeGrainGrowthNir 7715.0         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeGrainGrowthNir = 7715.0   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeDirtSootVis** 0.3 VIS band dirt/soot aging
+factor [-]. Represents background aging from contaminant accumulation on
+the snow surface. Default matches original CLM hardcoded value.
+AR2022 optimal for WUS: 0.25.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeDirtSootVis 0.25         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeDirtSootVis = 0.25   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeDirtSootNir** 0.3 NIR band dirt/soot aging
+factor [-]. Represents background aging from contaminant accumulation on
+the snow surface. Contaminants are less absorbing in the NIR, so this
+value is typically lower than the VIS counterpart. Default matches
+original CLM hardcoded value. AR2022 optimal for WUS: 0.11.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeDirtSootNir 0.11         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeDirtSootNir = 0.11   ## Python syntax
+
+*double* **Solver.CLM.SnowAgeResetFactor** 0.1 Fresh snow age reset rate
+[-]. Controls how much new snowfall resets snow age toward zero. Larger
+values produce faster age reset with fresh snowfall. Default matches
+original CLM hardcoded value (BATS formulation,
+:cite:p:`Dickinson1993`).
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.SnowAgeResetFactor 0.1         ## TCL syntax
+      <runname>.Solver.CLM.SnowAgeResetFactor = 0.1   ## Python syntax
+
 **Fractional Snow Cover**
 
 The fractional snow covered area (frac_sno) affects surface energy balance
@@ -6661,11 +6790,18 @@ by weighting snow and bare ground contributions. The CLM formulation uses
 a tanh-like relationship with snow depth and surface roughness.
 
 *string* **Solver.CLM.FracSnoScheme** CLM Selects the fractional snow cover
-calculation method. Currently only CLM is available; extensible for future
-formulations.
+calculation method.
 
 **CLM**:
-   Standard formulation: frac_sno = snowdp / (10*roughness + snowdp)
+   Standard formulation: frac_sno = snowdp / (10*roughness + snowdp),
+   using FracSnoRoughness as the roughness length.
+
+**SZA**:
+   SZA-modulated formulation that interpolates the effective roughness
+   between FracSnoRoughnessMin and FracSnoRoughnessMax using a power-law
+   weight w = coszen_avg^GammaSZA, creating a continuous energy-driven
+   accumulation/melt asymmetry in fractional snow cover. Naturally
+   latitude-aware.
 
 .. container:: list
 
@@ -6675,9 +6811,9 @@ formulations.
       <runname>.Solver.CLM.FracSnoScheme = "CLM"   ## Python syntax
 
 *double* **Solver.CLM.FracSnoRoughness** 0.01 Roughness length scale for
-fractional snow cover calculation [m]. Default 0.01 m matches CLM's zlnd
-parameter for backward compatibility. Larger values reduce snow cover
-fraction for a given snow depth.
+fractional snow cover calculation [m]. Used by FracSnoScheme=CLM (case 0).
+Default 0.01 m matches CLM's zlnd parameter for backward compatibility.
+Larger values reduce snow cover fraction for a given snow depth.
 
 .. container:: list
 
@@ -6685,6 +6821,135 @@ fraction for a given snow depth.
 
       pfset Solver.CLM.FracSnoRoughness 0.01         ## TCL syntax
       <runname>.Solver.CLM.FracSnoRoughness = 0.01   ## Python syntax
+
+*double* **Solver.CLM.FracSnoRoughnessMin** 1.0e-8 Minimum effective
+roughness length for SZA-modulated fractional snow cover [m]. Used by
+FracSnoScheme=SZA. At low sun angles (small coszen_avg), the
+effective roughness approaches this value, yielding higher frac_sno.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FracSnoRoughnessMin 1.0e-8       ## TCL syntax
+      <runname>.Solver.CLM.FracSnoRoughnessMin = 1.0e-8  ## Python syntax
+
+*double* **Solver.CLM.FracSnoRoughnessMax** 0.2 Maximum effective
+roughness length for SZA-modulated fractional snow cover [m]. Used by
+FracSnoScheme=SZA. At high sun angles (large coszen_avg), the
+effective roughness approaches this value, yielding lower frac_sno.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FracSnoRoughnessMax 0.2           ## TCL syntax
+      <runname>.Solver.CLM.FracSnoRoughnessMax = 0.2     ## Python syntax
+
+*double* **Solver.CLM.FracSnoGammaSZA** 4.0 Power-law exponent for the SZA
+interpolation weight w = coszen_avg^GammaSZA in fractional snow cover when
+FracSnoScheme=SZA. Higher values sharpen the transition between min and max
+roughness. Dimensionless.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FracSnoGammaSZA 4.0             ## TCL syntax
+      <runname>.Solver.CLM.FracSnoGammaSZA = 4.0       ## Python syntax
+
+*double* **Solver.CLM.FracSnoAvgWindow** 72.0 Exponential moving average
+window for smoothed cos(SZA) [hours]. Used by FracSnoScheme=SZA to prevent
+diurnal artifacts in fractional snow cover. Typical range 48-96 hours.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FracSnoAvgWindow 72.0           ## TCL syntax
+      <runname>.Solver.CLM.FracSnoAvgWindow = 72.0     ## Python syntax
+
+**ET Formulation Improvements**
+
+These keys improve CLM's evapotranspiration calculations. Default values
+reproduce original CLM3 behavior for backward compatibility. PFT-dependent
+photosynthesis parameters (vcmx25, c3psn, mp, bp, qe25, folnmx) can be
+provided in drv_vegp.dat; when detected, improved stomata physics
+(dark respiration, smooth colimitation, niter=5) activates automatically.
+
+*double* **Solver.CLM.InterceptionFpiMax** 0.25 Maximum interception
+fraction coefficient. CLM3 default 0.25 caps canopy interception at 25%
+even for dense canopies. CLM5 uses higher values.
+Formula: fpi = InterceptionFpiMax * (1 - exp(-0.5*(LAI+SAI)))
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.InterceptionFpiMax 0.25           ## TCL syntax
+      <runname>.Solver.CLM.InterceptionFpiMax = 0.25     ## Python syntax
+
+*double* **Solver.CLM.FwetExponent** 0.6667 Power-law exponent for wet
+canopy fraction. CLM default 2/3. Lower values keep the canopy wet longer,
+increasing wet canopy evaporation.
+Formula: fwet = (h2ocan/(dewmx*LAI))^FwetExponent
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.FwetExponent 0.6667               ## TCL syntax
+      <runname>.Solver.CLM.FwetExponent = 0.6667         ## Python syntax
+
+*string* **Solver.CLM.StomataScheme** BallBerry Selects the stomatal
+conductance model.
+
+**BallBerry**:
+   CLM3 default. Uses relative humidity in the conductance equation.
+
+**Medlyn**:
+   Medlyn et al. (2011) model. Uses vapor pressure deficit (VPD) instead
+   of relative humidity. Requires g1_medlyn parameter in drv_vegp.dat for
+   PFT-dependent slope values.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.StomataScheme BallBerry            ## TCL syntax
+      <runname>.Solver.CLM.StomataScheme = "BallBerry"   ## Python syntax
+
+*string* **Solver.CLM.InterceptionScheme** CLM3 Selects the canopy
+interception scheme.
+
+**CLM3**:
+   CLM3 default exponential formulation.
+   Formula: fpi = InterceptionFpiMax * (1 - exp(-0.5*(LAI+SAI)))
+   Asymptotes to InterceptionFpiMax (default 0.25) regardless of LAI.
+
+**CLM5Tanh**:
+   CLM5 tanh formulation (Lawrence et al. 2019).
+   Formula: fpi = InterceptionTanhAlpha * tanh(LAI+SAI)
+   Approaches InterceptionTanhAlpha (default 1.0) for LAI > 2, correcting
+   the CLM3 structural low bias in canopy interception for dense canopies.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.InterceptionScheme CLM3              ## TCL syntax
+      <runname>.Solver.CLM.InterceptionScheme = "CLM3"     ## Python syntax
+
+*double* **Solver.CLM.InterceptionTanhAlpha** 1.0 Scaling coefficient for
+CLM5 tanh interception scheme. Formula: fpi = alpha * tanh(LAI+SAI).
+Default 1.0 matches CLM5. Only used when InterceptionScheme is CLM5Tanh.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.InterceptionTanhAlpha 1.0             ## TCL syntax
+      <runname>.Solver.CLM.InterceptionTanhAlpha = 1.0      ## Python syntax
 
 
 .. _ParFlow NetCDF4 Parallel I/O:

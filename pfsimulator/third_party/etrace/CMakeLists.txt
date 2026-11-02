@@ -1,14 +1,12 @@
+if(${PARFLOW_ENABLE_ETRACE})
+    set(SRC_FILES ptrace.c)
 
-if (${PARFLOW_ENABLE_ETRACE})
-  set(SRC_FILES ptrace.c)
+    add_library(etrace STATIC ${SRC_FILES})
 
-  add_library(etrace STATIC ${SRC_FILES})
-
-  install(TARGETS etrace DESTINATION lib)
-  install(FILES etrace DESTINATION bin PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE)
-endif (${PARFLOW_ENABLE_ETRACE})
-
-
-
-
-
+    install(TARGETS etrace DESTINATION lib)
+    install(
+        FILES etrace
+        DESTINATION bin
+        PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE
+    )
+endif(${PARFLOW_ENABLE_ETRACE})
