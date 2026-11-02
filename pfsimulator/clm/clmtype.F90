@@ -88,6 +88,7 @@ module clmtype
 
       real(r8) :: bsw   (max_nlevsoi) ! Clapp and Hornberger "b"  --- NOT USED in PF.CLM COUPLE  @RMM
       real(r8) :: watsat(max_nlevsoi) !@ volumetric soil water at saturation (porosity) over intersection between domians (Parflow and CLM)  -- PASSED in FROM PF @RMM
+      real(r8) :: s_res_cell(max_nlevsoi) ! per-cell van Genuchten residual saturation from PF, for the dry-side wilting-point residual limit -- PASSED in FROM PF
       real(r8) :: hksat (max_nlevsoi) ! hydraulic conductivity at saturation (mm H2O /s)  --- NOT USED IN PF.CLM COUPLE @RMM
       real(r8) :: sucsat(max_nlevsoi) ! minimum soil suction (mm)
       real(r8) :: watdry(max_nlevsoi) ! water content when evapotranspiration stops (new)
@@ -241,6 +242,9 @@ module clmtype
      integer  :: vegwaterstresstype ! water stress formution type from PF @RMM
      integer  :: rzwaterstress  ! water stress averaged over RZ (default=0) or variable @RMM
      real(r8) :: omega_max      ! max compensation factor for compensatory RWU (Li et al 2001) @RMM
+     integer  :: sm_stress_type     ! dry-side residual limit: 0=off, 1=residual-limited wp, 2=ramp-floor only
+     real(r8) :: sm_residual_margin ! saturation margin the effective wilting point must stay above S_res
+     real(r8) :: sm_min_ramp_width  ! minimum fc_eff - wp_eff span (keeps a valid btran ramp)
 
      integer  :: beta_type      ! evap/beta formution type from PF @RMM
      real(r8) :: res_sat        ! residual saturation from PF [-] for use in beta @RMM

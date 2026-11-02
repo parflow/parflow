@@ -90,6 +90,7 @@ subroutine clm_typini (ntiles, clm, istep_pf)
      ! soil physical parameters
      clm(k)%bsw   (:) = NaN      ! Clapp and Hornberger "b"
      clm(k)%watsat(:) = NaN      ! volumetric soil water at saturation (porosity)
+     clm(k)%s_res_cell(:) = NaN  ! per-cell van Genuchten residual saturation from PF
      clm(k)%hksat (:) = NaN      ! hydraulic conductivity at saturation (mm H2O /s)
      clm(k)%sucsat(:) = NaN      ! minimum soil suction (mm)
      clm(k)%watdry(:) = NaN      ! water content when evapotranspiration stops (new)
@@ -101,8 +102,11 @@ subroutine clm_typini (ntiles, clm, istep_pf)
      clm(k)%rootfr(:) = NaN      ! fraction of roots in each soil layer
      clm(k)%wilting_point      = NaN  
      clm(k)%field_capacity     = NaN  
-     clm(k)%res_sat            = NaN  
-     clm(k)%vegwaterstresstype = NaN  
+     clm(k)%res_sat            = NaN
+     clm(k)%sm_stress_type     = 0
+     clm(k)%sm_residual_margin = 0.0d0
+     clm(k)%sm_min_ramp_width  = 0.0d0
+     clm(k)%vegwaterstresstype = NaN
      clm(k)%beta_type          = NaN  
 
      ! irrigation parameters

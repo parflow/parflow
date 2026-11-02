@@ -170,7 +170,8 @@ subroutine clm_thermal (clm)
        tinc,                       & ! temperature difference of two time step
        obuold                        ! monin-obukhov length from previous iteration
 
-  real(r8) temp, soil_beta, rz_beta, temp_rz                      !soil_beta, rz_beta, the soil beta function and root zone beta function [-]                                       
+  real(r8) temp, soil_beta, rz_beta, temp_rz                      !soil_beta, rz_beta, the soil beta function and root zone beta function [-]
+  real(r8) wp_eff, fc_eff, wp_cut                                 ! effective wilting point / field capacity after the dry-side residual limit
   real(r8) cf                        !s m**2/umol -> s/m
 
   !=== End Variable List ===================================================
@@ -438,19 +439,47 @@ subroutine clm_thermal (clm)
 ! and care should be taken to make sure this is set equal to or above residual saturation 
 ! the *type* of beta is important as well and is passed in as a key via ParFlow
 ! a root zone average is taken here
+           ! Effective wilting point / field capacity with the dry-side residual
+           ! limit (Solver.CLM.SoilMoistureStress).  sm_stress_type == 0 reproduces
+           ! the current values exactly; 1 raises wp to at least S_res + margin;
+           ! both apply a minimum ramp width so the btran denominator stays valid.
+           if (clm%sm_stress_type == 0) then
+              wp_eff = clm%wilting_point
+              fc_eff = clm%field_capacity
+           else
+              if (clm%sm_stress_type == 1) then
+                 wp_eff = max(clm%wilting_point, clm%s_res_cell(i) + clm%sm_residual_margin)
+              else
+                 wp_eff = clm%wilting_point
+              end if
+              fc_eff = max(clm%field_capacity, wp_eff + clm%sm_min_ramp_width)
+           end if
+
            select case (clm%vegwaterstresstype)
            case (0)     ! none
            temp = 1.0d0
            case (1)     ! pressure type
            temp = ((clm%wilting_point*1000.d0 - clm%pf_press(i))/(clm%wilting_point*1000.d0 - clm%field_capacity*1000.d0) )
            case (2)     ! SM type
-           temp = (clm%pf_vol_liq(i) - clm%wilting_point*clm%watsat(i)) / &
-	            (clm%field_capacity*clm%watsat(i) - clm%wilting_point*clm%watsat(i))
+           temp = (clm%pf_vol_liq(i) - wp_eff*clm%watsat(i)) / &
+	            (fc_eff*clm%watsat(i) - wp_eff*clm%watsat(i))
            end select
            if (temp < 0.) temp = 0.
            if (temp > 1.) temp = 1.
            temp_rz = temp ** clm%vw
            clm%soil_resistance(i) = temp_rz    !! @RMM, we store each soil resistnace factor over the soil layers
+           ! Dry-side residual guard for pressure mode, applied in saturation
+           ! space where S_res is exact (no van Genuchten inversion).  Zeros this
+           ! layer's uptake as it approaches within sm_residual_margin of
+           ! residual.  Saturation mode carries this via wp_eff above, so only
+           ! pressure mode is handled here.  sm_stress_type == 0 leaves case-1
+           ! behavior bit-identical.  @RMM 2026
+           if (clm%sm_stress_type == 1 .and. clm%vegwaterstresstype == 1) then
+              if (clm%pf_vol_liq(i) <= &
+                   (clm%s_res_cell(i) + clm%sm_residual_margin) * clm%watsat(i)) then
+                 clm%soil_resistance(i) = 0.0d0
+              end if
+           end if
         else
            temp2 = 0.01d0
         endif
@@ -467,8 +496,11 @@ subroutine clm_thermal (clm)
      if (clm%rzwaterstress == 0) then
         if ( (clm%vegwaterstresstype == 1) .and.  &
              (clm%pf_press(1)<=(clm%wilting_point*1000.d0)) ) clm%btran = 0.0d0
+        wp_cut = clm%wilting_point
+        if (clm%sm_stress_type == 1) &
+           wp_cut = max(clm%wilting_point, clm%s_res_cell(1) + clm%sm_residual_margin)
         if ( (clm%vegwaterstresstype == 2) .and.  &
-             (clm%pf_vol_liq(1)<=clm%wilting_point*clm%watsat(1)) ) clm%btran = 0.0d0
+             (clm%pf_vol_liq(1)<=wp_cut*clm%watsat(1)) ) clm%btran = 0.0d0
      else if (clm%rzwaterstress == 2) then
         ! Compensatory uptake: btran = min(1, omega_max * btran)
         ! omega_max is PFT-dependent via drv_vegp.dat (Li et al 2001 J Hydrol)
