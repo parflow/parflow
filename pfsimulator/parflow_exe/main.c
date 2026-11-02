@@ -242,7 +242,7 @@ int main(int argc, char *argv [])
 
 #ifdef PARFLOW_HAVE_ETRACE
     {
-      char filename[2048];
+      char filename[PATH_MAX];
       sprintf(filename, "%s.%06d.etrace", input_name, amps_Rank(MPI_CommWorld));
       init_tracefile(filename);
     }
@@ -427,7 +427,7 @@ int main(int argc, char *argv [])
 
 
         {
-          char filename[2048];
+          char filename[PATH_MAX];
           sprintf(filename, "%s.timing.csv", GlobalsOutFileName);
 
           if ((file = fopen(filename, "a")) == NULL)
@@ -461,7 +461,7 @@ int main(int argc, char *argv [])
 
     if (!amps_Rank(amps_CommWorld))
     {
-      char filename[2048];
+      char filename[PATH_MAX];
       sprintf(filename, "%s.pftcl", GlobalsOutFileName);
 
       file = fopen(filename, "w");

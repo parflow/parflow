@@ -62,6 +62,7 @@ void  NewTiming()
   RegisterTiming("Clustering");
   RegisterTiming("Netcdf I/O");
   RegisterTiming("PDI I/O");
+  RegisterTiming("Torch Accelerator");
 #ifdef VECTOR_UPDATE_TIMING
   RegisterTiming("VectorUpdate");
 #endif
@@ -169,7 +170,7 @@ void  PrintTiming()
 
     CloseLogFile(file);
 
-    char filename[2048];
+    char filename[PATH_MAX];
     sprintf(filename, "%s.timing.csv", GlobalsOutFileName);
 
     if ((file = fopen(filename, "w")) == NULL)
@@ -191,7 +192,7 @@ void  PrintTiming()
 #ifdef VECTOR_UPDATE_TIMING
   {
     FILE *file;
-    char filename[255];
+    char filename[PATH_MAX];
     int i;
 
     sprintf(filename, "event.%05d.log", amps_Rank(amps_CommWorld));

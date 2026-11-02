@@ -268,7 +268,7 @@ void     MGSemi(
 #if 0
       /* for debugging purposes */
       {
-        char filename[255];
+        char filename[PATH_MAX];
 
         sprintf(filename, "b.%02d", l + 1);
         PrintVector(filename, b_l[l + 1]);
@@ -296,7 +296,7 @@ void     MGSemi(
 #if 0
       /* for debugging purposes */
       {
-        char filename[255];
+        char filename[PATH_MAX];
 
         sprintf(filename, "e.%02d", l);
         PrintVector(filename, temp_vec_l[l]);
@@ -745,14 +745,14 @@ void              SetupCoarseOps(
   /* for debugging purposes */
   for (l = 0; l < num_levels; l++)
   {
-    char filename[255];
+    char filename[PATH_MAX];
 
     sprintf(filename, "A.%02d", l);
     PrintSortMatrix(filename, A_l[l], FALSE);
   }
   for (l = 0; l < (num_levels - 1); l++)
   {
-    char filename[255];
+    char filename[PATH_MAX];
 
     sprintf(filename, "P.%02d", l);
     PrintSortMatrix(filename, P_l[l], FALSE);
