@@ -83,7 +83,10 @@ void      FreeBCStruct(BCStruct *bc_struct)
     {
       ForSubgridI(is, BCStructSubgrids(bc_struct))
       {
-        tfree(values[ipatch][is]);
+        if (values[ipatch][is] != NULL)
+        {
+          tfree(values[ipatch][is]);
+        }
       }
       tfree(values[ipatch]);
     }
