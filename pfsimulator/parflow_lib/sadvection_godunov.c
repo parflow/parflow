@@ -706,7 +706,7 @@ void     SatGodunov(
    *-----------------------------------------------------------------------*/
 
   field_sum = ComputeTotalConcen(ProblemDataGrDomain(problem_data),
-                                 grid, new_saturation);
+                                 grid, new_saturation, NULL);
 
   if (!amps_Rank(amps_CommWorld))
   {

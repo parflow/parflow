@@ -1,0 +1,113 @@
+TITLE
+Calcite dissolution for Amanzi calcite_1d benchmark - S. Molins Oct 1, 2013
+END
+
+RUNTIME
+time_units      years
+timestep_max    1.0
+timestep_init   1.E-10
+time_tolerance  0.01
+correction_max  1.0
+debye-huckel    true
+database        calcite.dbs
+master          H+
+speciate_only   false
+database_sweep  false
+screen_output   10
+graphics        tecplot
+gimrt           true
+hindmarsh       false
+duan            false
+END
+
+OUTPUT
+time_units               years
+spatial_profile          10 20 30 40 50
+END
+
+PRIMARY_SPECIES
+H+
+HCO3-
+Ca++
+!Tracer
+END
+
+SECONDARY_SPECIES 
+OH-
+CO3--
+CO2(aq)
+CaOH+
+CaHCO3+
+CaCO3(aq)
+END
+
+GASES
+CO2(g)
+END
+
+
+MINERALS
+Calcite    -label default    -rate  -9.0  ! log10(mol/m2/s)
+END
+
+Condition initial
+units     mol/kg
+temperature      25.0
+SolidDensity     2700.0 
+pH               8.0184               
+HCO3-            CO2(g)  0.00101325
+Ca++             Calcite
+!Tracer           0.000
+!Mineral        <volume fraction>  <bulk surface area> m^2 /m^3
+Calcite          1.0e-5             bulk_surface_area  100.0
+END
+
+Condition west
+units     mol/kg
+temperature      25.0
+pH               5.0
+HCO3-            0.001
+Ca++             charge
+!Tracer           0.001
+!Mineral        <volume fraction>  <bulk surface area> m^2 /m^3
+Calcite          0.0                bulk_surface_area  0.0
+END
+ 
+POROSITY
+fix_porosity     0.25
+porosity_update  false
+END
+ 
+TEMPERATURE
+set_temperature  25.0
+RunIsothermal   true
+END
+
+DISCRETIZATION
+distance_units  meters
+xzones 100      1.0
+END
+
+INITIAL_CONDITIONS
+initial     1-100
+END
+
+BOUNDARY_CONDITIONS
+X_begin   west     Flux
+X_end     initial  Flux
+END
+
+FLOW
+time_units      seconds
+distance_units  meters 
+constant_flow   7.9274479960d-9  ! m/s
+END
+
+TRANSPORT
+distance_units meters
+time_units     second
+fix_diffusion  1.E-09 ! m2/s
+formation_factor  1.0  
+cementation_exponent  1.0
+dispersivity  0.0 0.0
+END

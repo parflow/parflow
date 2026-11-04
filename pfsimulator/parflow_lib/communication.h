@@ -38,7 +38,7 @@
  *  Update mode stuff
  *--------------------------------------------------------------------------*/
 
-#define NumUpdateModes 10
+#define NumUpdateModes 12
 
 #define VectorUpdateAll      0
 #define VectorUpdateAll2     1
@@ -50,6 +50,10 @@
 #define VectorUpdatePGS2     7
 #define VectorUpdatePGS3     8
 #define VectorUpdatePGS4     9
+/* react_trans: 2-deep staggered-direction exchanges for x/y face
+ * velocities (transport ghost stencil). Appended, not renumbered. */
+#define VectorUpdateVelX     10
+#define VectorUpdateVelY     11
 
 /*--------------------------------------------------------------------------
  * CommPkg:

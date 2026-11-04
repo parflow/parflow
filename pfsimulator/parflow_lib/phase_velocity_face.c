@@ -606,14 +606,14 @@ void          PhaseVelocityFace(
    * exchange boundary data for x-velocity values
    *----------------------------------------------------------------------*/
 
-  handle = InitVectorUpdate(xvel, VectorUpdateAll);
+  handle = InitVectorUpdate(xvel, VectorUpdateVelX);
   FinalizeVectorUpdate(handle);
 
   /*----------------------------------------------------------------------
    * exchange boundary data for y-velocity values
    *----------------------------------------------------------------------*/
 
-  handle = InitVectorUpdate(yvel, VectorUpdateAll);
+  handle = InitVectorUpdate(yvel, VectorUpdateVelY);
   FinalizeVectorUpdate(handle);
 
   /*----------------------------------------------------------------------

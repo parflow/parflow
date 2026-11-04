@@ -195,3 +195,7 @@ if(${PARFLOW_HAVE_CLM})
     add_subdirectory(clm)
     add_subdirectory(washita)
 endif(${PARFLOW_HAVE_CLM})
+
+if(${PARFLOW_HAVE_ALQUIMIA})
+    add_subdirectory(chemistry)
+endif()

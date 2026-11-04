@@ -38,6 +38,9 @@ BaseRun:
     - FBz
     - KnownSolution
     - Metadata
+    - Chemistry
+    - GeochemCondition
+    - BCConcentration
 
   # -----------------------------------------------------------------------------
   # FileVersion

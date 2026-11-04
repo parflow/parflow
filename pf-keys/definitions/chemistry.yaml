@@ -1,0 +1,395 @@
+# -----------------------------------------------------------------------------
+# Alquimia reactive-transport chemistry keys (react_trans).
+#
+# These keys configure the geochemistry coupling enabled by
+# Solver.Chemistry = Alquimia (see solver.yaml). They are only consulted by a
+# ParFlow built with PARFLOW_ENABLE_ALQUIMIA=ON; with chemistry off they are
+# ignored. The engine input deck and thermodynamic database named here are
+# native CrunchFlow/PFLOTRAN files passed straight to the engine.
+# -----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+# Chemistry
+# -----------------------------------------------------------------------------
+
+Chemistry:
+  __doc__: ''
+
+  Engine:
+    help: >
+      [Type: string] The geochemistry engine that Alquimia drives. CrunchFlow and PFLOTRAN are the
+      supported open-source engines; the chosen engine must be compiled into the Alquimia library
+      ParFlow is linked against.
+    default: CrunchFlow
+    domains:
+      EnumDomain:
+        enum_list:
+          - CrunchFlow
+          - PFLOTRAN
+
+  InputFile:
+    help: >
+      [Type: string] Path to the native engine input deck (CrunchFlow .in or PFLOTRAN .in) describing
+      the geochemical system: primary and secondary species, minerals, and the named geochemical
+      conditions referenced by GeochemCondition.Names and BCConcentration.GeochemCondition.Names.
+    domains:
+      AnyString:
+
+  ParFlowTimeUnits:
+    help: >
+      [Type: string] The time unit in which ParFlow's timestep is expressed, used to convert the
+      transport sub-step to the seconds the geochemical engine expects. Many spellings of each unit
+      are accepted (e.g. y, yr, years for years).
+    default: seconds
+    domains:
+      EnumDomain:
+        enum_list:
+          - s
+          - sec
+          - S
+          - SECONDS
+          - Seconds
+          - seconds
+          - m
+          - min
+          - M
+          - MINUTES
+          - Minutes
+          - minutes
+          - h
+          - hr
+          - H
+          - HOURS
+          - Hours
+          - hours
+          - d
+          - D
+          - DAYS
+          - Days
+          - days
+          - y
+          - yr
+          - Y
+          - YEARS
+          - Years
+          - years
+
+  RestartFromFile:
+    help: >
+      [Type: boolean] When True, the geochemical state is initialized from a chemistry checkpoint
+      file (Chemistry.RestartFileName) rather than from the geochemical conditions.
+    default: False
+    domains:
+      BoolDomain:
+
+  RestartFileName:
+    help: >
+      [Type: string] Name of the chemistry checkpoint file to restart from when
+      Chemistry.RestartFromFile is True. Distribute it across the run topology with the pfdistchem
+      tool first.
+    domains:
+      AnyString:
+
+  RestartFileWriteInterval:
+    help: >
+      [Type: int] Write a chemistry checkpoint file every this many dump intervals. A value of -1
+      disables checkpoint writing.
+    default: -1
+    domains:
+      IntValue:
+
+  PrintAll:
+    help: >
+      [Type: boolean] Master switch turning on PFB output of all chemistry fields below.
+    default: False
+    domains:
+      BoolDomain:
+
+  WriteSiloAll:
+    help: >
+      [Type: boolean] Master switch turning on Silo output of all chemistry fields below.
+    default: False
+    domains:
+      BoolDomain:
+
+  PrintPrimaryMobile:
+    help: >
+      [Type: boolean] When True, write primary species total mobile concentrations as PFB output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  WriteSiloPrimaryMobile:
+    help: >
+      [Type: boolean] When True, write primary species total mobile concentrations as Silo output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  PrintPrimarySorbed:
+    help: >
+      [Type: boolean] When True, write primary species total sorbed concentrations as PFB output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  WriteSiloPrimarySorbed:
+    help: >
+      [Type: boolean] When True, write primary species total sorbed concentrations as Silo output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  PrintMineralVolfx:
+    help: >
+      [Type: boolean] When True, write mineral volume fractions as PFB output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  WriteSiloMineralVolfx:
+    help: >
+      [Type: boolean] When True, write mineral volume fractions as Silo output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  PrintMineralSurfArea:
+    help: >
+      [Type: boolean] When True, write mineral specific surface areas as PFB output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  WriteSiloMineralSurfArea:
+    help: >
+      [Type: boolean] When True, write mineral specific surface areas as Silo output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  PrintMineralSI:
+    help: >
+      [Type: boolean] When True, write mineral saturation indices as PFB output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  WriteSiloMineralSI:
+    help: >
+      [Type: boolean] When True, write mineral saturation indices as Silo output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  PrintMineralRate:
+    help: >
+      [Type: boolean] When True, write mineral reaction rates as PFB output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  WriteSiloMineralRate:
+    help: >
+      [Type: boolean] When True, write mineral reaction rates as Silo output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  PrintSurfSiteDens:
+    help: >
+      [Type: boolean] When True, write surface site densities as PFB output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  WriteSiloSurfSiteDens:
+    help: >
+      [Type: boolean] When True, write surface site densities as Silo output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  PrintCEC:
+    help: >
+      [Type: boolean] When True, write cation exchange capacities as PFB output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  WriteSiloCEC:
+    help: >
+      [Type: boolean] When True, write cation exchange capacities as Silo output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  PrintpH:
+    help: >
+      [Type: boolean] When True, write pH as PFB output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  WriteSilopH:
+    help: >
+      [Type: boolean] When True, write pH as Silo output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  PrintAqueousRate:
+    help: >
+      [Type: boolean] When True, write aqueous kinetic reaction rates as PFB output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  WriteSiloAqueousRate:
+    help: >
+      [Type: boolean] When True, write aqueous kinetic reaction rates as Silo output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  PrintPrimaryFreeIon:
+    help: >
+      [Type: boolean] When True, write primary species free-ion concentrations as PFB output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  WriteSiloPrimaryFreeIon:
+    help: >
+      [Type: boolean] When True, write primary species free-ion concentrations as Silo output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  PrintSecondaryFreeIon:
+    help: >
+      [Type: boolean] When True, write secondary species free-ion concentrations as PFB output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  WriteSiloSecondaryFreeIon:
+    help: >
+      [Type: boolean] When True, write secondary species free-ion concentrations as Silo output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  PrintPrimaryActivity:
+    help: >
+      [Type: boolean] When True, write primary species activity coefficients as PFB output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  WriteSiloPrimaryActivity:
+    help: >
+      [Type: boolean] When True, write primary species activity coefficients as Silo output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  PrintSecondaryActivity:
+    help: >
+      [Type: boolean] When True, write secondary species activity coefficients as PFB output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+  WriteSiloSecondaryActivity:
+    help: >
+      [Type: boolean] When True, write secondary species activity coefficients as Silo output at each dump interval.
+    default: False
+    domains:
+      BoolDomain:
+
+# -----------------------------------------------------------------------------
+# GeochemCondition
+#
+# Maps named geochemical conditions from the engine input deck onto geometries,
+# setting the initial chemical state of the domain.
+# -----------------------------------------------------------------------------
+
+GeochemCondition:
+  __doc__: ''
+
+  Type:
+    help: >
+      [Type: string] How geochemical conditions are assigned to geometries. Constant assigns one
+      named condition per geometry, constant in time.
+    default: Constant
+    domains:
+      EnumDomain:
+        enum_list:
+          - Constant
+
+  Names:
+    help: >
+      [Type: string] Space-separated list of geochemical condition names. Each must correspond to a
+      Condition block in the engine input deck.
+    domains:
+      AnyString:
+
+  GeomNames:
+    help: >
+      [Type: string] Space-separated list of geometry names whose cells are initialized from a
+      geochemical condition. Where geometries overlap, later names take precedence.
+    domains:
+      EnumDomain:
+        locations:
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
+    handlers:
+      GeochemCondGeomUpdater:
+        type: ChildrenHandler
+        class_name: GeochemCondGeomItem
+        location: ./Geom
+
+  Geom:
+    __class__: GeochemCondGeom
+    __doc__: ''
+
+    .{geom_name}:
+      __class__: GeochemCondGeomItem
+      __rst__:
+        skip:
+      __doc__: ''
+
+      Value:
+        help: >
+          [Type: string] The geochemical condition name (from GeochemCondition.Names) used to
+          initialize the cells of this geometry.
+        domains:
+          AnyString:
+
+# -----------------------------------------------------------------------------
+# BCConcentration
+#
+# Assigns named geochemical conditions as solute boundary conditions on patches.
+# -----------------------------------------------------------------------------
+
+BCConcentration:
+  __doc__: ''
+
+  PatchNames:
+    help: >
+      [Type: string] Space-separated list of boundary patches on which a geochemical condition is
+      imposed as the inflow concentration boundary.
+    domains:
+      AnyString:
+
+  GeochemCondition:
+    __class__: BCConcentrationGeochemCondition
+    __doc__: ''
+
+    Names:
+      help: >
+        [Type: string] Space-separated list of geochemical condition names usable as concentration
+        boundary conditions. Each must correspond to a Condition block in the engine input deck.
+      domains:
+        AnyString:

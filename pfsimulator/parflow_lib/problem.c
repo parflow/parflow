@@ -36,7 +36,31 @@
 
 #include "parflow.h"
 #include "problem.h"
+#include "pf_alquimia.h"
 
+
+/**
+ * @brief Read the Solver.Chemistry input key.
+ *
+ * Solver.Chemistry is a Name key selecting the geochemistry coupling:
+ * "None" (default) or "Alquimia". Returns the name-array index
+ * (0 = None, 1 = Alquimia). NewProblem() caches the result in
+ * Problem.chemistry (see ProblemChemistry()); input-database readers that
+ * run before a Problem exists call this helper directly so no global
+ * state is needed.
+ *
+ * @return 0 when chemistry is off, 1 for the Alquimia coupling.
+ */
+int ProblemChemistryFromInput(void)
+{
+  NameArray chem_na = NA_NewNameArray("None Alquimia");
+  char *chem_name = GetStringDefault("Solver.Chemistry", "None");
+  int chemistry =
+    NA_NameToIndexExitOnError(chem_na, chem_name, "Solver.Chemistry");
+
+  NA_FreeNameArray(chem_na);
+  return chemistry;
+}
 
 /*--------------------------------------------------------------------------
  * NewProblem
@@ -55,11 +79,19 @@ Problem   *NewProblem(
   char *phases;
   char *contaminants;
 
+#ifdef HAVE_ALQUIMIA
+  char *geochem_conds;
+#endif
+
   int i;
 
   char key[IDB_MAX_KEY_LEN];
 
   problem = ctalloc(Problem, 1);
+
+  /* Cache the chemistry selection first: several key reads below (e.g.
+   * Contaminants.*.Degradation.Value) are gated on it. */
+  ProblemChemistry(problem) = ProblemChemistryFromInput();
 
   /*-----------------------------------------------------------------------
    * Check the file version number
@@ -167,12 +199,19 @@ Problem   *NewProblem(
   (problem->contaminant_degradation) = ctalloc(double, num_contaminants);
 
 
-  for (i = 0; i < num_contaminants; i++)
+  /* In chemistry mode the geochemical engine owns reaction terms, so
+   * Contaminants.*.Degradation.Value is not read (and need not exist);
+   * the degradation array stays zeroed (react_trans, intent doc
+   * problem.c entry). */
+  if (!ProblemChemistry(problem))
   {
-    /* SGS need to add switch on type */
-    sprintf(key, "Contaminants.%s.Degradation.Value",
-            NA_IndexToName(GlobalsContaminatNames, i));
-    problem->contaminant_degradation[i] = GetDouble(key);
+    for (i = 0; i < num_contaminants; i++)
+    {
+      /* SGS need to add switch on type */
+      sprintf(key, "Contaminants.%s.Degradation.Value",
+              NA_IndexToName(GlobalsContaminatNames, i));
+      problem->contaminant_degradation[i] = GetDouble(key);
+    }
   }
 
 
@@ -257,6 +296,15 @@ Problem   *NewProblem(
   }
 
   /*-----------------------------------------------------------------------
+   * Alquimia reactive-transport (react_trans) coupling
+   *-----------------------------------------------------------------------*/
+#ifdef HAVE_ALQUIMIA
+  geochem_conds = GetStringDefault("GeochemCondition.Names", "");
+  ProblemGeochemCondNames(problem) = NA_NewNameArray(geochem_conds);
+  ProblemGeochemCond(problem) = PFModuleNewModule(GeochemCond, ());
+#endif
+
+  /*-----------------------------------------------------------------------
    * Boundary conditions
    *-----------------------------------------------------------------------*/
 
@@ -284,6 +332,10 @@ Problem   *NewProblem(
       PFModuleNewModuleType(BCPhaseSaturationNewPublicXtraInvoke,
                             BCPhaseSaturation, (num_phases));
   }
+
+#ifdef HAVE_ALQUIMIA
+  ProblemBCConcentration(problem) = PFModuleNewModule(BCConcentration, ());
+#endif
 
   /*-----------------------------------------------------------------------
    * Initial conditions
@@ -357,6 +409,9 @@ void      FreeProblem(
 
   NA_FreeNameArray(GlobalsPhaseNames);
   NA_FreeNameArray(GlobalsContaminatNames);
+#ifdef HAVE_ALQUIMIA
+  NA_FreeNameArray(ProblemGeochemCondNames(problem));
+#endif
 
   if (solver != RichardsSolve)
   {
@@ -378,6 +433,11 @@ void      FreeProblem(
   PFModuleFreeModule(ProblemBCPressurePackage(problem));
   PFModuleFreeModule(ProblemBCPressure(problem));
   PFModuleFreeModule(ProblemBCInternal(problem));
+
+#ifdef HAVE_ALQUIMIA
+  PFModuleFreeModule(ProblemGeochemCond(problem));
+  PFModuleFreeModule(ProblemBCConcentration(problem));
+#endif
 
   PFModuleFreeModule(ProblemPhaseSource(problem));
   PFModuleFreeModule(ProblemRetardation(problem));
@@ -435,6 +495,13 @@ ProblemData   *NewProblemData(
   ProblemDataChannelWidthX(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   ProblemDataChannelWidthY(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   ProblemDataMannings(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);  //sk
+
+#ifdef HAVE_ALQUIMIA
+  if (ProblemChemistryFromInput())
+  {
+    ProblemDataGeochemCond(problem_data) = NewVectorType(grid, 1, 1, vector_cell_centered);
+  }
+#endif
 
   /* @RMM added vectors for subsurface slopes for terrain-following grid */
   ProblemDataSSlopeX(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);   //RMM
@@ -508,6 +575,13 @@ void          FreeProblemData(
 
     FreeVector(ProblemDataRealSpaceZ(problem_data));
     FreeVector(ProblemDataIndexOfDomainTop(problem_data));
+
+#ifdef HAVE_ALQUIMIA
+    if (ProblemChemistryFromInput())
+    {
+      FreeVector(ProblemDataGeochemCond(problem_data));
+    }
+#endif
     FreeVector(ProblemDataPatchIndexOfDomainTop(problem_data));
     FreeVector(ProblemDataIndexOfDomainBottom(problem_data));
 
