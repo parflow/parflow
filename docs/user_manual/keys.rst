@@ -3278,7 +3278,7 @@ and these patches must “cover” that external boundary.
 specifies the type of boundary condition data given for patch
 *patch_name*. Possible values for this key are **DirEquilRefPatch,
 DirEquilPLinear, FluxConst, FluxVolumetric, PressureFile, FluxFile,
-OverlandFow, OverlandFlowPFB, SeepageFace, OverlandKinematic,
+OverlandFow, OverlandFlowPFB, SeepageFace, OverlandKinematic, OverlandKinematic_wc,
 OverlandDiffusive** and **ExactSolution**. The choice
 **DirEquilRefPatch** specifies that the pressure on the specified patch
 will be in hydrostatic equilibrium with a constant reference pressure
@@ -3311,7 +3311,7 @@ and **OverlandDiffusive** both turn on a kinematic and diffusive wave
 overland flow routing boundary that solve Maning's equation in
 :ref:`Overland Flow` and do the upwinding internally
 (i.e. assuming that the user provides cell face slopes, as opposed to
-the traditional cell centered slopes). The key **SeepageFace** simulates
+the traditional cell centered slopes). The **OverlandKinematic_wc** key adds rectangular channel flow based on user-defined channel width values to the **OverlandKinematic** formulation. The key **SeepageFace** simulates
 a boundary that allows flow to exit but keeps the surface pressure at
 zero. Consider a sign flip in top boundary condition values (i.e., outgoing
 fluxes are positive and incoming fluxes are negative). The choice
@@ -3364,7 +3364,7 @@ solid specified by the Patch.\ *patch_name*.BCPressure.RefGeom key.
       pfset Patch.top.BCPressure.RefPatch    "bottom"
 
 *bool* **Patch.\ *patch_name*.BCPressure.Seepage** False When set to
-True for an OverlandKinematic pressure boundary condition, this patch
+True for an OverlandKinematic or OverlandKinematic_wc pressure boundary condition, this patch
 will be treated as a seepage patch for the overland kinematic wave
 formulation.
 
@@ -4490,7 +4490,7 @@ minimum value for the :math:`\bar{S_{f}}` used in the
 
 *double* **Solver.OverlandKinematic.Epsilon** 1E-5 This key provides a
 minimum value for the :math:`\bar{S_{f}}` used in the
-**OverlandKinematic** boundary condition.
+**OverlandKinematic** and **OverlandKinematic_wc** boundary condition.
 
 ::
 
@@ -4593,7 +4593,7 @@ ParFlow binary file.
 printing of the x-direction overland flow data. The printing of the data is 
 controlled by values in the timing information section. The data is written 
 as a 2D ParFlow binary file with dimensions [NY, NX]. The values represent 
-the x-direction surface flow velocity (ke_) in m/hr. For OverlandKinematic 
+the x-direction surface flow velocity (ke_) in m/hr. For OverlandKinematic, OverlandKinematic_wc  
 and OverlandDiffusive, values are located at cell edges (x-faces). For 
 OverlandFlow, values are located at cell centers. To convert to volumetric 
 flux, multiply by dy and dt. This key produces files in the format 
@@ -4611,7 +4611,7 @@ flux, multiply by dy and dt. This key produces files in the format
 printing of the y-direction overland flow data. The printing of the data is 
 controlled by values in the timing information section. The data is written 
 as a 2D ParFlow binary file with dimensions [NY, NX]. The values represent 
-the y-direction surface flow velocity (kn_) in m/hr. For OverlandKinematic 
+the y-direction surface flow velocity (kn_) in m/hr. For OverlandKinematic, OverlandKinematic_wc  
 and OverlandDiffusive, values are located at cell edges (y-faces). For 
 OverlandFlow, values are located at cell centers. To convert to volumetric 
 flux, multiply by dx and dt. This key produces files in the format 
@@ -4774,7 +4774,7 @@ information section.
 specify printing of the x-direction overland flow data in silo binary format.
 The printing of the data is controlled by values in the timing information 
 section. The values represent x-direction surface flow velocity (ke_) in m/hr. 
-For OverlandKinematic and OverlandDiffusive, values are located at cell edges 
+For OverlandKinematic, OverlandKinematic_wc and OverlandDiffusive, values are located at cell edges 
 (x-faces). For OverlandFlow, values are located at cell centers.
 
 .. container:: list
@@ -4789,7 +4789,7 @@ For OverlandKinematic and OverlandDiffusive, values are located at cell edges
 specify printing of the y-direction overland flow data in silo binary format.
 The printing of the data is controlled by values in the timing information 
 section. The values represent y-direction surface flow velocity (kn_) in m/hr. 
-For OverlandKinematic and OverlandDiffusive, values are located at cell edges 
+For OverlandKinematic, OverlandKinematic_wc, and OverlandDiffusive, values are located at cell edges 
 (y-faces). For OverlandFlow, values are located at cell centers.
 
 .. container:: list
@@ -5006,7 +5006,7 @@ an (i,j) column does not intersect the domain.
 
 *string* **Solver.WritePDIQxOverland** False This key is used to specify exposure of
       x-direction overland flow data to PDI library. The values represent x-direction 
-      surface flow velocity (ke_) in m/hr. For OverlandKinematic and OverlandDiffusive, 
+      surface flow velocity (ke_) in m/hr. For OverlandKinematic, OverlandKinematic_wc, and OverlandDiffusive, 
       values are located at cell edges (x-faces). For OverlandFlow, values are located 
       at cell centers. The data exposure is controlled by values in the timing 
       information section and is subsequently managed by the PDI plugin according to 
@@ -5022,7 +5022,7 @@ an (i,j) column does not intersect the domain.
 
 *string* **Solver.WritePDIQyOverland** False This key is used to specify exposure of
       y-direction overland flow data to PDI library. The values represent y-direction 
-      surface flow velocity (kn_) in m/hr. For OverlandKinematic and OverlandDiffusive, 
+      surface flow velocity (kn_) in m/hr. For OverlandKinematic, OverlandKinematic, and OverlandDiffusive, 
       values are located at cell edges (y-faces). For OverlandFlow, values are located 
       at cell centers. The data exposure is controlled by values in the timing 
       information section and is subsequently managed by the PDI plugin according to 
@@ -5187,7 +5187,7 @@ should not be used in standard simulations. Also note that the choice of
 **upwind** or **Original** formulation should consistent with the
 choice of overland flow boundary condition if overland flow is being
 used. The **upwind** and **UpwindSine** are consistent with
-**OverlandDiffusive** and **OverlandKinematic** while **Original** is
+**OverlandDiffusive**, **OverlandKinematic**, and **OverlandKinematic_wc** while **Original** is
 consistent with **OverlandFow**
 
 ::
@@ -7015,7 +7015,7 @@ coefficients to be written in NetCDF4 file.
 *string* **NetCDF.WriteQxOverland** False This key sets x-direction 
 overland flow (qx_overland) to be written in NetCDF4 file. The values 
 represent x-direction surface flow velocity (ke_) in m/hr. For 
-OverlandKinematic and OverlandDiffusive, values are located at cell 
+OverlandKinematic, OverlandKinematic_wc, and OverlandDiffusive, values are located at cell 
 edges (x-faces). For OverlandFlow, values are located at cell centers.
 
 .. container:: list
@@ -7028,7 +7028,7 @@ edges (x-faces). For OverlandFlow, values are located at cell centers.
 *string* **NetCDF.WriteQyOverland** False This key sets y-direction 
 overland flow (qy_overland) to be written in NetCDF4 file. The values 
 represent y-direction surface flow velocity (kn_) in m/hr. For 
-OverlandKinematic and OverlandDiffusive, values are located at cell 
+OverlandKinematic, OverlandKinematic_wc, and OverlandDiffusive, values are located at cell 
 edges (y-faces). For OverlandFlow, values are located at cell centers.
 
 .. container:: list

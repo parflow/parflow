@@ -1126,6 +1126,36 @@ BCStruct    *BCPressure(
 
           break;
         } /* End OverlandDiffusive */
+
+        case OverlandKinematic_wc:
+        {
+          GetBCPressureTypeStruct(OverlandKinematic_wc, interval_data, bc_pressure_data,
+                                  ipatch, interval_number);
+          double flux;
+
+          flux = OverlandKinematic_wcValue(interval_data);
+          ForSubgridI(is, subgrids)
+          {
+            subgrid = SubgridArraySubgrid(subgrids, is);
+
+            patch_values_size = 0;
+            ForEachPatchCell(i, j, k, ival, bc_struct, ipatch, is,
+            {
+              patch_values_size++;
+            });
+
+            patch_values = talloc(double, patch_values_size);
+            memset(patch_values, 0, patch_values_size * sizeof(double));
+            values[ipatch][is] = patch_values;
+
+            ForEachPatchCell(i, j, k, ival, bc_struct, ipatch, is,
+            {
+              patch_values[ival] = flux;
+            });
+          }
+
+          break;
+        } /* End OverlandKinematic_wc */
       }
     }
   }

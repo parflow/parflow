@@ -159,7 +159,7 @@ use the slope of a grid cell directly (i.e. assuming face centered slope
 calculations) and removing the sine term from
 :eq:`darcyTFG`. The **Upwind** and **UpwindSine**
 options for this key will provide consistent results with
-**OverlandKinematic** and **OverlandDiffusive** boundary conditions
+**OverlandKinematic**, **OverlandKinematic_wc**, and **OverlandDiffusive** boundary conditions
 while the **Original** option is consistent with the standard
 **OverlandFlow** boundary condition.
 
@@ -311,10 +311,13 @@ The depth-discharge relationship can also be written as
    \end{aligned}
 
 where :math:`\overline{S_{f}}` is the magnitude of the friction slope.
-This formulation for overland flow is used in the **OverlandKinematic**
+This formulation for overland flow is used in the **OverlandKinematic**, **OverlandKinematic_wc**, 
 and **OverlandDiffusive** boundary conditions. In **OverlandKinematic**
 case the friction slope equals the bed slope following Equation
-:eq:`ovmom`. For the **OverlandDiffusive** case the
+:eq:`ovmom`. The **OverlandKinematic_wc** case is the same as **OverlandKinematic** except it 
+models rectangular channel flow using the same kinematic wave approximation based on user-defined 
+channel widths in the x- and y- directions.
+For the **OverlandDiffusive** case the
 friction slope also includes the pressure gradient. The solution for
 both of these options is formulated to do the upwinding internally and
 assumes that the user provides face centered bedslopes
