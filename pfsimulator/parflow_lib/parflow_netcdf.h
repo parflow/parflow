@@ -48,6 +48,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
 void CreateNCFile(char *file_name, int *netCDFIDs);
 void NCDefDimensions(Vector *v, int dimensionality, int *netCDFIDs);
 void CloseNC(int ncID);
+void NCFinalize(void);
 int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs);
 void PutDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData, int dimensionality, int *netCDFIDs);
 void find_variable_length(int nid, int varid, unsigned long dim_lengths[MAX_NC_VARS]);
@@ -67,4 +68,5 @@ void CreateCLMNCFile(char *file_name, int *clmIDs);
 void NCCLMDefDimensions(Vector *v, int dimensionality, int *clmIDs);
 void PutCLMDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData, int dimensionality, int *clmIDs);
 void CloseCLMNC(int ncCLMID);
+void CLMNCFinalize(void);
 int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs);

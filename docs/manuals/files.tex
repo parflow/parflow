@@ -4454,6 +4454,12 @@ Naming convention of output files is analogues to binary file names. Following o
 pfset NetCDF.NumStepsPerFile    5
 \end{verbatim}\end{display}
 
+\pfkey{integer}{NetCDF.SyncInterval}{0}
+{This key sets how many output time steps are written between flushes of an open NetCDF4 file to disk, for both the ParFlow and the CLM files. A file is always flushed when it closes, so the default of 0 flushes only at file boundaries and a crash loses at most NetCDF.NumStepsPerFile (or NetCDF.CLMNumStepsPerFile) steps of output. A value of 1 flushes after every output step. Each flush is a collective file sync, so on large runs set this to the restart cadence (24 for hourly output with Solver.CLM.DailyRST) rather than 1.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.SyncInterval    24
+\end{verbatim}\end{display}
+
 \pfkey{string}{NetCDF.WritePressure}{False}
 {This key sets pressure variable to be written in NetCDF4 file.}
 \begin{display}\begin{verbatim}
