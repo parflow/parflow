@@ -12,7 +12,7 @@ concurrency:
 jobs:
   build-and-package:
     name: macOS arm64 release
-    runs-on: macos-14
+    runs-on: macos-15
 
     steps:
     # ── Checkout ──────────────────────────────────────────────────────
@@ -38,7 +38,7 @@ jobs:
       id: cache-deps
       with:
         path: "~/depend"
-        key: release-macos-14-${{ hashFiles('**/.github/workflows/release-macos.yml') }}
+        key: release-macos-15-${{ hashFiles('**/.github/workflows/release-macos.yml') }}
 
     # ── Directory setup ──────────────────────────────────────────────
     - name: Directory Setup
