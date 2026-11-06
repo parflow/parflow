@@ -3,6 +3,9 @@
 Helper functions to calculate standard hydrology measures
 """
 
+from typing import Optional
+from numbers import Number
+
 import numpy as np
 import parflow.tools.io
 
@@ -66,12 +69,21 @@ def compute_water_table_depth(saturation, top, dz):
                 print(f"Error: Index in top (k={top_k}) is outside of domain (nz={nz})")
 
 
-def calculate_water_table_depth(pressure, saturation, dz):
+def calculate_water_table_depth(
+    pressure: np.ndarray,
+    saturation: np.ndarray,
+    dz: np.ndarray,
+    ssat: Optional[Number | np.ndarray] = None,
+    epsilon: float = 0.001,
+) -> np.ndarray:
     """
     Calculate water table depth from the land surface
     :param pressure: A nz-by-ny-by-nx ndarray of pressure values (bottom layer to top layer)
     :param saturation: A nz-by-ny-by-nx ndarray of saturation values (bottom layer to top layer)
     :param dz: An ndarray of shape (nz,) of thickness values (bottom layer to top layer)
+    :param ssat: The layer is saturated if its saturation is superior or equal to this value,
+    default is nanmax(saturation) - 0.001, it could be a number or an array.
+    :param epsilon: A layer is unsaturated if: saturation < ssat - epsilon.
     :return: A ny-by-nx ndarray of water table depth values (measured from the top)
     """
     # Handle single-column pressure/saturation values
@@ -79,6 +91,26 @@ def calculate_water_table_depth(pressure, saturation, dz):
         pressure = pressure[:, np.newaxis, np.newaxis]
     if saturation.ndim == 1:
         saturation = saturation[:, np.newaxis, np.newaxis]
+
+    if isinstance(ssat, np.ndarray):
+        if ssat.ndim == 1:
+            ssat = ssat[:, np.newaxis, np.newaxis]
+        ssat = np.pad(
+            ssat,
+            pad_width=((0, 1), (0, 0), (0, 0)),
+            mode="constant",
+            constant_values=1,
+        )
+    elif isinstance(ssat, Number):
+        pass
+    else:
+        if ssat is not None:
+            print(
+                f"Invalid ssat argument ({ssat} {type(ssat)}): must be None, an np.array, or a Number. "
+                f"Switching to automatic retrieval of the value from the saturation file."
+            )
+        ssat = np.nanmax(saturation)
+        print(f"Automatic ssat value retrieved from saturation: {ssat}")
 
     domain_thickness = np.sum(dz)
 
@@ -109,10 +141,11 @@ def calculate_water_table_depth(pressure, saturation, dz):
     we will not encounter this case.
     """
     z_indices = np.maximum(
-        np.argmax(saturation < 1, axis=0)
+        np.argmax(saturation < (ssat - epsilon), axis=0)
         - 1,  # find first unsaturated layer; back up one cell
         0,  # clamp min. index value to 0
     )
+
     # Make 3D with shape (1, ny, nx) to allow subsequent operations
     z_indices = z_indices[np.newaxis, ...]
 

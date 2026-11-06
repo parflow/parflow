@@ -25,6 +25,7 @@ import itertools
 import json
 from pathlib import Path
 import shutil
+from .util import read_start_stop_n
 
 try:
     from numba import jit, njit
@@ -43,7 +44,7 @@ from numbers import Number
 import pandas as pd
 import numpy as np
 import struct
-from typing import Mapping, List, Union, Iterable
+from typing import Mapping, Union, Iterable
 import yaml
 
 from .hydrology import (
@@ -62,7 +63,7 @@ try:
 except ImportError:
     from yaml import Dumper as YAMLDumper
 
-from parflow.tools.fs import cp, rm, mkdir, exists
+from parflow.tools.fs import rm
 
 
 def read_pfsb(file_path):
@@ -130,15 +131,9 @@ def read_pfb(
             data = pfb.read_all_subgrids(mode=mode, z_first=z_first)
         else:
             base_header = pfb.header
-            start_x = keys.get("x", {}).get("start", None) or 0
-            start_y = keys.get("y", {}).get("start", None) or 0
-            start_z = keys.get("z", {}).get("start", None) or 0
-            stop_x = keys.get("x", {}).get("stop", None) or base_header["nx"]
-            stop_y = keys.get("y", {}).get("stop", None) or base_header["ny"]
-            stop_z = keys.get("z", {}).get("stop", None) or base_header["nz"]
-            nx = np.max([stop_x - start_x, 1])
-            ny = np.max([stop_y - start_y, 1])
-            nz = np.max([stop_z - start_z, 1])
+            start_x, stop_x, nx = read_start_stop_n(keys, "x", 0, base_header["nx"])
+            start_y, stop_y, ny = read_start_stop_n(keys, "y", 0, base_header["ny"])
+            start_z, stop_z, nz = read_start_stop_n(keys, "z", 0, base_header["nz"])
             data = pfb.read_subarray(
                 start_x, start_y, start_z, nx, ny, nz, z_first=z_first
             )
@@ -357,7 +352,6 @@ def read_pfb_sequence(
         ny = np.max([stop_y - start_y, 1])
         nz = np.max([stop_z - start_z, 1])
 
-    n_seq = len(file_seq)
     if z_first:
         seq_size = (len(file_seq), nz, ny, nx)
     else:
@@ -408,7 +402,7 @@ def undist(undis_name: str):
         return
 
     if os.path.isfile(f"{undis_name}..00000"):
-        files = glob.glob(f"{undis_name}.\[0-9\]*").sort()
+        files = sorted(glob.glob(f"{undis_name}.\[0-9\]*"))
 
         rm(f"{undis_name}")
 
@@ -559,7 +553,10 @@ class ParflowBinaryReader:
             self.header["q"] = q
             self.header["r"] = r
 
-        self.read_subgrid_info()
+        # Currently, compute_subgrid_info is not working correctly, so we always use read_subgrid_info.
+        # https://github.com/parflow/parflow/commit/e30312124d98467248464c99001129affd23ec31
+        if precompute_subgrid_info or read_sg_info:
+            self.read_subgrid_info()
 
     def close(self):
         self.f.close()
@@ -851,9 +848,10 @@ class ParflowBinaryReader:
         y_min = np.min(y_sg_coords)
         z_min = np.min(z_sg_coords)
         # Make an array which can fit all of the subgrids
-        full_size = (len(x_sg_coords), len(y_sg_coords), len(z_sg_coords))
+        full_size = (len(z_sg_coords), len(y_sg_coords), len(x_sg_coords))
         bounding_data = np.empty(full_size, dtype=np.float64)
         subgrid_iter = itertools.product(p_subgrids, q_subgrids, r_subgrids)
+
         for xsg, ysg, zsg in subgrid_iter:
             subgrid_idx = xsg + (p * ysg) + (p * q * zsg)
             # Set up the indices to insert subgrid data into the bounding data
@@ -861,16 +859,17 @@ class ParflowBinaryReader:
             x0, y0, z0 = x0 - x_min, y0 - y_min, z0 - z_min
             dx, dy, dz = self.subgrid_shapes[subgrid_idx]
             x1, y1, z1 = x0 + dx, y0 + dy, z0 + dz
-            bounding_data[x0:x1, y0:y1, z0:z1] = self.iloc_subgrid(subgrid_idx)
+            bounding_data[z0:z1, y0:y1, x0:x1] = self.iloc_subgrid(subgrid_idx).T
 
         # Now clip out the exact part from the bounding box
         clip_x = _get_final_clip(start_x, end_x, x_sg_coords)
         clip_y = _get_final_clip(start_y, end_y, y_sg_coords)
         clip_z = _get_final_clip(start_z, end_z, z_sg_coords)
         if z_first:
-            ret_data = bounding_data[clip_x, clip_y, clip_z].T
+            ret_data = bounding_data[clip_z, clip_y, clip_x]
         else:
-            ret_data = bounding_data[clip_x, clip_y, clip_z]
+            ret_data = bounding_data[clip_z, clip_y, clip_x].T
+
         return ret_data
 
     def loc_subgrid(self, sg_p: int, sg_q: int, sg_r: int) -> np.ndarray:
@@ -1265,9 +1264,6 @@ def load_patch_matrix_from_asc_file(file_name):
 
 
 def load_patch_matrix_from_sa_file(file_name):
-    i_size = -1
-    j_size = -1
-    k_size = -1
     with open(file_name) as f:
         i_size, j_size, k_size = map(int, f.readline().split())
 
@@ -1414,7 +1410,6 @@ def read_pfidb(file_path):
     action = "nb_lines"  # nb_lines, size, string
     size = 0
     key = ""
-    value = ""
     string_type_count = 0
     full_path = get_absolute_path(file_path)
 
