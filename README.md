@@ -59,8 +59,11 @@ the Parflow developers and users.  In order to post you will have to
 join the group, old posts are visible without joining:
 - [Parflow-Users](https://groups.google.com/g/parflow)
 
-The most recent build/installation guides are now located on the Parflow Wiki:
+The most recent build/installation guides are now located on the Parflow Wiki. There, you can find installation guides for the MacOS and Linux platforms, using ParFlow through Docker and GitHub codespaces, as well as installing ParFlow pre-built binaries.
 - [Parflow Installation guides](https://github.com/parflow/parflow/wiki/ParFlow-Installation-Guides)
+
+The ParFlow repo provides a collection of recipes for buildint ParFlow in different HPC systems. Each system has its own quirks, but these recipes can be a useful guide for a range of systems.
+- [HPC Recipes](https://github.com/parflow/parflow/tree/master/cmake/recipes)
 
 A Parflow blog is available with notes from users on how to use Parflow:
 - [Parflow Blog](http://parflow.blogspot.com/)
@@ -432,6 +435,10 @@ build the simulator and tools components separately. By specifying
 different compilers and options for each, one can target different
 architectures for each component.
 
+# Using pre-built binaries
+
+We are now providing pre-built binaries for the MacOS and Linux platforms. By using these binaries, ParFlow users can bypass the build process. Instructions for downloading them and setting up the appropriate environment variables can be found in the corresponding guide in the [ParFlow Wiki](https://github.com/parflow/parflow/wiki/ParFlow-Installation-Guides).
+
 # Using Docker
 
 ParFlow includes a Docker file for configuring a Docker image for
@@ -445,9 +452,7 @@ latest image is automatically downloaded by Docker when run.
 
 ## Running ParFlow with Docker
 
-The https://github.com/parflow/docker repository contains an example
-setup for running ParFlow in a Docker instance.  See the README.md
-file in this repository for more information.
+The [ParFlow short course](https://github.com/hydroframe/parflow_short_course_updated)repository contains an example setup for running ParFlow in a Docker instance. See the README.md file in this repository for more information.
 
 ## Building the Docker image
 
