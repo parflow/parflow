@@ -1,5 +1,8 @@
 # Created by https://www.gitignore.io
 
+cmake-*
+parflow_install
+
 ### Fortran ###
 # Compiled Object files
 *.slo

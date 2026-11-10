@@ -31,6 +31,10 @@
 #include <string.h>
 #include <assert.h>
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+#include "pystencils_van_genuchten.h"
+#endif
+
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
@@ -1132,6 +1136,11 @@ void         PhaseRelPerm(
               {
                 /* Compute VanG curve */
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+                PyCodegen_VanGRelPerm_wrapper(gr_solid, r, ix, iy, iz, nx, ny, nz,
+                                              pr_sub, pd_sub, pp_sub,
+                                              gravity, alphas[ir], ns[ir]);
+#else
                 GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                 {
                   int ipr = SubvectorEltIndex(pr_sub, i, j, k);
@@ -1153,6 +1162,7 @@ void         PhaseRelPerm(
                                  / pow(opahn, (m / 2));
                   }
                 });
+#endif
               }
             }    /* End if clause */
             else /* fcn = CALCDER */
@@ -1229,6 +1239,11 @@ void         PhaseRelPerm(
               {
                 /* Compute VanG curve */
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+                PyCodegen_VanGRelPermDer_wrapper(gr_solid, r, ix, iy, iz, nx, ny, nz,
+                                                 pr_sub, pd_sub, pp_sub,
+                                                 gravity, alphas[ir], ns[ir]);
+#else
                 GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                 {
                   int ipr = SubvectorEltIndex(pr_sub, i, j, k);
@@ -1256,6 +1271,7 @@ void         PhaseRelPerm(
                                  * n * alpha * ahnm1;
                   }
                 });
+#endif
               }
             }   /* End else clause */
           }     /* End subgrid loop */

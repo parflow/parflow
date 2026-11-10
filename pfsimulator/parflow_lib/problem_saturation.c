@@ -31,6 +31,10 @@
 #include <string.h>
 #include <float.h>
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+#include "pystencils_van_genuchten.h"
+#endif
+
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
@@ -163,6 +167,8 @@ void     Saturation(
 #undef max
   InitVectorAll(phase_saturation, -FLT_MAX);
 
+  BeginTiming(SaturationTimingIndex);
+
   switch ((public_xtra->type))
   {
     case 0: /* Constant saturation */
@@ -264,6 +270,11 @@ void     Saturation(
 
             if (fcn == CALCFCN)
             {
+#ifdef PARFLOW_HAVE_PYSTENCILS
+              PyCodegen_VanGSaturation_wrapper(gr_solid, r, ix, iy, iz, nx, ny, nz,
+                                               pd_sub, pp_sub, ps_sub,
+                                               gravity, s_difs[ir], s_ress[ir], alphas[ir], ns[ir]);
+#else
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
               {
                 int ips = SubvectorEltIndex(ps_sub, i, j, k);
@@ -285,9 +296,15 @@ void     Saturation(
                                + s_res;
                 }
               });
+#endif
             }    /* End if clause */
             else /* fcn = CALCDER */
             {
+#ifdef PARFLOW_HAVE_PYSTENCILS
+              PyCodegen_VanGSaturationDer_wrapper(gr_solid, r, ix, iy, iz, nx, ny, nz,
+                                                  pd_sub, pp_sub, ps_sub,
+                                                  gravity, s_difs[ir], alphas[ir], ns[ir]);
+#else
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
               {
                 int ips = SubvectorEltIndex(ps_sub, i, j, k);
@@ -308,6 +325,7 @@ void     Saturation(
                                / (pow(1.0 + pow(alpha * head, n), m + 1));
                 }
               });
+#endif
             }   /* End else clause */
           }     /* End subgrid loop */
         }       /* End loop over regions */
@@ -652,6 +670,8 @@ void     Saturation(
       break;
     }        /* End case 5 */
   }          /* End switch */
+
+  EndTiming(SaturationTimingIndex);
 }
 
 /*--------------------------------------------------------------------------
