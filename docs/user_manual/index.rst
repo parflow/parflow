@@ -23,6 +23,7 @@ Welcome to the ParFlow User's Manual
    :numbered:
 
    intro
+   installation/index
    start
    pfsystem
    models
