@@ -58,10 +58,12 @@ with SourceFileGenerator() as sfg:
 
     # kernels
 
-    # terms of the accumulation and source kernels, shared by the fused and the unfused kernels
+    # terms of Richards' equation (docs/user_manual/models.rst), integrated over the cell volume and time step,
+    # shared by the fused and the unfused kernels
 
+    # accumulation, d(S rho phi)/dt:
     # (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol * del_x_slope * del_y_slope * z_mult_dat[ip]
-    base = (
+    accumulation = (
         (sp.center() * dp.center() - osp.center() * odp.center())
         * pop.center()
         * vol
@@ -70,8 +72,9 @@ with SourceFileGenerator() as sfg:
         * z_mult_dat.center()
     )
 
+    # compressible storage, S S_s dp/dt:
     # ss[ip] * vol * del_x_slope * del_y_slope * z_mult_dat[ip] * (pp[ip] * sp[ip] * dp[ip] - opp[ip] * osp[ip] * odp[ip])
-    storage = (
+    compressible_storage = (
         ss.center()
         * vol
         * del_x_slope
@@ -80,46 +83,44 @@ with SourceFileGenerator() as sfg:
         * (pp.center() * sp.center() * dp.center() - opp.center() * osp.center() * odp.center())
     )
 
+    # source terms, Q (phase sources and evapotranspiration):
     # vol * del_x_slope * del_y_slope * z_mult_dat[ip] * dt * (phase_source[ip] + et[ip])
-    def source(phase_source):
+    def source_terms(phase_source):
         return vol * del_x_slope * del_y_slope * z_mult_dat.center() * dt * (phase_source.center() + et.center())
 
-    # flux: base
-    # fp[ip] = base
+    # fp[ip] = accumulation
 
     create_kernel_func_and_wrapper(
         sfg,
-        ps.Assignment(fp.center(), base),
-        "Flux_Base",
+        ps.Assignment(fp.center(), accumulation),
+        "NlFunctionEval_Accumulation",
         timing_index=True,
     )
 
-    # flux: add compressible storage
-    # fp[ip] += storage
+    # fp[ip] += compressible storage
 
     create_kernel_func_and_wrapper(
         sfg,
-        ps.Assignment(fp.center(), fp.center() + storage),
-        "Flux_AddCompressibleStorage",
+        ps.Assignment(fp.center(), fp.center() + compressible_storage),
+        "NlFunctionEval_AddCompressibleStorage",
         timing_index=True,
     )
 
-    # flux: fused base + compressible storage + source terms
+    # fused: fp[ip] = accumulation + compressible storage - source terms
     # src is the phase source vector, sp the saturation (both are sp in the unfused kernels)
 
     create_kernel_func_and_wrapper(
         sfg,
-        ps.Assignment(fp.center(), base + storage - source(src)),
-        "Flux_FusedAccumulationAndSourceTerms",
+        ps.Assignment(fp.center(), accumulation + compressible_storage - source_terms(src)),
+        "NlFunctionEval_FusedAccumulationAndSourceTerms",
         timing_index=True,
     )
 
-    # flux: add source terms (sp is the phase source here)
-    # fp[ip] -= source
+    # fp[ip] -= source terms (sp is the phase source here)
 
     create_kernel_func_and_wrapper(
         sfg,
-        ps.Assignment(fp.center(), fp.center() - source(sp)),
-        "Flux_AddSourceTerms",
+        ps.Assignment(fp.center(), fp.center() - source_terms(sp)),
+        "NlFunctionEval_AddSourceTerms",
         timing_index=True,
     )
