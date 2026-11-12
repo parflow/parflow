@@ -14,4 +14,3 @@ installation method.
    macos
    prebuilt_binaries
    docker_python
-   github_codespace

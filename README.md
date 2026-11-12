@@ -59,7 +59,7 @@ the Parflow developers and users.  In order to post you will have to
 join the group, old posts are visible without joining:
 - [Parflow-Users](https://groups.google.com/g/parflow)
 
-The most recent build/installation guides are now located on the Parflow User Manual. There, you can find installation guides for the MacOS and Linux platforms, using ParFlow through Docker and GitHub codespaces, as well as installing ParFlow pre-built binaries.
+The most recent build/installation guides are now located on the Parflow User Manual. There, you can find installation guides for the MacOS and Linux platforms, using ParFlow through Docker, as well as installing ParFlow pre-built binaries.
 - [Parflow Installation guides](https://parflow.readthedocs.io/en/latest/installation/index.html)
 
 The ParFlow repo provides a collection of recipes for buildint ParFlow in different HPC systems. Each system has its own quirks, but these recipes can be a useful guide for a range of systems.
