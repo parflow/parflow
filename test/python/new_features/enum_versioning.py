@@ -7,7 +7,8 @@ import sys
 from parflow import Run
 from parflow.tools.settings import set_parflow_version
 
-overland_FlatICP = Run("overland_FlatICP", __file__)
+run_name = "overland_FlatICP"
+overland_FlatICP = Run(run_name, __file__)
 
 # ---------------------------------------------------------
 # Computational Grid
@@ -351,15 +352,18 @@ print("=" * 80)
 # Asserts
 # -----------------------------------------------------------------------------
 
-found_error = False
+passed = True
 
 if nb_error_v1 != 1:
     print(f"Expected to have 1 error with v1 but got {nb_error_v1}")
-    found_error = True
+    passed = False
 
 if nb_error_v3 != 0:
     print(f"Expected no errors with v3.6.0 but got {nb_error_v3}")
-    found_error = True
+    passed = False
 
-if found_error:
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
     sys.exit(1)

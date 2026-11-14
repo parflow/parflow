@@ -205,7 +205,7 @@ extern "C++"{
                           i1 = INC_IDX(i1_start, (i - ix), (j - iy), (k - iz), \
                                        nx, ny, sx1, PV_jinc_1, PV_kinc_1); \
                           auto rhs = lambda_body(i, j, k, i1);          \
-                          pfmax_atomic(sum, rhs.lambda_result);         \
+                          pfmin_atomic(sum, rhs.lambda_result);         \
                         }                                               \
                     }                                                   \
                 }                                                       \
@@ -303,7 +303,7 @@ extern "C++"{
                           i2 = INC_IDX(i2_start, (i - ix), (j - iy), (k - iz), \
                                        nx, ny, sx2, PV_jinc_2, PV_kinc_2); \
                           auto rhs = lambda_body(i, j, k, i1, i2);      \
-                          pfmax_atomic(sum, rhs.lambda_result);         \
+                          pfmin_atomic(sum, rhs.lambda_result);         \
                         }                                               \
                     }                                                   \
                 }                                                       \

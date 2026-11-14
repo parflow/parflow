@@ -5,7 +5,8 @@
 from parflow import Run
 from parflow.tools.fs import get_absolute_path
 
-run = Run("run", __file__)
+run_name = "run"
+run = Run(run_name, __file__)
 
 run.pfset(pfidb_file=get_absolute_path("$PF_SRC/test/correct_output/dsingle.pfidb.ref"))
 
@@ -110,3 +111,5 @@ assert (
 )
 assert background.Upper.doc("../..") == run.Geom.__doc__ + "\n"
 assert background.doc(".Lower.X") == background.Lower._details_["X"]["help"] + "\n"
+
+print("PASSED")

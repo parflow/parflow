@@ -6,7 +6,8 @@ import sys
 from parflow import Run
 from parflow.tools.fs import get_absolute_path
 
-pfset_test = Run("pfset_test", __file__)
+run_name = "pfset_test"
+pfset_test = Run(run_name, __file__)
 
 # -----------------------------------------------------------------------------
 # Domain
@@ -144,12 +145,20 @@ pfset_test.Phase.pfset(
 pfset_test.validate()
 generatedFile, runFile = pfset_test.write(file_format="yaml")
 
+passed = True
+
 # Prevent regression
 with open(generatedFile) as new, open(
     get_absolute_path("$PF_SRC/test/correct_output/pfset_test.yaml.ref")
 ) as ref:
     if new.read() == ref.read():
-        print("Success we have the same file")
+        print("Files are the same")
     else:
         print("Files are different")
-        sys.exit(1)
+        passed = False
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)

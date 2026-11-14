@@ -644,9 +644,9 @@ extern amps_Buffer *amps_BufferFreeList;
  * @param comm Communication context [IN]
  * @param dest Destination rank [IN]
  * @param invoice Data to send [IN]
- * @return Error code
+ * @return amps_Handle
  */
-#define amps_ISend(comm, dest, invoice) 0, amps_Send((comm), (dest), (invoice))
+#define amps_ISend(comm, dest, invoice) (amps_Send((comm), (dest), (invoice)), NULL)
 
 #define amps_new(comm, size) malloc((size_t)(size))
 #define amps_free(comm, buf) free((char*)buf)
@@ -1021,7 +1021,7 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
  * @param count Number of items of type to allocate
  * @return Pointer to the allocated dataspace
  */
-#define amps_TAlloc(type, count) ((count > 0) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
+#define amps_TAlloc(type, count) ((count > 0) ? (type*)malloc((size_t)(sizeof(type) * (count))) : NULL)
 
 /*===========================================================================*/
 /**
@@ -1045,7 +1045,7 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
  */
 
 #define amps_CTAlloc(type, count) \
-        ((count) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
+        ((count) ? (type*)calloc((size_t)(count), (size_t)sizeof(type)) : NULL)
 
 /**
  *
@@ -1226,12 +1226,12 @@ static inline void _amps_tfree_device(void *ptr)
 /**
  * Same as \ref amps_TAlloc but allocates managed memory
  */
-#define amps_TAlloc_managed(type, count) ((count > 0) ? (type*)_amps_talloc_device((unsigned int)(sizeof(type) * (count))) : NULL)
+#define amps_TAlloc_managed(type, count) ((count > 0) ? (type*)_amps_talloc_device((size_t)(sizeof(type) * (count))) : NULL)
 
 /**
  * Same as \ref amps_CTAlloc but allocates managed memory
  */
-#define amps_CTAlloc_managed(type, count) ((count) ? (type*)_amps_ctalloc_device((unsigned int)(sizeof(type) * (count))) : NULL)
+#define amps_CTAlloc_managed(type, count) ((count) ? (type*)_amps_ctalloc_device((size_t)(sizeof(type) * (count))) : NULL)
 
 /**
  * Same as \ref amps_TFree but deallocates managed memory
