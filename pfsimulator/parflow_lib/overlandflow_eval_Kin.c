@@ -162,9 +162,9 @@ void    OverlandFlowEvalKin(
         PP_ipp1 = 0.0;
         PP_ippsy = 0.0;
         PP_ip = pp[ip];
-        if (ipp1 >= 0)
+        if (k1x >= 0)
           PP_ipp1 = pp[ipp1];
-        if (ippsy >= 0)
+        if (k1y >= 0)
           PP_ippsy = pp[ippsy];
         Press_x = RPMean(-Sf_x, 0.0,
                          pfmax((PP_ip), 0.0),
@@ -179,14 +179,14 @@ void    OverlandFlowEvalKin(
                              * mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
       }
       // fix for internal patch edges in x direction
-      if (p1 != p0x)
+      if (p1 >= 0 && p0x >= 0 && p1 != p0x)
       {
         if (k1 >= 0)
         {
           ip = SubvectorEltIndex(p_sub, i, j, k1);
           Sf_x = sx_dat[io - 1];
           Sf_y = sy_dat[io - 1];
-          ipm1 = (int)SubvectorEltIndex(p_sub, i - 1, j, k1x);
+          ipm1 = (int)SubvectorEltIndex(p_sub, i - 1, j, k0x);
 
           Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);
           if (Sf_mag < ov_epsilon)
@@ -202,14 +202,14 @@ void    OverlandFlowEvalKin(
       }
 
       // fix for internal patch edges in y direction
-      if (p1 != p0y)
+      if (p1 >= 0 && p0y >= 0 && p1 != p0y)
       {
         if (k1 >= 0)
         {
           ip = SubvectorEltIndex(p_sub, i, j, k1);
           Sf_x = sx_dat[io - sy_v];
           Sf_y = sy_dat[io - sy_v];
-          ipmsy = (int)SubvectorEltIndex(p_sub, i, j - 1, k1y);
+          ipmsy = (int)SubvectorEltIndex(p_sub, i, j - 1, k0y);
 
           Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);
           if (Sf_mag < ov_epsilon)
@@ -299,7 +299,8 @@ void    OverlandFlowEvalKin(
                                          int k1, k0x, k0y, k1x, k1y;
                                          int p1, p0x, p0y;
                                          double Sf_x, Sf_y, Sf_mag;
-                                         double Press_x, Press_y, qx_temp, qy_temp; ),
+                                         double Press_x, Press_y, qx_temp, qy_temp;
+                                         double PP_ipp1, PP_ippsy; ),
                                   CellSetup(DoNothing),
                                   FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
                                   FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
@@ -333,12 +334,19 @@ void    OverlandFlowEvalKin(
         if (Sf_mag < ov_epsilon)
           Sf_mag = ov_epsilon;
 
+        PP_ipp1 = 0.0;
+        PP_ippsy = 0.0;
+        if (k1x >= 0)
+          PP_ipp1 = pp[ipp1];
+        if (k1y >= 0)
+          PP_ippsy = pp[ippsy];
+
         Press_x = RPMean(-Sf_x, 0.0,
                          pfmax((pp[ip]), 0.0),
-                         pfmax((pp[ipp1]), 0.0));
+                         pfmax((PP_ipp1), 0.0));
         Press_y = RPMean(-Sf_y, 0.0,
                          pfmax((pp[ip]), 0.0),
-                         pfmax((pp[ippsy]), 0.0));
+                         pfmax((PP_ippsy), 0.0));
 
         qx_temp = -(5.0 / 3.0) * (Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_x, (2.0 / 3.0));
         qy_temp = -(5.0 / 3.0) * (Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_y, (2.0 / 3.0));
@@ -350,14 +358,14 @@ void    OverlandFlowEvalKin(
       }
 
       // fix for internal patch edges in x direction
-      if (p1 != p0x)
+      if (p1 >= 0 && p0x >= 0 && p1 != p0x)
       {
         if (k1 >= 0)
         {
           ip = SubvectorEltIndex(p_sub, i, j, k1);
           Sf_x = sx_dat[io - 1];
           Sf_y = sy_dat[io - 1];
-          ipm1 = (int)SubvectorEltIndex(p_sub, i - 1, j, k1x);
+          ipm1 = (int)SubvectorEltIndex(p_sub, i - 1, j, k0x);
 
           Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);
           if (Sf_mag < ov_epsilon)
@@ -374,14 +382,14 @@ void    OverlandFlowEvalKin(
       }
 
       // fix for internal patch edges in y direction
-      if (p1 != p0y)
+      if (p1 >= 0 && p0y >= 0 && p1 != p0y)
       {
         if (k1 >= 0)
         {
           ip = SubvectorEltIndex(p_sub, i, j, k1);
           Sf_x = sx_dat[io - sy_v];
           Sf_y = sy_dat[io - sy_v];
-          ipmsy = (int)SubvectorEltIndex(p_sub, i, j - 1, k1y);
+          ipmsy = (int)SubvectorEltIndex(p_sub, i, j - 1, k0y);
 
           Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);
           if (Sf_mag < ov_epsilon)
