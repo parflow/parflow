@@ -2997,6 +2997,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         PFVCopy(instance_xtra->saturation,
                 instance_xtra->old_saturation);
         PFVCopy(instance_xtra->pressure, instance_xtra->old_pressure);
+
+        /* OverlandDiffusive reads the old pressure in corner ghost cells,
+         * which the pressure updates in this file do not exchange. */
+        if (OverlandFlowNeedsCornerGhosts())
+        {
+          handle = InitVectorUpdate(instance_xtra->old_pressure, VectorUpdatePGS1);
+          FinalizeVectorUpdate(handle);
+        }
       }
       else                      /* Not converged, so decrease time step */
       {
@@ -3329,7 +3337,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                 double qy_south = (j > 0) ? qy_dat[io_q_south] : 0.0;
 
                 flux_surface_lateral = dt * ((qx_current - qx_west) * dy + (qy_current - qy_south) * dx);
-                flux_total = flux_in + flux_darcy + flux_surface_lateral;
+                /* flux_surface_lateral is the cell's net overland OUTFLOW, the same
+                 * expression the residual charges against storage, so it is subtracted
+                 * from the inflow.  Adding it credited draining cells with inflow and
+                 * debited receiving cells. */
+                flux_total = flux_in + flux_darcy - flux_surface_lateral;
               }
               else
               {
@@ -3583,6 +3595,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
               }
             }
                          );
+
+            FreeSubgrid(tmp_subgrid);
           }
         }
         if (ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical))

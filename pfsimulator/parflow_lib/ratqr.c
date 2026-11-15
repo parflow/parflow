@@ -4,6 +4,7 @@
  */
 
 #include "f2c.h"
+#include "math.h"
 
 #include <math.h>
 

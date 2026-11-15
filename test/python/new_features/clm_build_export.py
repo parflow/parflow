@@ -297,3 +297,5 @@ if __name__ == "__main__":
 
     # Make sure things are working for fewer land names
     test_fewer_land_names(clm)
+
+    print("PASSED")

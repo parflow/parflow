@@ -41,3 +41,5 @@ new_text = Path(generated).read_text()
 
 assert old_text and new_text
 assert old_text == new_text
+
+print("PASSED")

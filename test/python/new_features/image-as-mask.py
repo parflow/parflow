@@ -40,3 +40,7 @@ side_patches = load_patch_matrix_from_image_file(
 SolidFileBuilder(bottom=1).mask(mask).top_ids(top_patches).side_ids(side_patches).write(
     "sabino_domain.pfsol", xllcorner=0, yllcorner=0, cellsize=90, vtk=True
 )
+
+# TODO ADD_CHECKS Yet another poorly written test that does not check much.
+
+print("PASSED")
