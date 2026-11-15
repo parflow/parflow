@@ -4,6 +4,8 @@
 # with and without analytical jacobian and with MGSemi preconditioner
 # The results should be almost identical for the different configurations
 # The test is to check the correctness of the MGSemi preconditioner
+# The analytical jacobian cases also run with PCMatrixType PFSymmetric, which
+# checks the symmetric MGSemi matrix with overland flow (it previously failed)
 # RMM, 2024-07-02
 # -----------------------------------------------------------------------------
 
@@ -404,6 +406,21 @@ overland.run(working_directory=new_output_dir_name)
 if not check_output(run_name, correct_root, correct_output_dir_name):
     passed = False
 
+# run with KWE upwinding, analytical jacobian and the symmetric preconditioner
+# matrix (PFSymmetric, the default PCMatrixType); should match the same result
+run_name = "TiltedV_OverlandKin_JacTrue_MGSemi_PFSymmetric"
+overland.set_name(run_name)
+overland.Solver.Linear.Preconditioner.PCMatrixType = "PFSymmetric"
+
+print("##########")
+print(f"Running {run_name} Jacobian True PFSymmetric")
+new_output_dir_name = os.path.join(test_dir_name, f"{run_name}")
+mkdir(new_output_dir_name)
+overland.run(working_directory=new_output_dir_name)
+if not check_output(run_name, correct_root, correct_output_dir_name):
+    passed = False
+overland.Solver.Linear.Preconditioner.PCMatrixType = "FullJacobian"
+
 
 # -----------------------------------------------------------------------------
 # Original formulation with a zero value channel
@@ -433,6 +450,18 @@ mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
 if not check_output(run_name, correct_root, correct_output_dir_name):
     passed = False
+
+run_name = "TiltedV_OverlandFlow_JacTrue_MGSemi_PFSymmetric"
+overland.set_name(run_name)
+overland.Solver.Linear.Preconditioner.PCMatrixType = "PFSymmetric"
+print("##########")
+print(f"Running {run_name} Jacobian True MGSemi PFSymmetric")
+new_output_dir_name = os.path.join(test_dir_name, f"{run_name}")
+mkdir(new_output_dir_name)
+overland.run(working_directory=new_output_dir_name)
+if not check_output(run_name, correct_root, correct_output_dir_name):
+    passed = False
+overland.Solver.Linear.Preconditioner.PCMatrixType = "FullJacobian"
 
 run_name = "TiltedV_OverlandFlow_JacFalse_MGSemi"
 overland.set_name(run_name)
@@ -494,6 +523,96 @@ new_output_dir_name = os.path.join(test_dir_name, f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
 if not check_output(run_name, correct_root, correct_output_dir_name):
+    passed = False
+
+# run with DWE, analytical jacobian and the symmetric preconditioner matrix
+run_name = "TiltedV_OverlandDiff_JacTrue_MGSemi_PFSymmetric"
+overland.set_name(run_name)
+overland.Solver.Linear.Preconditioner.PCMatrixType = "PFSymmetric"
+
+print("##########")
+print(f"Running {run_name} Jacobian True PFSymmetric")
+new_output_dir_name = os.path.join(test_dir_name, f"{run_name}")
+mkdir(new_output_dir_name)
+overland.run(working_directory=new_output_dir_name)
+if not check_output(run_name, correct_root, correct_output_dir_name):
+    passed = False
+
+# -----------------------------------------------------------------------------
+# Symmetric preconditioner matrix on a larger grid
+# On the 5 x 5 x 1 grid above GMRES converges even with a poor preconditioner.
+# Here MGSemi with PCMatrixType PFSymmetric must match the FullJacobian result
+# and keep GMRES below its iteration limit (KrylovDimension).  Before the fix,
+# the symmetric MGSemi matrix took the overland west/south terms into the
+# neighbours' east/north coefficients, and about 20 of 47 Newton steps hit
+# the limit here; with the fix none do.
+# -----------------------------------------------------------------------------
+NX_big = 30
+NZ_big = 10
+dz_big = overland.ComputationalGrid.DZ
+overland.ComputationalGrid.NX = NX_big
+overland.ComputationalGrid.NY = NX_big
+overland.ComputationalGrid.NZ = NZ_big
+L_big = NX_big * overland.ComputationalGrid.DX
+x_left = (NX_big // 2 - 1) * overland.ComputationalGrid.DX
+x_right = (NX_big // 2 + 1) * overland.ComputationalGrid.DX
+for geom_name, (x_lower, x_upper) in {
+    "domain": (0.0, L_big),
+    "left": (0.0, x_left),
+    "channel": (x_left, x_right),
+    "right": (x_right, L_big),
+}.items():
+    overland.Geom[geom_name].Lower.X = x_lower
+    overland.Geom[geom_name].Upper.X = x_upper
+    overland.Geom[geom_name].Upper.Y = L_big
+    overland.Geom[geom_name].Upper.Z = NZ_big * dz_big
+
+overland.TopoSlopesX.Geom.channel.Value = 0.01
+overland.Patch.z_upper.BCPressure.Type = "OverlandKinematic"
+overland.Solver.Nonlinear.UseJacobian = True
+overland.Solver.Nonlinear.PrintFlag = "HighVerbosity"
+overland.TimingInfo.BaseUnit = 0.25
+overland.TimeStep.Value = 0.25
+overland.TimingInfo.StopTime = 2.0
+
+big_runs = {}
+for matrix_type in ["FullJacobian", "PFSymmetric"]:
+    run_name = f"TiltedV_OverlandKin_JacTrue_MGSemi_{matrix_type}_30x30x10"
+    overland.set_name(run_name)
+    overland.Solver.Linear.Preconditioner.PCMatrixType = matrix_type
+    print("##########")
+    print(f"Running {run_name}")
+    new_output_dir_name = os.path.join(test_dir_name, f"{run_name}")
+    mkdir(new_output_dir_name)
+    overland.run(working_directory=new_output_dir_name)
+    big_runs[matrix_type] = (run_name, new_output_dir_name)
+
+full_name, full_dir = big_runs["FullJacobian"]
+sym_name, sym_dir = big_runs["PFSymmetric"]
+for timestep in range(5):
+    if not pf_test_file_with_abs(
+        f"{sym_dir}/{sym_name}.out.press.{timestep:05d}.pfb",
+        f"{full_dir}/{full_name}.out.press.{timestep:05d}.pfb",
+        f"Max difference in {sym_name} press {timestep:05d}",
+        1e-12,
+        4,
+    ):
+        passed = False
+
+krylov_limit = int(overland.Solver.Linear.KrylovDimension)
+with open(f"{sym_dir}/{sym_name}.out.kinsol.log") as kinsol_log:
+    gmres_its = [
+        int(line.split("=")[1])
+        for line in kinsol_log
+        if line.startswith("KINSpgmrSolve: nli_inc=")
+    ]
+at_limit = sum(its >= krylov_limit for its in gmres_its)
+print(
+    f"{sym_name}: {len(gmres_its)} Newton steps, {at_limit} reached the "
+    f"GMRES limit of {krylov_limit}"
+)
+if len(gmres_its) == 0 or at_limit > 2:
+    print(f"{sym_name}: too many Newton steps reached the GMRES limit")
     passed = False
 
 if passed:
