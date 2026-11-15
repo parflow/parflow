@@ -320,15 +320,19 @@ subroutine clm_hydro_canopy (clm)
   ! fdry is the fraction of elai (***now in LSM***) which is dry because only leaves
   ! can transpire.  Adjusted for stem area which does not transpire.
 
-  if (clm%h2ocan > 0. .and. clm%frac_veg_nosno == 1) then
-     vegt     = clm%frac_veg_nosno*(clm%elai + clm%esai)
-     dewmxi   = 1.0/clm%dewmx
-     if (clm%fwet_exponent /= 0.6667d0) then
-        clm%fwet = ((dewmxi/vegt)*clm%h2ocan)**clm%fwet_exponent
+  if (clm%frac_veg_nosno == 1) then
+     if (clm%h2ocan > 0.) then
+        vegt     = clm%frac_veg_nosno*(clm%elai + clm%esai)
+        dewmxi   = 1.0/clm%dewmx
+        if (clm%fwet_exponent /= 0.6667d0) then
+           clm%fwet = ((dewmxi/vegt)*clm%h2ocan)**clm%fwet_exponent
+        else
+           clm%fwet = ((dewmxi/vegt)*clm%h2ocan)**.666666666666
+        endif
+        clm%fwet = min(clm%fwet,dble(1.0))     ! Check for maximum limit of fwet
      else
-        clm%fwet = ((dewmxi/vegt)*clm%h2ocan)**.666666666666
+        clm%fwet = 0.
      endif
-     clm%fwet = min(clm%fwet,dble(1.0))     ! Check for maximum limit of fwet
      clm%fdry = (1.-clm%fwet)*clm%elai/(clm%elai+clm%esai)
   else
      clm%fwet = 0.
