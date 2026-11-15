@@ -2073,37 +2073,36 @@ void    RichardsJacobianEval(
           }
 
           /* Off-diagonal terms only for a full J; see OverlandKinematicBC above */
-          if (symm_part)
+          if (!symm_part)
           {
-            /* symmetric J: overland diagonal only */
-          }
-          else if (diffusive == 0)
-          {
-            /*west term */
-            wp[im] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
+            if (diffusive == 0)
+            {
+              /*west term */
+              wp[im] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
 
-            //  /*East term */
-            ep[im] += (vol / ffy) * dt * (kw_der[io1 + 1]);
+              //  /*East term */
+              ep[im] += (vol / ffy) * dt * (kw_der[io1 + 1]);
 
-            //  /*south term */
-            sop[im] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
+              //  /*south term */
+              sop[im] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
 
-            //  /*north term */
-            np[im] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
-          }
-          else
-          {
-            /*west term */
-            wp[im] -= (vol / ffy) * dt * (kwns_der[io1]);
+              //  /*north term */
+              np[im] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
+            }
+            else
+            {
+              /*west term */
+              wp[im] -= (vol / ffy) * dt * (kwns_der[io1]);
 
-            /*East term */
-            ep[im] += (vol / ffy) * dt * (kens_der[io1]);
+              /*East term */
+              ep[im] += (vol / ffy) * dt * (kens_der[io1]);
 
-            /*south term */
-            sop[im] -= (vol / ffx) * dt * (ksns_der[io1]);
+              /*south term */
+              sop[im] -= (vol / ffx) * dt * (ksns_der[io1]);
 
-            /*north term */
-            np[im] += (vol / ffx) * dt * (knns_der[io1]);
+              /*north term */
+              np[im] += (vol / ffx) * dt * (knns_der[io1]);
+            }
           }
         }),
                              CellFinalize(DoNothing),
