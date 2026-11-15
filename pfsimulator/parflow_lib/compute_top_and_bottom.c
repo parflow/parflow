@@ -114,7 +114,10 @@ void ComputeTopAndBottom(Problem *    problem,      /* General problem informati
   }      /* End of subgrid loop */
 
   /* Pass top values to neighbors.  */
-  handle = InitVectorUpdate(top, VectorUpdateAll);
+  /* Include corner ghost cells where the overland formulation reads them */
+  handle = InitVectorUpdate(top,
+                            OverlandFlowNeedsCornerGhosts() ?
+                            VectorUpdatePGS1 : VectorUpdateAll);
   FinalizeVectorUpdate(handle);
 
   /* Pass bottom values to neighbors.  */
