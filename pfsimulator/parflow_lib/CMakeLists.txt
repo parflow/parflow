@@ -23,6 +23,7 @@ set(SRC_FILES_CONST
     distribute_usergrid.c
     dpofa.c
     dposl.c
+    evap_trans_guard.c
     evaptranssum.c
     gauinv.c
     general.c
