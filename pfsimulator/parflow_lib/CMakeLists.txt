@@ -17,6 +17,7 @@ set(SRC_FILES_CONST
     constantRF.c
     constant_porosity.c
     create_grid.c
+    deepaquifer_eval.c
     diag_scale.c
     diffuse_lb.c
     discretize_pressure.c
