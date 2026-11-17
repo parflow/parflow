@@ -168,6 +168,30 @@ Phase:
             min_value: 0
             max_value: 1
 
+      AirEntryMode:
+        help: >
+          [Type: string] Selects how the Ippisch air-entry pressure head is determined.
+          None disables the modification (standard Van Genuchten, default). Constant uses a single
+          air-entry head value for all regions. InverseAlpha computes h_s = 1/alpha per region.
+          PerRegion reads per-geometry values from Geom.{geom_name}.Saturation.AirEntryHead.
+        default: None
+        domains:
+          EnumDomain:
+            enum_list:
+              - None
+              - Constant
+              - InverseAlpha
+              - PerRegion
+
+      AirEntryHead:
+        help: >
+          [Type: double] Global air-entry pressure head in meters (positive value).
+          Used when AirEntryMode is Constant. Typical value: 0.02 (2 cm).
+        default: 0.0
+        domains:
+          DoubleValue:
+            min_value: 0.0
+
   ThermalConductivity:
     __doc__: ''
     __rst__:

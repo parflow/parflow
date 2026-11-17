@@ -161,3 +161,7 @@ ipython_config.py
 
 # pyenv
 .python-version
+
+# Editor / agent / OS detritus
+.claude/
+.DS_Store
