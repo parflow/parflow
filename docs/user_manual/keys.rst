@@ -5656,17 +5656,19 @@ required (i.e., incoming flluxes are positive and outgoing fluxes are negative).
       <runname>.Solver.EvapTrans.FileName = "evap.trans.test.pfb"    ## Python syntax
 
 *string* **Solver.LSM** none This key specifies whether a land surface
-model, such as ``CLM``, will be called each solver timestep. Choices 
-for this key include **none** and **CLM**. Note that ``CLM`` must be compiled 
-and linked at runtime for this option to be active.
+model, such as ``CLM`` or ``CoLM``, will be called each solver timestep. Choices
+for this key include **none**, **CLM**, and **CoLM**. Note that land surface model support must be compiled
+and linked at runtime for ``CLM`` or ``CoLM`` to be active.
 
 .. container:: list
 
    ::
 
       pfset Solver.LSM "CLM"           ## TCL syntax
+      pfset Solver.LSM "CoLM"          ## TCL syntax
 
       <runname>.Solver.LSM = "CLM"     ## Python syntax
+      <runname>.Solver.LSM = "CoLM"    ## Python syntax
 
 .. _Spinup Options:
 

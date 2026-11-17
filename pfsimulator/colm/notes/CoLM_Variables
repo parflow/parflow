@@ -1,0 +1,353 @@
+###========================Invariants 51===============================
+patchclass(i)   
+patchtype(i)     
+patchlonr(i)    
+patchlatr(i)    
+lakedepth(i)     ##not used in pf, but setup
+dz_lake(1:,i)    ##not used in pf, but setup
+soil_s_v_alb(i)  !aggregation nc and then readin nc, or invoke function calculated inside, soil_color_refl 
+soil_d_v_alb(i)  !aggregation nc and then readin nc, or invoke function calculated inside, soil_color_refl 
+soil_s_n_alb(i)  !aggregation nc and then readin nc, or invoke function calculated inside, soil_color_refl 
+soil_d_n_alb(i)  !aggregation nc and then readin nc, or invoke function calculated inside, soil_color_refl   
+vf_quartz(1:,i)  !soil, nc readin ##not used at all
+vf_gravels(1:,i) !soil, nc readin ##used in soil_hcap_cond, maybe setup in 2nd file
+vf_om(1:,i)      !soil, nc readin ##used in soil_hcap_cond, maybe setup in 2nd file 
+vf_sand(1:,i)    !soil, nc readin             
+wf_gravels(1:,i) !soil, nc readin
+wf_sand(1:,i)    !soil, nc readin   
+porsl(1:,i)      !soil, nc readin 
+psi0(1:,i)       !soil, nc readin, super cool in phase change,              
+bsw(1:,i)        !soil, nc readin 
+theta_r(1:,i)    !soil, nc readin    
+!esat = (vliq - vl_r) / (porsl - vl_r) in MOD_Hydro_SoilFunction know it is porosity*theta_r_in_pf
+
+BVIC(1,i)        ##                                                 
+alpha_vgm(1:,i)  !soil, nc readin 
+n_vgm(1:,i)      !soil, nc readin 
+L_vgm(1:,i)      !soil, nc readin                      
+sc_vgm(1:,i)     !calculated inside, get_derived_parameters_vGM   
+fc_vgm(1:,i)     !calculated inside, get_derived_parameters_vGM      
+!phase change, super cool and snicar scheme
+!wilting point, field capacity, saturation capacity   
+                             
+hksati(1:,i)     !soil, nc readin, 
+!plant hydraulic, soil_conductance, no need to read, will be passed from pf later 
+csol(1:,i)       !soil, nc readin     
+k_solids(1:,i)   !soil, nc readin   
+dksatu(1:,i)     !soil, nc readin            
+dksatf(1:,i)     !soil, nc readin     
+dkdry(1:,i)      !soil, nc readin                                           
+BA_alpha(1:,i)   !soil, nc readin  
+BA_beta(1:,i)    !soil, nc readin                                        
+htop(i)          !htop readin     
+hbot(i)          !htop readin
+topostd(i)       !readin, but not used in pf 
+zlnd            
+zsno            
+csoilc          
+dewmx                  
+wtfact         
+capr          
+cnfac         
+ssi                   
+wimp          
+pondmx         
+smpmax          
+smpmin                       
+trsmx0 
+tcrit    ###the above variables are values in MOD_Initialize                                            
+
+###========================Variables 82==================================
+z_sno(maxsnl+1:,i)               
+dz_sno(maxsnl+1:,i)    ### maybe zero if not use snowinit            
+t_soisno(maxsnl+1:,i)  ### some simple values      
+wliq_soisno(maxsnl+1:,i)               
+wice_soisno(maxsnl+1:,i)  
+h2osoi(1:,i) !out
+smp(1:,i)    !soil matrix potential, plant hydraulics, not used currently, initialized, pf press will be used  
+!only if used in planthydraulic
+hk(1:,i)     !soil hydraulic conductance, not used, , plant hydraulic 
+rootr(1:,i)     !out
+rootflux(1:,i)  !out
+vegwp(1:,i)   !if use plant hydraulic, simple value  
+gs0sun(i)     !if use plant hydraulic, simple value  
+gs0sha(i)     !if use plant hydraulic, simple value     
+lai_old(i)    !no use, if no ozone
+o3uptakesun(i)  !no use, if no ozone
+o3uptakesha(i)   !no use, if no ozone
+rstfacsun_out(i)  !out
+rstfacsha_out(i)  !out
+gssun_out(i)      !out 
+gssha_out(i)      !out
+t_grnd(i)         !simple value as t_soisno(1)
+assimsun_out(i)   !out
+etrsun_out(i)     !out
+assimsha_out(i)   !out
+etrsha_out(i)     !out
+tleaf(i)          !same as t_grnd or t_soisno(1)   
+ldew(i)           !zero
+ldew_rain(i)      !zero
+ldew_snow(i)      !zero        
+sag(i)            !zero     
+scv(i)            !readin or zero
+snowdp(i)         !readin or zero
+fveg(i)           !empirical or readin       
+fsno(i)           !snowfraction or zero
+sigf(i)           !snowfraction or one
+green(i)          !empirical
+lai(i)            !lai = tlai(ipatch)    tsai readin
+laisun(i)         !out
+laisha(i)         !out 
+sai(i)            !sai = tsai(ipatch) * sigf  tsai readin
+coszen(i)         !orb_coszen
+alb(1:,1:,i)      !albland
+ssun(1:,1:,i)     !albland
+ssha(1:,1:,i)     !albland        
+ssoi(:,:,i)       !albland
+ssno(:,:,i)       !albland
+thermk(i)         !albland 
+extkb(i)          !albland          
+extkd(i)          !albland 
+zwt(i)            !no use
+wa(i)             !no use
+wetwat(i)         !no use, new_snow on warm wetland  
+wat(i)            !no use    
+wdsrf(i)          !no use  in VSF and some other HYDRO subroutines, now removed. legacy in COLMMAIN
+rss(i)            !out      
+t_lake(1:,i)      !no use in pf
+lake_icefrac(1:,i)  !no use in pf             
+savedtke1(i)      !tkwat  = 0.6     
+snw_rds(:,i)      !simple value, snicar, so no use
+ssno_lyr(:,:,:,i) !albland                                         
+mss_bcpho(:,i)    !albland
+mss_bcphi(:,i)    !albland
+mss_ocpho(:,i)    !albland
+mss_ocphi(:,i)    !albland         
+mss_dst1(:,i)     !albland
+mss_dst2(:,i)     !albland
+mss_dst3(:,i)     !albland
+mss_dst4(:,i)     !albland
+trad(i)           !t_grnd, out
+tref(i)           !t_grnd, out
+qref(i)           !0.3                 
+rst(i)     !out, canopy stomatal resistance   
+emis(i)    !emis  = 1.0 
+z0m(i)     !z0m    = htop * z0mr(patchclass(ipatch))
+zol(i)     !zol   = -1.0 
+rib(i)     !rib   = -0.1     
+ustar(i)   !ustar = 0.25   
+qstar(i)   !qstar = 0.001    
+tstar(i)   !tstar = -1.5                                  
+fm(i)      !fm    = alog(30.)     
+fh(i)      !fh    = alog(30.)    
+fq(i)      !fq    = alog(30.)
+
+###========================1D_Flux 45=======================================
+taux(i)         
+tauy(i)         
+fsena(i)     
+lfevpa(i)    
+fevpa(i)                        
+fsenl(i)       
+fevpl(i)       
+etr(i)                     
+fseng(i)        
+fevpg(i)   
+fgrnd(i)  
+olrg(i)     
+xerr(i)        
+zerr(i) 14
+
+sabvsun(i)                  
+sabvsha(i)      
+sabg(i)         
+sr(i)           
+solvd(i)                   
+solvi(i)        
+solnd(i)       
+solni(i)        
+srvd(i)                     
+srvi(i)         
+srnd(i)         
+srni(i)        
+solvdln(i)                   
+solviln(i)     
+solndln(i)     
+solniln(i)      
+srvdln(i)                   
+srviln(i)       
+srndln(i)      
+srniln(i) 20
+                                              
+rsur(i)        
+rsur_se(i)      
+rsur_ie(i)       
+rnof(i)                    
+qintr(i)        
+qinfl(i)        
+qdrip(i)   
+qcharge(i) 8
+
+assim(i)        
+respc(i)     2 
+       
+oro(i)   1    //redeclared in driver, not the same as that (oroflag) in flux
+
+###========================1D_Forcing 24=============================
+forc_pco2m(i)   !constant in old clm, currently, set as constant temporarily 
+forc_po2m(i)    !constant in old clm, currently, set as constant temporarily    
+forc_us(i)      !wind, pfb readin     
+forc_vs(i)      !wind
+forc_t(i)       !temperature   
+forc_q(i)       !pfb readin
+forc_prc(i)     !prcp/3
+forc_prl(i)     !prcp*2/3            
+forc_rain(i)    !out
+forc_snow(i)    !out
+forc_psrf(i)    !pfb readin    
+forc_pbot(i)    !no use I guess        
+forc_sols(i)    
+forc_soll(i)    
+forc_solsd(i)   
+forc_solld(i)         
+forc_frl(i)     !pfb readin
+forc_hgt_u(i)   !constant
+forc_hgt_t(i)   !constant
+forc_hgt_q(i)   !constant              
+forc_rhoair(i)  !calculated                                                                
+forc_hpbl(i)    !eddy                                                             
+forc_aerdep(:,i) !aerosol
+forc_ozone(i)    !ozone
+
+###========================Const_LC 29=====================================
+rootfr(1:,m)    
+sqrtdi(m)                                     
+effcon(m)       
+vmax25(m)                                                      
+kmax_sun(m)     
+kmax_sha(m)     
+kmax_xyl(m)     
+kmax_root(m)                
+psi50_sun(m)    
+psi50_sha(m)    
+psi50_xyl(m)    
+psi50_root(m)                
+ck(m)                                                                          
+slti(m)         
+hlti(m)                                                        
+shti(m)         
+hhti(m)    
+trda(m)         
+trdm(m)                      
+trop(m)         
+g1(m)           
+g0(m)
+gradm(m)  
+binter(m)                
+extkn(m)        
+chil(m)   
+lambda(m)      
+rho(1:,1:,m)    
+tau(1:,1:,m)    
+    
+
+237 variables, 6 excluded
+
+i,
+idate,    
+doalb,           
+dolai,           
+dosst,  
+deltim_phy,         
+
+#TimeInvariants
+patchmask      (:) !not used in pf
+OM_density   !soil, nc readin 
+BD_all       !soil, nc readin 
+wfc          !calculated inside, only need to initialize, soil parameter readin, now passed by pf, used in BGC
+vic_b_infilt (:)
+vic_Dsmax    (:)
+vic_Ds       (:)
+vic_Ws       (:)
+vic_c        (:)
+dbedrock       (:)  !depth to bedrock, no use
+ibedrock       (:)  !bedrock level, no use
+topoelv (:)  !elevation above sea level [m]
+wetwatmax    !./mkinidata/MOD_Initialize.F90:429:      wetwatmax = 200.0 !maximum wetland water (mm)
+
+###below 6 for downscaling, but maybe useful for slope and aspect in future
+svf_patches (:)                                           ! sky view factor
+cur_patches (:)                                           ! curvature
+sf_lut_patches (:,:,:)                                    ! look up table of shadow factor of a patch
+asp_type_patches        (:,:)                             ! topographic aspect of each character of one patch
+slp_type_patches        (:,:)                             ! topographic slope of each character of one patch
+area_type_patches       (:,:)   
+
+#TimeVariables
+o3coefv_sun   (:) ! Ozone stress factor for photosynthesis on sunlit leaf
+o3coefv_sha   (:) ! Ozone stress factor for photosynthesis on shaded leaf
+o3coefg_sun   (:) ! Ozone stress factor for stomata on sunlit leaf
+o3coefg_sha   (:) ! Ozone stress factor for stomata on shaded leaf
+tlai          (:)   ###lai_empirical or LAI_readin
+tsai          (:)   ###lai_empirical or LAI_readin
+displa        (:)  !I guess no use, there is a local displa
+
+#allocate_1D_Fluxes
+rnet   (:)
+rsub   (:)
+
+
+#if(defined CaMa_Flood)
+! flood variables [mm, m2/m2, mm/s, mm/s]
+flddepth_cama(i),fldfrc_cama(i),fevpg_fld(i),  finfg_fld(i),        &
+#endif
+
+#MOD_Aerosol.F90
+remove two subroutines: AerosolDepInit, AerosolDepReadin
+#MOD_CanopyLayerProfile.F90
+r8 precision
+#MOD_Glacier.F90
+r8 precision
+#MOD_LeafInterception.F90
+line length
+#MOD_LeafTemperature.F90
+r8 precision, zldis, hvap
+#MOD_LeafTemperaturePC.F90
+r8 precision
+#MOD_MonthlyinSituCO2MaunaLoa.F90
+line length
+#MOD_Ozone.F90
+remove two subroutines
+#MOD_PhaseChange.F90
+r8
+#MOD_PlantHydraulic.F90
+precision issue
+#MOD_SnowSnicar.F90
+remove one subroutine, edit init subroutine
+#MOD_FrictionVelocity.F90
+if (zldis < 0.0d0) zldis = 5.0d0
+
+#MOD_SoilSnowHydrology.F90
+a lot
+#MOD_SoilSurfaceResistance.F90
+beta soil
+#MOD_Thermal.F90
+a lot
+#MOD_Eroot.F90
+water stress
+#MOD_Namelist.F90
+hotstart and other options
+
+I think wfc is only used in beta soil as local which is recaculated in the subroutine. 
+Though it was readin through TimeInvariants, maybe used in BGC. #also claculated in soil parameter readin
+
+you should check the upstream and downstream of rss and rootr
+
+#MOD_Vars_1DFluxes.F90
+add qseva etc. 6 variables
+#MOD_Vars_1DForcing.F90
+numpatch
+#MOD_Vars_TimeVariables.F90
+read and write subroutines
+#MOD_Vars_TimeInvariants.F90
+read and write subroutines
