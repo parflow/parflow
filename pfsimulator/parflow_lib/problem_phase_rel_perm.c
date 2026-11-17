@@ -261,6 +261,54 @@ VanGTable *VanGComputeTable(
   return new_table;
 }
 
+/** @brief Van Genuchten-Mualem relative permeability.
+ *
+ * kr = (1 - x^(n-1) u^-m)^2 u^(-m/2), with u = 1 + x^n, x = alpha * head
+ * and m = 1 - 1/n. Written with two calls to pow() instead of four: the
+ * compiler cannot do this rewriting itself.
+ *
+ * @param x alpha times the pressure head (x > 0)
+ * @param n Van Genuchten n
+ * @param m 1 - 1/n
+ *
+ * @return relative permeability kr
+ */
+__host__ __device__
+static inline double VanGenuchtenKr(double x, double n, double m)
+{
+  double xn1 = pow(x, n - 1);          /* x^(n-1) */
+  double um = pow(1.0 + xn1 * x, -m);  /* u^-m */
+  double a = 1.0 - xn1 * um;
+
+  return a * a * sqrt(um);
+}
+
+/** @brief Derivative of the Van Genuchten-Mualem relative permeability.
+ *
+ * -d kr / d x for the kr of VanGenuchtenKr (multiply by alpha for
+ * -d kr / d head). Written with two calls to pow() and one to sqrt()
+ * instead of eight calls to pow().
+ *
+ * @param x alpha times the pressure head (x >= 0)
+ * @param n Van Genuchten n
+ * @param m 1 - 1/n
+ *
+ * @return -d kr / d x
+ */
+__host__ __device__
+static inline double VanGenuchtenKrDer(double x, double n, double m)
+{
+  double xn1 = pow(x, n - 1);          /* x^(n-1) */
+  double u = 1.0 + xn1 * x;            /* 1 + x^n */
+  double um = pow(u, -m);              /* u^-m */
+  double um2 = sqrt(um);               /* u^(-m/2) */
+  double xn2 = (x > 0.0) ? xn1 / x : pow(x, n - 2);  /* x^(n-2) */
+  double a = 1.0 - xn1 * um;
+
+  return 2.0 * a * um2 * um * ((n - 1) * xn2 - m * n * xn1 * xn1 / u)
+         + a * a * (m / 2) * um2 / u * n * xn1;
+}
+
 __host__ __device__
 static inline double VanGLookupSpline(
                                       double     pressure_head,
@@ -622,10 +670,7 @@ void         PhaseRelPerm(
                 double n = ns[ir];
                 double m = 1.0e0 - (1.0e0 / n);
 
-                double opahn = 1.0 + pow(alpha * head, n);
-                double ahnm1 = pow(alpha * head, n - 1);
-                double f_val = pow(1.0 - ahnm1 / (pow(opahn, m)), 2)
-                               / pow(opahn, (m / 2));
+                double f_val = VanGenuchtenKr(alpha * head, n, m);
 
                 printf("DebugTableFn, %d, %e, %e, %e, %e, %e\n",
                        ir,
@@ -650,16 +695,7 @@ void         PhaseRelPerm(
                 double n = ns[ir];
                 double m = 1.0e0 - (1.0e0 / n);
 
-                double opahn = 1.0 + pow(alpha * head, n);
-                double ahnm1 = pow(alpha * head, n - 1);
-                double coeff = 1.0 - ahnm1 * pow(opahn, -m);
-
-                double f_val = 2.0 * (coeff / (pow(opahn, (m / 2))))
-                               * ((n - 1) * pow(alpha * head, n - 2) * alpha
-                                  * pow(opahn, -m)
-                                  - ahnm1 * m * pow(opahn, -(m + 1)) * n * alpha * ahnm1)
-                               + pow(coeff, 2) * (m / 2) * pow(opahn, (-(m + 2) / 2))
-                               * n * alpha * ahnm1;
+                double f_val = alpha * VanGenuchtenKrDer(alpha * head, n, m);
 
                 printf("DebugTableDer, %d, %e, %e, %e, %e, %e\n",
                        ir,
@@ -783,10 +819,7 @@ void         PhaseRelPerm(
                     double m = 1.0e0 - (1.0e0 / n);
 
                     double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                    double opahn = 1.0 + pow(alpha * head, n);
-                    double ahnm1 = pow(alpha * head, n - 1);
-                    prdat[ipr] = pow(1.0 - ahnm1 / (pow(opahn, m)), 2)
-                                 / pow(opahn, (m / 2));
+                    prdat[ipr] = VanGenuchtenKr(alpha * head, n, m);
                   }
                 });
               }
@@ -900,16 +933,7 @@ void         PhaseRelPerm(
                     double m = 1.0e0 - (1.0e0 / n);
 
                     double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                    double opahn = 1.0 + pow(alpha * head, n);
-                    double ahnm1 = pow(alpha * head, n - 1);
-                    double coeff = 1.0 - ahnm1 * pow(opahn, -m);
-
-                    prdat[ipr] = 2.0 * (coeff / (pow(opahn, (m / 2))))
-                                 * ((n - 1) * pow(alpha * head, n - 2) * alpha
-                                    * pow(opahn, -m)
-                                    - ahnm1 * m * pow(opahn, -(m + 1)) * n * alpha * ahnm1)
-                                 + pow(coeff, 2) * (m / 2) * pow(opahn, (-(m + 2) / 2))
-                                 * n * alpha * ahnm1;
+                    prdat[ipr] = alpha * VanGenuchtenKrDer(alpha * head, n, m);
                   }
                 });
               }
@@ -976,10 +1000,7 @@ void         PhaseRelPerm(
                 double m = 1.0e0 - (1.0e0 / n);
 
                 double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                double opahn = 1.0 + pow(alpha * head, n);
-                double ahnm1 = pow(alpha * head, n - 1);
-                prdat[ipr] = pow(1.0 - ahnm1 / (pow(opahn, m)), 2)
-                             / pow(opahn, (m / 2));
+                prdat[ipr] = VanGenuchtenKr(alpha * head, n, m);
               }
             });
           }
@@ -1007,16 +1028,7 @@ void         PhaseRelPerm(
                 double m = 1.0e0 - (1.0e0 / n);
 
                 double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                double opahn = 1.0 + pow(alpha * head, n);
-                double ahnm1 = pow(alpha * head, n - 1);
-                double coeff = 1.0 - ahnm1 * pow(opahn, -m);
-
-                prdat[ipr] = 2.0 * (coeff / (pow(opahn, (m / 2))))
-                             * ((n - 1) * pow(alpha * head, n - 2) * alpha
-                                * pow(opahn, -m)
-                                - ahnm1 * m * pow(opahn, -(m + 1)) * n * alpha * ahnm1)
-                             + pow(coeff, 2) * (m / 2) * pow(opahn, (-(m + 2) / 2))
-                             * n * alpha * ahnm1;
+                prdat[ipr] = alpha * VanGenuchtenKrDer(alpha * head, n, m);
               }
             });
           }     /* End else clause */
@@ -1147,10 +1159,7 @@ void         PhaseRelPerm(
                     double m = 1.0e0 - (1.0e0 / n);
 
                     double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                    double opahn = 1.0 + pow(alpha * head, n);
-                    double ahnm1 = pow(alpha * head, n - 1);
-                    prdat[ipr] = pow(1.0 - ahnm1 / (pow(opahn, m)), 2)
-                                 / pow(opahn, (m / 2));
+                    prdat[ipr] = VanGenuchtenKr(alpha * head, n, m);
                   }
                 });
               }
@@ -1244,16 +1253,7 @@ void         PhaseRelPerm(
                     double m = 1.0e0 - (1.0e0 / n);
 
                     double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                    double opahn = 1.0 + pow(alpha * head, n);
-                    double ahnm1 = pow(alpha * head, n - 1);
-                    double coeff = 1.0 - ahnm1 * pow(opahn, -m);
-
-                    prdat[ipr] = 2.0 * (coeff / (pow(opahn, (m / 2))))
-                                 * ((n - 1) * pow(alpha * head, n - 2) * alpha
-                                    * pow(opahn, -m)
-                                    - ahnm1 * m * pow(opahn, -(m + 1)) * n * alpha * ahnm1)
-                                 + pow(coeff, 2) * (m / 2) * pow(opahn, (-(m + 2) / 2))
-                                 * n * alpha * ahnm1;
+                    prdat[ipr] = alpha * VanGenuchtenKrDer(alpha * head, n, m);
                   }
                 });
               }
@@ -1315,10 +1315,7 @@ void         PhaseRelPerm(
                 double m = 1.0e0 - (1.0e0 / n);
 
                 double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                double opahn = 1.0 + pow(alpha * head, n);
-                double ahnm1 = pow(alpha * head, n - 1);
-                prdat[ipr] = pow(1.0 - ahnm1 / (pow(opahn, m)), 2)
-                             / pow(opahn, (m / 2));
+                prdat[ipr] = VanGenuchtenKr(alpha * head, n, m);
               }
             });
           }      /* End if clause */
@@ -1342,16 +1339,7 @@ void         PhaseRelPerm(
                 double m = 1.0e0 - (1.0e0 / n);
 
                 double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                double opahn = 1.0 + pow(alpha * head, n);
-                double ahnm1 = pow(alpha * head, n - 1);
-                double coeff = 1.0 - ahnm1 * pow(opahn, -m);
-
-                prdat[ipr] = 2.0 * (coeff / (pow(opahn, (m / 2))))
-                             * ((n - 1) * pow(alpha * head, n - 2) * alpha
-                                * pow(opahn, -m)
-                                - ahnm1 * m * pow(opahn, -(m + 1)) * n * alpha * ahnm1)
-                             + pow(coeff, 2) * (m / 2) * pow(opahn, (-(m + 2) / 2))
-                             * n * alpha * ahnm1;
+                prdat[ipr] = alpha * VanGenuchtenKrDer(alpha * head, n, m);
               }
             });
           }     /* End else clause */

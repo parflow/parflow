@@ -304,8 +304,9 @@ void     Saturation(
                 else
                 {
                   double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                  psdat[ips] = (m * n * alpha * pow(alpha * head, (n - 1))) * s_dif
-                               / (pow(1.0 + pow(alpha * head, n), m + 1));
+                  double ahnm1 = pow(alpha * head, n - 1);  /* (alpha head)^(n-1) */
+                  psdat[ips] = (m * n * alpha * ahnm1) * s_dif
+                               / pow(1.0 + ahnm1 * alpha * head, m + 1);
                 }
               });
             }   /* End else clause */
@@ -406,8 +407,9 @@ void     Saturation(
               else
               {
                 double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                psdat[ips] = (m * n * alpha * pow(alpha * head, (n - 1))) * s_dif
-                             / (pow(1.0 + pow(alpha * head, n), m + 1));
+                double ahnm1 = pow(alpha * head, n - 1);  /* (alpha head)^(n-1) */
+                psdat[ips] = (m * n * alpha * ahnm1) * s_dif
+                             / pow(1.0 + ahnm1 * alpha * head, m + 1);
               }
             });
           }     /* End else clause */
