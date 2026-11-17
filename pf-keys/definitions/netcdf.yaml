@@ -23,6 +23,19 @@ NetCDF:
       IntValue:
       RequiresModule: NETCDF
 
+  SyncInterval:
+    help: >
+      [Type: int] This key sets how many output time steps are written between flushes of an open NetCDF4 file to disk,
+      for both the ParFlow and the CLM files.  A file is always flushed when it closes, so the default of 0 flushes only at
+      file boundaries and a crash loses at most NumStepsPerFile (or CLMNumStepsPerFile) steps of output.  A value of 1 flushes
+      after every output step.  Each flush is a collective file sync, so set this to the restart cadence (24 for hourly output
+      with Solver.CLM.DailyRST) rather than 1 on large runs.
+    default: 0
+    domains:
+      IntValue:
+        min_value: 0
+      RequiresModule: NETCDF
+
   WritePressure:
     help: >
       [Type: boolean/string] This key sets pressure variable to be written in NetCDF4 file.
