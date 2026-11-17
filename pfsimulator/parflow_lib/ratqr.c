@@ -6,6 +6,8 @@
 #include "f2c.h"
 #include "math.h"
 
+#include <math.h>
+
 extern double epslon_(double *x);
 
 /* Subroutine */ int ratqr_(
