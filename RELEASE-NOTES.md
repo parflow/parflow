@@ -3,6 +3,8 @@
 
 This release contains several significant feature additions, bug fixes, and infrastructure improvements.
 
+The new `Solver.OverlandOnly` option enables surface routing without subsurface flow, allowing users to check terrain drainage networks or use ParFlow as an overland routing model. The `Solver.OverlandOnly` validation coverage now includes mass-balance checks on a known sloping-plane solution, constant and PFB overland forcing, steady `EvapTransFile` forcing, and the `OverlandFlow`, `OverlandKinematic`, and `OverlandDiffusive` routing formulations.
+
 ParFlow development and bug-fixes would not be possible without contributions of the ParFlow community. Thank you for all the great contributions.
 
 ***
