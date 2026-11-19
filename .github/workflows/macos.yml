@@ -20,8 +20,8 @@ jobs:
       matrix:
         config:
         - {
-            name: "MacOS 14",
-            os: macos-14,
+            name: "MacOS 15",
+            os: macos-15,
             cudaos: '',
             python: "true",
             backend: "none",
@@ -78,7 +78,7 @@ jobs:
         $PARFLOW_PYTHON3 --version
 
     - name: CMake Install
-      if: matrix.config.os != 'macos-14'
+      if: matrix.config.os != 'macos-15'
       env:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       run: |
