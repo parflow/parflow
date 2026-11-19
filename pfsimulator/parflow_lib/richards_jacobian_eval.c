@@ -1973,17 +1973,26 @@ void    RichardsJacobianEval(
             }
           }
 
-          /*west term */
-          wp[im] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
+          /* Off-diagonal overland terms.  A symmetric J (symm_part, e.g.
+           * PCMatrixType PFSymmetric) stores no west/south coefficients:
+           * wp and sop alias the neighbour's ep and np, so these updates
+           * would add J(a,b) + J(b,a) into one shared coefficient.  Keep
+           * only the overland diagonal in that case, as the PFMG path in
+           * pf_hypre.c does. */
+          if (!symm_part)
+          {
+            /*west term */
+            wp[im] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
 
-          /*East term */
-          ep[im] += (vol / ffy) * dt * (kw_der[io1 + 1]);
+            /*East term */
+            ep[im] += (vol / ffy) * dt * (kw_der[io1 + 1]);
 
-          /*south term */
-          sop[im] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
+            /*south term */
+            sop[im] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
 
-          /*north term */
-          np[im] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
+            /*north term */
+            np[im] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
+          }
         }),
                              CellFinalize(DoNothing),
                              AfterAllCells(DoNothing)
@@ -2012,17 +2021,21 @@ void    RichardsJacobianEval(
             cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
                       + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
           }
-          /*west term */
-          wp[im] -= (vol / ffy) * dt * (kwns_der[io1]);
+          /* Off-diagonal terms only for a full J; see OverlandKinematicBC above */
+          if (!symm_part)
+          {
+            /*west term */
+            wp[im] -= (vol / ffy) * dt * (kwns_der[io1]);
 
-          /*East term */
-          ep[im] += (vol / ffy) * dt * (kens_der[io1]);
+            /*East term */
+            ep[im] += (vol / ffy) * dt * (kens_der[io1]);
 
-          /*south term */
-          sop[im] -= (vol / ffx) * dt * (ksns_der[io1]);
+            /*south term */
+            sop[im] -= (vol / ffx) * dt * (ksns_der[io1]);
 
-          /*north term */
-          np[im] += (vol / ffx) * dt * (knns_der[io1]);
+            /*north term */
+            np[im] += (vol / ffx) * dt * (knns_der[io1]);
+          }
         }),
                              CellFinalize(DoNothing),
                              AfterAllCells(DoNothing)
@@ -2059,33 +2072,37 @@ void    RichardsJacobianEval(
             cp[im] += 0.0 + dt * (vol / dz) * (public_xtra->SpinupDampP1 * exp(pfmin(pp[ip], 0.0) * public_xtra->SpinupDampP1) * public_xtra->SpinupDampP2);                      //NBE
           }
 
-          if (diffusive == 0)
+          /* Off-diagonal terms only for a full J; see OverlandKinematicBC above */
+          if (!symm_part)
           {
-            /*west term */
-            wp[im] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
+            if (diffusive == 0)
+            {
+              /*west term */
+              wp[im] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
 
-            //  /*East term */
-            ep[im] += (vol / ffy) * dt * (kw_der[io1 + 1]);
+              //  /*East term */
+              ep[im] += (vol / ffy) * dt * (kw_der[io1 + 1]);
 
-            //  /*south term */
-            sop[im] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
+              //  /*south term */
+              sop[im] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
 
-            //  /*north term */
-            np[im] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
-          }
-          else
-          {
-            /*west term */
-            wp[im] -= (vol / ffy) * dt * (kwns_der[io1]);
+              //  /*north term */
+              np[im] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
+            }
+            else
+            {
+              /*west term */
+              wp[im] -= (vol / ffy) * dt * (kwns_der[io1]);
 
-            /*East term */
-            ep[im] += (vol / ffy) * dt * (kens_der[io1]);
+              /*East term */
+              ep[im] += (vol / ffy) * dt * (kens_der[io1]);
 
-            /*south term */
-            sop[im] -= (vol / ffx) * dt * (ksns_der[io1]);
+              /*south term */
+              sop[im] -= (vol / ffx) * dt * (ksns_der[io1]);
 
-            /*north term */
-            np[im] += (vol / ffx) * dt * (knns_der[io1]);
+              /*north term */
+              np[im] += (vol / ffx) * dt * (knns_der[io1]);
+            }
           }
         }),
                              CellFinalize(DoNothing),
