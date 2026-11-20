@@ -25,7 +25,9 @@ module clm_varcon
 
   real(r8) :: grav   = 9.80616   !gravity constant [m/s2]
   real(r8) :: sb     = 5.67e-8   !stefans constant  [W/m2/K4]
-!@ real(r8) :: vkc    = 0.4       !von Karman constant [-]
+  ! von Karman constant [-]. Default 0.378 is the BATS1e value prescribed in the PILPS
+  ! Phase 2 experiments (Chen et al. 1997, Table A4) and carried by PF-CLM since 2005.
+  ! The standard CLM value is 0.4. Overridden at run time by Solver.CLM.VonKarman (clm.F90).
   real(r8) :: vkc    = 0.378       !von Karman constant [-]
   real(r8) :: rwat   = 461.296   !gas constant for water vapor [J/(kg K)]
   real(r8) :: rair   = 287.04    !gas constant for dry air [J/kg/K]

@@ -6951,6 +6951,26 @@ Default 1.0 matches CLM5. Only used when InterceptionScheme is CLM5Tanh.
       pfset Solver.CLM.InterceptionTanhAlpha 1.0             ## TCL syntax
       <runname>.Solver.CLM.InterceptionTanhAlpha = 1.0      ## Python syntax
 
+*double* **Solver.CLM.VonKarman** 0.378 von Karman constant used in the CLM
+surface-layer similarity calculations (friction velocity, aerodynamic
+resistances, and 2 m diagnostics). The default 0.378 preserves historical
+PF-CLM behavior. This value originates in BATS1e :cite:p:`Dickinson1993` and
+was prescribed for all schemes in the PILPS Phase 2 experiments
+:cite:p:`Chen1997,Schlosser2000`; PF-CLM adopted it during initial development
+against the PILPS 2(d) Valdai data :cite:p:`MM05`. The original Common Land
+Model and other current land surface models use 0.4, consistent with the
+stability functions in CLM :cite:p:`Hogstrom1988`, and 0.4 is the recommended
+value. Neutral transfer coefficients scale with the square of this constant, so
+0.378 gives about 11% lower aerodynamic conductance than 0.4. Sensitivity of
+evapotranspiration to this parameter is small.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.VonKarman 0.4             ## TCL syntax
+      <runname>.Solver.CLM.VonKarman = 0.4      ## Python syntax
+
 
 .. _ParFlow NetCDF4 Parallel I/O:
 
