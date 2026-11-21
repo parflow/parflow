@@ -114,6 +114,22 @@ typedef struct {
   /* @RMM Variable dZ */
   PFModule  *dz_mult;           //rmm
   PFModule  *real_space_z;
+
+  /**
+   * Chemistry coupling selected by the Solver.Chemistry input key
+   * (0 = None, 1 = Alquimia). Cached from ProblemChemistryFromInput()
+   * by NewProblem(); modules that run before a Problem exists read the
+   * key through that helper instead of global state.
+   */
+  int chemistry;
+
+#ifdef HAVE_ALQUIMIA
+  /* Alquimia reactive-transport (react_trans) */
+  PFModule *geochemcond;
+  PFModule *bc_concentration;
+  int num_geochem_conds;
+  NameArray geochem_cond_names;
+#endif
 } Problem;
 
 typedef struct {
@@ -180,6 +196,11 @@ typedef struct {
   /* @RMM variable dz  */
   Vector *dz_mult;
   Vector *rsz;
+
+#ifdef HAVE_ALQUIMIA
+  /* Alquimia reactive-transport (react_trans) */
+  Vector *geochemcond;
+#endif
 } ProblemData;
 
 /* Values of solver argument to NewProblem function */
@@ -315,6 +336,17 @@ typedef struct {
 #define PermeabilityNewPublicXtra      SubsrfSimNewPublicXtra
 #define PermeabilityFreePublicXtra     SubsrfSimFreePublicXtra
 #define PermeabilitySizeOfTempData     SubsrfSimSizeOfTempData
+
+#define ProblemChemistry(problem)                 ((problem)->chemistry)
+
+/* Alquimia reactive-transport (react_trans) accessors */
+#ifdef HAVE_ALQUIMIA
+#define ProblemGeochemCondNames(problem)          ((problem)->geochem_cond_names)
+#define ProblemNumGeochemConds(problem)           ((problem)->num_geochem_conds)
+#define ProblemGeochemCond(problem)               ((problem)->geochemcond)
+#define ProblemBCConcentration(problem)           ((problem)->bc_concentration)
+#define ProblemDataGeochemCond(problem_data)      ((problem_data)->geochemcond)
+#endif
 
 
 #endif

@@ -77,6 +77,105 @@ void ADVECT(double *s, double *sn,
             double *dxscr, double *dyscr, double *dzscr, double *dzfrm);
 
 /* sadvect.f */
+/*advect_transport.f90 */
+#if defined(_CRAYMPP)
+#define ADVECT_UPWIND ADVECT_UPWIND
+#elif defined(__bg__)
+#define ADVECT_UPWIND advect_upwind
+#else
+#define ADVECT_UPWIND advect_upwind_
+#endif
+
+#define CALL_ADVECT_UPWIND(s, sn, uedge, vedge, wedge,             \
+                           old_porsat, new_porsat_inv, fx, fy, fz, \
+                           dlo, dhi, hx, dim, dt)                  \
+        ADVECT_UPWIND(s, sn, uedge, vedge, wedge,                  \
+                      old_porsat, new_porsat_inv, fx, fy, fz,      \
+                      dlo, dhi, hx, dim, &dt)
+
+void ADVECT_UPWIND(double *s, double *sn,
+                   double *uedge, double *vedge, double *wedge,
+                   double *old_porsat, double *new_porsat_inv, double *fx, double *fy,
+                   double *fz, int *dlo, int *dhi, double *hx, int *dim, double *dt);
+
+
+#if defined(_CRAYMPP)
+#define ADVECT_HIGHORDER ADVECT_HIGHORDER
+#elif defined(__bg__)
+#define ADVECT_HIGHORDER advect_highorder
+#else
+#define ADVECT_HIGHORDER advect_highorder_
+#endif
+
+#define CALL_ADVECT_HIGHORDER(s, uedge, vedge, wedge,                        \
+                              porsat_inv, sx, sy, sz, dlo, dhi, hx, dim, dt) \
+        ADVECT_HIGHORDER(s, uedge, vedge, wedge,                             \
+                         porsat_inv, sx, sy, sz, dlo, dhi, hx, dim, &dt)
+
+void ADVECT_HIGHORDER(double *s, double *uedge, double *vedge, double *wedge,
+                      double *porsat_inv, double *sx, double *sy, double *sz,
+                      int *dlo, int *dhi, double *hx, int *dim, double *dt);
+
+
+
+#if defined(_CRAYMPP)
+#define ADVECT_TRANSVERSE ADVECT_TRANSVERSE
+#elif defined(__bg__)
+#define ADVECT_TRANSVERSE advect_transverse
+#else
+#define ADVECT_TRANSVERSE advect_transverse_
+#endif
+
+#define CALL_ADVECT_TRANSVERSE(s, uedge, vedge, wedge,                               \
+                               dlo, dhi, hx, dt, vx, wx, uy, wy, uz, vz, sx, sy, sz) \
+        ADVECT_TRANSVERSE(s, uedge, vedge, wedge,                                    \
+                          dlo, dhi, hx, &dt, vx, wx, uy, wy, uz, vz, sx, sy, sz)
+
+void ADVECT_TRANSVERSE(double *s, double *uedge, double *vedge, double *wedge,
+                       int *dlo, int *dhi, double *hx, double *dt, double *vx, double *wx,
+                       double *uy, double *wy,
+                       double *uz, double *vz,
+                       double *sx, double *sy, double *sz);
+
+
+#if defined(_CRAYMPP)
+#define ADVECT_COMPUTECONCEN ADVECT_COMPUTECONCEN
+#elif defined(__bg__)
+#define ADVECT_COMPUTECONCEN advect_computeconcen
+#else
+#define ADVECT_COMPUTECONCEN advect_computeconcen_
+#endif
+
+#define CALL_ADVECT_COMPUTECONCEN(sn, sx, sy, sz, porsat_inv, \
+                                  dlo, dhi, hx, dt)           \
+        ADVECT_COMPUTECONCEN(sn, sx, sy, sz, porsat_inv,      \
+                             dlo, dhi, hx, &dt)
+
+void ADVECT_COMPUTECONCEN(double *sn, double *sx, double *sy,
+                          double *sz, double *porsat_inv,
+                          int *dlo, int *dhi, double *hx, double *dt);
+
+
+
+#if defined(_CRAYMPP)
+#define ADVECT_LIMIT ADVECT_LIMIT
+#elif defined(__bg__)
+#define ADVECT_LIMIT advect_limit
+#else
+#define ADVECT_LIMIT advect_limit_
+#endif
+
+#define CALL_ADVECT_LIMIT(sn, sx, sy, sz, dlo, dhi, hx, dim, dt,                         \
+                          porsat_inv, p_plus, p_minus, q_plus, q_minus, r_plus, r_minus) \
+        ADVECT_LIMIT(sn, sx, sy, sz, dlo, dhi, hx, dim, &dt,                             \
+                     porsat_inv, p_plus, p_minus, q_plus, q_minus, r_plus, r_minus)
+
+void ADVECT_LIMIT(double *sn, double *sx, double *sy, double *sz,
+                  int *dlo, int *dhi, double *hx, int *dim, double *dt,
+                  double *porsat_inv, double *p_plus, double *p_minus,
+                  double *q_plus, double *q_minus,
+                  double *r_plus, double *r_minus);
+
 #if defined(_CRAYMPP)
 #define SADVECT SADVECT
 #elif defined(__bg__)

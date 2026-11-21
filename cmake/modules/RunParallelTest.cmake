@@ -9,6 +9,13 @@ cmake_minimum_required(VERSION 3.14)
 # cmd parameter passed in as reference
 macro(pf_exec_check cmd)
     set(ENV{PF_TEST} "yes")
+
+    # Pin the ParFlow under test to the configured install. Without this the
+    # tcl harness inherits PARFLOW_DIR from the caller's environment (e.g. a
+    # shell profile), silently testing an unrelated installed binary.
+    if(DEFINED PARFLOW_INSTALL_DIR)
+        set(ENV{PARFLOW_DIR} ${PARFLOW_INSTALL_DIR})
+    endif()
     if(${PARFLOW_HAVE_SILO})
         set(ENV{PARFLOW_HAVE_SILO} "yes")
     endif()

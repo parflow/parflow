@@ -1,0 +1,39 @@
+'temperature points' 8   0.  25.  60. 100. 150. 200. 250. 300.
+'Debye-Huckel adh'   0.4939  0.5114 0.5465 0.5995 0.6855 0.7994 0.9593 1.2180
+'Debye-Huckel bdh'   0.3253  0.3288 0.3346 0.3421 0.3525 0.3639 0.3766 0.3925
+'Debye-Huckel bdt'   0.0374  0.0410 0.0440 0.0460 0.0470 0.0470 0.0340 0.0000
+'tracer'  0 0 0
+'End of primary'  0.0  0.0  0.0
+'OH-' 2 -1.0000 'H+' 1.0000 'H2O' 14.9398 13.9951 13.0272 12.2551 11.6308 11.2836 11.1675 11.3002 3.5 -1.0 17.0073
+'End of secondary' 1 0. '0' 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+'CO2(g)' 0.0000 3 -1.0000 'H2O' 1.0000 'H+' 1.0000 'HCO3-' -7.6765 -7.8136 -8.0527 -8.3574 -8.7692 -9.2165 -9.7202 -10.3393 44.0098
+'End of gases' 0. 1 1. '0' 0. 0. 0. 0. 0. 0. 0. 0. 0.
+'Calcite' 36.9340 3 -1.0000 'H+' 1.0000 'Ca++' 1.0000 'HCO3-' 2.2257 1.8487 1.3330 0.7743 0.0999 -0.5838 -1.3262 -2.2154 100.0872
+'End of minerals' 0. 1 0. '0' 0. 0. 0. 0. 0. 0. 0. 0. 0.
+Begin surface complexation
+'>FeO-_str' 2 -1.0 'H+' 1.0 '>FeOH_strong' 500.0 8.82 500.0 500.0 500.0 500.0 500.0 500.0
+End of surface complexation
+Begin aqueous kinetics
+FeII_oxidation 2 'tst' 5 1.0 'Fe+++'  0.500 'H2O' -0.25 'O2(aq)' -1.0 'Fe++' -1.0 'H+' 8.4887
+   1.53e-06 3 'tot_Fe++' 1.0  'O2(aq)' 1.0 'H+' -2.0
+   41.4868 2 'tot_Fe++' 1.0 'O2(aq)' 1.0
+End of aqueous kinetics
+Begin mineral kinetics
++---------------------------------------------------
+Calcite
+  label = default
+  type  = tst
+  rate(25C) = -9.0
+  activation = 15.0  (kcal/mole)
+  dependence :
+  1.0 Calcite + 1.0 H+ =  1.0 Ca+2 + 1.0 HCO3-
++---------------------------------------------------
+End of mineral kinetics
+Begin exchange
+'NaX'   2 1.0 'Na+'  1.0 'X-'   0.00  0.000
+End of exchange
+Begin surface complexation parameters
+>FeOH_strong     0.0
+End surface complexation parameters
+
+

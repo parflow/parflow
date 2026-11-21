@@ -448,3 +448,30 @@ Patch:
             domains:
               DoubleValue:
 
+
+    # -----------------------------------------------------------------------------
+    # Patch.{patch_name}.BCConcentration  (react_trans Alquimia chemistry)
+    # -----------------------------------------------------------------------------
+
+    BCConcentration:
+      __class__: BCItemBCConcentration
+      __rst__:
+        skip:
+      __doc__: ''
+
+      Type:
+        help: >
+          [Type: string] How the solute (geochemical) boundary condition is applied on this patch.
+          Constant imposes a single named geochemical condition, constant in time.
+        default: Constant
+        domains:
+          EnumDomain:
+            enum_list:
+              - Constant
+
+      Value:
+        help: >
+          [Type: string] The geochemical condition name (from BCConcentration.GeochemCondition.Names)
+          imposed as the inflow concentration on this patch.
+        domains:
+          AnyString:

@@ -289,6 +289,22 @@ void     WriteSiloInit(char *file_prefix)
                              "evaptranssum",
                              "overlandsum",
                              "overland_bc_flux",
+                             /* Alquimia reactive-transport (react_trans)
+                              * chemistry output directories */
+                             "PrimaryMobile",
+                             "PrimarySorbed",
+                             "MineralVolfx",
+                             "MineralSurfArea",
+                             "SurfSiteDens",
+                             "CEC",
+                             "pH",
+                             "AqueousRate",
+                             "MineralSI",
+                             "MineralRate",
+                             "PrimaryFreeIon",
+                             "SecondaryFreeIon",
+                             "PrimaryActivity",
+                             "SecondaryActivity",
                              0 };
 
     for (int i = 0; output_types[i]; i++)

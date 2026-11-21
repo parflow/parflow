@@ -21,6 +21,7 @@ YAML_MODULES_TO_PROCESS = [
     "timing",
     "phase",
     "bconditions",
+    "chemistry",
     "netcdf",
     "metadata",
     "run",
