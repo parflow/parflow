@@ -34,6 +34,10 @@
 
 #include "parflow.h"
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+#include "pystencils_vector_utilities.h"
+#endif
+
 void     Copy(
               Vector *x,
               Vector *y)
@@ -80,6 +84,12 @@ void     Copy(
     yp = SubvectorElt(y_sub, ix, iy, iz);
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VCopy(xp, yp,
+                    nx, ny, nz,
+                    1, nx_x, nx_x * ny_x,
+                    1, nx_y, nx_y * ny_y);
+#else
     i_x = 0;
     i_y = 0;
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
@@ -88,5 +98,6 @@ void     Copy(
     {
       yp[i_y] = xp[i_x];
     });
+#endif
   }
 }
