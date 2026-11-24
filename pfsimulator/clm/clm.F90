@@ -397,7 +397,7 @@ interception_schemepf,interception_tanh_alphapf)
      !=== Initialize CLM and DIAG variables
      if (clm_write_logs==1) write(999,*) "Initialize CLM and DIAG variables"
      do t=1,drv%nch 
-        clm%kpatch = t
+        clm(t)%kpatch = t
 
         !=== Initialize the CLM topography mask  @RMM  moved up from loop below
         !    This is two components:
