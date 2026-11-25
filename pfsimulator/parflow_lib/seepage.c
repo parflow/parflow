@@ -67,16 +67,17 @@ PopulateSeepagePatchesFromBCPressure(SeepageLookup *seepage)
   int domain_index = NA_NameToIndexExitOnError(GlobalsGeomNames, geom_name, "Domain.GeomName");
 
   NameArray switch_na = NA_NewNameArray("False True");
+  NameArray overland_kin_family = NA_NewNameArray("OverlandKinematic OverlandKinematic_wc");
 
   seepage->seepage_patches = ctalloc(int, num_patches);
 
   for (int idx = 0; idx < num_patches; idx++)
   {
     char *patch_name = NA_IndexToName(patches_na, idx);
-    /* Only consider patches that use the OverlandKinematic BC type */
+    /* Only consider patches that use the OverlandKinematic or OverlandKinematic_wc BC type */
     sprintf(key, "Patch.%s.BCPressure.Type", patch_name);
     char *type_name = GetStringDefault(key, NULL);
-    if (type_name == NULL || strcmp(type_name, "OverlandKinematic") != 0)
+    if (type_name == NULL || NA_NameToIndex(overland_kin_family, type_name) < 0)
     {
       continue;
     }
@@ -103,6 +104,7 @@ PopulateSeepagePatchesFromBCPressure(SeepageLookup *seepage)
 
   NA_FreeNameArray(patches_na);
   NA_FreeNameArray(switch_na);
+  NA_FreeNameArray(overland_kin_family);
 }
 
 

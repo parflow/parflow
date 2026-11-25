@@ -441,6 +441,24 @@ void         BCPressurePackage(
             break;
           } /* End OverlandDiffusive */
 
+          /* Set up overland OverlandKinematic_wc condition structure */
+          case OverlandKinematic_wc:
+          {
+            NewBCPressureTypeStruct(OverlandKinematic_wc, interval_data);
+
+            BCPressureDataBCType(bc_pressure_data, i) = OverlandKinematic_wcBC;
+
+            GetTypeStruct(OverlandKinematic_wc, data, public_xtra, i);
+
+            OverlandKinematic_wcValue(interval_data)
+              = (data->values[interval_number]);
+
+            BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
+              = (void*)interval_data;
+
+            break;
+          } /* End OverlandKinematic_wc */
+
           default:
           {
             PARFLOW_ERROR("Invalid BC input type");
@@ -1011,6 +1029,26 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
           break;
         } /* End OverlandDiffusive */
+
+        case OverlandKinematic_wc:
+        {
+          /* Constant "rainfall" rate value on patch */
+          NewTypeStruct(OverlandKinematic_wc, data);
+          (data->values) = ctalloc(double, interval_division);
+
+          ForEachInterval(interval_division, interval_number)
+          {
+            sprintf(key, "Patch.%s.BCPressure.%s.Value",
+                    patch_name,
+                    NA_IndexToName(GlobalsIntervalNames[global_cycle],
+                                   interval_number));
+
+            data->values[interval_number] = GetDouble(key);
+          }
+          StoreTypeStruct(public_xtra, data, i);
+
+          break;
+        } /* End OverlandKinematic_wc */
       } /* End switch types */
 
       switch ((public_xtra)->input_types[(i)])
@@ -1019,6 +1057,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
         case OverlandFlowPFB:
         case OverlandKinematic:
         case OverlandDiffusive:
+        case OverlandKinematic_wc:
         {
           (public_xtra->using_overland_flow) = TRUE;
           break;
@@ -1188,6 +1227,14 @@ void  BCPressurePackageFreePublicXtra()
           case OverlandDiffusive:
           {
             GetTypeStruct(OverlandDiffusive, data, public_xtra, i);
+            tfree(data->values);
+            tfree(data);
+            break;
+          }
+
+          case OverlandKinematic_wc:
+          {
+            GetTypeStruct(OverlandKinematic_wc, data, public_xtra, i);
             tfree(data->values);
             tfree(data);
             break;
