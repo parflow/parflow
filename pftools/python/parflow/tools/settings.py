@@ -14,6 +14,14 @@ PARFLOW_VERSION = "3.6.0"
 
 
 def get_working_directory():
+    """Return the directory used to resolve relative PFTools file paths.
+
+    Returns
+    -------
+    str
+        Configured working directory. It initially matches the process working
+        directory at module import time.
+    """
     return WORKING_DIRECTORY
 
 

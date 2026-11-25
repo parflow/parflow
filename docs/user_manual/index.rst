@@ -28,8 +28,8 @@ Welcome to the ParFlow User's Manual
    models
    files
    keys
-   pftools
-   python/index
+   pftools/index
+   python/tutorials/index
    bib
 
 .. [1]

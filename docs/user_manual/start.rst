@@ -31,7 +31,9 @@ specified the code solves using IMPES.
 
 ::
 
-   pfset Solver               Impes
+   import parflow
+   run = parflow.Run("test_run", __file__)
+   run.Solver = "Impes"
 
 To simulate variably-saturated, transient conditions, using Richards’
 equation, variably/fully saturated, transient with compressible storage
@@ -40,7 +42,7 @@ used to simulate surface flow or coupled surface-subsurface flow.
 
 ::
 
-   pfset Solver             Richards
+   run.Solver = "Richards"
 
 To simulate overland flow, using the kinematic wave approximation to the
 shallow-wave equations, set the solver to RICHARDS and set the upper
@@ -53,21 +55,21 @@ binary file in the latter case.
 
 ::
 
-   pfset Patch.z-upper.BCPressure.Type	OverlandFlow
+   run.BCPressure.PatchNames = "x-upper x-lower y-upper y-lower z-upper z-lower"
+   run.Patch['z-upper'].BCPressure.Type = "OverlandFlow"
 
 For this case, the solver needs to be set to RICHARDS::
 
-   pfset Solver		Richards
+   run.Solver = "Richards"
 
 ParFlow may also be coupled with the land surface model ``CLM`` :cite:p:`Dai03`. 
 This version of ``CLM`` has been extensively modified to be called 
 from within ParFlow as a subroutine, to support parallel infrastructure including I/O and most importantly with modified physics 
 to support coupled operation to best utilize the integrated hydrology in ParFlow :cite:p:`MM05, KM08a`. 
-To couple ``CLM`` into ParFlow first the ``–with-clm`` 
-option is needed in the ``./configure`` command as indicated in Installing ParFlow. Second, the ``CLM`` module needs 
-to be called from within ParFlow, this is done using the following solver key::
+To couple ``CLM`` into ParFlow first build parflow with cmake command line option  ``-DPARFLOW_HAVE_CLM=TRUE``. 
+Second, the ``CLM`` module needs to be called from within ParFlow, this is done using the following solver key::
    
-    pfset Solver.LSM CLM
+    run.Solver.LSM = "CLM"
 
 Note that this key is used to call ``CLM`` from within the nonlinear solver time loop and requires that the solver bet set to RICHARDS to work. 
 Note also that this key defaults to *not* call ``CLM`` so if this line is omitted ``CLM`` will not be called from within 
