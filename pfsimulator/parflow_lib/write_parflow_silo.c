@@ -198,7 +198,7 @@ void pf_mk_dir(char* filename)
 void     WriteSiloInit(char *file_prefix)
 {
 #ifdef HAVE_SILO
-  char filename[2048];
+  char filename[PATH_MAX];
 
   int p = amps_Rank(amps_CommWorld);
   int P = amps_Size(amps_CommWorld);
@@ -332,7 +332,7 @@ void     WriteSilo(char *  file_prefix,
   int p, P;
 
   char file_extn[7] = "silo";
-  char filename[512];
+  char filename[PATH_MAX];
   int err;
   DBfile *db_file;
 #endif

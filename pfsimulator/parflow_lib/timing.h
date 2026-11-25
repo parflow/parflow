@@ -51,8 +51,9 @@
 #define ClusteringTimingIndex 9
 #define NetcdfTimingIndex 10
 #define PDITimingIndex  11
+#define TorchTimingIndex 12
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  12
+#define VectorUpdateTimingIndex  13
 #endif
 
 
